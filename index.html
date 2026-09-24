@@ -122,7 +122,7 @@ a:focus-visible{outline:3px solid #F2C94C;outline-offset:3px}
 (function(){try{
  const nm=localStorage.getItem('dd-auth-username')||localStorage.getItem('lg-name');
  if(nm){document.getElementById('nm').textContent=nm;document.getElementById('av').textContent=nm.trim().charAt(0).toUpperCase()||'♠';}
- if(localStorage.getItem('dd-auth-username'))document.getElementById('st').textContent='Signed in';
+ if(localStorage.getItem('dd-auth-username'))document.getElementById('st').textContent='Signed in';else document.getElementById('me').setAttribute('href','digu/?open=account');
  const inv=JSON.parse(localStorage.getItem('dd-inv')||'null');
  if(inv&&inv.shells!=null){const n=inv.shells|0;document.getElementById('sh').textContent=n>=1000?(n/1000).toFixed(n>=10000?0:1).replace(/\.0$/,'')+'K':String(n);}
 }catch(e){}})();
