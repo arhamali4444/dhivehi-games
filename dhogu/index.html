@@ -94,8 +94,7 @@ button{font:inherit;color:inherit;cursor:pointer;-webkit-tap-highlight-color:tra
 @keyframes slam{0%{scale:2.4;opacity:0}60%{scale:.92;opacity:1}100%{scale:1;opacity:1}}
 .callbtn{position:fixed;left:50%;bottom:calc(210px + env(safe-area-inset-bottom,0px));translate:-50% 0;z-index:20;border:0;border-radius:99px;padding:0 26px;height:56px;
  background:linear-gradient(135deg,#D22A34,#7E141B);color:#fff;font:22px "Special Elite",monospace;letter-spacing:.1em;box-shadow:0 12px 26px rgba(126,20,27,.55),0 0 0 3px rgba(255,255,255,.12);overflow:hidden}
-.callbtn .bar{position:absolute;left:0;bottom:0;height:4px;background:rgba(255,255,255,.75);width:100%;transform-origin:left;animation:shrink var(--t,4s) linear forwards}
-@keyframes shrink{to{transform:scaleX(0)}}
+.callbtn .bar{display:none}
 .me{position:relative;z-index:2;padding:8px 12px calc(12px + env(safe-area-inset-bottom,0px))}
 .meinfo{display:flex;align-items:center;gap:10px;margin-bottom:8px}
 .meinfo .nm{font-weight:800}
@@ -217,7 +216,7 @@ function rulesSheet(){sheet(`<h2>How to play</h2>
 <ol style="padding-left:20px;margin:6px 0 0">
 <li>Everyone gets an equal share of the cards. The player holding the <b>Ace of Spades</b> starts.</li>
 <li>Ranks go in order: <b>Aces, Twos, Threes … Kings</b>, then back to Aces. On your turn you must play <b>1 to 4 cards face down</b> and claim they are the current rank.</li>
-<li><b>You may lie.</b> After each play anyone can call <b>“Dhogu!”</b>. The cards are turned over: if any card is not the claimed rank, the liar takes the whole pile. If they told the truth, the caller takes it.</li>
+<li><b>You may lie.</b> Play keeps moving from player to player without stopping. Anyone may call <b>“Dhogu!”</b> on the latest play before another card play replaces it. The cards are then turned over: if any card is not the claimed rank, the liar takes the whole pile. If they told the truth, the caller takes it.</li>
 <li>Get rid of all your cards to win the round. Your last play can still be challenged.</li>
 <li><b>3 Lives mode:</b> a wrong call or a caught lie also costs a shell. With no shells left you're out of the round.</li>
 <li>Cards left in your hand are penalty points. After the last round, the <b>fewest points</b> wins the case.</li></ol>
@@ -268,26 +267,28 @@ function tickTimer(){const el=document.getElementById('timer');if(!G||G.phase!==
  if(left<=0){const me=G.players[0];const m=me.hand.find(c=>c.r===G.rank)||me.hand[0];G.sel=new Set([m.id]);toast('Time’s up, we played one card for you.');doPlay(me,[m]);return;}
  later(tickTimer,250);}
 function doPlay(p,cards){if(G.phase!=='play')return;const el=document.getElementById('timer');if(el)el.textContent='';
+ removeCallBtn();
+ const playedRank=G.rank;
  const ids=new Set(cards.map(c=>c.id));p.hand=p.hand.filter(c=>!ids.has(c.id));G.pile.push(...cards);G.sel=new Set();
- G.last={p,cards,rank:G.rank,n:cards.length};G.phase='call';SFX.card();flyToPile(p,cards.length);
- setClaim(`<b>${esc(p.me?'You':p.name)}</b> ${p.me?'play':'plays'} <b>${cards.length} ${cards.length===1?RONE[G.rank]:RNAME[G.rank]}</b>`);update();
- openCallWindow();}
+ G.last={p,cards,rank:playedRank,n:cards.length};SFX.card();flyToPile(p,cards.length);
+ setClaim(`<b>${esc(p.me?'You':p.name)}</b> ${p.me?'play':'plays'} <b>${cards.length} ${cards.length===1?RONE[playedRank]:RNAME[playedRank]}</b>`);
+ G.rank=playedRank%13+1;G.turn=nextIdx(G.players.indexOf(p));
+ update();
+ openCallWindow();
+ later(startTurn,450);
+}
 function flyToPile(p,k){const from=p.me?document.getElementById('hand'):app.querySelector(`.opp[data-p="${p.id}"]`),to=document.getElementById('pile');if(!from||!to)return;
  const a=from.getBoundingClientRect(),b=to.getBoundingClientRect();for(let i=0;i<Math.min(k,4);i++){const f=document.createElement('span');f.className='card back fly';f.style.left=(a.left+a.width/2-33)+'px';f.style.top=(a.top+(p.me?0:10))+'px';document.body.appendChild(f);
   requestAnimationFrame(()=>requestAnimationFrame(()=>{f.style.transform=`translate(${b.left+b.width/2-(a.left+a.width/2)+i*3}px,${b.top-(a.top+(p.me?0:10))}px) rotate(${(i-1.5)*8}deg)`;}));setTimeout(()=>f.remove(),520);}}
-const CALL_MS=4000;
-function openCallWindow(){const L=G.last;const t0=Date.now();
- // me: show the Dhogu button when someone else played
- if(!L.p.me&&!G.players[0].out){const b=document.createElement('button');b.className='callbtn pz';b.id='callbtn';b.dataset.a='dhogu';b.innerHTML=`DHOGU!<span class="bar" style="--t:${CALL_MS}ms"></span>`;document.body.appendChild(b);}
- // bots decide
- const callers=G.players.filter(q=>!q.me&&q!==L.p&&!q.out).map(q=>({q,will:botWillCall(q,L),at:500+Math.random()*(CALL_MS-1300)})).filter(x=>x.will).sort((a,b)=>a.at-b.at);
- if(callers.length)later(()=>call(callers[0].q),callers[0].at);
- later(()=>{if(G&&G.phase==='call'&&G.last===L)passNoCall();},CALL_MS);}
+function openCallWindow(){const L=G.last;
+ // Dhogu is optional: play continues immediately. The button challenges only the latest play.
+ if(!L.p.me&&!G.players[0].out){const b=document.createElement('button');b.className='callbtn pz';b.id='callbtn';b.dataset.a='dhogu';b.innerHTML=`DHOGU!`;document.body.appendChild(b);}
+ // Bots may challenge the latest play before their own scheduled play happens.
+ const callers=G.players.filter(q=>!q.me&&q!==L.p&&!q.out).map(q=>({q,will:botWillCall(q,L),at:250+Math.random()*500})).filter(x=>x.will).sort((a,b)=>a.at-b.at);
+ if(callers.length)later(()=>{if(G&&G.phase==='play'&&G.last===L)call(callers[0].q);},callers[0].at);
+}
 function removeCallBtn(){const b=document.getElementById('callbtn');if(b)b.remove();}
-function passNoCall(){removeCallBtn();const L=G.last;G.phase='play';
- if(L.p.hand.length===0){return roundOver(L.p);}
- G.rank=G.rank%13+1;G.turn=nextIdx(G.players.indexOf(L.p));update();later(startTurn,450);}
-function call(caller){if(!G||G.phase!=='call')return;G.phase='reveal';removeCallBtn();clearAll();SFX.call();buzz(20);
+function call(caller){if(!G||G.phase!=='play'||!G.last||caller===G.last.p)return;G.phase='reveal';removeCallBtn();clearAll();SFX.call();buzz(20);
  bubble(caller,'Dhogu!');const L=G.last;const lie=L.cards.some(c=>c.r!==L.rank);
  const rv=document.getElementById('reveal');later(()=>{rv.innerHTML=L.cards.map(c=>cardHTML(c)).join('');
   later(()=>{rv.insertAdjacentHTML('beforeend',`<div class="stampbig type ${lie?'lie':'truth'}">${lie?'LIE!':'TRUTH'}</div>`);SFX.stamp();if(!lie)later(SFX.truth,120);buzz(lie?[30,40,30]:15);
@@ -300,7 +301,7 @@ function resolve(loser,lie,caller){const L=G.last;rememberPile(loser);loser.hand
  G.phase='play';update();
  const left=active();if(left.length===1)return roundOver(left[0]);
  if(!lie&&L.p.hand.length===0)return roundOver(L.p);
- G.rank=G.rank%13+1;G.turn=nextIdx(G.players.indexOf(L.p));if(G.players[G.turn].out)G.turn=nextIdx(G.turn);update();later(startTurn,700);}
+ if(G.players[G.turn].out)G.turn=nextIdx(G.turn);update();later(startTurn,700);}
 function rememberPile(taker){/* bots remember which ranks went to whom */G.players.forEach(q=>{if(q.me)return;q.seen[taker.id]=q.seen[taker.id]||{};G.pile.forEach(c=>{if(G.last.cards.includes(c)||q===taker)q.seen[taker.id][c.r]=(q.seen[taker.id][c.r]||0)+1;});});}
 /* ---- computer players ---- */
 const LV={easy:{bluff:.35,extra:.05,callBase:.08,sense:.5},normal:{bluff:.5,extra:.15,callBase:.12,sense:.8},sharp:{bluff:.6,extra:.25,callBase:.16,sense:1}};
@@ -344,7 +345,7 @@ document.addEventListener('click',e=>{const b=e.target.closest('[data-a],[data-s
  else if(a==='again'){closeSheet();newMatch();}
  else if(a==='next'){closeSheet();newRound();}
  else if(a==='play'){const me=G.players[0];const cards=me.hand.filter(c=>G.sel.has(c.id));if(cards.length<1||cards.length>4)return;doPlay(me,cards);}
- else if(a==='dhogu'){if(G&&G.phase==='call'&&!G.last.p.me)call(G.players[0]);}
+ else if(a==='dhogu'){if(G&&G.phase==='play'&&G.last&&!G.last.p.me)call(G.players[0]);}
 });
 renderHome();
 window.__dh={get G(){return G},cfg};
