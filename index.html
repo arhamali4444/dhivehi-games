@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="manifest" href="/manifest.webmanifest">
 <title>Dhivehi Games</title>
 <meta name="description" content="Maldivian card games to play with friends, online or against the computer. Starting with Digu.">
 <meta name="theme-color" content="#F6EFE3">
@@ -214,5 +215,6 @@ try{
  window.__liveShow=show;
 }catch(e){console.warn('Live counts unavailable',e);}
 </script>
+<script>if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("/sw.js").catch(()=>{}));</script>
 </body>
 </html>
