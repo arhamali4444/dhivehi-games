@@ -558,6 +558,16 @@ html.eb .bubble.dh::after{border-top-color:#A5372B}
 .ebt .rcards .card.ok{box-shadow:0 0 0 2.5px #E0B967,0 8px 16px rgba(0,0,0,.45)}
 @keyframes ebBad{0%{box-shadow:0 6px 14px rgba(0,0,0,.4)}40%{transform:translateY(-6px)}100%{box-shadow:0 0 0 3px #C8322A,0 0 22px 4px rgba(200,50,40,.55)}}
 @keyframes ebX{from{opacity:0;transform:scale(1.6)}}
+/* AFK + waiting seats: a rubber stamp on paper */
+.ebt .opps.n6 .opp{width:54px}.ebt .opps.n6 .opp .nm{font-size:9px}
+.rstamp{display:inline-block;margin:0 0 10px;padding:5px 12px 3px;border:2.5px solid #A5372B;border-radius:4px;rotate:-6deg;color:#A5372B;font:400 14px/1.1 "Special Elite",monospace;letter-spacing:.16em;box-shadow:inset 0 0 0 1.5px rgba(246,238,220,.9),inset 0 0 0 3px rgba(165,55,43,.55);animation:slam .5s cubic-bezier(.2,1.6,.4,1) both}
+.ebt .me.watch{padding-top:14px}
+.wslip{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:3px;rotate:-.6deg;background:url(grain.webp) 0 0/64px 64px,linear-gradient(#FBF6EA,#F2E9D6);color:#2A1C10;box-shadow:0 1px 2px rgba(0,0,0,.35),0 12px 22px -10px rgba(0,0,0,.8)}
+.wslip .rstamp{flex:none;margin:0;font-size:12px}
+.wslip b{display:block;font:400 19px/1.15 "DM Serif Display",Georgia,serif}
+.wslip small{display:block;margin-top:3px;font:12px/1.35 Sora,system-ui,sans-serif;color:#5A4A36}
+.ebt .me.watch .btn{margin-top:10px;width:100%;min-height:48px;border-radius:10px;background:transparent;color:#EFE4CC;box-shadow:inset 0 0 0 1px rgba(239,228,204,.35);font:600 15px Sora,system-ui,sans-serif}
+:is(.eb-fb,.panel) .otable.busy .oi{background:transparent;color:#7A5E38;box-shadow:inset 0 0 0 1.5px rgba(122,94,56,.55)}
 @media (max-height:700px){.ebt .need b{font-size:18px}.ebt .felt{gap:6px;padding:10px}.ebt .arena{min-height:300px}
  .ebt .felt>.need{position:absolute!important;left:18px;top:50%;translate:0 -50%;z-index:2}.ebt .opps .opp{width:56px}.ebt .opps.n1 .opp,.ebt .opps.n2 .opp,.ebt .opps.n3 .opp{width:62px}.ebt .opp .nm{font-size:9px}}
 @media (max-width:359px){html.eb .top{gap:6px}html.eb .me-pill{gap:6px;padding-right:9px}html.eb .boli{padding:0 10px 0 8px;gap:4px}.eb-ttl h1{font-size:54px}.eb-acts{margin-top:22px}.eb-fh{gap:10px;padding:8px 12px 8px 14px}.eb-fh b{font-size:16px}.eb-fb{margin:0 6px 10px;padding:4px 10px 14px}}
@@ -784,7 +794,8 @@ function rulesSheet(){sheet(`<h2>How to play</h2>
 <li>Empty your hand to win the round. Your last play can still be challenged.</li>
 <li><b>3 Lives mode:</b> a wrong call or a caught lie also costs a shell. No shells left and you're out of the round.</li>
 <li>Cards left in your hand are penalty points (+10 if you were knocked out). After the last round, the <b>fewest points</b> wins the case.</li>
-<li><b>Online:</b> 2 to 6 players. If someone drops out, an <b>AI Rookie</b> finishes their round, then leaves. If the host leaves, the next player becomes host.</li></ol>
+<li><b>Online:</b> 2 to 6 players, <b>15 seconds</b> a turn (time up and a card is played for you). If someone drops out, or is away for <b>2 turns in a row</b>, an <b>AI Rookie</b> finishes their round, then leaves; their score is frozen and they can’t rejoin that match. If the host leaves, the next player becomes host.</li>
+<li><b>Seats:</b> a private table’s empty seats stay locked. At a public table, anyone joining mid-match watches and gets a seat when the next match starts, with everyone at 0.</li></ol>
 <button class="btn w" data-a="close">Got it</button>`);}
 function sheet(html,kind=''){closeSheet();const o=document.createElement('div');o.className='ov';o.id='ov';o.dataset.kind=kind;o.innerHTML=`<div class="sheet" role="dialog" aria-modal="true">${html}</div>`;
  o.addEventListener('click',e=>{if(e.target===o&&!o.dataset.lock)closeSheet();});document.body.appendChild(o);const f=o.querySelector('.btn');if(f)try{f.focus({preventScroll:true});}catch(e){}return o;}
@@ -811,10 +822,26 @@ function emit(e){if(role==='join')return;fxLocal(e);if(role==='host'&&net&&net.f
 function startTurn(){if(!G||G.phase!=='play')return;const p=G.players[G.turn];G.turnEnd=p.bot?0:Date.now()+TURN_MS;update();sync();
  if(p.bot){later(()=>botPlay(p),1100+Math.random()*900);return;}
  const turn=G.turn,seq=G.seq;later(()=>{if(!G||G.phase!=='play'||G.turn!==turn||G.seq!==seq||p.bot)return;const m=p.hand.find(c=>c.r===G.rank)||p.hand[0];
-  if(!m)return;const msg='Time’s up, we played one card for you.';if(p.me)toast(msg);else emit({t:'toast',to:p.id,m:msg});doPlay(p,[m]);},TURN_MS);}
+  if(!m)return;const afk=afkCount(p);
+  if(!afk){const msg='Time’s up, we played one card for you.';if(p.me)toast(msg);else emit({t:'toast',to:p.id,m:msg});}
+  doPlay(p,[m],true);if(afk)afkSeat(p);},TURN_MS);}
+/* AFK (online only, counted by the host): 2 timed-out turns in a row and an AI Rookie takes the seat until the round ends,
+   says goodbye and leaves. Any real move (a play or a Dhogu call) resets the count. The player's score is frozen from
+   that moment and they can't rejoin this match. If the host is the one away, the table passes to the next player. */
+const AFK_TURNS=2,AFK_MSG='You were away for 2 turns, so an AI finished your round.';
+function afkCount(p){if(role!=='host'||!G||p.bot||p.gone)return false;p.to=(p.to|0)+1;return p.to>=AFK_TURNS;}
+function afkSeat(p){if(!G||p.bot||p.gone)return;const i=G.players.indexOf(p);if(i<0)return;
+ p.afk=true;p.bot=true;p.rookie=true;p.to=0;
+ const gen=`${p.name} was away for 2 turns. An AI Rookie finishes their round, then they leave.`;
+ if(p.me){toast('You were away for 2 turns. An AI Rookie finishes this round for you.',4200);if(net&&net.fxq)net.fxq.push({t:'toast',m:gen});}else emit({t:'toast',m:gen});
+ const n=net;if(n&&!p.me){n.banned.add(p.id);n.players.forEach((pl,tp)=>{if(pl.pid===p.id){sendPlayer(tp,pl,{k:'afk',m:AFK_MSG});n.players.delete(tp);}});delete n.last[p.id];}
+ if(G.phase==='play'&&G.turn===i)later(()=>botPlay(p),1200);
+ update();sync();}
+function afkNotice(){sheet(`<span class="rstamp">AWAY · 2 TURNS</span><h2>You were away</h2><p>${AFK_MSG} Your score for that match is frozen, and you can’t rejoin it.</p><button class="btn w" data-a="close">OK</button>`,'afk');}
 /* Play never stops for a Dhogu window: the next player can go straight away.
    Anyone may call Dhogu on the LATEST play until the next cards go down. */
-function doPlay(p,cards){if(!G||G.phase!=='play'||G.players[G.turn]!==p||!cards.length||cards.length>4)return;
+function doPlay(p,cards,auto){if(!G||G.phase!=='play'||G.players[G.turn]!==p||!cards.length||cards.length>4)return;
+ if(!auto&&!p.bot)p.to=0;
  const ids=new Set(cards.map(c=>c.id));p.hand=p.hand.filter(c=>!ids.has(c.id));G.pile.push(...cards);if(p.me)G.sel=new Set();
  const i=G.players.indexOf(p);G.seq=(G.seq|0)+1;const L={p,cards,rank:G.rank,n:cards.length,seq:G.seq};G.last=L;G.cl={k:'play',p:i,n:L.n,r:L.rank};G.turnEnd=0;
  emit({t:'play',p:i,n:L.n});G.rank=G.rank%13+1;
@@ -827,7 +854,7 @@ function scheduleBotCalls(L,final){G.players.filter(q=>q.bot&&q!==L.p&&!q.out).f
   /* the next player decides inside botPlay; everyone else may jump in while the next player is thinking */
   const next=G.players[G.turn];if(!final&&q===next)return;
   if(botWillCall(q,L))later(()=>{if(G&&G.last===L&&(G.phase==='play'||G.phase==='final'))call(q);},400+Math.random()*(final?2600:1500));});}
-function call(caller){if(!canCall(caller))return;const L=G.last;G.phase='reveal';clearAll();const ci=G.players.indexOf(caller),li=G.players.indexOf(L.p);
+function call(caller){if(!canCall(caller))return;if(!caller.bot)caller.to=0;const L=G.last;G.phase='reveal';clearAll();const ci=G.players.indexOf(caller),li=G.players.indexOf(L.p);
  emit({t:'call',p:ci});const lie=L.cards.some(c=>c.r!==L.rank);update();sync();
  later(()=>{G.rv={cards:L.cards,lie:null};emit({t:'flip'});update();sync();
   later(()=>{G.rv.lie=lie;const loser=lie?L.p:caller;G.cl=lie?{k:'lie',p:li,n:G.pile.length}:{k:'hon',p:li,c:ci,n:G.pile.length};
@@ -860,17 +887,23 @@ function botWillCall(q,L){const lv=LV[G.level]||LV.easy;const total=4*G.decks;co
  return Math.random()<Math.min(.9,p);}
 /* ---- round & match ---- */
 function roundOver(w){clearAll();G.phase='over';G.turnEnd=0;const pens={};
- G.players.forEach((p,i)=>{if(p.gone)return;const pen=p===w?0:p.hand.length+(p.out?10:0);p.score+=pen;pens[i]=pen;});
+ G.players.forEach((p,i)=>{if(p.gone||p.afk)return;/* an AFK player's score is frozen */const pen=p===w?0:p.hand.length+(p.out?10:0);p.score+=pen;pens[i]=pen;});
  G.lr={w:G.players.indexOf(w),pens};
  /* online: an AI Rookie only finishes the round of the player it replaced, then leaves */
  const rk=isOn()?G.players.filter(p=>p.rookie&&!p.gone):[];rk.forEach(p=>{p.gone=true;p.left=true;});
  G.final=G.roundNo>=G.rounds||(isOn()&&humansLeft()<2);if(G.final)G.status='over';
  emit({t:'round'});update();sync();
  rk.forEach((p,k)=>setTimeout(()=>{if(G&&role==='host'){emit({t:'say',p:G.players.indexOf(p),m:'It was fun playing with you guys, good luck!'});sync();}},900+k*800));
+ const meAfk=role==='host'&&G.players.some(p=>p.me&&p.afk);
+ if(meAfk){setTimeout(hostAfkExit,900+rk.length*800+900);return;}
  if(role==='host'&&!G.final)later(()=>{if(G&&role==='host'&&G.phase==='over'&&!G.final)newRound();},14000);}
+/* the host itself went AFK: its AI finished the round and said goodbye, so now it hands the table to the next player, like leaving */
+async function hostAfkExit(){const n=net;if(!n||n.role!=='host'||!G)return;const mig=G.status!=='over'?1:0;const jobs=[];quickRun++;
+ n.players.forEach((pl,tp)=>{if(pl.pid)jobs.push(sendPlayer(tp,pl,{k:'bye',mig,afk:1}));});await Promise.race([Promise.all(jobs),sleep(800)]);
+ cleanupNet();clearAll();role=null;G=null;renderHome();afkNotice();}
 function endMatchNow(){clearAll();G.final=true;G.status='over';G.phase='over';G.lr=G.lr&&G.phase==='over'?G.lr:null;emit({t:'round'});update();sync();}
 let awardKey='',awardGot=0;
-function showRoundSheet(){if(!G)return;const lr=G.lr,w=lr&&lr.w>=0?G.players[lr.w]:null,fin=!!G.final,me=ME();
+function showRoundSheet(){if(!G)return;const lr=G.lr,w=lr&&lr.w>=0?G.players[lr.w]:null,fin=!!G.final,me0=ME(),me=me0&&!me0.afk?me0:null;
  const key=(G.mid||'')+':'+G.roundNo;
  if(lr&&me&&awardKey!==key){awardKey=key;awardGot=award(5+(w&&w.me?15:0));if(w&&w.me){setTimeout(SFX.win,300);confetti();}}
  const elig=G.players.filter(p=>!p.left);const best=elig.length?Math.min(...elig.map(p=>p.score)):0;
@@ -880,14 +913,15 @@ function showRoundSheet(){if(!G)return;const lr=G.lr,w=lr&&lr.w>=0?G.players[lr.
  const H=G.players.find(p=>p.id===G.hostId);
  let btns='';
  if(role==='solo')btns=fin?`<button class="btn coral w" data-a="again">New case</button><button class="btn soft w" data-a="home">Back to menu</button>`:`<button class="btn coral w" data-a="next">Next round</button>`;
- else if(role==='host')btns=fin?`${humansLeft()>=2?'<button class="btn coral w" data-a="again">Play again</button>':''}<button class="btn soft w" data-a="leave">Leave table</button>`:`<button class="btn coral w" data-a="next">Deal the next round</button><p class="hint">The next round starts by itself in a few seconds.</p>`;
- else btns=fin?`<p class="hint">${esc(H?H.name:'The host')} can start a new game.</p><button class="btn soft w" data-a="leave">Leave table</button>`:`<p class="hint">Waiting for ${esc(H?H.name:'the host')} to deal the next round…</p><button class="btn soft w" data-a="menu">Menu</button>`;
+ else if(role==='host')btns=fin?`${humansLeft()+(G.watch||[]).length>=2?'<button class="btn coral w" data-a="again">Play again</button>':''}<button class="btn soft w" data-a="leave">Leave table</button>`:`<button class="btn coral w" data-a="next">Deal the next round</button><p class="hint">The next round starts by itself in a few seconds.</p>`;
+ else btns=fin?`<p class="hint">${net?`${esc(H?H.name:'The host')} can start a new game.`:'This table is closed.'}</p><button class="btn soft w" data-a="leave">Leave table</button>`:`<p class="hint">Waiting for ${esc(H?H.name:'the host')} to deal the next round…</p><button class="btn soft w" data-a="menu">Menu</button>`;
  const o=sheet(`<div class="rhead">${w?face(w.rookie?ROBO:w.face,'big'):''}<h2>${fin?'Case closed!':`Round ${G.roundNo} solved`}</h2></div>
 <p style="margin:0">${w?(w.me?'You got rid of all your cards!':esc(w.name)+' got rid of all their cards.'):'Not enough players left to keep going.'}</p>
 ${fin&&winners.length?`<p class="winline">${winners.map(p=>p.me?'You win the case!':esc(p.name)+' wins the case!').join(' ')}</p>`:''}
 <table class="rtable"><tr><th>SUSPECT</th><th>THIS ROUND</th><th style="text-align:right">TOTAL</th></tr>
-${rows.map(({p,pen})=>`<tr class="${fin&&!p.left&&p.score===best?'win':''}"><td>${esc(p.name)}${p.me?' (you)':''}${p.left?'<span class="lt">Left</span>':p.out?'<span class="lt">Out</span>':''}</td><td>${pen==null?'–':'+'+pen}</td><td class="n">${p.score}</td></tr>`).join('')}</table>
+${rows.map(({p,pen})=>`<tr class="${fin&&!p.left&&p.score===best?'win':''}"><td>${esc(p.name)}${p.me?' (you)':''}${p.afk?'<span class="lt">Away</span>':p.left?'<span class="lt">Left</span>':p.out?'<span class="lt">Out</span>':''}</td><td>${pen==null?'–':'+'+pen}</td><td class="n">${p.score}</td></tr>`).join('')}</table>
 ${lr&&me?`<p class="earn">${awardGot?`+${awardGot} Boli earned`:'Daily Boli limit reached, keep playing for fun!'}</p>`:''}
+${watching()?`<p class="winline" style="font-size:16px">You’re in for the next game. You get a seat when ${fin?'the host starts a new game':'this match ends'}.</p>`:''}
 ${btns}`,'round');o.dataset.lock='1';o.dataset.h=(G.hostId||'')+(fin?'f':'');}
 function confetti(){if(matchMedia('(prefers-reduced-motion: reduce)').matches)return;const box=document.createElement('div');box.className='confetti';box.setAttribute('aria-hidden','true');const C=['#E0B967','#F3E6CA','#A5372B','#E6D2A6','#8C6B3F','#FBF6EA'];
  for(let i=0;i<90;i++){const s=document.createElement('i');s.style.cssText=`left:${Math.random()*100}%;background:${C[i%6]};--x:${((Math.random()*2-1)*140).toFixed(0)}px;--r:${(Math.random()*900-450).toFixed(0)}deg;animation-delay:${(Math.random()*.6).toFixed(2)}s;animation-duration:${(2.2+Math.random()*1.6).toFixed(2)}s;width:${(6+Math.random()*6).toFixed(0)}px;height:${(8+Math.random()*9).toFixed(0)}px`;box.appendChild(s);}
@@ -895,22 +929,25 @@ function confetti(){if(matchMedia('(prefers-reduced-motion: reduce)').matches)re
 function menu(){if(!G)return;const on=isOn();
  sheet(`<h2>${on?'Menu':'Paused'}</h2><p>Round ${G.roundNo} of ${G.rounds} · ${G.mode==='lives'?'3 Lives':'Classic'}${on?'':' · '+G.level}</p>
 <button class="btn w" data-a="close">Keep playing</button><button class="btn soft w" data-a="rules">How to play</button>
-${on?`<button class="btn soft w" data-a="leave">Leave the table</button>${G.status!=='over'&&G.status!=='lobby'?'<p class="hint">If you leave mid-round, an AI Rookie finishes your round and you can’t rejoin this match.</p>':''}`:'<button class="btn soft w" data-a="home">Leave the table</button>'}`);}
+${on?`<button class="btn soft w" data-a="leave">Leave the table</button>${G.status!=='over'&&G.status!=='lobby'&&!watching()?'<p class="hint">If you leave mid-round, an AI Rookie finishes your round and you can’t rejoin this match.</p>':''}`:'<button class="btn soft w" data-a="home">Leave the table</button>'}`);}
 /* ================= table rendering (same for solo, host and joiners) ================= */
-function seatOrder(){const n=G.players.length,mi=Math.max(0,meIdx()),r=[];for(let k=1;k<n;k++){const p=G.players[(mi+k)%n];if(!p.gone)r.push(p);}return r;}
+function seatOrder(){if(meIdx()<0)return G.players.filter(p=>!p.gone);const n=G.players.length,mi=meIdx(),r=[];for(let k=1;k<n;k++){const p=G.players[(mi+k)%n];if(!p.gone)r.push(p);}return r;}
 /* The interrogation desk: opponents are pinned polaroids around the top and sides, the evidence pile sits exactly in the
    middle of the desk, a status pill under it, and your hand and actions in the dock at the bottom (same pattern as Digu/Bondi). */
-const SEATANG={1:[90],2:[150,30],3:[166,90,14],4:[168,118,62,12],5:[170,136,90,44,10]};
+const SEATANG={1:[90],2:[150,30],3:[166,90,14],4:[168,118,62,12],5:[170,136,90,44,10],6:[172,142,108,72,38,8]};
 const TILT=[-3,2,-1.5,2.5,-2];
-function renderTable(){screen='table';const me=ME();if(!me)return;setHomeMode(false);const opps=seatOrder(),n=opps.length;
+/* a public-table newcomer who arrived mid-match: they watch, and get a seat when the next match starts */
+const watching=()=>!!(G&&G.watching&&meIdx()<0);
+function watchDock(){return `<section class="me watch"><div class="wslip"><span class="rstamp">NEXT GAME</span><div><b>You’re in for the next game</b><small>This match is already under way. Watch the table; you get a seat, with everyone at 0, when the next match starts.</small></div></div><button class="btn" data-a="leave">Leave table</button></section>`;}
+function renderTable(){screen='table';const me=ME(),wt=!me&&watching();if(!me&&!wt)return;setHomeMode(false);const opps=seatOrder(),n=opps.length;
  app.innerHTML=`<main class="table ebt">
 <div class="tbar"><button class="ib" data-a="menu" aria-label="Menu">${ICON.menu}</button><div class="ttl"><span class="chip">Round ${G.roundNo} of ${G.rounds}${G.mode==='lives'?' · 3 lives':''}</span></div>${isOn()?`<button class="ib" id="micbtn" data-a="mic" hidden aria-label="Turn mic on"></button><button class="ib" data-a="chat" aria-label="Quick chat">${ICON.chat}</button>`:''}${sndBtn()}</div>
 <section class="arena" id="arena"><div class="corkedge" aria-hidden="true"></div>
 <section class="felt" id="felt"><div class="spot" aria-hidden="true"><i></i></div><div class="need" id="need"></div><div class="pilew"><div class="pile" id="pile"></div><div class="ctag" id="ctag" hidden></div></div><div class="claim" id="claim" aria-live="polite"></div><div class="reveal" id="reveal"></div></section>
 <section class="opps n${n}" id="opps">${opps.map((p,i)=>`<div class="opp" data-pid="${esc(p.id)}" style="--tl:${TILT[i%5]}deg"><div class="pol"><div class="fw">${face(p.rookie?ROBO:p.face,'sq')}<span class="crown" hidden>${CROWN}</span></div><div class="nm">${esc(p.name)}</div><span class="tagx" hidden></span></div><span class="think" aria-hidden="true"><i></i><i></i><i></i></span><div class="ofan"></div><div class="lives"></div></div>`).join('')}</section>
 <div class="turnb" id="turnb"></div></section>
-<section class="me" data-pid="${esc(me.id)}"><div class="meinfo"><div class="fw">${face(me.face,'big')}<span class="crown" hidden>${CROWN}</span></div><div class="mi"><div class="nm">${esc(me.me&&!isOn()?shownName():me.name)}</div><div class="sub" id="mesub"></div></div><div class="lives" id="melives"></div><span class="spacer"></span><span class="timer" id="timer"></span></div>
-<div class="hand" id="hand"></div><div class="acts"><button class="dhbtn" id="callbtn" data-a="dhogu" disabled><b>DHOGU!</b><small>Nothing to call yet</small></button><button class="btn go" id="playbtn" data-a="play" disabled>Select 1–4 cards</button></div></section></main>`;
+${wt?watchDock()+'</main>':`<section class="me" data-pid="${esc(me.id)}"><div class="meinfo"><div class="fw">${face(me.face,'big')}<span class="crown" hidden>${CROWN}</span></div><div class="mi"><div class="nm">${esc(me.me&&!isOn()?shownName():me.name)}</div><div class="sub" id="mesub"></div></div><div class="lives" id="melives"></div><span class="spacer"></span><span class="timer" id="timer"></span></div>
+<div class="hand" id="hand"></div><div class="acts"><button class="dhbtn" id="callbtn" data-a="dhogu" disabled><b>DHOGU!</b><small>Nothing to call yet</small></button><button class="btn go" id="playbtn" data-a="play" disabled>Select 1–4 cards</button></div></section></main>`}`;
  update();layoutArena();vcUI();}
 /* re-fit names once the typewriter and serif fonts have arrived */
 if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>{if(screen==='home')fitHome();else if(screen==='table')layoutArena();});
@@ -940,7 +977,7 @@ function claimHTML(){const c=G.cl;if(!c)return '';const P=i=>G.players[i]||{name
  if(c.k==='play'){const p=P(c.p);return `${N(p)} ${p.me?'play':'plays'} <b>${c.n} ${c.n===1?RONE[c.r]:RNAME[c.r]}</b>`;}
  if(c.k==='lie'){const p=P(c.p);return `${N(p)} ${p.me?'were':'was'} lying! ${p.me?'You take':'Takes'} ${c.n} card${c.n===1?'':'s'}`;}
  if(c.k==='hon'){const p=P(c.p),q=P(c.c);return `${N(p)} ${p.me?'were':'was'} honest! <b>${q.me?'You take':esc(q.name)+' takes'}</b> ${c.n} card${c.n===1?'':'s'}`;}return '';}
-function update(){if(!G||screen!=='table')return;const me=ME();if(!me)return;turnBanner();callButton();const on=isOn();
+function update(){if(!G||screen!=='table')return;const me=ME(),wt=!me&&watching();if(!me&&!wt)return;turnBanner();callButton();const on=isOn();
  const opps=seatOrder(),n=opps.length;
  opps.forEach(p=>{const el=app.querySelector(`.opp[data-pid="${cq(p.id)}"]`);if(!el)return;const i=G.players.indexOf(p);
   el.classList.toggle('on',G.phase==='play'&&G.turn===i);el.classList.toggle('out',!!p.out);
@@ -950,7 +987,7 @@ function update(){if(!G||screen!=='table')return;const me=ME();if(!me)return;tur
   const FAN=n<=2?4:n===3?3:2,k=Math.min(FAN,p.hand.length);const fh=p.out?'<span class="outtag">Out</span>':(p.hand.length?`${Array.from({length:k},(_,j)=>`<i class="card back" style="--r:${((j-(k-1)/2)*(FAN>=4?11:13)).toFixed(1)}deg"></i>`).join('')}<span class="cc">${p.hand.length}</span>`:'<span class="outtag">0</span>');
   const fe=el.querySelector('.ofan');if(fe._h!==fh){const bump=fe._n!=null&&fe._n!==p.hand.length;fe.innerHTML=fh;fe._h=fh;fe.classList.remove('bump');if(bump){void fe.offsetWidth;fe.classList.add('bump');}fe._n=p.hand.length;}
   const lv=livesHTML(p);const le=el.querySelector('.lives');if(le.innerHTML!==lv)le.innerHTML=lv;});
- const mc=app.querySelector('.me .crown');if(mc)mc.hidden=!(on&&me.id===G.hostId);
+ const mc=app.querySelector('.me .crown');if(mc&&me)mc.hidden=!(on&&me.id===G.hostId);
  const need=$('#need');if(need&&need._r!==G.rank){need._r=G.rank;need.innerHTML=`Now playing<b class="${need._init?'pop':''}">${RNAME[G.rank]||''}</b>`;need._init=1;}
  const pile=$('#pile');if(pile){const k=Math.min(6,G.pile.length);let h='';for(let i=0;i<k;i++)h+=backHTML(`transform:translate(${(i%3-1)*2}px,${-i*2}px) rotate(${[-6,4,-2,7,-4,3][i]}deg)`);h+=G.pile.length?`<span class="count">${G.pile.length}</span>`:'';if(pile._h!==h){pile.innerHTML=h;pile._h=h;}}
  const cl=$('#claim');if(cl){const h=claimHTML();if(cl._h!==h){cl.innerHTML=h;cl._h=h;}}
@@ -962,11 +999,12 @@ function update(){if(!G||screen!=='table')return;const me=ME();if(!me)return;tur
   else{if(rv._s!==seq){rv._s=seq;rv._st=0;rv._inv=0;rv._r=G.cl&&G.cl.k==='play'?G.cl.r:(G.last?G.last.rank:0);rv.innerHTML=`<div class="rcards">${G.rv.cards.map((c,k)=>cardHTML(c,'','span',`--k:${k}`)).join('')}</div>`;}
    if(G.rv.lie!=null&&!rv._st){rv._st=1;const r=rv._r;rv.querySelectorAll('.rcards .card').forEach((e,k)=>{const c=G.rv.cards[k];if(c&&r)e.classList.add(c.r===r?'ok':'bad');});
     rv.insertAdjacentHTML('beforeend',`<div class="stampbig ${G.rv.lie?'lie':'truth'}" role="status">${G.rv.lie?'GUILTY':'INNOCENT'}</div>`);}}}
+ if(wt){const dk=$('.ebt .me'),a=$('#arena');if(dk&&a){const k=dk.offsetHeight+'|'+innerWidth+'|'+innerHeight;if(a._k!==k){a._k=k;layoutArena();}}return;}
  $('#mesub').textContent=me.out?'Out of this round':`${me.hand.length} card${me.hand.length===1?'':'s'} · ${me.score} pts`;
  const ml=$('#melives');const lv=livesHTML(me);if(ml.innerHTML!==lv)ml.innerHTML=lv;
  layoutHand($('#hand'),me);
  {const dk=$('.ebt .me'),a=$('#arena');if(dk&&a){const k=dk.offsetHeight+'|'+innerWidth+'|'+innerHeight;if(a._k!==k){a._k=k;layoutArena();}}}
- const pb=$('#playbtn');const cur=G.players[G.turn];const myTurn=G.phase==='play'&&cur===me&&!me.out&&!G.pend;const k=G.sel.size;
+ const pb=$('#playbtn');const cur=G.players[G.turn];const myTurn=G.phase==='play'&&cur===me&&!me.out&&!me.bot&&!G.pend;const k=G.sel.size;
  pb.disabled=!myTurn||k<1;
  pb.textContent=G.pend?'Sending…':!myTurn?(me.out?'You are out this round':G.phase==='reveal'?'Checking…':G.phase==='final'?'Last cards…':G.phase==='over'?'Round over':`${cur?short(cur):'…'}’s turn…`):k<1?'Select 1–4 cards':`Play ${k} as ${k===1?RONE[G.rank]:RNAME[G.rank]}`;}
 function layoutHand(hand,me){/* fit every card on screen: one row while they fit, otherwise two rows, overlapping more as needed */
@@ -979,11 +1017,11 @@ function layoutHand(hand,me){/* fit every card on screen: one row while they fit
  const hh=parts.map(p=>`<div class="hrow">${p.map((c,j)=>cardHTML(c,cls(c),'button',fan(j,p.length))).join('')}</div>`).join('');
  if(hand._h!==hh+ov){hand.innerHTML=hh;hand._h=hh+ov;hand.style.setProperty('--ov',ov);}}
 addEventListener('resize',()=>{if(G&&screen==='table'){const h=$('#hand');if(h){h._h='';update();}layoutArena();}});
-function turnBanner(){const tb=$('#turnb');if(!tb||!G)return;const p=G.players[G.turn];if(!p)return;const mine=p.me&&G.phase==='play';
+function turnBanner(){const tb=$('#turnb');if(!tb||!G)return;const p=G.players[G.turn];if(!p)return;const mine=p.me&&!p.bot&&G.phase==='play';
  const h=G.phase==='reveal'?'Checking the cards…':G.phase==='final'?`${esc(p.me?'Your':p.name+'’s')} last cards!`:G.phase==='over'?'Round over':mine?'Your turn!':`${esc(p.name)}’s turn`;
  const c='turnb'+(mine?' mine':'');if(tb.className!==c)tb.className=c;if(tb._h!==h){tb.innerHTML=h;tb._h=h;}
  const m=$('.me');if(m)m.classList.toggle('myturn',mine);}
-function callButton(){const b=$('#callbtn');if(!b||!G)return;const me=ME();const ok=canCall(me)&&!G.pendCall;const L=G.last;
+function callButton(){const b=$('#callbtn');if(!b||!G)return;const me=ME();const ok=canCall(me)&&!me.bot&&!G.pendCall;const L=G.last;
  b.disabled=!ok;b.classList.toggle('live',ok);b.dataset.seq=L?L.seq:'';
  b.querySelector('small').textContent=ok?`${short(L.p)}: ${L.n} ${L.n===1?RONE[L.rank]:RNAME[L.rank]}`:G.phase==='reveal'?'Checking…':(L&&L.p===me?'Your own play':'Nothing to call yet');}
 function flyToPile(p,k){const from=p.me?$('#hand'):app.querySelector(`.opp[data-pid="${cq(p.id)}"]`),to=$('#pile');if(!from||!to)return;
@@ -1020,7 +1058,10 @@ setInterval(()=>{if(!G||screen!=='table')return;const el=$('#timer');if(!el)retu
    Same approach as Digu: phones talk through two public MQTT brokers over secure WebSockets at once,
    so players on mobile data or different Wi-Fi networks can join. Messages to and from the host are
    end-to-end encrypted (ECDH P-256 + AES-GCM), and each player only receives their own hand. */
-const NS='dhivehidhogu/v1/';
+/* ?ns=NAME (localhost only) moves every table, listing and message to a private test namespace, away from live players.
+   Dhogu writes nothing to Firestore (no leaderboard, presence or reports); a test table must never add any. */
+const TEST_NS=LOCAL&&/^[a-z0-9]{3,16}$/i.test(Q.get('ns')||'')?Q.get('ns'):'';
+const NS=TEST_NS?'dhivehidhogu/test-'+TEST_NS+'/':'dhivehidhogu/v1/';
 const BROKERS=['wss://broker.emqx.io:8084/mqtt','wss://broker.hivemq.com:8884/mqtt'];
 let net=null,pool=null,poolT=null,srvState='checking',quickRun=0;const lobbyList={},poolSeen={};
 const TE=new TextEncoder(),TD=new TextDecoder();
@@ -1087,10 +1128,11 @@ function onLobbyMsg(topic,m){const code=topic.slice((NS+'lobby/').length);if(!/^
  else{const cur=lobbyList[code];if(!cur||+m.t>=cur.t)lobbyList[code]={code,name:cleanName(m.name)||'Player',n:Math.max(1,Math.min(6,m.n|0)),t:+m.t,c:+m.c||+m.t,status:m.status==='lobby'?'lobby':'busy',q:!!m.q,host:String(m.host||'')};}
  if(screen==='home')updOpenList();quickCheck();}
 /* listings are refreshed every 15 s; anything older than 40 s is treated as a ghost */
-function openTables(){const now=Date.now();return Object.values(lobbyList).filter(x=>x.status==='lobby'&&x.n<6&&Math.abs(now-x.t)<40000&&x.host!==myId).sort((a,b)=>b.n-a.n||b.t-a.t);}
-function openListHTML(){const l=openTables();
+/* open tables: lobbies first; public tables mid-match are listed too (a newcomer waits for the next match). Quick Play only uses lobbies. */
+function openTables(all){const now=Date.now();return Object.values(lobbyList).filter(x=>(x.status==='lobby'||all)&&x.n<6&&Math.abs(now-x.t)<40000&&x.host!==myId).sort((a,b)=>(a.status==='lobby'?0:1)-(b.status==='lobby'?0:1)||b.n-a.n||b.t-a.t);}
+function openListHTML(){const l=openTables(true);
  if(!l.length)return `<p class="empty-list">${srvState==='fail'?'Can’t load open tables on this network.':srvState==='checking'?'Looking for open tables…':'No open tables right now. Create a public table, or try Quick Play.'}</p>`;
- return l.map(x=>`<div class="otable"><span class="oi">${ICON.table}</span><div class="ot"><b>${esc(x.name)}’s table</b><small>${x.n} of 6 players${x.q?' · Quick Play':''}</small></div><button class="btn sm" data-a="joinOpen" data-code="${esc(x.code)}">Join</button></div>`).join('');}
+ return l.map(x=>`<div class="otable${x.status==='lobby'?'':' busy'}"><span class="oi">${ICON.table}</span><div class="ot"><b>${esc(x.name)}’s table</b><small>${x.status==='lobby'?`${x.n} of 6 players${x.q?' · Quick Play':''}`:'Match in progress: join for the next game'}</small></div><button class="btn sm" data-a="joinOpen" data-code="${esc(x.code)}">Join</button></div>`).join('');}
 let listT=0;function updOpenList(){if(listT)return;listT=setTimeout(()=>{listT=0;const e=$('#openlist');if(e)e.innerHTML=openListHTML();},250);}
 setInterval(()=>{if(screen==='home'&&tab==='online'&&!document.hidden)updOpenList();},5000);
 function genCode(){const a='ABCDEFGHJKLMNPQRSTUVWXYZ';let s='';for(let i=0;i<4;i++)s+=a[Math.floor(Math.random()*a.length)];return s;}
@@ -1124,17 +1166,18 @@ async function netCreate(opts){if(!netOK())return false;const run=quickRun;clean
   players:[{id:myId,name:netName(),face:myFace(),score:0,me:true}]};
  renderLobby();sync();return true;}
 function updListing(force){const n=net;if(!n||n.role!=='host'||!G)return;const topic=NS+'lobby/'+n.code;
- const show=n.isPublic&&G.status==='lobby'&&G.players.length<6;
+ const lob=G.status==='lobby',k=seatCount();
+ const show=n.isPublic&&k<6;
  if(show){if(!n.lc){n.lc=makeClients({topic,payload:''});/* its own Last Will clears the public listing */n.lc.forEach(o=>{o.onUp2=()=>updListing(true);});}
-  const h=G.players.find(p=>p.id===myId)||{};const sig=h.name+'|'+G.players.length;if(!force&&sig===n.lsig&&Date.now()-n.lsent<14000)return;n.lsig=sig;n.lsent=Date.now();
-  const msg={v:1,code:n.code,name:h.name,n:G.players.length,t:Date.now(),c:n.created,status:'lobby',q:n.quick,host:myId};n.listed=true;n.lc.forEach(o=>pub(o,topic,msg,true));}
+  const h=G.players.find(p=>p.id===myId)||{};const sig=h.name+'|'+k+'|'+lob;if(!force&&sig===n.lsig&&Date.now()-n.lsent<14000)return;n.lsig=sig;n.lsent=Date.now();
+  const msg={v:1,code:n.code,name:h.name,n:k,t:Date.now(),c:n.created,status:lob?'lobby':'busy',q:n.quick,host:myId};n.listed=true;n.lc.forEach(o=>pub(o,topic,msg,true));}
  else if(n.lc){const lc=n.lc;n.lc=null;n.listed=false;n.lsig='';lc.forEach(o=>{try{if(o.ok)o.c.publish(topic,'',true);}catch(e){}});setTimeout(()=>lc.forEach(o=>{try{o.c.end();}catch(e){}}),800);}}
 async function sendPlayer(topic,pl,obj){const n=net;if(!n||n.role!=='host'||!pl||!pl.key)return;try{const m=await seal(pl.key,obj);let o=n.clients[pl.bi];if(!o||!o.ok)o=n.clients.find(x=>x.ok);pub(o,NS+n.code+'/p/'+topic,m);}catch(e){}}
 function connIds(){const n=net,now=Date.now();return G.players.filter(p=>p.me||(!p.bot&&!p.gone&&n&&n.last[p.id]&&now-n.last[p.id]<8000)).map(p=>p.id);}
 function pubState(pid){const L=G.last;return{v:1,rev:G.rev|0,mid:G.mid,code:G.code,quick:!!G.quick,pub:!!(net&&net.isPublic),hostId:myId,ep:net?net.ep:0,created:net?net.created:0,status:G.status,mode:G.mode,rounds:G.rounds,roundNo:G.roundNo|0,decks:G.decks||1,
  rank:G.rank||1,phase:G.phase||null,turn:G.turn|0,tl:G.turnEnd?Math.max(0,G.turnEnd-Date.now()):0,pile:(G.pile||[]).length,seq:G.seq|0,
- last:L?{p:G.players.indexOf(L.p),n:L.n,rank:L.rank,seq:L.seq}:null,rv:G.rv?{cards:G.rv.cards,lie:G.rv.lie}:null,cl:G.cl||null,lr:G.lr||null,final:!!G.final,al:G.autoAt?Math.max(0,G.autoAt-Date.now()):0,conn:connIds(),
- players:G.players.map(p=>({id:p.id,name:p.name,face:p.face,score:p.score|0,n:(p.hand||[]).length,lives:p.lives==null?3:p.lives,out:!!p.out,bot:!!p.bot,rookie:!!p.rookie,left:!!p.left,gone:!!p.gone,hand:p.id===pid?p.hand:undefined}))};}
+ last:L?{p:G.players.indexOf(L.p),n:L.n,rank:L.rank,seq:L.seq}:null,rv:G.rv?{cards:G.rv.cards,lie:G.rv.lie}:null,cl:G.cl||null,lr:G.lr||null,final:!!G.final,al:G.autoAt?Math.max(0,G.autoAt-Date.now()):0,conn:connIds(),watch:(G.watch||[]).map(w=>({id:w.id,name:w.name,face:w.face})),
+ players:G.players.map(p=>({id:p.id,name:p.name,face:p.face,score:p.score|0,n:(p.hand||[]).length,lives:p.lives==null?3:p.lives,out:!!p.out,bot:!!p.bot,rookie:!!p.rookie,afk:!!p.afk,left:!!p.left,gone:!!p.gone,hand:p.id===pid?p.hand:undefined}))};}
 let syncQ=false;
 function sync(){if(role!=='host'||!net||syncQ)return;syncQ=true;queueMicrotask(()=>{syncQ=false;const n=net;if(!n||role!=='host'||!G)return;G.rev=(G.rev|0)+1;const fx=n.fxq;n.fxq=[];
  n.players.forEach((pl,tp)=>{if(pl.pid)sendPlayer(tp,pl,{k:'state',s:pubState(pl.pid),fx});});updListing(false);if(screen==='lobby')updLobby();});}
@@ -1153,16 +1196,26 @@ function mapPlayer(topic,pl,id){const n=net;n.players.forEach((q,tp)=>{if(tp!==t
 function onHostData(pl,topic,d){const n=net;if(!G||!d||typeof d!=='object')return;
  const gone='You left this match (or lost connection), so you can’t rejoin it. Start or join another table.';
  if(d.k==='hello'){const id=String(d.id||'').slice(0,24);if(!id||id===myId)return;
-  if(n.banned.has(id)){sendPlayer(topic,pl,{k:'err',m:gone});return;}
   const p=G.players.find(q=>q.id===id);
+  if(n.banned.has(id)||(p&&p.afk)){sendPlayer(topic,pl,p&&p.afk?{k:'afk',m:'You were away for 2 turns, so you can’t rejoin this match.'}:{k:'err',m:gone});return;}
   if(p){if(p.gone||p.rookie||p.bot){sendPlayer(topic,pl,{k:'err',m:gone});return;}mapPlayer(topic,pl,id);sendPlayer(topic,pl,{k:'state',s:pubState(id),fx:[]});return;}
-  if(G.status!=='lobby'){sendPlayer(topic,pl,{k:'err',m:'That game has already started.'});return;}
-  if(G.players.length>=6){sendPlayer(topic,pl,{k:'err',m:'That table is full.'});return;}
+  G.watch=G.watch||[];
+  if(G.watch.some(w=>w.id===id)){mapPlayer(topic,pl,id);sendPlayer(topic,pl,{k:'state',s:pubState(id),fx:[]});return;}
+  /* mid-match: a private table keeps its seats locked; a public one lets the newcomer wait for the next match */
+  if(G.status!=='lobby'&&!n.isPublic){sendPlayer(topic,pl,{k:'err',m:'That game has already started. Seats at a private table stay locked until the match is over.'});return;}
+  if(seatCount()>=6){sendPlayer(topic,pl,{k:'err',m:'That table is full.'});return;}
+  if(G.status!=='lobby'){mapPlayer(topic,pl,id);const nm_=cleanName(d.name)||'Player';G.watch.push({id,name:nm_,face:vf(d.fc,id)});
+   emit({t:'toast',m:`${nm_} joined. They get a seat when the next game starts.`});SFX.pop();sync();return;}
   mapPlayer(topic,pl,id);G.players.push({id,name:cleanName(d.name)||'Player',face:vf(d.fc,id),score:0});SFX.pop();sync();return;}
  if(!pl.pid){/* a ping from someone we don't know on this key: after a host change, or a dropped player */
   const id=String(d.id||'');if(!id)return;if(n.banned.has(id)){sendPlayer(topic,pl,{k:'err',m:gone});return;}
-  const p=G.players.find(q=>q.id===id);if(!p||p.bot||p.gone)return;mapPlayer(topic,pl,id);}
- n.last[pl.pid]=Date.now();const i=G.players.findIndex(q=>q.id===pl.pid);if(i<0)return;const p=G.players[i];
+  const p=G.players.find(q=>q.id===id);if(!(p&&!p.bot&&!p.gone)&&!(G.watch||[]).some(w=>w.id===id))return;mapPlayer(topic,pl,id);}
+ n.last[pl.pid]=Date.now();const i=G.players.findIndex(q=>q.id===pl.pid);
+ if(i<0){/* someone waiting for the next match */const wi=(G.watch||[]).findIndex(w=>w.id===pl.pid);if(wi<0)return;
+  if(d.k==='ping'){if((d.rev|0)!==(G.rev|0))sendPlayer(topic,pl,{k:'state',s:pubState(pl.pid),fx:[]});else sendPlayer(topic,pl,{k:'pong'});}
+  else if(d.k==='leave')dropWatcher(pl.pid);
+  return;}
+ const p=G.players[i];
  if(d.k==='ping'){if((d.rev|0)!==(G.rev|0))sendPlayer(topic,pl,{k:'state',s:pubState(pl.pid),fx:[]});else sendPlayer(topic,pl,{k:'pong'});return;}
  if(d.k==='chat'){const m=QC[d.m|0];if(m&&!p.bot){emit({t:'say',p:i,m});sync();}return;}
  if(d.k==='rtc'){const to=String(d.to||'');if(to===myId)vcOnSignal(pl.pid,d.d);else n.players.forEach((q,tp)=>{if(q.pid===to)sendPlayer(tp,q,{k:'rtc',f:pl.pid,d:d.d});});return;}
@@ -1182,12 +1235,19 @@ function dropPlayer(p,byChoice){const n=net;if(!n||!G)return;const i=G.players.i
  update();sync();}
 function hostWatch(){const n=net;if(!n||n.role!=='host'||!G)return;const now=Date.now();
  G.players.slice().forEach(p=>{if(p.me||p.bot||p.gone)return;const t=n.last[p.id]||(n.last[p.id]=now);if(now-t>30000)dropPlayer(p,false);});
+ (G.watch||[]).slice().forEach(w=>{const t=n.last[w.id]||(n.last[w.id]=now);if(now-t>30000)dropWatcher(w.id);});
  if(G.status==='lobby'&&G.quick){const k=G.players.length;
   if(k>=2){if(!G.autoAt||G._ak!==k){G.autoAt=now+(k>=6?2000:20000);G._ak=k;sync();}else if(now>=G.autoAt){hostStart();return;}}
   else if(G.autoAt){G.autoAt=0;G._ak=0;sync();}}
  if(screen==='lobby')updLobby();}
 function hostStart(){if(role!=='host'||!G||G.status!=='lobby'||G.players.length<2)return;G.players.forEach(p=>{p.score=0;});G.status='play';G.roundNo=0;G.level='easy';G.autoAt=0;G.seq=0;newRound();}
-function hostAgain(){G.players=G.players.filter(p=>!p.gone&&!p.bot).map(p=>({id:p.id,name:p.name,face:p.face,me:p.me,score:0}));G.roundNo=0;G.final=false;G.status='play';G.mid=rid(4);G.seq=0;newRound();}
+/* seats taken (or promised) at this table: in the lobby everyone; mid-match the humans still playing plus anyone waiting */
+function seatCount(){if(!G)return 0;if(G.status==='lobby')return G.players.length;return G.players.filter(p=>!p.gone&&!p.bot).length+(G.watch||[]).length;}
+function dropWatcher(id){const n=net;if(!G||!G.watch)return;const w=G.watch.find(x=>x.id===id);if(!w)return;G.watch=G.watch.filter(x=>x.id!==id);
+ if(n){n.players.forEach((pl,tp)=>{if(pl.pid===id)n.players.delete(tp);});delete n.last[id];}sync();}
+/* a new match: everyone still at the table, plus anyone who was waiting, all back to 0 */
+function hostAgain(){const w=(G.watch||[]).map(p=>({id:p.id,name:p.name,face:p.face,score:0}));G.watch=[];
+ G.players=G.players.filter(p=>!p.gone&&!p.bot).map(p=>({id:p.id,name:p.name,face:p.face,me:p.me,score:0})).concat(w).slice(0,6);G.roundNo=0;G.final=false;G.status='play';G.mid=rid(4);G.seq=0;newRound();}
 function quickCheck(){const n=net;if(!n||n.role!=='host'||!n.quick||!G||G.status!=='lobby'||G.players.length>1||n.merging)return;
  const other=openTables().filter(x=>x.q&&x.code!==n.code&&(x.c<n.created||(x.c===n.created&&x.code<n.code)))[0];if(!other)return;
  n.merging=true;const run=++quickRun;cleanupNet();role=null;G=null;renderWait('Joining '+other.name+'’s table…');
@@ -1211,7 +1271,10 @@ function joinTick(n){if(net!==n)return;const now=Date.now();if(n.clients.some(o=
  joinSend({k:'ping',rev:G?G.rev|0:0,id:myId});
  if(!n.lostAt&&n.upSince&&now-n.upSince>8000&&now-n.last>12000){n.lostAt=now;toast('Lost contact with the host…');}
  if(n.lostAt){if(!G||G.status==='over'){endOnline('The host left the table.');return;}
-  const r=myRank();if(r<0||now-n.lostAt>50000){endOnline('Lost the connection to the table.');return;}
+  const r=myRank();
+  /* someone waiting for the next match never takes over; they wait for the new host to show up */
+  if(r<0&&G.watching&&now-n.lostAt<=50000)return;
+  if(r<0||now-n.lostAt>50000){endOnline('Lost the connection to the table.');return;}
   if(now-n.lostAt>=r*7000+1500)becomeHost();}}
 /* who takes over when the host is gone: the next connected human after the host, in seat order */
 function myRank(){const V=G;if(!V||!V.players)return -1;const N=V.players.length,hi=V.players.findIndex(p=>p.id===V.hostId),c=[];
@@ -1228,24 +1291,36 @@ async function onJoinMsg(o,topic,m,ret){const n=net;if(!n||n.role!=='join')retur
  if(topic!==NS+n.code+'/p/'+n.topic||!n.key||!m)return;
  let d;try{d=await unseal(n.key,m);}catch(e){return;}if(net!==n)return;
  n.bi=o.bi;n.last=Date.now();
+ if(d.k==='afk'){if(!n.ready){n.fail(String(d.m||AFK_MSG));return;}endOnline();afkNotice();return;}
  if(d.k==='err'){if(!n.ready){n.fail(String(d.m||'Couldn’t join that table.'));return;}endOnline(String(d.m||''));return;}
  if(!n.ready){n.ready=true;clearTimeout(n.failT);role='join';}
  if(d.k==='rtc'){vcOnSignal(String(d.f||''),d.d);return;}
- if(d.k==='bye'){if(d.mig&&G&&G.status!=='over')n.lostAt=Date.now();else endOnline('The host closed the table.');return;}
+ if(d.k==='bye'){if(d.mig&&G&&G.status!=='over')n.lostAt=Date.now();
+  /* the host went AFK on the last round: keep the final scores on screen, the table is simply closed */
+  else if(d.afk&&G&&G.status==='over'&&screen==='table'){cleanupNet();const hn=document.querySelector('#ov .sheet .hint');if(hn)hn.textContent='This table is closed.';toast('The host was away, so the table is closed.',4000);}
+  else endOnline('The host closed the table.');return;}
  if(d.k==='state'&&d.s){if(G&&G.view&&G.mid===d.s.mid&&(d.s.ep|0)===(G.ep|0)&&(d.s.rev|0)<=(G.rev|0))return;applyState(d.s,d.fx);}}
 function applyState(s,fx){const prev=G;const players=(s.players||[]).map(p=>({...p,face:vf(p.face,p.id),me:p.id===myId,hand:Array.isArray(p.hand)?p.hand:Array.from({length:p.n|0},(_,k)=>({id:'x'+k,r:0,s:'S'}))}));
- const mine=players.find(p=>p.me);if(!mine){endOnline('You are no longer at this table.');return;}
+ const mine=players.find(p=>p.me),wt=!mine&&Array.isArray(s.watch)&&s.watch.some(w=>w&&w.id===myId);
+ if(!mine&&!wt){endOnline('You are no longer at this table.');return;}
+ if(mine&&mine.afk){endOnline();afkNotice();return;}
+ if(wt){/* waiting for the next match: watch the table without a hand */
+  G={...s,players,view:true,watching:true,pile:Array(s.pile|0).fill(0),turnEnd:s.tl?Date.now()+s.tl:0,autoAt:0,last:s.last?{...s.last,p:players[s.last.p]}:null,sel:new Set()};
+  if(screen!=='table'||!prev||!prev.watching||prev.mid!==G.mid||prev.roundNo!==G.roundNo||prev.ep!==G.ep)renderTable();
+  if(G.phase!=='over'&&sheetKind()==='round')closeSheet();
+  (fx||[]).forEach(fxLocal);update();
+  if(G.phase==='over'){const o=$('#ov');if(!o||o.dataset.kind!=='round'||o.dataset.h!==(G.hostId||'')+(G.final?'f':''))showRoundSheet();}return;}
  if(mine.rookie||mine.gone){endOnline('You lost connection, so an AI Rookie finished your round. You can’t rejoin this match.');return;}
  const sel=prev&&prev.view&&prev.mid===s.mid&&prev.roundNo===s.roundNo&&prev.sel?prev.sel:new Set();
  G={...s,players,view:true,pile:Array(s.pile|0).fill(0),turnEnd:s.tl?Date.now()+s.tl:0,autoAt:s.al?Date.now()+s.al:0,last:s.last?{...s.last,p:players[s.last.p]}:null,sel:new Set([...sel].filter(id=>mine.hand.some(c=>c.id===id)))};
  if(G.status==='lobby'){if(screen!=='lobby')renderLobby();else updLobby();(fx||[]).forEach(fxLocal);return;}
- if(screen!=='table'||!prev||!prev.view||prev.mid!==G.mid||prev.roundNo!==G.roundNo||prev.status==='lobby'||prev.ep!==G.ep)renderTable();
+ if(screen!=='table'||!prev||!prev.view||prev.watching||prev.mid!==G.mid||prev.roundNo!==G.roundNo||prev.status==='lobby'||prev.ep!==G.ep)renderTable();
  if(G.phase!=='over'&&sheetKind()==='round')closeSheet();
  (fx||[]).forEach(fxLocal);update();vcUI();
  if(G.phase==='over'){const o=$('#ov');if(!o||o.dataset.kind!=='round'||o.dataset.h!==(G.hostId||'')+(G.final?'f':''))showRoundSheet();}}
 /* host migration: the next player rebuilds the table from the last public state */
 async function becomeHost(){const n=net;if(!n||n.role!=='join'||n.promoting||!G)return;n.promoting=true;const V=G,old=V.hostId;
- const players=V.players.map(p=>({id:p.id,name:p.name,face:p.face,score:p.score|0,me:p.id===myId,bot:!!p.bot,rookie:!!p.rookie,left:!!p.left,gone:!!p.gone}));
+ const players=V.players.map(p=>({id:p.id,name:p.name,face:p.face,score:p.score|0,me:p.id===myId,bot:!!p.bot,rookie:!!p.rookie,afk:!!p.afk,left:!!p.left,gone:!!p.gone}));
  const lobby=V.status==='lobby',between=V.phase==='over'||V.status==='over';
  const oi=players.findIndex(p=>p.id===old);
  if(oi>=0){if(lobby)players.splice(oi,1);else{const o=players[oi];o.left=true;if(between)o.gone=true;else{o.bot=true;o.rookie=true;}}}
@@ -1255,13 +1330,14 @@ async function becomeHost(){const n=net;if(!n||n.role!=='join'||n.promoting||!G)
  if(!h){endOnline('Lost the connection to the table.');return;}
  role='host';if(old&&!lobby)h.banned.add(old);
  G={players,mode:V.mode,rounds:V.rounds,level:'easy',roundNo:V.roundNo|0,status:V.status,code:V.code,quick:!!V.quick,pub:!!V.pub,hostId:myId,ep:h.ep,created:h.created,rev:(V.rev|0)+100,mid:V.mid,decks:V.decks||1,
-  phase:lobby?null:V.phase,lr:V.lr,final:!!V.final,sel:new Set(),pile:[],cl:null,rv:null,last:null,rank:V.rank||1,turn:0,seq:(V.seq|0)+1,autoAt:0};
- const now=Date.now();players.forEach(p=>{if(!p.me&&!p.bot&&!p.gone)h.last[p.id]=now;p.hand=[];p.lives=3;p.out=!!p.gone;p.seen={};});
+  phase:lobby?null:V.phase,lr:V.lr,final:!!V.final,watch:(V.watch||[]).filter(w=>w&&w.id&&w.id!==old).map(w=>({id:String(w.id),name:cleanName(w.name)||'Player',face:vf(w.face,w.id)})),sel:new Set(),pile:[],cl:null,rv:null,last:null,rank:V.rank||1,turn:0,seq:(V.seq|0)+1,autoAt:0};
+ const now=Date.now();G.watch.forEach(w=>{h.last[w.id]=now;});players.forEach(p=>{if(!p.me&&!p.bot&&!p.gone)h.last[p.id]=now;p.hand=[];p.lives=3;p.out=!!p.gone;p.seen={};});
  closeSheet();
  if(lobby){renderLobby();sync();toast('The host left, so you are the host now.');return;}
  if(V.status==='over'){renderTable();showRoundSheet();sync();return;}
  if(humansLeft()<2){renderTable();endMatchNow();toast('Everyone else has left the table.');return;}
- if(between){renderTable();showRoundSheet();sync();toast('The host left, so you are the host now.');return;}
+ if(between){renderTable();showRoundSheet();sync();toast('The host left, so you are the host now.');
+  if(!G.final)later(()=>{if(G&&role==='host'&&G.phase==='over'&&!G.final)newRound();},10000);return;}
  toast('The host left, so you are the new host. This round is dealt again; scores stay the same.',5000);
  G.roundNo--;newRound();}
 function netWake(){const n=net;if(!n)return;(n.clients||[]).concat(n.lc||[]).forEach(o=>{try{if(!o.c.connected)o.c.reconnect();}catch(e){}});
@@ -1329,7 +1405,7 @@ function sayIdx(i){if(!QC[i]||!G)return;if(Date.now()-chatAt<1500){toast('Slow d
 const VC={peers:new Map(),stream:null,on:false,ac:null,me:null,lv:{},code:null,box:null};
 const VC_ICE=[{urls:['stun:stun.l.google.com:19302','stun:stun1.l.google.com:19302']},{urls:'stun:stun.cloudflare.com:3478'}];
 const MIC_ON=sv('<rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/>',2),MIC_OFF=sv('<rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/><path d="M4 4l16 16"/>',2);
-const vcTable=()=>isOn()&&!!net&&!!G&&!G.quick&&G.status!=='over';
+const vcTable=()=>isOn()&&!!net&&!!G&&!G.quick&&G.status!=='over'&&!watching();
 const vcSupported=()=>!!window.RTCPeerConnection&&!!(navigator.mediaDevices&&navigator.mediaDevices.getUserMedia)&&window.isSecureContext!==false;
 const vcAvail=()=>vcTable()&&vcSupported();
 function vcSend(to,d){if(window.__vcOut){window.__vcOut(to,d);return;}const n=net;if(!n)return;
@@ -1383,7 +1459,7 @@ setInterval(()=>{if(!G||!G.players||(!VC.peers.size&&!VC.on)){if(VC._lit){docume
   el.style.setProperty('--vl',lv.toFixed(2));el.classList.toggle('vtalk',lv>.06);});VC._lit=true;},90);
 /* ================= input ================= */
 document.addEventListener('click',e=>{const b=e.target.closest('[data-a],[data-set],#hand .card');if(!b||b.disabled)return;ac();
- if(b.matches('#hand .card')){if(!G||G.phase!=='play'||!G.players[G.turn]||!G.players[G.turn].me||G.pend)return;const id=b.dataset.id;if(G.sel.has(id))G.sel.delete(id);else if(G.sel.size<4)G.sel.add(id);else{toast('You can play up to 4 cards.');return;}SFX.pick();buzz(4);update();return;}
+ if(b.matches('#hand .card')){if(!G||G.phase!=='play'||!G.players[G.turn]||!G.players[G.turn].me||G.players[G.turn].bot||G.pend)return;const id=b.dataset.id;if(G.sel.has(id))G.sel.delete(id);else if(G.sel.size<4)G.sel.add(id);else{toast('You can play up to 4 cards.');return;}SFX.pick();buzz(4);update();return;}
  if(b.dataset.set){const k=b.dataset.set,v=b.dataset.v;cfg[k]=k==='opp'||k==='rounds'?+v:v;ls.set('dh-'+k,String(v));SFX.pick();const tb=$('#tabbody');if(tb)tb.innerHTML=cpuHTML();const f=document.querySelector(`[data-set="${k}"][data-v="${v}"]`);if(f)f.focus({preventScroll:true});return;}
  const a=b.dataset.a,v=b.dataset.v;
  switch(a){
