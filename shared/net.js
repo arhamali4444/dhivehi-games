@@ -152,7 +152,7 @@ function genCode(){const a='ABCDEFGHJKLMNPQRSTUVWXYZ';let s='';for(let i=0;i<4;i
 
 /* ---------- presence: "N playing now" (Firebase, project dhivehi-digu) ----------
    Only games the live Firestore rules accept are written; see extras/firestore-rules.txt. */
-const PRESENCE=['digu','bondi','thaas'];
+const PRESENCE=['digu','bondi','thaas','dhashundhama','binveriya','atolls','dhihaeh','joker','juice'];
 const FBCFG={apiKey:'AIzaSyCl9Xz5r80755hYX0ww2GRaB6TZTH6sayE',authDomain:'dhivehi-digu.firebaseapp.com',projectId:'dhivehi-digu',storageBucket:'dhivehi-digu.firebasestorage.app',messagingSenderId:'778464006205',appId:'1:778464006205:web:7dce5d63707c6b2d0eda54'};
 let fbP=null;
 const FBV='https://www.gstatic.com/firebasejs/12.19.0/';
