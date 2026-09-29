@@ -310,6 +310,23 @@ main.table>*{width:100%;max-width:640px;margin-left:auto;margin-right:auto}
 @keyframes ytin{from{opacity:0;translate:0 10px}}
 @media (max-width:430px){.goal .gx{display:none}}@media (max-width:359px){.autob span:last-child{display:none}}
 @media (prefers-reduced-motion:reduce){*,*:before,*:after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
+/* ================= online (shared/net.js): the juice bar, mango and lagoon glass on cream ================= */
+:root{--dgn-bg:#FFF8EE;--dgn-bg2:#FFFFFF;--dgn-fg:#123532;--dgn-muted:#5B7370;--dgn-line:rgba(18,53,50,.14);--dgn-soft:rgba(18,53,50,.06);
+ --dgn-acc:#FF9A2E;--dgn-acc-fg:#3A1A00;--dgn-good:#0E8C8A;--dgn-bad:#E8304F;--dgn-scrim:rgba(40,24,8,.45);--dgn-font:'Sora',system-ui,sans-serif;--dgn-head:var(--disp);
+ --dgn-room-bg:radial-gradient(90% 40% at 50% 0%,rgba(255,176,32,.35),transparent 70%),radial-gradient(70% 36% at 50% 100%,rgba(14,140,138,.22),transparent 70%),linear-gradient(#FFF6EA,#FFEBD2);
+ --dgn-dock-size:44px;--dgn-dock-bg:rgba(255,255,255,.92);--dgn-inline-bg:rgba(255,255,255,.92);--dgn-inline-shadow:0 2px 8px -3px rgba(120,60,10,.35);--dgn-talk:rgba(14,140,138,.9);--dgn-watch-bottom:calc(8px + env(safe-area-inset-bottom,0px))}
+.tools .dgn-dock .dgn-ib{border-radius:13px}
+.dgn-dock.inline .dgn-vw{background:rgba(255,255,255,.92);box-shadow:0 2px 8px -3px rgba(120,60,10,.35)}
+@media (max-width:420px){html[data-net="1"] #sfxbtn{display:none}}
+@media (max-width:359px){html[data-net="1"] .topbar{gap:6px;padding-left:8px;padding-right:8px}html[data-net="1"] .goal>span{padding:9px 10px}}
+.seat .aib{position:absolute;left:-7px;top:-5px;z-index:4;width:20px;height:20px;border-radius:50%;display:grid;place-items:center;background:#fff;color:var(--tealD);box-shadow:0 0 0 1.5px rgba(14,140,138,.55),0 1px 3px rgba(0,0,0,.25)}
+.seat .aib svg{width:13px;height:13px}
+.seat .tmr{top:-10px;left:50%;right:auto;width:46px;margin-left:-23px;z-index:5;background:rgba(255,255,255,.7)}
+/* who shouted Juice!, and how fast */
+.jlist{position:absolute;left:50%;bottom:80px;transform:translateX(-50%);z-index:9;display:flex;flex-wrap:wrap;justify-content:center;gap:4px;max-width:94%;pointer-events:none}
+.jlist span{font:800 11px/1 Sora,sans-serif;color:#fff;background:linear-gradient(180deg,#FF6A7E,#E8304F);padding:5px 9px;border-radius:99px;box-shadow:0 2px 0 #A41A33;white-space:nowrap;animation:jpop2 .35s var(--spring) both}
+.jlist span small{font-weight:700;opacity:.85;margin-left:4px}
+@keyframes jpop2{from{transform:scale(.4);opacity:0}}
 </style>
 </head>
 <body>
@@ -322,7 +339,8 @@ main.table>*{width:100%;max-width:640px;margin-left:auto;margin-right:auto}
 <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs><linearGradient id="dgGold" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F7DE92"/><stop offset=".55" stop-color="#D9A94A"/><stop offset="1" stop-color="#A97A26"/></linearGradient></defs></svg>
 <script src="../shared/avatar.js?v=5"></script>
 <script src="../shared/cosmetics.js?v=2"></script>
-<script src="../shared/sponsors.js?v=4"></script>
+<script src="../shared/sponsors.js?v=5"></script>
+<script src="../shared/net.js?v=2"></script>
 <script>
 /* =====================================================================
    JUICE ENGINE (pure, no DOM). Host-authoritative: one plain object N, changed only by
@@ -438,7 +456,8 @@ const buzz=ms=>{try{if(navigator.userActivation&&!navigator.userActivation.hasBe
 const TURN_MS=15000,DAILY_CAP=500,SAVE_KEY='juice-solo',JUICE_MS=FAST?600:3000;
 const STEP=FAST?30:620;
 const SPRING=(()=>{try{if(CSS.supports('animation-timing-function','linear(0,1)'))return 'linear(0,.009,.035 2.1%,.141 4.4%,.723 12.9%,.938 16.7%,1.017 19.4%,1.067,1.089 25.4%,1.084 28.1%,1.029 35.3%,1.003 41.2%,.994 47.9%,1 60.1%,1)';}catch(e){}return 'cubic-bezier(.34,1.4,.5,1)';})();
-const myId=(()=>{let v=ls.get('dd-pid');if(!v){v='p'+Math.random().toString(36).slice(2,10);ls.set('dd-pid',v);}return v;})();
+const myId=(()=>{if(window.DGNet&&DGNet.local&&/^[a-z0-9_-]{2,24}$/i.test(Q.get('pid')||''))return Q.get('pid');   /* localhost tests: one player per tab */
+ let v=ls.get('dd-pid');if(!v){v='p'+Math.random().toString(36).slice(2,10);ls.set('dd-pid',v);}return v;})();
 /* computer players: how often they slip up, how often they notice a slip, and how fast they shout (ms after the card lands).
    A human tap usually lands in 0.4-1.2 s, so Normal bots are beatable and Hard bots are quick. */
 const DIFF={easy:{name:'Easy',sub:'Slow to shout',miss:.12,notice:.6,rt:[1300,3400],move:.6,hints:true},
@@ -531,7 +550,7 @@ const BOTS=[['Aisha','aisha','#9363D1'],['Ibrahim','ibrahim','#E8B232'],['Mariya
 const PC=['#FF7A45','#2D86C9','#E8B232','#34A064','#9363D1'];
 const DGC=()=>window.DGCosmetics||null,DGA=()=>window.DGAvatar||null;
 function invRead(){try{const d=JSON.parse(ls.get('dd-inv')||'null');if(d&&d.v===1)return d;}catch(e){}return null;}
-const myName=()=>(ls.get('lg-name')||'').trim();
+const myName=()=>((window.DGNet&&DGNet.testName())||ls.get('lg-name')||'').trim();
 function myChar(){const A=DGA();if(!A)return null;try{let c=A.load();if(!c){const o=JSON.parse(ls.get('dd-char')||'null');if(o&&typeof o==='object')c=A.normalize(o);}return c||A.random(myId);}catch(e){return null;}}
 function myRing(){const d=invRead(),f=d&&d.eq&&d.eq.frame;return f&&f!=='f-classic'?f:'';}
 function avInner(p,k,size){const A=DGA();if(A&&p.ch){try{return `<span class="pz chr">${A.render(p.ch,{size:size>56?96:64,animate:!reduce})}</span>`;}catch(e){}}
@@ -540,7 +559,7 @@ function ringHTML(p,size){if(!p.ring||!DGC())return '';try{return DGC().ring(p.r
 function avatarHTML(p,k,size){size=size||46;return `<span class="mini" data-avk="${k}">${avInner(p,k,size)}${size>=34?ringHTML(p,size):''}</span>`;}
 function react(k,expr,ms){if(!S||!S.players[k]||document.hidden)return;const p=S.players[k],A=DGA();if(!p.ch||!A||typeof A.react!=='function')return;
 const el=avEl(k);if(!el)return;try{A.react(el,expr,ms||1500);}catch(e){}}
-function avEl(k){return k===meIdx()?document.querySelector('#meav .mini'):document.querySelector(`.seat[data-k="${k}"] .mini`);}
+function avEl(k){return k===vIdx()?document.querySelector('#meav .mini'):document.querySelector(`.seat[data-k="${k}"] .mini`);}
 
 /* ---------- Boli rewards (the shared wallet dd-inv: 500 a day, each award key paid once) ---------- */
 function award(key,n){let d=invRead();if(!d)d={v:1,shells:100,xp:0,owned:{},eq:{},hist:[],stats:{},aw:[],day:'',dayEarned:0};
@@ -556,24 +575,50 @@ const compact=n=>n>=1e4?Math.round(n/1e3)+'k':String(n);
 let S=null,mode=null,screen='home';
 const clone=o=>JSON.parse(JSON.stringify(o));
 const meIdx=()=>S?S.players.findIndex(p=>p.id===myId):-1;
+/* the seat drawn at the bottom: yours, or seat 0 for someone watching online */
+const vIdx=()=>{const k=meIdx();return k>=0?k:(mode==='online'&&S?0:-1);};
 let botT=null,turnT=null,warnT=null,saveT=null,busyTill=0,callT=[],auto=ls.get('juice-auto')==='1';
-function act(a,who){if(!S)return false;if(who==null)who=meIdx();const N=clone(S);if(!JU.act(N,who,a,Date.now()))return false;commit(N);return true;}
+/* online: the Juice! window as THIS screen saw it (it opens when the slip arrives here), and who has answered it (host) */
+let jwL=null,jDone={k:null,set:new Set()},autoSeat=-1;
+const GRACE=800,NEXT_MS=9000,JLAT=2000;   /* JLAT: the most network delay (there and back) a Juice! call may carry */
+function act(a,who,now){if(!S)return false;if(who==null)who=meIdx();const N=clone(S),J=S.jw,t=now==null?Date.now():now;if(!JU.act(N,who,a,t))return false;
+ /* every Juice! call records how fast it was (ms after the slip reached that player), shown to everyone */
+ if(a.k==='juice'&&J){const e=N.ev.t==='juice'?N.ev:(N.ev.last&&N.ev.last.t==='juice'?N.ev.last:null);const ms=Math.max(0,Math.round(t-(J.until-N.juiceMs)));if(e)e.ms=ms;
+  N.jlog=S.jlog&&S.jlog.k===J.until?clone(S.jlog):{k:J.until,calls:[]};N.jlog.calls.push({p:who,ms:ms});}
+ if(a.k==='close'&&J&&N.ev&&N.ev.t==='close')N.ev.calls=(S.jlog&&S.jlog.k===J.until?S.jlog.calls:[]).slice();
+ if(mode==='online')fixOver(N);commit(N);return true;}
 function commit(N){const prev=S,b=screen==='table'?snap():null;
- if(!prev||N.turn!==prev.turn||N.phase!==prev.phase||N.status!==prev.status||(N.ev&&prev.ev&&N.ev.seq!==prev.ev.seq))N.turnAt=Date.now();
- S=N;
+ if(!(mode==='online'&&!isHostOn())&&(!prev||N.turn!==prev.turn||N.phase!==prev.phase||N.status!==prev.status||(N.ev&&prev.ev&&N.ev.seq!==prev.ev.seq)))N.turnAt=Date.now();
+ S=N;if(N.phase==='juice'&&N.jw&&(!jwL||jwL.k!==N.jw.until))jwL={k:N.jw.until,at:Date.now(),called:false,done:false};
  if(mode==='solo'){clearTimeout(saveT);if(N.status==='over')ls.del(SAVE_KEY);else saveT=setTimeout(()=>{if(mode==='solo'&&S&&S.status==='playing')ls.set(SAVE_KEY,JSON.stringify(S));},400);}
- draw();if(b)animate(prev,N,b);events(prev,N);schedule();}
+ draw();if(b)animate(prev,N,b);events(prev,N);schedule();
+ if(isHostOn()){NET.sync();hostAfter();}}
+/* when the Juice! window ends on this screen */
+function jEnd(){if(!S||!S.jw)return 0;if(mode==='online'&&!isHostOn())return jwL&&jwL.k===S.jw.until?jwL.at+S.juiceMs:0;return S.jw.until;}
 function hold(ms){if(reduce||FAST||document.hidden)return;busyTill=Math.max(busyTill,Date.now()+ms);}
 const D=()=>DIFF[S&&S.diff]||DIFF.normal;
+/* host: every other person at the table has called or seen their 3 seconds run out */
+function jAllDone(){const J=S&&S.jw;if(!J)return true;const set=jDone.k===J.until?jDone.set:new Set();
+ return S.players.every((p,k)=>k===J.off||p.bot||p.id===myId||J.callers.indexOf(k)>=0||set.has(k));}
 function schedule(){clearTimeout(botT);botT=null;clearTimeout(turnT);clearTimeout(warnT);turnT=warnT=null;
-if(!S||S.status!=='playing'||document.hidden)return;
+if(autoSeat>=0&&(!S||S.status!=='playing'||S.turn!==autoSeat))autoSeat=-1;
+if(!S||S.status!=='playing'||(document.hidden&&mode!=='online'))return;
 const wait=Math.max(0,busyTill-Date.now());
-if(S.phase==='juice'){botT=setTimeout(()=>{botT=null;if(S&&S.phase==='juice')act({k:'close'},S.jw.off);},Math.max(30,S.jw.until-Date.now()+40));return;}
+/* online guest: only your countdown (the host plays for you when time runs out); Auto plays your cards */
+if(mode==='online'&&!isHostOn()){const me=meIdx();if(me<0||S.phase==='juice'||S.turn!==me)return;
+ if(AUTO||auto){botT=setTimeout(()=>clientAuto(me),wait+(AUTO?STEP:520));return;}
+ const left=Math.max(0,TURN_MS-(Date.now()-S.turnAt));warnT=setTimeout(tickDown,Math.max(0,left-4000));return;}
+/* the Juice! window closes 3 s after the slip; online it waits (up to 2 s more) until everyone's own 3 s are up */
+if(S.phase==='juice'){const J=S.jw,at=mode==='online'?(jAllDone()?J.until+40:J.until+JLAT):J.until+40;
+ botT=setTimeout(()=>{botT=null;if(S&&S.phase==='juice'&&S.jw&&S.jw.until===J.until)act({k:'close'},S.jw.off);},Math.max(30,at-Date.now()));return;}
 const p=S.players[S.turn];if(!p)return;
-if(p.bot){botT=setTimeout(()=>botStep(S.turn),wait+STEP*(.7+Math.random()*.6));return;}
+if(p.bot||autoSeat===S.turn){const k=S.turn;botT=setTimeout(()=>p.bot?botStep(k):autoStep(k),wait+STEP*(p.bot?(.7+Math.random()*.6):.6));return;}
 if(p.id===myId){if(AUTO||auto){botT=setTimeout(()=>autoStep(meIdx()),wait+(AUTO?STEP:520));return;}
- const left=Math.max(0,TURN_MS-(Date.now()-S.turnAt));turnT=setTimeout(()=>{if(S&&S.status==='playing'&&S.turn===meIdx()&&S.phase!=='juice'){toast('Time up: played for you.');autoStep(meIdx());}},left+wait);
- warnT=setTimeout(tickDown,Math.max(0,left-4000));}}
+ const left=Math.max(0,TURN_MS-(Date.now()-S.turnAt));turnT=setTimeout(()=>{if(S&&S.status==='playing'&&S.turn===meIdx()&&S.phase!=='juice'){toast('Time up: played for you.');
+   if(mode==='online'){autoSeat=meIdx();if(NET.strike(myId)){seatToAI(myId,'afk');return;}}autoStep(meIdx());}},left+(mode==='online'?0:wait));
+ warnT=setTimeout(tickDown,Math.max(0,left-4000));return;}
+/* online host: a remote player gets 15 s a move plus a moment for the network; then the rest of that turn is played for them */
+if(mode==='online'){const k=S.turn,left=Math.max(0,TURN_MS+GRACE-(Date.now()-S.turnAt));turnT=setTimeout(()=>autoRemote(k),left);}}
 function tickDown(){if(!S||S.status!=='playing'||S.turn!==meIdx()||S.phase==='juice')return;const left=TURN_MS-(Date.now()-S.turnAt);const t=document.querySelector('#mycards .tmr');if(t)t.classList.toggle('warn',left<=4000);
 if(left<=4000&&left>0){SFX.tick();warnT=setTimeout(tickDown,Math.min(1000,left));}}
 /* a computer player's step: move its open card to the centre when it can, turn a card, then place it (now and then it slips) */
@@ -585,13 +630,108 @@ if(S.phase==='place'){const c=S.hold,b=JU.best(S,k,c);let to=b;
 function autoStep(k){if(!S||S.status!=='playing'||S.turn!==k)return;
 if(S.phase==='turn'){const mv=JU.movable(S,k);if(mv){act({k:'move',to:mv},k);return;}act({k:'flip'},k);return;}
 if(S.phase==='place')act({k:'place',to:JU.best(S,k,S.hold)},k);}
+/* your move: online guests ask the host */
+function sendAct(a){if(!S||S.status!=='playing')return false;
+ if(mode==='online'&&!isHostOn()){const key=S.seq+':'+S.phase;if(S._sent===key)return true;S._sent=key;NET.send({t:'a',a:a});return true;}
+ if(mode==='online')NET.clear(myId);return act(a);}
+/* online guest with Auto on: always the right move, sent to the host */
+function clientAuto(k){if(!S||S.status!=='playing'||S.turn!==k||S.phase==='juice')return;
+ if(S.phase==='turn'){const mv=JU.movable(S,k);sendAct(mv?{k:'move',to:mv}:{k:'flip'});return;}
+ if(S.phase==='place'&&S.hold)sendAct({k:'place',to:JU.best(S,k,S.hold)});}
 /* someone missed a play: each computer player may notice and shout after a human-like reaction time */
 function scheduleCalls(N){callT.forEach(clearTimeout);callT=[];if(!N.jw)return;const off=N.jw.off,seq=N.seq,d=D(),me=meIdx();
+/* online guest: the computer players shout on the host; ?auto test mode shouts for you */
+if(mode==='online'&&!isHostOn()){if(AUTO&&me>=0&&me!==off){const k0=N.jw.until;callT.push(setTimeout(()=>{if(S&&S.jw&&S.jw.until===k0)callJuice();},FAST?80:650));}return;}
 N.players.forEach((p,k)=>{if(k===off)return;let rt=null;
  if(p.bot){if(Math.random()<d.notice){const u=(Math.random()+Math.random()+Math.random())/3;rt=d.rt[0]+(d.rt[1]-d.rt[0])*u;}}
  else if(k===me&&(AUTO)){rt=FAST?80:650;}
- if(rt==null)return;if(FAST)rt=rt/6;if(rt>JUICE_MS-60)return;
+ if(rt==null)return;if(FAST)rt=rt/6;if(rt>N.juiceMs-60)return;
  callT.push(setTimeout(()=>{if(S&&S.phase==='juice'&&S.jw&&S.jw.off===off&&S.jw.callers.indexOf(k)<0&&S.seq>=seq)act({k:'juice'},k);},rt));});}
+
+/* =====================================================================
+   ONLINE (shared/net.js). The host runs JU.act for everyone and sends each player JU.redact (stacks face down;
+   the seed and RNG state never leave the host). A match is 1, 3 or 5 games (first to 1, 2 or 3 wins).
+   Fair "Juice!" calls: the host timestamps the slip (t0) and broadcasts it. Each screen opens its own 3-second
+   window when the slip ARRIVES there, and a call carries the time since that arrival (el). The host accepts it
+   if el is within 3 s, is not more than the time really passed since t0 (h - t0), and the implied network time
+   (h - t0 - el) is at most 2 s; it then plays the call as if made at t0 + el. The window closes once every
+   player has called or reported their 3 s over (or 2 s after the host's own window at the latest).
+   Everyone sees who called and how fast. A player who leaves, loses connection or times out twice in a row
+   gets a computer player until the game ends; then that seat leaves the match (wins frozen) and the table
+   shrinks. If the host leaves mid-game the next player takes over and that game is dealt again (wins stay).
+   ===================================================================== */
+let NET=null,nextT=0;
+const isHostOn=()=>mode==='online'&&!!NET&&NET.isHost();
+const BOT_IC='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="7" width="16" height="12" rx="3.5"/><path d="M12 7V4"/><circle cx="9.3" cy="12.6" r="1.2" fill="currentColor" stroke="none"/><circle cx="14.7" cy="12.6" r="1.2" fill="currentColor" stroke="none"/><path d="M9.5 16h5"/></svg>';
+const secs=ms=>(ms/1000).toFixed(2).replace(/0$/,'')+' s';
+function lookOf(l){const o={ch:null,ring:''};if(!l||typeof l!=='object')return o;const A=DGA();try{if(A&&l.ch)o.ch=A.normalize(l.ch);}catch(e){}
+ if(typeof l.ring==='string'&&/^f-[a-z0-9-]{1,24}$/.test(l.ring))o.ring=l.ring;return o;}
+function rid(){try{const a=new Uint32Array(2);crypto.getRandomValues(a);return a[0].toString(36)+a[1].toString(36);}catch(e){return Math.random().toString(36).slice(2);}}
+function newSeed(){try{const a=new Uint32Array(1);crypto.getRandomValues(a);return a[0]||1;}catch(e){return (Math.random()*4294967295)>>>0||1;}}
+/* after each game: is the match decided? (someone still at the table has enough wins, or fewer than 2 are left) */
+function fixOver(N){if(N.status!=='over'||!N.need)return;const live=N.players.map((p,k)=>k).filter(k=>!N.players[k].gone);if(!live.length)return;
+ const hi=Math.max(...live.map(k=>N.players[k].wins|0));N.matchOver=hi>=N.need||live.length<2?1:0;N.champs=N.matchOver?live.filter(k=>(N.players[k].wins|0)===hi):null;}
+function autoRemote(k){if(!isHostOn()||!S||S.status!=='playing'||S.turn!==k||S.phase==='juice')return;const p=S.players[k];if(!p||p.bot)return;
+ autoSeat=k;if(NET.strike(p.id)){seatToAI(p.id,'afk');return;}NET.tell(p.id,{t:'timeout'});autoStep(k);}
+/* a computer player takes the seat for the rest of this game */
+function seatToAI(pid,why){if(!isHostOn()||!S)return;const k=S.players.findIndex(p=>p.id===pid);if(k<0)return;const N=clone(S),p=N.players[k];if(p.gone)return;
+ p.gone=1;p.bot=true;if(why==='afk')p.afk=1;fixOver(N);commit(N);}
+function hostAfter(){clearTimeout(nextT);if(!S)return;
+ if(S.status==='over'){if(S.matchOver){NET.matchOver();if(NET.hostAway())setTimeout(()=>{if(isHostOn())NET.retire();},3000);return;}
+  if(NET.hostAway()){setTimeout(()=>{if(isHostOn())NET.retire();},3000);return;}const g=S.gameNo;nextT=setTimeout(()=>{if(isHostOn()&&S&&S.status==='over'&&S.gameNo===g&&!S.matchOver){closeOv();hostNext();}},NEXT_MS);}}
+/* next game: seats whose computer player finished for them leave now (wins frozen); fewer than 2 left ends the match */
+function hostNext(){if(!isHostOn()||!S||S.status!=='over'||S.matchOver)return;clearTimeout(nextT);const N=clone(S);const gone=N.players.filter(p=>p.gone);
+ if(gone.length){N.left=(N.left||[]).concat(gone.map(p=>({id:p.id,name:p.name,ch:p.ch,col:p.col,wins:p.wins|0,afk:p.afk?1:0})));
+  const keep=N.players.filter(p=>!p.gone),old=N.players.slice();N.players=keep;let d=N.dealer;while(d>=0&&old[d]&&old[d].gone)d=(d-1+old.length)%old.length;N.dealer=Math.max(0,keep.indexOf(old[d]));}
+ if(N.players.length<2){fixOver(N);N.matchOver=1;commit(N);return;}
+ if(!JU.act(N,0,{k:'next'},Date.now()))return;N.jlog=null;N.matchOver=0;N.champs=null;commit(N);}
+function netStart(seats,opts){mode='online';clearTimeout(nextT);const games=[1,3,5].includes(+opts.games)?+opts.games:3;
+ const players=seats.map((s,i)=>{const l=s.id===myId?{ch:myChar(),ring:myRing()}:lookOf(s.look);return{id:s.id,name:s.name,ch:l.ch,ring:l.ring,col:PC[i%PC.length]};});
+ S=JU.create({players:players,seed:newSeed(),juiceMs:JUICE_MS,gid:'u'+rid()});S.diff='normal';S.need=Math.ceil(games/2);S.games=games;S.online=1;
+ closeSheet();buildTable();draw();openRules();
+ nextT=setTimeout(()=>{if(isHostOn()&&S&&S.status==='lobby'){closeRules();act({k:'start'});}},5000);NET.sync();}
+function cleanTo(to){if(!to||typeof to!=='object')return null;const t=String(to.t);if(t==='c')return Number.isInteger(to.i)?{t:'c',i:to.i}:null;if(t==='cn')return{t:'cn'};
+ if(t==='o')return Number.isInteger(to.p)?{t:'o',p:to.p}:null;if(t==='own')return{t:'own'};return null;}
+function netAction(pid,a){if(!S||!a||typeof a!=='object')return;const k=S.players.findIndex(p=>p.id===pid);if(k<0||S.players[k].bot)return;
+ if(a.t==='a'&&a.a&&typeof a.a==='object'){const x=a.a;let ok=false;
+  if(x.k==='flip')ok=act({k:'flip'},k);else if(x.k==='place'||x.k==='move'){const to=cleanTo(x.to);if(to)ok=act({k:x.k,to:to},k);}
+  if(!ok)NET.sync();return;}
+ if(a.t==='juice'){const J=S.jw;if(!J||S.phase!=='juice'||a.k!==J.until||J.off===k||J.callers.indexOf(k)>=0)return;
+  /* fairness check: el = how long after the slip reached that player they tapped */
+  const el=+a.el,h=Date.now(),t0=J.until-S.juiceMs,since=h-t0;
+  const ok=isFinite(el)&&el>=0&&el<=S.juiceMs+60&&el<=since+100&&since-el<=JLAT;
+  if(!ok||!act({k:'juice'},k,t0+Math.min(el,S.juiceMs))){NET.tell(pid,{t:'late'});return;}
+  if(jAllDone()&&Date.now()>=J.until)schedule();return;}
+ if(a.t==='jdone'){const J=S.jw;if(!J||a.k!==J.until)return;if(jDone.k!==J.until)jDone={k:J.until,set:new Set()};jDone.set.add(k);schedule();}}
+function netDrop(pid,why){if(!isHostOn()||!S)return;const k=S.players.findIndex(p=>p.id===pid);if(k<0)return;
+ if(S.status==='playing'||S.status==='lobby')seatToAI(pid,why);else{const N=clone(S);N.players[k].gone=1;N.players[k].bot=true;fixOver(N);commit(N);if(S.matchOver)hostAfter();}}
+function viewFor(pid){if(!S)return null;const V=JU.redact(S,S.players.findIndex(p=>p.id===pid));delete V.seed;V.rs=0;if(V.ev&&V.ev.last&&V.ev.last.t==='juice')V.ev.last.c='X';return V;}
+function netState(v){if(!v||!Array.isArray(v.players))return;mode='online';const N=clone(v);if(N.turnAt)N.turnAt-=NET.skew();
+ if(screen!=='table'||!S||S.gid!==N.gid){S=N;jwL=N.phase==='juice'&&N.jw?{k:N.jw.until,at:Date.now(),called:false,done:false}:null;closeSheet();closeOv();buildTable();draw();schedule();if(N.status==='lobby')openRules();return;}
+ if(N.status!=='lobby')closeRules();commit(N);}
+/* I became the host: carry on from the last state; a game in progress is dealt again (only the old host knew every stack) */
+function netMigrate(o){mode='online';const v=o.view;if(!v){NET.again();return;}const N=clone(v);if(N.turnAt)N.turnAt-=o.skew||0;
+ const goneIds=new Set((o.meta.players||[]).filter(p=>p.gone).map(p=>p.id));N.players.forEach(p=>{if(goneIds.has(p.id)){p.gone=1;p.bot=true;}});
+ N.rs=newSeed()|0;S=N;if(screen!=='table')buildTable();
+ if(N.status==='lobby'){draw();nextT=setTimeout(()=>{if(isHostOn()&&S&&S.status==='lobby'){closeRules();act({k:'start'});}},2500);NET.sync();return;}
+ if(N.status==='playing'){const M=clone(N);M.status='over';M.matchOver=0;M.winner=-1;M.phase='';M.jw=null;M.gameNo=Math.max(0,(M.gameNo|0)-1);M.dealer=((M.dealer|0)-1+M.players.length)%M.players.length;S=M;hostNext();toast('The host left, so this game was dealt again. Wins stay the same.',4500);return;}
+ fixOver(N);draw();hostAfter();NET.sync();}
+function netLobby(){clearTimeout(nextT);clearTimeout(botT);clearTimeout(turnT);clearTimeout(warnT);callT.forEach(clearTimeout);closeOv();closeRules();closeSheet();S=null;if(screen==='table')renderHome();}
+function netEnd(){clearTimeout(nextT);clearTimeout(botT);clearTimeout(turnT);clearTimeout(warnT);callT.forEach(clearTimeout);mode=null;closeOv();closeRules();closeSheet();S=null;document.documentElement.dataset.net='0';renderHome();}
+function initNet(){if(!window.DGNet)return;NET=DGNet.create({game:'juice',title:'Juice',min:2,max:5,id:myId,
+ me:()=>({name:myName(),look:{ch:myChar(),ring:myRing()}}),setName:v=>{ls.set('lg-name',v);if(screen==='home')renderHome();},
+ avatar:(seat,size)=>{const l=lookOf(seat.look);return avInner({name:seat.name,ch:l.ch,col:PC[0]},0,size);},
+ options:[{k:'games',label:'Match length',def:3,choices:[[1,'1 game'],[3,'Best of 3'],[5,'Best of 5']],hint:o=>+o.games===1?'One game: first to empty their hand wins.':`First to ${Math.ceil(o.games/2)} game wins takes the match.`}],
+ rulesNote:'2 to 5 players. 15 seconds a move, then your move is played for you. When someone slips, everyone gets 3 seconds from the moment it reaches their screen to tap Juice!. Miss 2 turns in a row, or leave, and a computer player finishes your game; then your seat leaves the match.',
+ listInfo:m=>m.status!=='lobby'&&S?'Game '+Math.max(1,S.gameNo)+(S.games>1?' · best of '+S.games:''):(+(m.opts&&m.opts.games)===1?'1 game':'Best of '+(m.opts?m.opts.games:3)),
+ dropText:(nm,why)=>nm+(why==='afk'?' is away':why==='left'?' left':' lost connection')+'. A computer player finishes the game for them.',
+ afkText:'You missed 2 turns in a row, so a computer player finished your game. You can’t rejoin this match.',
+ hostAfkText:'You missed 2 turns in a row, so a computer player is finishing your game. Then you’ll leave the table.',
+ onStart:netStart,view:pid=>viewFor(pid),onAction:netAction,onDrop:netDrop,onState:netState,onLobby:netLobby,onMigrate:netMigrate,onEnd:netEnd,
+ onTell:d=>{if(!d)return;if(d.t==='timeout')toast('Time up: your move was played for you. Miss another turn and a computer player takes your seat.',3600);else if(d.t==='late')toast('Too late! Juice! only counts within 3 seconds.');},
+ toast:(t,ms)=>toast(t,ms),
+ dockHost:()=>screen==='table'?document.querySelector('.topbar .tools'):null,
+ avatarEl:pid=>{if(!S||screen!=='table')return null;const k=S.players.findIndex(p=>p.id===pid);return k<0?null:k===vIdx()?document.querySelector('#meav'):document.querySelector(`.seat[data-k="${k}"] .av`);}});}
 
 /* =====================================================================
    UI: home, setup, how to play, rules card
@@ -613,7 +753,7 @@ ${heroFan()}
 <p class="mhint">Play the next rank, K to A to 2. Miss a play and everyone shouts <b>Juice!</b></p>
 <section class="modes">
 <button class="mode quick" data-a="goComputer"><span class="mi">${HI.bot}</span><span class="mt"><b>Play vs Computer</b><small>2 to 5 players · works offline</small></span></button>
-<button class="mode" disabled aria-disabled="true"><span class="tag">Soon</span><span class="mi">${HI.friends}</span><b>Play online</b><small>Coming soon</small></button>
+<button class="mode" data-a="online"><span class="mi">${HI.friends}</span><b>Play online</b><small>2 to 5 players · codes, Quick Match</small></button>
 <button class="mode" data-a="howto"><span class="mi">${HI.book}</span><b>How to play</b><small>Rules with pictures</small></button>
 </section>
 ${resumeHTML()}
@@ -660,8 +800,11 @@ li('=','A card of the <b>same rank as the central card</b> starts another centre
 li('→','Can’t? Play it on an <b>opponent’s open pile</b> if next, else on your own pile (your turn ends).'),
 li('!','Missed a play? Others have <b>3 seconds to shout Juice!</b> Each gives you a card.',1),
 li('0','Stack empty: pick up your open pile. <b>First with no cards wins.</b>')];
-return `<div class="rcard"><div class="rtop"><span class="rbadge">${FRUIT.glass}</span><div><h2>Juice</h2><div class="rsub">${n} players · ${Math.floor(51/n)}${51%n?'–'+Math.ceil(51/n):''} cards each · ${DIFF[N.diff||'normal'].name}</div></div></div><ul class="rlist">${items.join('')}</ul></div>`;}
-function openRules(){const o=$('#rov');o.innerHTML=`<div class="ovc">${rulesCardHTML(S)}<div class="rfoot"><button class="btn primary wide" data-a="rulesDeal">Deal the cards</button><button class="btn ghost wide" style="margin-top:8px" data-a="leave">Not now</button></div></div>`;o.classList.add('show');setTimeout(()=>{const b=o.querySelector('.btn.primary');b&&b.focus({preventScroll:true});},60);}
+return `<div class="rcard"><div class="rtop"><span class="rbadge">${FRUIT.glass}</span><div><h2>Juice</h2><div class="rsub">${n} players · ${Math.floor(51/n)}${51%n?'–'+Math.ceil(51/n):''} cards each · ${N.online?(N.games>1?'best of '+N.games:'one game'):DIFF[N.diff||'normal'].name}</div></div></div><ul class="rlist">${items.join('')}</ul></div>`;}
+function openRules(){const o=$('#rov');const foot=mode!=='online'?`<button class="btn primary wide" data-a="rulesDeal">Deal the cards</button><button class="btn ghost wide" style="margin-top:8px" data-a="leave">Not now</button>`
+ :isHostOn()?`<button class="btn primary wide" data-a="rulesDeal">Deal the cards</button><p class="muted" style="font-size:12px;margin:8px 0 0">The cards are dealt automatically in a few seconds.</p>`
+ :`<button class="btn primary wide" data-a="rulesOk">Ready</button><p class="muted" style="font-size:12px;margin:8px 0 0">${meIdx()>=0?'The host deals in a few seconds.':'You are watching this match.'}</p>`;
+ o.innerHTML=`<div class="ovc">${rulesCardHTML(S)}<div class="rfoot">${foot}</div></div>`;o.classList.add('show');setTimeout(()=>{const b=o.querySelector('.btn.primary');b&&b.focus({preventScroll:true});},60);}
 function closeRules(){const o=$('#rov');o.classList.remove('show');o.innerHTML='';}
 function openName(){const nm=myName();sheet(`<div class="grab"></div><h2>Your name</h2><p class="muted" style="margin:4px 0 12px">Shown at the table. Your character and ring come from your Digu profile.</p>
 <label class="f" for="pnm">Name</label><input class="in" id="pnm" maxlength="14" value="${esc(nm)}" autocomplete="nickname" enterkeyhint="done">
@@ -693,13 +836,13 @@ const isSmooth=()=>{const v=ls.get('dd-smooth');return v==='1'?true:v==='0'?fals
 function buildTable(){screen='table';offTable();closeOv();
 app.innerHTML=`<main class="table"><div class="tlayer" aria-hidden="true"><div class="tsc${isSmooth()?' still':''}" id="tsc">${sceneHTML()}</div></div>
 <div class="topbar"><button class="icon-btn" data-a="menu" aria-label="Scores and menu">${HI.menu}</button><div class="goal"><span id="goalt"></span></div><div class="tools"><button class="icon-btn autob" data-a="auto" id="autob" aria-pressed="${auto}" aria-label="Auto play"><span class="sw" aria-hidden="true"><i></i></span><span>Auto</span></button><button class="icon-btn" data-a="sfx" id="sfxbtn" aria-label="Sound effects" aria-pressed="${sfxOn()}">${HI.sound}</button></div></div>
-<section class="arena" id="arena"><div class="seats" id="opps"></div><div class="centre" id="centre"></div><div class="status" id="status" aria-live="polite"></div><div id="jwrap"></div></section>
+<section class="arena" id="arena"><div class="seats" id="opps"></div><div class="centre" id="centre"></div><div class="status" id="status" aria-live="polite"></div><div id="jwrap"></div><div class="jlist" id="jlist" aria-live="polite"></div></section>
 <section class="me"><div class="merow"><div class="meinfo" id="meinfo"></div><div class="mycards" id="mycards">
 <button class="slot stack" id="mystack" data-a="flip"></button><div class="slot hold" id="myhold" aria-live="polite"></div><button class="slot open" id="myopen" data-a="mine"></button></div></div></section>
-</main>`;layoutArena();}
+</main>`;layoutArena();document.documentElement.dataset.net=mode==='online'?'1':'0';if(mode==='online'&&NET)NET.updDock();}
 function tableAd(){const w=$('#tadw');if(!w||!S||!window.DGSponsors)return;let s=null;try{s=DGSponsors.felt('juice');}catch(e){}const k=s?s.title:'';if(w._k===k)return;w._k=k;
 w.innerHTML=s?`<div class="tad tag" style="left:${TBL.at[0]}px;top:${TBL.at[1]}px"><b>${esc(s.title)}</b></div>`:'';}
-function seatOrder(){const n=S.players.length,m=Math.max(0,meIdx()),o=[];for(let i=1;i<n;i++)o.push((m+i)%n);return o;}
+function seatOrder(){const n=S.players.length,m=Math.max(0,vIdx()),o=[];for(let i=1;i<n;i++)o.push((m+i)%n);return o;}
 const SEAT_ANG=[[],[90],[150,30],[160,90,20],[168,124,56,12]];
 function layoutArena(){const a=$('#arena');if(!a||!S)return;const W=a.clientWidth,H=a.clientHeight;if(!W||!H)return;
 const nO=seatOrder().length,top=nO>=3?58:62,bot=40;const g=TBL.g,ar=g[3]/g[2];
@@ -719,13 +862,17 @@ function draw(){if(!S){renderHome();return;}if(screen!=='table')buildTable();ren
 const hintsOn=()=>S&&DIFF[S.diff]&&DIFF[S.diff].hints;
 function myOptions(){const me=meIdx();if(!S||S.status!=='playing'||S.turn!==me||me<0)return null;
 if(S.phase==='place'&&S.hold)return JU.targets(S,me,S.hold);return null;}
-function renderTable(){const me=meIdx(),playing=S.status==='playing';
-{const g=$('#goalt'),w=S.players.reduce((t,p)=>t+(p.wins|0),0);const gt=S.status==='lobby'?'Juice · first to empty wins':`Game <b>${Math.max(1,S.gameNo)}</b><span class="gx"> · first to empty wins</span>`;if(g&&g._t!==gt){g.innerHTML=gt;g._t=gt;}}
+function renderTable(){const me=meIdx(),playing=S.status==='playing',online=mode==='online';{const ab=$('#autob');if(ab)ab.hidden=online&&me<0;}
+{const g=$('#goalt'),w=S.players.reduce((t,p)=>t+(p.wins|0),0);const gt=S.status==='lobby'?'Juice · first to empty wins':online&&S.games>1?`Game <b>${Math.max(1,S.gameNo)}</b><span class="gx"> · first to ${S.need} wins</span>`:`Game <b>${Math.max(1,S.gameNo)}</b><span class="gx"> · first to empty wins</span>`;if(g&&g._t!==gt){g.innerHTML=gt;g._t=gt;}}
 const oe=$('#opps'),so=seatOrder();oe.className='seats n'+so.length;let moved=false;const opt=hintsOn()?myOptions():null;
 so.forEach(k=>{const p=S.players[k];let el=oe.querySelector(`.seat[data-k="${k}"]`);
  if(!el){el=document.createElement('div');el.className='seat';el.dataset.k=k;el.innerHTML='<div class="av"><span class="avc"></span><span class="cntb"></span></div><div class="nm"></div><button class="opile" data-a="opp"></button>';oe.appendChild(el);moved=true;}
  el.querySelector('.opile').dataset.p=k;
- const avc=el.querySelector('.avc');if(!avc._k){avc._k=1;avc.innerHTML=avatarHTML(p,k,46);}
+ const avc=el.querySelector('.avc');if(el._pid!==p.id){el._pid=p.id;avc._k=0;el.querySelector('.opile')._k=null;}if(!avc._k){avc._k=1;avc.innerHTML=avatarHTML(p,k,46);}
+ {const avx=el.querySelector('.av'),ab=avx.querySelector('.aib'),isAI=online&&p.bot;if(isAI&&!ab)avx.insertAdjacentHTML('beforeend',`<span class="aib" title="Computer">${BOT_IC}</span>`);else if(!isAI&&ab)ab.remove();}
+ /* online: a thin 15-second bar under whoever is playing */
+ {let tm=el.querySelector('.tmr');const want=online&&playing&&S.turn===k&&S.phase!=='juice'&&!p.bot&&!!S.turnAt;const tk=want?S.seq+':'+S.turnAt:'';
+  if(!want){if(tm)tm.remove();}else if(!tm||tm._k!==tk){if(tm)tm.remove();el.querySelector('.nm').insertAdjacentHTML('afterend','<span class="tmr" aria-hidden="true"><i></i></span>');tm=el.querySelector('.tmr');tm._k=tk;tm.style.setProperty('--d',TURN_MS+'ms');tm.style.setProperty('--dl',(S.turnAt-Date.now())+'ms');}}
  const tot=playing||S.status==='over'?JU.total(S,k):0;const cb=el.querySelector('.cntb');const ct=String(tot);if(cb._t!==ct){cb._t=ct;cb.textContent=ct;}
  const ne=el.querySelector('.nm'),nm=esc(p.name);if(ne.innerHTML!==nm)ne.innerHTML=nm;
  const op=S.open[k]||[],tc=op.length?op[op.length-1]:null,pe=el.querySelector('.opile');const pk=tc+'|'+op.length;
@@ -733,11 +880,11 @@ so.forEach(k=>{const p=S.players[k];let el=oe.querySelector(`.seat[data-k="${k}"
  pe.classList.toggle('hint-on',!!(opt&&opt.o.includes(k)&&!opt.c.length&&!opt.cn));
  el.classList.toggle('on',playing&&S.turn===k);
  el.setAttribute('aria-label',`${p.name}, ${tot} cards`);});
-oe.querySelectorAll('.seat').forEach(el=>{if(+el.dataset.k>=S.players.length||+el.dataset.k===me){el.remove();moved=true;}});
+oe.querySelectorAll('.seat').forEach(el=>{if(+el.dataset.k>=S.players.length||!so.includes(+el.dataset.k)){el.remove();moved=true;}});
 if(moved||oe._n!==so.length){oe._n=so.length;layoutArena();}
 renderHolds();renderCentre();tableAd();renderStatus();renderMe();renderJuice();renderOv();}
 /* the card a computer player just turned up, shown by its seat */
-function renderHolds(){const oe=$('#opps');if(!oe)return;const me=meIdx();
+function renderHolds(){const oe=$('#opps');if(!oe)return;const me=vIdx();
 oe.querySelectorAll('.seat').forEach(el=>{const k=+el.dataset.k;let h=el.querySelector('.shold');const want=S.status==='playing'&&S.turn===k&&S.hold&&k!==me;
  if(!want){if(h)h.remove();return;}
  if(!h||h._c!==S.hold){if(h)h.remove();el.insertAdjacentHTML('beforeend',`<div class="shold in">${cardHTML(S.hold)}</div>`);h=el.querySelector('.shold');h._c=S.hold;
@@ -760,10 +907,11 @@ else if(playing){const cur=S.players[S.turn];
  if(S.phase==='juice'){const J=S.jw;t=J.off===me?'You missed a play…':`<b>${esc(S.players[J.off].name)}</b> missed a play!`;}
  else if(S.turn===me){if(S.phase==='place')t=`Where does your <b>${rl(S.hold)}</b> go?`;else t=(S.stacks[me].length?'<b>Your turn</b> · tap your stack':'<b>Your turn</b> · tap to pick up your pile')+(hintsOn()&&JU.movable(S,me)?' (or move your open card)':'');}
  else t=`<b>${esc(cur.name)}</b> is playing`;}
-else if(S.status==='over'){t=S.winner===me?'<b>You</b> emptied your hand!':`<b>${esc(S.players[S.winner].name)}</b> wins`;}
+else if(S.status==='over'&&S.players[S.winner]){t=S.winner===me?'<b>You</b> emptied your hand!':`<b>${esc(S.players[S.winner].name)}</b> wins`;}
 if(st._t!==t){st.innerHTML=t;st._t=t;}st.classList.toggle('mine',playing&&S.turn===me&&S.phase!=='juice');st.hidden=!t||!!$('#jwrap .jbtn');}
-function renderMe(){const me=meIdx();if(me<0)return;const p=S.players[me],playing=S.status==='playing',myTurn=playing&&S.turn===me;
-const mi=$('#meinfo');if(!mi._built){mi._built=1;mi.innerHTML=`<span class="meav" id="meav">${avatarHTML(p,me,46)}<span class="cntb" id="mecnt"></span></span><b>${esc(p.name)}</b>`;}
+/* the bottom row: your stack, turned card and open pile (a watcher sees seat 1's) */
+function renderMe(){const me=vIdx(),mine=meIdx()===me;if(me<0)return;const p=S.players[me],playing=S.status==='playing',myTurn=playing&&S.turn===me;
+const mi=$('#meinfo');if(!mi._built||mi._pid!==p.id){mi._built=1;mi._pid=p.id;mi.innerHTML=`<span class="meav" id="meav">${avatarHTML(p,me,46)}<span class="cntb" id="mecnt"></span></span><b>${esc(p.name)}</b>`;}
 const tot=playing||S.status==='over'?JU.total(S,me):0;const mc=$('#mecnt');if(mc.textContent!==String(tot))mc.textContent=String(tot);
 $('#meav').classList.toggle('on',myTurn);
 const st=S.stacks[me]||[],op=S.open[me]||[],canFlip=myTurn&&S.phase==='turn';
@@ -777,14 +925,18 @@ if(ob._k!==ok){ob._k=ok;ob.innerHTML=(tc?cardHTML(tc):'<span class="ghost">Open 
 ob.setAttribute('aria-label',`Your open pile: ${tc?cname(tc)+', ':''}${op.length} card${op.length===1?'':'s'}.${myTurn&&S.phase==='place'?' Tap to put your card here.':mv?' Tap to move the top card to the centre.':''}`);
 ob.classList.toggle('hint-on',!!(hintsOn()&&(mv||(myTurn&&S.phase==='place'&&JU.best(S,me,S.hold).t==='own'))));
 /* your move timer: a thin bar over your cards */
-const mc2=$('#mycards');let tm=mc2.querySelector('.tmr');const want=myTurn&&S.phase!=='juice'&&!AUTO&&!auto;const tk=want?S.seq+':'+S.turnAt:'';
+const mc2=$('#mycards');let tm=mc2.querySelector('.tmr');const want=myTurn&&S.phase!=='juice'&&(mine?!AUTO&&!auto:mode==='online'&&!p.bot);const tk=want?S.seq+':'+S.turnAt:'';
 if(!want){if(tm)tm.remove();}else if(!tm||tm._k!==tk){if(tm)tm.remove();mc2.insertAdjacentHTML('beforeend','<span class="tmr" aria-hidden="true"><i></i></span>');tm=mc2.lastElementChild;tm._k=tk;tm.style.setProperty('--d',TURN_MS+'ms');tm.style.setProperty('--dl',(S.turnAt-Date.now())+'ms');}}
 /* the Juice! button: only while someone else's slip is open and you haven't called yet */
-function renderJuice(){const w=$('#jwrap');if(!w)return;const me=meIdx(),J=S.jw;const want=S.status==='playing'&&S.phase==='juice'&&J&&J.off!==me&&J.callers.indexOf(me)<0&&Date.now()<J.until&&!AUTO;
-const k=want?S.seq+':'+J.off:'';if(w._k===k)return;const had=!!w._k;w._k=k;
+/* who has shouted Juice! so far in this window, and how fast (everyone sees it) */
+function renderCallers(){const el=$('#jlist');if(!el)return;const J=S.jw,L=S.jlog;const calls=S.phase==='juice'&&J&&L&&L.k===J.until?L.calls:[];
+ const h=calls.map(c=>`<span>${esc(c.p===meIdx()?'You':(S.players[c.p]||{}).name||'?')}<small>${secs(c.ms)}</small></span>`).join('');if(el._h!==h){el._h=h;el.innerHTML=h;}}
+function renderJuice(){const w=$('#jwrap');if(!w)return;const me=meIdx(),J=S.jw;renderCallers();
+const want=S.status==='playing'&&S.phase==='juice'&&J&&me>=0&&J.off!==me&&J.callers.indexOf(me)<0&&!(jwL&&jwL.k===J.until&&jwL.called)&&Date.now()<jEnd()&&!AUTO;
+const k=want?J.until+':'+J.off:'';if(w._k===k)return;const had=!!w._k;w._k=k;
 if(!want){w.innerHTML='';const st=$('#status');if(st)st.hidden=!st._t;return;}
 if(had&&w.querySelector('.jbtn'))return;
-const left=Math.max(200,J.until-Date.now());w.innerHTML=`<button class="jbtn" data-a="juice" aria-label="Juice! ${esc(S.players[J.off].name)} missed a play. Tap to make them take a card.">${HI.drop}Juice!<span class="tb"><i style="--d:${left}ms"></i></span></button>`;
+const left=Math.max(200,jEnd()-Date.now());w.innerHTML=`<button class="jbtn" data-a="juice" aria-label="Juice! ${esc(S.players[J.off].name)} missed a play. Tap to make them take a card.">${HI.drop}Juice!<span class="tb"><i style="--d:${left}ms"></i></span></button>`;
 const st=$('#status');if(st)st.hidden=true;}
 
 /* ---------- motion: transform/opacity only, springs, skipped for reduced motion ---------- */
@@ -803,10 +955,10 @@ const fin=()=>{el.remove();o.done&&o.done();};an.onfinish=fin;an.oncancel=fin;}
 /* where a target lives on screen right now */
 function targetRect(to,k,b){if(to.t==='c')return rectOf(document.querySelector(`#centre .cpile[data-i="${to.i}"]`))||b.centre[to.i];
 if(to.t==='cn'){const i=S.centre.length-1;return rectOf(document.querySelector(`#centre .cpile[data-i="${i}"]`))||b.cnew;}
-if(to.t==='o')return to.p===meIdx()?cardRect($('#myopen')):rectOf(document.querySelector(`.seat[data-k="${to.p}"] .opile`));
-return k===meIdx()?cardRect($('#myopen')):rectOf(document.querySelector(`.seat[data-k="${k}"] .opile`));}
+if(to.t==='o')return to.p===vIdx()?cardRect($('#myopen')):rectOf(document.querySelector(`.seat[data-k="${to.p}"] .opile`));
+return k===vIdx()?cardRect($('#myopen')):rectOf(document.querySelector(`.seat[data-k="${k}"] .opile`));}
 function hideTill(el,ms){if(!el||reduce)return;el.style.opacity='0';setTimeout(()=>{el.style.opacity='';},ms);}
-function animate(prev,N,b){if(!prev||!N.ev||(prev.ev&&N.ev.seq===prev.ev.seq)||screen!=='table')return;let e=N.ev;const me=meIdx();
+function animate(prev,N,b){if(!prev||!N.ev||(prev.ev&&N.ev.seq===prev.ev.seq)||screen!=='table')return;let e=N.ev;const me=vIdx();
 if(e.t==='win'&&e.last)e=e.last;
 if(e.t==='place'){const from=e.p===me?b.myhold:(b.hold[e.p]||smallAt(b.av[e.p]));const to=targetRect(e.to,e.p,b);
  const tgtEl=e.to.t==='c'?document.querySelector(`#centre .cpile[data-i="${e.to.i}"] .card`):e.to.t==='cn'?document.querySelector(`#centre .cpile[data-i="${N.centre.length-1}"] .card`):e.to.t==='o'?(e.to.p===me?$('#myopen .card'):document.querySelector(`.seat[data-k="${e.to.p}"] .opile .card`)):(e.p===me?$('#myopen .card'):document.querySelector(`.seat[data-k="${e.p}"] .opile .card`));
@@ -819,12 +971,12 @@ function splashAt(r,big){if(!r||reduce||document.hidden)return;const x=r.x+r.w/2
 const cs=['#FFB020','#FF4D6D','#8FD14F','#FF7A45','#FFD84D'];let h=`<b style="--c2:${cs[1]}"></b>`;const n=big?18:12;
 for(let i=0;i<n;i++){const a=i/n*Math.PI*2+Math.random()*.3,d=(big?70:44)+Math.random()*(big?60:30);h+=`<i style="--c:${cs[i%cs.length]};--s:${(big?9:7)+Math.random()*7}px;--x:${(Math.cos(a)*d).toFixed(0)}px;--y:${(Math.sin(a)*d+20).toFixed(0)}px;--r:${(a*57+45).toFixed(0)}deg;animation-delay:${(Math.random()*.06).toFixed(2)}s"></i>`;}
 el.innerHTML=h;$('#fx').appendChild(el);setTimeout(()=>el.remove(),900);}
-function callBubble(k,txt){const a=$('#arena');if(!a||document.hidden)return;const r=k===meIdx()?rectOf($('#meav')):rectOf(avEl(k));if(!r)return;const ar=a.getBoundingClientRect();
+function callBubble(k,txt){const a=$('#arena');if(!a||document.hidden)return;const r=k===vIdx()?rectOf($('#meav')):rectOf(avEl(k));if(!r)return;const ar=a.getBoundingClientRect();
 const e=document.createElement('div');e.className='jcall';e.textContent=txt||'Juice!';e.style.left=(r.x+r.w/2-ar.left)+'px';e.style.top=(r.y-ar.top-4)+'px';a.appendChild(e);setTimeout(()=>e.remove(),1450);}
 /* ---------- game events: sounds, reactions, banners, the Juice window ---------- */
 function banner(t,sub,bad){const a=$('#arena');if(!a||document.hidden)return;const e=document.createElement('div');e.className='banner'+(bad?' bad':'');e.innerHTML=t+(sub?`<small>${sub}</small>`:'');a.appendChild(e);setTimeout(()=>e.remove(),2000);}
 function whereTxt(to,N){if(!to)return '';if(to.t==='c'||to.t==='cn')return 'in the centre';if(to.t==='o')return to.p===meIdx()?'on your pile':'on '+esc(N.players[to.p].name)+'’s pile';return '';}
-function flashCould(to){if(!to)return;let el=null;if(to.t==='c')el=document.querySelector(`#centre .cpile[data-i="${to.i}"]`);else if(to.t==='cn')el=document.querySelector('#centre .cpile.cnew');else if(to.t==='o')el=to.p===meIdx()?$('#myopen'):document.querySelector(`.seat[data-k="${to.p}"] .opile`);
+function flashCould(to){if(!to)return;let el=null;if(to.t==='c')el=document.querySelector(`#centre .cpile[data-i="${to.i}"]`);else if(to.t==='cn')el=document.querySelector('#centre .cpile.cnew');else if(to.t==='o')el=to.p===vIdx()?$('#myopen'):document.querySelector(`.seat[data-k="${to.p}"] .opile`);
 if(!el)return;el.classList.remove('could');void el.offsetWidth;el.classList.add('could');setTimeout(()=>el.classList.remove('could'),3400);}
 function events(prev,N){if(!prev||!N.ev||(prev.ev&&prev.ev.seq===N.ev.seq))return;const e=N.ev,me=meIdx();const E=e.t==='win'&&e.last?e.last:e;
 if(E.t==='flip'){SFX.flip(E.p===me);if(E.rec){SFX.recycle();if(E.p===me)toast('Stack empty: you pick up your open pile.');}}
@@ -833,29 +985,39 @@ if(E.t==='place'){const mine=E.p===me;if(E.to.t==='c'||E.to.t==='cn')setTimeout(
   if(E.p===me)banner('Missed play!',`Your ${rl(E.c)} could go ${whereTxt(E.could,N)}`,true);
   else if(N.players[E.p].bot)setTimeout(()=>react(E.p,'thinking',1400),200);}}
 if(E.t==='move'){setTimeout(()=>SFX.centre(E.p===me),320);}
-if(E.t==='juice'){SFX.splash(E.p===me);callBubble(E.p,'Juice!');if(E.p===me)buzz(25);if(N.players[E.p].bot)react(E.p,Math.random()<.5?'laugh':'happy',1200);if(E.n===1)react(E.off,'shocked',1500);}
+if(E.t==='juice'){SFX.splash(E.p===me);callBubble(E.p,E.ms!=null&&mode==='online'?'Juice! '+secs(E.ms):'Juice!');if(E.p===me)buzz(25);if(N.players[E.p].bot)react(E.p,Math.random()<.5?'laugh':'happy',1200);if(E.n===1)react(E.off,'shocked',1500);}
 if(e.t==='close'){if(e.n===0){if(e.off===me)toast('Phew, nobody noticed!');else{flashCould(e.could);if(N.players[e.off].bot)react(e.off,'smug',1200);}}
- else if(e.off===me)toast(`${e.n} card${e.n===1?'':'s'} added to your stack`);else if(prev.jw&&prev.jw.callers.indexOf(me)<0&&!AUTO)toast('Too slow! Tap Juice! within 3 seconds.');}
+ else if(e.off===me)toast(`${e.n} card${e.n===1?'':'s'} added to your stack`);else if(me>=0&&prev.jw&&prev.jw.callers.indexOf(me)<0&&!AUTO)toast('Too slow! Tap Juice! within 3 seconds.');
+ /* online: everyone sees who called, fastest first */
+ if(mode==='online'&&e.n>0&&e.calls&&e.calls.length){const cs=e.calls.slice().sort((a,b)=>a.ms-b.ms);banner(`Juice! ×${e.n}`,cs.map(c=>esc(c.p===me?'You':(N.players[c.p]||{}).name||'?')+' '+secs(c.ms)).join(' · ')+' → '+esc(e.off===me?'you':(N.players[e.off]||{}).name||''));}}
 if(e.t==='win'){const w=e.p;setTimeout(()=>{react(w,'laugh',2200);N.players.forEach((p,k)=>{if(k!==w)react(k,Math.random()<.5?'sad':'shocked',2000);});},400);}
 if(N.status==='playing'&&N.turn===me&&me>=0&&N.phase==='turn'&&!(prev.status==='playing'&&prev.turn===me))setTimeout(()=>{if(S&&S.turn===meIdx()&&S.status==='playing')SFX.turn();},Math.max(150,busyTill-Date.now()));}
-function gameAward(){if(!S||S.status!=='over'||meIdx()<0)return null;const me=meIdx();let n=8+Math.min(6,(S.calls[me]|0));if(S.winner===me)n+=30;return award('juice:'+S.gid+':'+S.gameNo,n);}
+function gameAward(){if(!S||S.status!=='over'||meIdx()<0||S.winner<0||(mode==='online'&&(NET.test||S.players[meIdx()].gone)))return null;const me=meIdx();let n=8+Math.min(6,(S.calls[me]|0));if(S.winner===me)n+=30;return award('juice:'+S.gid+':'+S.gameNo,n);}
 /* ---------- result ---------- */
 function closeOv(){const o=$('#ov');o.classList.remove('show');o.innerHTML='';o._k=null;}
-function renderOv(){const o=$('#ov');if(S.status!=='over'){if(o._k)closeOv();return;}const k='over'+S.gameNo+S.gid;if(o._k===k)return;o._k=k;
-const aw=gameAward(),me=meIdx(),w=S.winner,wp=S.players[w],won=w===me;setTimeout(()=>won?SFX.win():SFX.lose(),700);
+function renderOv(){const o=$('#ov');if(S.status!=='over'||!S.players[S.winner]&&!S.matchOver){if(o._k)closeOv();return;}const k='over'+S.gameNo+S.gid+(S.matchOver?'m':'');if(o._k===k)return;o._k=k;
+const online=mode==='online',aw=gameAward(),me=meIdx(),w=S.players[S.winner]?S.winner:(S.champs||[0])[0],wp=S.players[w],won=w===me;setTimeout(()=>won?SFX.win():SFX.lose(),700);
 const rows=S.players.map((p,j)=>({p:p,j:j,t:JU.total(S,j)})).sort((a,b)=>a.t-b.t);
-o.innerHTML=`<div class="ovc">${avatarHTML(wp,w,72)}<h2>${won?'You win!':esc(wp.name)+' wins'}</h2><div class="pts ok">${S.why==='cap'?'Fewest cards when time ran out':'First to empty their hand'}</div>
+const mw=online&&S.matchOver&&S.champs?S.champs:null,mwon=mw&&mw.includes(me);
+const head=mw?(mwon?(mw.length>1?'You share the match!':'You win the match!'):mw.map(i=>esc(S.players[i].name)).join(' & ')+(mw.length>1?' share the match':' wins the match')):(won?'You win!':esc(wp.name)+' wins');
+const sub=mw?`${S.players[S.winner]?(S.winner===me?'You':esc(S.players[S.winner].name))+' won the last game · ':''}${S.games>1?'first to '+S.need+' wins':'one game'}`:(S.why==='cap'?'Fewest cards when time ran out':'First to empty their hand');
+const standing=online&&S.games>1?`<div class="muted totlbl"><span>Match · first to ${S.need}</span><span>Wins</span></div><div class="scores">${S.players.map((p,j)=>({p,j})).sort((a,b)=>(b.p.wins|0)-(a.p.wins|0)).map(({p,j})=>`<div class="srow${mw&&mw.includes(j)?' win':''}">${avatarHTML(p,j,30)}<div class="n">${esc(p.name)}${p.id===myId&&p.name!=='You'?' (you)':''}${p.gone?'<small>left the match</small>':''}</div><b>${p.wins|0}</b></div>`).join('')}${(S.left||[]).map(p=>`<div class="srow" style="opacity:.55">${avatarHTML(p,0,30)}<div class="n">${esc(p.name)}<small>left the match</small></div><b>${p.wins|0}</b></div>`).join('')}</div>`:'';
+o.innerHTML=`<div class="ovc">${avatarHTML(mw?S.players[mw[0]]:wp,mw?mw[0]:w,72)}<h2>${head}</h2><div class="pts ok">${sub}</div>
 ${aw&&aw.sh>0?`<div class="earn">+${aw.sh} ${HI.shell} Boli${aw.capped?' (daily limit reached)':''}</div>`:aw&&aw.capped?'<div class="earn muted">Daily Boli limit reached</div>':''}
 <div class="muted totlbl"><span>Players</span><span>Cards left</span></div>
-<div class="scores">${rows.map(({p,j,t})=>`<div class="srow${j===w?' win':''}">${avatarHTML(p,j,30)}<div class="n">${esc(p.name)}${p.id===myId&&p.name!=='You'?' (you)':''}<small>${S.calls[j]|0} Juice! call${(S.calls[j]|0)===1?'':'s'} · ${S.misses[j]|0} slip${(S.misses[j]|0)===1?'':'s'} · ${p.wins|0} win${(p.wins|0)===1?'':'s'} so far</small></div><b>${t}</b></div>`).join('')}</div>
-<button class="btn primary wide" data-a="again">Play again</button>
-<button class="btn ghost wide" style="margin-top:8px" data-a="leave">Back to home</button></div>`;
+<div class="scores">${rows.map(({p,j,t})=>`<div class="srow${j===w?' win':''}">${avatarHTML(p,j,30)}<div class="n">${esc(p.name)}${p.id===myId&&p.name!=='You'?' (you)':''}<small>${(S.calls||[])[j]|0} Juice! call${((S.calls||[])[j]|0)===1?'':'s'} · ${(S.misses||[])[j]|0} slip${((S.misses||[])[j]|0)===1?'':'s'} · ${p.wins|0} win${(p.wins|0)===1?'':'s'} so far</small></div><b>${t}</b></div>`).join('')}</div>
+${standing}
+${!online?`<button class="btn primary wide" data-a="again">Play again</button>
+<button class="btn ghost wide" style="margin-top:8px" data-a="leave">Back to home</button>`
+ :(isHostOn()?`<button class="btn primary wide" data-a="${S.matchOver?'netAgain':'next'}">${S.matchOver?'Play again':'Next game'}</button>`
+  :`<p class="muted" style="font-size:13px;margin:10px 0 0">${S.matchOver?(me<0?'The next match starts soon.':'Waiting for the host to start the next match…'):'The next game starts in a moment…'}</p>`)
+ +`<button class="btn ghost wide" style="margin-top:8px" data-a="netLeave">Leave table</button>`}</div>`;
 o.classList.add('show');}
 
 /* ---------- your taps ---------- */
 function tapTarget(to){const me=meIdx();if(!S||S.status!=='playing')return;
 if(S.turn!==me){if(S.phase!=='juice')toast('Wait for your turn.');return;}
-if(S.phase==='turn'){if(to.t==='own'){const mv=JU.movable(S,me);if(mv){act({k:'move',to:mv});buzz(8);return;}const op=S.open[me];toast(op.length?`Your ${rl(op[op.length-1])} doesn’t fit a centre pile. Tap your stack.`:'Tap your stack to turn a card.');return;}
+if(S.phase==='turn'){if(to.t==='own'){const mv=JU.movable(S,me);if(mv){sendAct({k:'move',to:mv});buzz(8);return;}const op=S.open[me];toast(op.length?`Your ${rl(op[op.length-1])} doesn’t fit a centre pile. Tap your stack.`:'Tap your stack to turn a card.');return;}
  toast('Turn a card first: tap your stack.');return;}
 if(S.phase!=='place')return;const c=S.hold;
 if(!JU.legal(S,me,c,to)){SFX.tick();buzz(20);const r=JU.rk(c);
@@ -863,20 +1025,24 @@ if(!JU.legal(S,me,c,to)){SFX.tick();buzz(20);const r=JU.rk(c);
  else if(to.t==='cn')toast(`Only a ${rlOfRank(S.base)} starts a new centre pile.`);
  else if(to.t==='o'){const op=S.open[to.p];toast(op.length?`A ${rl(c)} doesn’t follow the ${rl(op[op.length-1])}.`:'That pile is empty.');}
  return;}
-buzz(8);act({k:'place',to:to});}
-function callJuice(){const me=meIdx();if(!S||S.phase!=='juice'||!S.jw||S.jw.off===me)return;if(act({k:'juice'})){buzz(30);}else toast('Too late!');}
+buzz(8);sendAct({k:'place',to:to});}
+function callJuice(){const me=meIdx();if(!S||me<0||S.phase!=='juice'||!S.jw||S.jw.off===me)return;
+ /* online guest: send how long after the slip reached this screen you tapped; the host checks it and plays it */
+ if(mode==='online'&&!isHostOn()){const J=S.jw;if(!jwL||jwL.k!==J.until||jwL.called)return;const el=Date.now()-jwL.at;if(el>S.juiceMs){toast('Too late!');return;}
+  jwL.called=true;NET.send({t:'juice',k:J.until,el:el});buzz(30);SFX.splash(true);renderJuice();return;}
+ if(act({k:'juice'})){buzz(30);}else toast('Too late!');}
 
 /* ---------- sheets, toasts, menu ---------- */
 function sheet(h){$('#sheetB').innerHTML=h;$('#sheet').classList.add('open');}
 function closeSheet(){$('#sheet').classList.remove('open');}
 let toastT=0;function toast(t,ms){const e=$('#toast');e.textContent=t;e.classList.remove('show');void e.offsetWidth;e.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>e.classList.remove('show'),ms||2600);}
 function standingsHTML(){const rows=S.players.map((p,j)=>({p:p,j:j,t:S.status==='lobby'?0:JU.total(S,j)})).sort((a,b)=>a.t-b.t);
-return `<div class="scores">${rows.map(({p,j,t})=>`<div class="srow">${avatarHTML(p,j,30)}<div class="n">${esc(p.name)}<small>${p.wins|0} win${(p.wins|0)===1?'':'s'} this session</small></div><b>${t} card${t===1?'':'s'}</b></div>`).join('')}</div>`;}
+return `<div class="scores">${rows.map(({p,j,t})=>`<div class="srow">${avatarHTML(p,j,30)}<div class="n">${esc(p.name)}<small>${p.wins|0} win${(p.wins|0)===1?'':'s'} ${mode==='online'?'this match':'this session'}</small></div><b>${t} card${t===1?'':'s'}</b></div>`).join('')}${(S.left||[]).map(p=>`<div class="srow" style="opacity:.55">${avatarHTML(p,0,30)}<div class="n">${esc(p.name)}<small>left the match · ${p.wins|0} win${(p.wins|0)===1?'':'s'}</small></div><b></b></div>`).join('')}</div>`;}
 function openMenu(){if(!S)return;sheet(`<div class="grab"></div><h2>Juice</h2><p class="muted" style="margin:4px 0 0">Game ${Math.max(1,S.gameNo)} · first to empty wins · ${DIFF[S.diff||'normal'].name}</p>
 ${standingsHTML()}
-<div class="mlist"><button class="btn soft wide" data-a="menuRules">Rules</button><button class="btn soft wide" data-a="sfx" aria-pressed="${sfxOn()}">Sound: ${sfxOn()?'On':'Off'}</button><button class="btn ghost wide" data-a="leave">${S.status==='playing'?'Leave (your game is saved)':'Back to home'}</button></div>`);}
+<div class="mlist"><button class="btn soft wide" data-a="menuRules">Rules</button><button class="btn soft wide" data-a="sfx" aria-pressed="${sfxOn()}">Sound: ${sfxOn()?'On':'Off'}</button>${mode==='online'?`<button class="btn ghost wide" data-a="netLeave">Leave table</button>${meIdx()>=0&&S.status==='playing'?'<p class="muted" style="font-size:12px;margin:2px 2px 0">If you leave, a computer player finishes this game for you and you can’t rejoin this match.</p>':''}`:`<button class="btn ghost wide" data-a="leave">${S.status==='playing'?'Leave (your game is saved)':'Back to home'}</button>`}</div>`);}
 function toggleSfx(){ls.set('dd-sfx',sfxOn()?'0':'1');document.querySelectorAll('[data-a="sfx"]').forEach(b=>{b.setAttribute('aria-pressed',String(sfxOn()));if(b.classList.contains('btn'))b.textContent='Sound: '+(sfxOn()?'On':'Off');});if(sfxOn()){AU.unlock();SFX.turn();}}
-function leave(){clearTimeout(botT);clearTimeout(turnT);clearTimeout(warnT);callT.forEach(clearTimeout);if(mode==='solo'&&S&&S.status==='playing')ls.set(SAVE_KEY,JSON.stringify(S));closeSheet();closeRules();closeOv();S=null;mode=null;renderHome();}
+function leave(){clearTimeout(botT);clearTimeout(turnT);clearTimeout(warnT);callT.forEach(clearTimeout);if(mode==='online'&&NET&&NET.isOnline()){closeSheet();closeOv();NET.leave();return;}if(mode==='solo'&&S&&S.status==='playing')ls.set(SAVE_KEY,JSON.stringify(S));closeSheet();closeRules();closeOv();S=null;mode=null;renderHome();}
 
 /* ---------- one click handler for everything ---------- */
 document.addEventListener('click',e=>{AU.unlock();const b=e.target.closest('[data-a]');if(!b)return;const a=b.dataset.a;
@@ -891,13 +1057,18 @@ case 'bots':nBots=+b.dataset.n;renderComputer();break;
 case 'diff':diff=b.dataset.d;renderComputer();break;
 case 'solo':startSolo();break;
 case 'resume':resume();break;
-case 'rulesDeal':closeRules();act({k:'start'});break;
+case 'rulesDeal':closeRules();if(mode!=='online'||isHostOn())act({k:'start'});break;
+case 'online':if(NET)NET.open();else toast('Online play needs a newer browser.');break;
+case 'netLeave':closeSheet();closeOv();if(NET&&mode==='online')NET.leave();else leave();break;
+case 'netAgain':closeOv();if(NET)NET.again();break;
+case 'next':closeOv();if(isHostOn())hostNext();break;
+case 'rulesOk':closeRules();break;
 case 'menu':openMenu();break;
 case 'menuRules':sheet(`<div class="grab"></div>${rulesCardHTML(S)}${picsHTML()}<div class="row"><button class="btn primary" data-a="close">Back to the game</button></div>`);break;
 case 'sfx':toggleSfx();break;
 case 'leave':leave();break;
-case 'again':{const ps=S.players.map(p=>Object.assign({},p));const df=S.diff;closeOv();ls.del(SAVE_KEY);S=JU.create({players:ps,juiceMs:JUICE_MS});S.diff=df;mode='solo';draw();act({k:'start'});break;}
-case 'flip':{const me=meIdx();if(!S||S.status!=='playing')break;if(S.turn!==me){if(S.phase!=='juice')toast('Wait for your turn.');break;}if(S.phase==='turn'){if(act({k:'flip'}))buzz(6);}else if(S.phase==='place')toast('Place the card you turned up first.');break;}
+case 'again':{if(mode==='online'){closeOv();if(NET)NET.again();break;}const ps=S.players.map(p=>Object.assign({},p));const df=S.diff;closeOv();ls.del(SAVE_KEY);S=JU.create({players:ps,juiceMs:JUICE_MS});S.diff=df;mode='solo';draw();act({k:'start'});break;}
+case 'flip':{const me=meIdx();if(!S||S.status!=='playing'||me<0)break;if(S.turn!==me){if(S.phase!=='juice')toast('Wait for your turn.');break;}if(S.phase==='turn'){if(sendAct({k:'flip'}))buzz(6);}else if(S.phase==='place')toast('Place the card you turned up first.');break;}
 case 'mine':tapTarget({t:'own'});break;
 case 'opp':tapTarget({t:'o',p:+b.dataset.p});break;
 case 'cpile':tapTarget({t:'c',i:+b.dataset.i});break;
@@ -909,14 +1080,16 @@ $('#sheet').addEventListener('click',e=>{if(e.target.id==='sheet')closeSheet();}
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){if($('#sheet').classList.contains('open'))closeSheet();}if(e.key==='Enter'&&e.target&&e.target.id==='pnm')saveName();
  if(screen==='table'&&S&&!$('#sheet').classList.contains('open')&&(e.key==='j'||e.key==='J')){const jb=$('#jwrap .jbtn');if(jb){e.preventDefault();callJuice();}}});
 let rzT=0;window.addEventListener('resize',()=>{if(rzT)return;rzT=requestAnimationFrame(()=>{rzT=0;if(screen==='table'&&S){layoutArena();renderTable();}});});
-document.addEventListener('visibilitychange',()=>{if(document.hidden){AU.sleep();clearTimeout(botT);clearTimeout(turnT);clearTimeout(warnT);}
-else if(S&&screen==='table'){if(S.status==='playing'&&S.players[S.turn]&&S.players[S.turn].id===myId){S.turnAt=Date.now();renderTable();}schedule();}});
+document.addEventListener('visibilitychange',()=>{if(document.hidden){AU.sleep();if(mode!=='online'){clearTimeout(botT);clearTimeout(turnT);clearTimeout(warnT);}}
+else if(S&&screen==='table'){if(mode!=='online'&&S.status==='playing'&&S.players[S.turn]&&S.players[S.turn].id===myId){S.turnAt=Date.now();renderTable();}schedule();}});
 window.addEventListener('pagehide',()=>{if(mode==='solo'&&S&&S.status==='playing')ls.set(SAVE_KEY,JSON.stringify(S));});
 /* the Juice! button disappears by itself when the window runs out */
-setInterval(()=>{if(S&&screen==='table'&&S.phase==='juice')renderJuice();},200);
+setInterval(()=>{if(S&&screen==='table'&&S.phase==='juice'){renderJuice();
+ /* online guest: tell the host when your own 3 seconds are over, so the window can close without waiting */
+ const J=S.jw,me=meIdx();if(mode==='online'&&!isHostOn()&&J&&me>=0&&J.off!==me&&jwL&&jwL.k===J.until&&!jwL.done&&Date.now()>=jwL.at+S.juiceMs){jwL.done=true;NET.send({t:'jdone',k:J.until});}}},200);
 
 /* test hooks (localhost only) */
-if(LOCAL)window.__juice={E:JU,get S(){return S;},act:act,
+if(LOCAL)window.__juice={E:JU,get S(){return S;},get mode(){return mode;},get NET(){return NET;},get jwL(){return jwL;},act:act,callJuice:callJuice,
  geom(){const a=$('#arena');if(!a||!AR)return null;const ar=a.getBoundingClientRect();
   const seats=[...document.querySelectorAll('.seat')].map(e=>{const r=e.getBoundingClientRect(),n=e.querySelector('.nm');return{k:+e.dataset.k,box:[Math.round(r.left),Math.round(r.top),Math.round(r.right),Math.round(r.bottom)],nameClip:n.scrollWidth>n.clientWidth+1||n.scrollHeight>n.clientHeight+1};});
   const tg=[...document.querySelectorAll('.opile,.cpile,.slot.stack,.slot.open,.jbtn')].map(e=>{const r=e.getBoundingClientRect();return[e.className.split(' ')[0],Math.round(r.width),Math.round(r.height)];});
@@ -925,8 +1098,10 @@ if(LOCAL)window.__juice={E:JU,get S(){return S;},act:act,
  setAuto(v){auto=!!v;renderTable();schedule();}};
 
 /* ---------- boot ---------- */
-if(LOCAL&&Q.get('play')==='1'){if(Q.get('bots'))nBots=Math.max(1,Math.min(4,+Q.get('bots')||3));if(DIFF[Q.get('diff')])diff=Q.get('diff');startSolo();}
-else renderHome();
+initNet();
+if(NET&&/^[A-Z]{4}$/i.test(Q.get('t')||'')){renderHome();NET.boot();}   /* invite link ?t=CODE */
+else if(LOCAL&&Q.get('play')==='1'){if(Q.get('bots'))nBots=Math.max(1,Math.min(4,+Q.get('bots')||3));if(DIFF[Q.get('diff')])diff=Q.get('diff');startSolo();}
+else{renderHome();if(NET)NET.boot();}
 })();
 </script>
 </body>

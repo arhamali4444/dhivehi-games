@@ -1,7 +1,9 @@
 /* =====================================================================================
-   DGNet · shared online play for Dhivehi Games                        shared/net.js  v1
+   DGNet · shared online play for Dhivehi Games                        shared/net.js  v2
    Load it BEFORE the game's own script, with a cache-busting version:
-       <script src="../shared/net.js?v=1"></script>        (bump ?v= whenever this file changes)
+       <script src="../shared/net.js?v=2"></script>        (bump ?v= in EVERY game whenever this file changes)
+   v2 (Sept 2026, backward-compatible): optional waiting-room hooks roomList / roomClick / onLobbyMsg / lobbyFix,
+   NET.lobby(obj), game-owned lobby data T.x (also passed to onStart as info.x). Used by Dhihaeh for 2 v 2 seats.
 
    WHAT IT DOES (extracted from Digu's proven online code, plus Dhogu's Last-Will and epoch-based
    host hand-over, which are more robust):
@@ -58,10 +60,16 @@
        onEnd(kind, msg),             // left | closed | lost | afk | kicked | moved: show the game's home
        onTell(obj),                  // client: a private note from the host (NET.tell(pid,obj)), e.g. {err}
        dockHost(),                   // optional: element to mount the voice/chat dock in (e.g. the top bar)
-       avatarEl(pid)                 // element to anchor chat bubbles and the voice ring
+       avatarEl(pid),                // element to anchor chat bubbles and the voice ring
+       // optional waiting-room extras (v2, e.g. choosing seats / teams). T.x is game-owned lobby data kept in the meta:
+       roomList(T,ctx),              // HTML that replaces the player list; ctx={host,me,quick,avatar(seat,size),icons}.
+                                     //   Keep <li data-pid> and a .av inside for bubbles and the voice ring; data-dgn="x" buttons call roomClick
+       roomClick(dataset),           // a data-dgn="x" button in the room was tapped (every player)
+       onLobbyMsg(pid,obj),          // host: a player sent NET.lobby(obj) while the table waits; change T.x (NET.meta().x), then it syncs
+       lobbyFix(T)                   // host: tidy T.x before each waiting-room update (players come and go)
      });
      NET.open()   NET.boot()   NET.leave()   NET.sync()   NET.send(action)   NET.start()   NET.again()
-     NET.matchOver()   NET.strike(pid)   NET.clear(pid)   NET.afk(pid)   NET.retire()
+     NET.matchOver()   NET.strike(pid)   NET.clear(pid)   NET.afk(pid)   NET.retire()   NET.lobby(obj)
      NET.isOnline() isHost() isClient() isSpectator() meta() hostNow() humans() id ns test
    ===================================================================================== */
 (function(){
@@ -406,6 +414,7 @@ function create(cfg){
  function sync(){if(role!=='host'||!net||syncT)return;syncT=setTimeout(flush,Math.max(0,60-(Date.now()-syncAt)));}
  function flush(){syncT=0;syncAt=Date.now();const n=net;if(role!=='host'||!n||!T)return;
   T.rev=(T.rev|0)+1;T.conn=connIds();T.viewers=viewers();
+  if(T.status==='lobby'&&cfg.lobbyFix){try{cfg.lobbyFix(T);}catch(e){console.error(e);}}
   n.players.forEach((pl,tp)=>{if(pl.pid)sendState(tp,pl);});
   updListing(false);backups();renderRoom();updDock();}
  function sendState(tp,pl){let s=null;if(T.status!=='lobby'&&cfg.view){try{s=cfg.view(pl.pid,!seated(pl.pid));}catch(e){console.error(e);}}
@@ -459,7 +468,8 @@ function create(cfg){
  function start(){const n=net;if(role!=='host'||!n||!T||T.status!=='lobby')return;const seats=T.players.filter(p=>!p.gone);
   if(seats.length<MIN){toast('You need at least '+MIN+' players.');return;}
   T.players=seats;T.status='playing';T.mid=(T.mid|0)+1;T.autoAt=0;n.autoAt=0;n.strikes={};n.overAt=0;T.note=null;hideRoom();
-  try{cfg.onStart&&cfg.onStart(seats.map(p=>({id:p.id,name:p.name,look:p.look})),clone(T.opts),{mid:T.mid,quick:T.quick});}catch(e){console.error(e);}
+  if(cfg.lobbyFix){try{cfg.lobbyFix(T);}catch(e){console.error(e);}}
+  try{cfg.onStart&&cfg.onStart(seats.map(p=>({id:p.id,name:p.name,look:p.look})),clone(T.opts),{mid:T.mid,quick:T.quick,x:clone(T.x)});}catch(e){console.error(e);}
   sync();updDock();}
  function matchOver(){const n=net;if(role!=='host'||!n||!T||T.status!=='playing')return;T.status='over';n.overAt=Date.now();sync();}
  /* next match: everyone still seated plus the players who waited, up to the table size */
@@ -503,6 +513,7 @@ function create(cfg){
    case 'chat':relayChat(id,d.m);return;
    case 'rtc':{if(!seat)return;const to=String(d.to||'');if(to===myId)vcSignal(id,d.d);else if(seated(to))sendToId(to,{k:'rtc',f:id,d:d.d});return;}
    case 'look':if(seat&&T.status==='lobby'){seat.name=cleanName(d.name)||seat.name;seat.look=validLook(d.look);sync();}return;
+   case 'lob':if(seat&&T.status==='lobby')lobbyMsg(id,d.d);return;
    case 'leave':n.players.delete(tp);drop(id,'left');if(!seat)sync();return;}}
 
  /* ================= JOINER ================= */
@@ -602,6 +613,10 @@ function create(cfg){
  function relayChat(id,mi){const n=net;if(!n||!T)return;const k=mi|0;if(!PH[k])return;if(!(seated(id)||T.wait.some(p=>p.id===id)))return;
   const now=Date.now();if(now-(n.chatAt[id]||0)<1200)return;n.chatAt[id]=now;showChat(id,k);n.players.forEach((pl,tp)=>{if(pl.pid)sendTo(tp,pl,{k:'chat',p:id,m:k});});}
  function sayChat(k){closeTray();if(!role||!T)return;if(role==='host')relayChat(myId,k);else joinSend({k:'chat',m:k|0});}
+ /* waiting-room requests (e.g. "seat me here"): the host's game code decides, then everyone gets the new room */
+ function lobbyMsg(id,obj){if(role!=='host'||!T||T.status!=='lobby'||!cfg.onLobbyMsg||!obj||typeof obj!=='object')return;
+  try{cfg.onLobbyMsg(id,clone(obj));}catch(e){console.error(e);}sync();}
+ function lobbySend(obj){if(!role||!T||T.status!=='lobby'||!seated(myId))return;if(role==='host')lobbyMsg(myId,obj);else joinSend({k:'lob',d:obj});}
 
  /* ---------------- Quick Match ---------------- */
  async function quickMatch(){if(!netOK()||!needName()||!localGuard({quick:true}))return;const r=++run;vcStop();closeNet();role=null;T=null;closeHub();showQuick('Connecting…');warm();
@@ -790,6 +805,8 @@ ${cfg.rulesNote?`<p class="dgn-fine">${esc(cfg.rulesNote)}</p>`:''}
   set('dgnRt',esc(T.quick?'Quick Match table':host?'Your table':(nameOf(T.hostId)||'Friend')+'’s table'));
   set('dgnPub',host&&!T.quick?`<span class="dgn-lbl">Who can join</span><div class="dgn-seg" role="group" aria-label="Who can join"><button data-dgn="setPub" data-v="1" aria-pressed="${!!T.pub}">${IC.globe}Anyone (public)</button><button data-dgn="setPub" data-v="0" aria-pressed="${!T.pub}">${IC.lock}Code only</button></div>`:'');
   set('dgnPc',`· ${T.players.length} of ${MAX}`);
+  let custom=null;if(cfg.roomList){try{custom=cfg.roomList(T,{host,me:myId,quick:!!T.quick,avatar:av,icons:IC});}catch(e){console.error(e);}}
+  if(custom!=null)set('dgnPl',String(custom));else
   set('dgnPl',T.players.map(p=>`<li data-pid="${esc(p.id)}"><span class="av">${av(p,38)}</span><span class="nm">${esc(p.name)}${p.id===T.hostId?`<span class="dgn-tag">${IC.crown}Host</span>`:''}${p.id===myId?'<span class="dgn-tag you">You</span>':''}</span>${host&&!T.quick&&p.id!==myId?`<button class="dgn-kick" data-dgn="kick" data-id="${esc(p.id)}" aria-label="Remove ${esc(p.name)}">${IC.x}</button>`:''}</li>`).join('')
    +Array.from({length:Math.max(0,MAX-T.players.length)},()=>'<li class="empty"><span class="seat"></span><span>Open seat</span></li>').join(''));
   set('dgnWt',T.wait.length?`<p class="dgn-hint">Waiting for a seat: ${T.wait.map(w=>esc(w.name)).join(', ')}</p>`:'');
@@ -855,6 +872,7 @@ ${cfg.rulesNote?`<p class="dgn-fine">${esc(cfg.rulesNote)}</p>`:''}
    case 'setPub':setPub(b.dataset.v==='1');break;
    case 'opt':setOpt(b.dataset.k,b.dataset.v);break;
    case 'kick':kick(b.dataset.id);break;
+   case 'x':if(cfg.roomClick){try{cfg.roomClick(Object.assign({},b.dataset));}catch(x){console.error(x);}}break;
    case 'start':start();break;
    case 'chat':openTray();break;
    case 'say':sayChat(+b.dataset.v);break;
@@ -876,7 +894,7 @@ ${cfg.rulesNote?`<p class="dgn-fine">${esc(cfg.rulesNote)}</p>`:''}
   meta:()=>T,view:()=>V,seated,humans:()=>T?T.players.filter(p=>!p.gone).length:0,
   hostNow:()=>Date.now()+(role==='join'?skew:0),skew:()=>role==='join'?skew:0,
   sync,send:a=>role==='join'?joinSend({k:'act',a}):Promise.resolve(false),
-  start,again,matchOver,strike,clear:clearStrikes,afk:markAfk,drop:(id,why)=>drop(id,why||'left'),note:t=>{note(t);sync();},
+  start,again,matchOver,strike,clear:clearStrikes,lobby:lobbySend,afk:markAfk,drop:(id,why)=>drop(id,why||'left'),note:t=>{note(t);sync();},
   tell:(id,obj)=>{if(role==='host'&&id!==myId)sendToId(id,{k:'tell',d:obj});},
   chat:sayChat,showChat,toast,notice,updDock,
   lists:()=>({open:openTables(),live:liveTables()})});

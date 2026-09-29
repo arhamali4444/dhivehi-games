@@ -337,6 +337,24 @@ main.table>*{width:100%;max-width:640px;margin-left:auto;margin-right:auto}
 @keyframes ytin{from{opacity:0;translate:0 10px}}
 @media (max-height:640px){.mebar{min-height:52px}.meav{--av:40px}.status{font-size:12px;padding:7px 13px}}
 @media (prefers-reduced-motion:reduce){*,*:before,*:after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}.glow{display:none}}
+/* ================= online (shared/net.js): the night carnival, red velvet and gold ================= */
+:root{--dgn-bg:#1c0d17;--dgn-bg2:#261421;--dgn-fg:#FFF3D6;--dgn-muted:#C9B39E;--dgn-line:rgba(245,214,140,.16);--dgn-soft:rgba(245,214,140,.08);
+ --dgn-acc:#F4D57E;--dgn-acc-fg:#2A1606;--dgn-good:#E0364E;--dgn-bad:#FF5A6E;--dgn-font:'Sora',system-ui,sans-serif;--dgn-head:var(--disp);
+ --dgn-room-bg:radial-gradient(80% 40% at 50% 0%,rgba(224,54,78,.3),transparent 70%),radial-gradient(60% 30% at 50% 100%,rgba(244,213,126,.12),transparent 70%),linear-gradient(#1a0812,#0b0610);
+ --dgn-dock-size:44px;--dgn-inline-bg:rgba(22,10,18,.8);--dgn-inline-shadow:inset 0 0 0 1px rgba(245,214,140,.25);--dgn-talk:rgba(244,213,126,.9);--dgn-watch-bottom:calc(8px + env(safe-area-inset-bottom,0px))}
+.tools .dgn-dock .dgn-ib{border-radius:13px}
+@media (max-width:420px){html[data-net="1"] #sfxbtn{display:none}}
+.seat .aib{position:absolute;left:-6px;top:-5px;z-index:4;width:20px;height:20px;border-radius:50%;display:grid;place-items:center;background:#1a0b12;color:#F4D57E;box-shadow:0 0 0 1.5px rgba(233,196,106,.6),0 1px 3px rgba(0,0,0,.6)}
+.seat .aib svg{width:13px;height:13px}
+/* your poker face while someone draws from you (online): pick the face your avatar shows */
+.facebar{position:absolute;left:50%;bottom:100%;transform:translateX(-50%);margin-bottom:4px;z-index:7;display:flex;flex-direction:column;align-items:center;gap:5px;padding:7px 8px 8px;border-radius:18px;background:rgba(22,10,18,.92);box-shadow:inset 0 0 0 1px rgba(245,214,140,.3),0 12px 28px -10px rgba(0,0,0,.9);animation:ytin .4s var(--spring) both;max-width:calc(100vw - 16px)}
+.facebar .fl{font:700 9.5px/1.2 var(--disp);letter-spacing:.14em;text-transform:uppercase;color:#F4D57E;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.faces{display:flex;gap:5px;align-items:center}
+.faces button{width:56px;min-height:52px;border:0;border-radius:13px;padding:3px 0 2px;background:rgba(255,255,255,.06);box-shadow:inset 0 0 0 1px rgba(245,214,140,.22);color:#fff;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;font:700 8.5px/1 Sora,sans-serif;letter-spacing:.02em}
+.faces button .mini{width:28px;height:28px}
+.faces button[aria-pressed="true"]{background:var(--gold);color:var(--goldInk);box-shadow:0 0 14px -2px var(--goldGlow)}
+@media (max-width:340px){.faces button{width:50px}}
+.stage .sc.peer .back{box-shadow:inset 0 0 0 calc(var(--w)*.035) #2a040d,inset 0 0 0 calc(var(--w)*.055) #FFF0B8,0 0 0 2px rgba(244,213,126,.7),0 0 18px rgba(255,200,110,.6)}
 </style>
 </head>
 <body>
@@ -354,7 +372,8 @@ main.table>*{width:100%;max-width:640px;margin-left:auto;margin-right:auto}
 </defs></svg>
 <script src="../shared/avatar.js?v=5"></script>
 <script src="../shared/cosmetics.js?v=2"></script>
-<script src="../shared/sponsors.js?v=4"></script>
+<script src="../shared/sponsors.js?v=5"></script>
+<script src="../shared/net.js?v=2"></script>
 <script>
 /* =====================================================================
    JOKER ENGINE (pure, no DOM). Host-authoritative: the whole round is one plain object N,
@@ -448,7 +467,8 @@ const buzz=ms=>{try{if(navigator.userActivation&&!navigator.userActivation.hasBe
 const TURN_MS=15000,DAILY_CAP=500,SAVE_KEY='joker-solo',ROUNDS=5,NEED=3;
 const BOT_MS=FAST?40:900;
 const SPRING=(()=>{try{if(CSS.supports('animation-timing-function','linear(0,1)'))return 'linear(0,.009,.035 2.1%,.141 4.4%,.723 12.9%,.938 16.7%,1.017 19.4%,1.067,1.089 25.4%,1.084 28.1%,1.029 35.3%,1.003 41.2%,.994 47.9%,1 60.1%,1)';}catch(e){}return 'cubic-bezier(.34,1.4,.5,1)';})();
-const myId=(()=>{let v=ls.get('dd-pid');if(!v){v='p'+Math.random().toString(36).slice(2,10);ls.set('dd-pid',v);}return v;})();
+const myId=(()=>{if(window.DGNet&&DGNet.local&&/^[a-z0-9_-]{2,24}$/i.test(Q.get('pid')||''))return Q.get('pid');   /* localhost tests: one player per tab */
+ let v=ls.get('dd-pid');if(!v){v='p'+Math.random().toString(36).slice(2,10);ls.set('dd-pid',v);}return v;})();
 
 /* ---------- cards: "r-S", r = 2..14 (A = 14), plus the Joker "JK" ---------- */
 const SN={S:'spades',H:'hearts',D:'diamonds',C:'clubs'};
@@ -556,7 +576,7 @@ const BOTS=[['Aisha','aisha','#9363D1'],['Ibrahim','ibrahim','#E8B232'],['Mariya
 const PC=['#C4262E','#2D86C9','#E8B232','#34A064','#9363D1'];
 const DGC=()=>window.DGCosmetics||null,DGA=()=>window.DGAvatar||null;
 function invRead(){try{const d=JSON.parse(ls.get('dd-inv')||'null');if(d&&d.v===1)return d;}catch(e){}return null;}
-const myName=()=>(ls.get('lg-name')||'').trim();
+const myName=()=>((window.DGNet&&DGNet.testName())||ls.get('lg-name')||'').trim();
 function myChar(){const A=DGA();if(!A)return null;try{let c=A.load();if(!c){const o=JSON.parse(ls.get('dd-char')||'null');if(o&&typeof o==='object')c=A.normalize(o);}return c||A.random(myId);}catch(e){return null;}}
 function myRing(){const d=invRead(),f=d&&d.eq&&d.eq.frame;return f&&f!=='f-classic'?f:'';}
 function avInner(p,k,size){const A=DGA();if(A&&p.ch){try{return `<span class="pz chr">${A.render(p.ch,{size:size>56?96:64,animate:!reduce})}</span>`;}catch(e){}}
@@ -566,12 +586,15 @@ function avatarHTML(p,k,size){size=size||46;return `<span class="mini" data-avk=
 /* a short facial reaction on a seat (DGAvatar.react swaps in the expression and springs back) */
 function react(k,expr,ms){if(!S||!S.players[k]||document.hidden)return;const p=S.players[k],A=DGA();if(!p.ch||!A||typeof A.react!=='function')return;
 const el=avEl(k);if(!el)return;const ex=A.expressions||[];if(ex.length&&ex.indexOf(expr)<0)return;try{A.react(el,expr,ms||1600);}catch(e){}}
-function avEl(k){return k===meIdx()?document.querySelector('#meav .mini'):document.querySelector(`.seat[data-k="${k}"] .mini`);}
+function avEl(k){return k===vIdx()?document.querySelector('#meav .mini'):document.querySelector(`.seat[data-k="${k}"] .mini`);}
 /* poker faces: each computer player has a style. 'open' faces give honest tells, 'bluff' faces lie now and then,
    'poker' faces give nothing away. Tells show when you lift one of their cards, and when the Joker reaches them. */
 function tellFor(p,isJoker){const st=p.sty||'open',r=Math.random();
  if(st==='poker')return r<.8?'blink':(r<.9?'thinking':'smug');
  const honest=st==='open'?r<.85:r<.35;const truth=isJoker?'smug':'thinking';const lie=isJoker?'thinking':'smug';return honest?truth:lie;}
+/* online: a person who hasn't picked a face shows an automatic one, honest half the time */
+function autoFace(isJoker){const r=Math.random();if(r<.2)return 'blink';return (r<.6)===!!isJoker?'smug':'thinking';}
+const FACES=[['smug','Smug'],['thinking','Worried'],['blink','Poker'],['happy','Happy']];
 function gotJokerFace(p){const st=p.sty||'open',r=Math.random();if(st==='poker')return r<.85?'blink':'thinking';if(st==='bluff')return r<.6?'happy':'shocked';return r<.85?'shocked':'sad';}
 
 /* ---------- Boli rewards (the shared wallet dd-inv: 500 a day, each award key paid once) ---------- */
@@ -588,27 +611,42 @@ const compact=n=>n>=1e4?Math.round(n/1e3)+'k':String(n);
 let S=null,mode=null,screen='home';
 const clone=o=>JSON.parse(JSON.stringify(o));
 const meIdx=()=>S?S.players.findIndex(p=>p.id===myId):-1;
+/* the seat drawn at the bottom: yours, or seat 0 for someone watching online */
+const vIdx=()=>{const k=meIdx();return k>=0?k:(mode==='online'&&S?0:-1);};
 let botT=null,turnT=null,warnT=null,saveT=null,busyTill=0,lifted=-1,auto=ls.get('joker-auto')==='1',peekT=[];
-function act(a,who){if(!S)return false;if(who==null)who=meIdx();const N=clone(S);if(!JE.act(N,who,a))return false;commit(N);return true;}
+function act(a,who){if(!S)return false;if(who==null)who=meIdx();const N=clone(S);if(!JE.act(N,who,a))return false;if(mode==='online'){N.lift=null;fixOver(N);}commit(N);return true;}
 function commit(N){const prev=S,b=screen==='table'?snap():null;
- if(!prev||N.turn!==prev.turn||N.status!==prev.status||(N.ev&&prev.ev&&N.ev.seq!==prev.ev.seq&&N.ev.t!=='shuffle'))N.turnAt=Date.now();
- S=N;lifted=-1;
+ if(!(mode==='online'&&!isHostOn())&&(!prev||N.turn!==prev.turn||N.status!==prev.status||(N.ev&&prev.ev&&N.ev.seq!==prev.ev.seq&&N.ev.t!=='shuffle')))N.turnAt=Date.now();
+ const newEv=!prev||!N.ev||!prev.ev||N.ev.seq!==prev.ev.seq;
+ S=N;if(newEv){lifted=-1;peekCard(null);}
  if(mode==='solo'){clearTimeout(saveT);if(N.status==='over')ls.del(SAVE_KEY);else saveT=setTimeout(()=>{if(mode==='solo'&&S&&S.status!=='lobby')ls.set(SAVE_KEY,JSON.stringify(S));},300);}
- draw();if(b)animate(prev,N,b);events(prev,N);schedule();}
+ draw();if(b)animate(prev,N,b);events(prev,N);schedule();
+ if(isHostOn()){NET.sync();hostAfter();}}
 function hold(ms){if(reduce||FAST||document.hidden)return;busyTill=Math.max(busyTill,Date.now()+ms);}
 function schedule(){clearTimeout(botT);botT=null;clearTimeout(turnT);clearTimeout(warnT);turnT=warnT=null;
-if(!S||S.status!=='playing'||document.hidden)return;
+if(!S||S.status!=='playing'||(document.hidden&&mode!=='online'))return;
 const wait=Math.max(0,busyTill-Date.now());const p=S.players[S.turn];if(!p)return;
+/* online guest: only the countdown (the host draws a card for you when time runs out); Auto draws for you */
+if(mode==='online'&&!isHostOn()){if(p.id!==myId)return;
+ if(AUTO||auto){botT=setTimeout(()=>{if(S&&S.status==='playing'&&S.turn===meIdx())sendDraw(lifted>=0?lifted:Math.floor(Math.random()*S.hands[S.from].length));},wait+(AUTO?BOT_MS*.5:900));return;}
+ const left=Math.max(0,TURN_MS-(Date.now()-S.turnAt));warnT=setTimeout(tickDown,Math.max(0,left-5000));return;}
 if(p.bot){botT=setTimeout(botMove,wait+BOT_MS*(.7+Math.random()*.6));return;}
 if(p.id===myId){if(AUTO||auto){botT=setTimeout(autoMe,wait+(AUTO?BOT_MS*.5:900));return;}
- const left=Math.max(0,TURN_MS-(Date.now()-S.turnAt));turnT=setTimeout(()=>{if(S&&S.status==='playing'&&S.turn===meIdx()){toast('Time up: a card was drawn for you.');autoMe();}},left+wait);
- warnT=setTimeout(tickDown,Math.max(0,left-5000));}}
+ const left=Math.max(0,TURN_MS-(Date.now()-S.turnAt));turnT=setTimeout(()=>{if(S&&S.status==='playing'&&S.turn===meIdx()){toast('Time up: a card was drawn for you.');autoMe();if(mode==='online'&&NET.strike(myId))seatToAI(myId,'afk');}},left+(mode==='online'?0:wait));
+ warnT=setTimeout(tickDown,Math.max(0,left-5000));return;}
+/* online host: a remote player gets 15 s plus a moment for the network, then a card is drawn for them */
+if(mode==='online'){const k=S.turn,left=Math.max(0,TURN_MS+GRACE-(Date.now()-S.turnAt));turnT=setTimeout(()=>autoRemote(k),left);}}
 function tickDown(){if(!S||S.status!=='playing'||S.turn!==meIdx())return;const left=TURN_MS-(Date.now()-S.turnAt);const av=$('#meav');
 if(av){av.classList.toggle('warn',left<=5000&&left>2500);av.classList.toggle('hot',left<=2500);}
 if(left<=5000&&left>0){SFX.tick();warnT=setTimeout(tickDown,Math.min(1000,left));}}
 /* a computer player draws: it "considers" a couple of cards first (you see your own cards lift when it's your hand) */
 function botMove(){botT=null;if(!S||S.status!=='playing')return;const k=S.turn,p=S.players[k];if(!p||!p.bot)return;
 const src=S.from,n=S.hands[src].length,i=Math.floor(Math.random()*n),me=meIdx();
+/* online: a computer player drawing from a person lifts a card or two first, and everyone sees that person's face */
+if(mode==='online'&&!S.players[src].bot&&!FAST){const tries=Math.min(n,1+Math.floor(Math.random()*3)),seq=[];for(let t=0;t<tries-1;t++){const j=Math.floor(Math.random()*n);if(j!==i)seq.push(j);}seq.push(i);
+ const seqKey=S.seq;peekT.forEach(clearTimeout);peekT=[];
+ seq.forEach((j,t)=>{peekT.push(setTimeout(()=>{if(S&&S.seq===seqKey&&isHostOn())hostLift(k,j);},t*650));});
+ peekT.push(setTimeout(()=>{if(S&&S.seq===seqKey&&S.turn===k&&isHostOn())act({k:'draw',i:i},k);},seq.length*650+450));return;}
 if(src===me&&!FAST&&!reduce&&!document.hidden){const ids=S.hands[src];const seq=[];const tries=Math.min(n,1+Math.floor(Math.random()*3));
  for(let t=0;t<tries;t++){const j=Math.floor(Math.random()*n);if(j!==i)seq.push(ids[j]);}seq.push(ids[i]);
  const seqKey=S.seq;peekT.forEach(clearTimeout);peekT=[];
@@ -616,6 +654,104 @@ if(src===me&&!FAST&&!reduce&&!document.hidden){const ids=S.hands[src];const seq=
  peekT.push(setTimeout(()=>{peekCard(null);if(S&&S.seq===seqKey&&S.turn===k)act({k:'draw',i:i},k);},seq.length*380+260));return;}
 act({k:'draw',i:i},k);}
 function autoMe(){const k=meIdx();if(k<0||!S||S.status!=='playing'||S.turn!==k)return;const n=S.hands[S.from].length;act({k:'draw',i:lifted>=0&&lifted<n?lifted:Math.floor(Math.random()*n)},k);}
+/* take card i from the player on your left (online guests ask the host) */
+function sendDraw(i){if(!S||S.status!=='playing'||S.turn!==meIdx())return;
+ if(mode==='online'&&!isHostOn()){if(S._sent===S.seq)return;S._sent=S.seq;NET.send({t:'draw',i:i});return;}
+ if(mode==='online')NET.clear(myId);act({k:'draw',i:i});}
+
+/* =====================================================================
+   ONLINE (shared/net.js). The host runs JE.act for everyone and sends each player JE.redact (only their own
+   hand; the seed and RNG state never leave the host). Drawing: the drawer lifts cards from the face-down fan;
+   every lift goes through the host, so the player being drawn from sees which of THEIR cards is lifted, and
+   everyone sees that player's face: the face they picked (Smug / Worried / Poker / Happy), or an automatic one
+   that tells the truth only half the time. A player who leaves, loses connection or times out twice in a row
+   gets a computer player until the round ends; then that seat leaves the match (Jokers frozen) and the table
+   shrinks. If the host leaves mid-round the next player takes over and the round is dealt again (Jokers stay).
+   ===================================================================== */
+const GRACE=800,NEXT_MS=9000;
+let NET=null,nextT=0,faceSel=null;
+const isHostOn=()=>mode==='online'&&!!NET&&NET.isHost();
+const BOT_IC='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="7" width="16" height="12" rx="3.5"/><path d="M12 7V4"/><circle cx="9.3" cy="12.6" r="1.2" fill="currentColor" stroke="none"/><circle cx="14.7" cy="12.6" r="1.2" fill="currentColor" stroke="none"/><path d="M9.5 16h5"/></svg>';
+function lookOf(l){const o={ch:null,ring:''};if(!l||typeof l!=='object')return o;const A=DGA();try{if(A&&l.ch)o.ch=A.normalize(l.ch);}catch(e){}
+ if(typeof l.ring==='string'&&/^f-[a-z0-9-]{1,24}$/.test(l.ring))o.ring=l.ring;return o;}
+function rid(){try{const a=new Uint32Array(2);crypto.getRandomValues(a);return a[0].toString(36)+a[1].toString(36);}catch(e){return Math.random().toString(36).slice(2);}}
+function newSeed(){try{const a=new Uint32Array(1);crypto.getRandomValues(a);return a[0]||1;}catch(e){return (Math.random()*4294967295)>>>0||1;}}
+/* the winners are the players still at the table with the fewest Jokers */
+function fixOver(N){if(N.status!=='over')return;const live=N.players.map((p,k)=>k).filter(k=>!N.players[k].gone);if(!live.length)return;
+ const lo=Math.min(...live.map(k=>N.players[k].losses));N.champs=live.filter(k=>N.players[k].losses===lo);}
+/* host: a card of the left player's hand is lifted (i=-1: no card, just a face). Everyone sees the target's face */
+function hostLift(by,i,face){if(!isHostOn()||!S||S.status!=='playing'||S.turn!==by)return;const src=S.from,h=S.hands[src];if(!h||!(Number.isInteger(i)&&i>=-1&&i<h.length))return;
+ const tp=S.players[src];let f=null,chosen=false;
+ if(face){f=face;chosen=true;}
+ else if(tp.bot){if(i>=0)f=tellFor(tp,h[i]===JK);}
+ else{const fs=faceSel&&faceSel.seq===S.seq&&faceSel.p===src?faceSel.e:null;if(fs){f=fs;chosen=true;}else if(i>=0)f=autoFace(h[i]===JK);}
+ const old=S.lift&&S.lift.seq===S.seq?S.lift:null;if(i<0&&old)i=old.i;
+ S.lift={n:((S.lift&&S.lift.n)|0)+1,seq:S.seq,by:by,from:src,i:i,face:f,chosen:chosen};showLift(S.lift);NET.sync();}
+/* every screen: show a lift (the target's card rises in their hand, the target's face changes) */
+function showLift(L){if(!S||!L||L.seq!==S.seq||S.status!=='playing')return;const me=meIdx();
+ if(me===L.from){const c=L.i>=0?(S.hands[me]||[])[L.i]:null;peekCard(c||null);if(c)buzz(4);}
+ if(me===L.by&&L.i>=0&&lifted!==L.i){lifted=L.i;renderStage();renderStatus();}
+ if(L.face)react(L.from,L.face,1500);
+ renderFaces();}
+function autoRemote(k){if(!isHostOn()||!S||S.status!=='playing'||S.turn!==k)return;const p=S.players[k];if(!p||p.bot)return;
+ const n=S.hands[S.from].length,L=S.lift&&S.lift.seq===S.seq&&S.lift.by===k?S.lift.i:-1;act({k:'draw',i:L>=0&&L<n?L:Math.floor(Math.random()*n)},k);
+ if(NET.strike(p.id))seatToAI(p.id,'afk');else NET.tell(p.id,{t:'timeout'});}
+/* a computer player takes the seat for the rest of this round */
+function seatToAI(pid,why){if(!isHostOn()||!S)return;const k=S.players.findIndex(p=>p.id===pid);if(k<0)return;const N=clone(S),p=N.players[k];if(p.gone)return;
+ p.gone=1;p.bot=true;p.sty='bluff';if(why==='afk')p.afk=1;fixOver(N);commit(N);}
+function hostAfter(){clearTimeout(nextT);if(!S)return;
+ if(S.status==='over'){NET.matchOver();if(NET.hostAway())setTimeout(()=>{if(isHostOn())NET.retire();},3000);return;}
+ if(S.status==='handover'){if(NET.hostAway()){setTimeout(()=>{if(isHostOn())NET.retire();},3000);return;}const r=S.roundNo;nextT=setTimeout(()=>{if(isHostOn()&&S&&S.status==='handover'&&S.roundNo===r){closeOv();hostNext();}},NEXT_MS);}}
+/* next round: seats whose computer player finished for them leave now (Jokers frozen); fewer than 2 left ends the match */
+function hostNext(){if(!isHostOn()||!S||S.status!=='handover')return;clearTimeout(nextT);const N=clone(S);const gone=N.players.filter(p=>p.gone);
+ if(gone.length){N.left=(N.left||[]).concat(gone.map(p=>({id:p.id,name:p.name,ch:p.ch,col:p.col,losses:p.losses,afk:p.afk?1:0})));
+  const keep=N.players.filter(p=>!p.gone),old=N.players.slice();N.players=keep;
+  let d=N.dealer;while(d>=0&&old[d]&&old[d].gone)d=(d-1+old.length)%old.length;N.dealer=Math.max(0,keep.indexOf(old[d]));N.hands=keep.map(()=>[]);N.safe=[];N.turn=-1;N.from=-1;}
+ if(N.players.length<2){N.status='over';fixOver(N);commit(N);return;}
+ if(!JE.act(N,0,{k:'next'}))return;N.lift=null;commit(N);}
+function netStart(seats,opts){mode='online';clearTimeout(nextT);faceSel=null;const rounds=[3,5,7].includes(+opts.rounds)?+opts.rounds:ROUNDS;
+ const players=seats.map((s,i)=>{const l=s.id===myId?{ch:myChar(),ring:myRing()}:lookOf(s.look);return{id:s.id,name:s.name,ch:l.ch,ring:l.ring,col:PC[i%PC.length]};});
+ S=JE.create({players:players,rounds:rounds,need:Math.ceil(rounds/2),seed:newSeed(),gid:'j'+rid()});S.diff='normal';S.online=1;
+ closeSheet();buildTable();draw();openRules();
+ nextT=setTimeout(()=>{if(isHostOn()&&S&&S.status==='lobby'){closeRules();act({k:'start'});}},5000);NET.sync();}
+function netAction(pid,a){if(!S||!a||typeof a!=='object')return;const k=S.players.findIndex(p=>p.id===pid);if(k<0||S.players[k].bot)return;
+ if(a.t==='draw'&&Number.isInteger(a.i)){if(!act({k:'draw',i:a.i},k))NET.sync();}
+ else if(a.t==='lift'&&Number.isInteger(a.i)){if(S.turn===k)hostLift(k,a.i);}
+ else if(a.t==='face'&&FACES.some(f=>f[0]===a.e)){if(S.status==='playing'&&S.from===k&&S.turn!==k){faceSel={seq:S.seq,p:k,e:a.e};hostLift(S.turn,-1,a.e);}}
+ else if(a.t==='shuffle'){act({k:'shuffle'},k);}}
+function netDrop(pid,why){if(!isHostOn()||!S)return;const k=S.players.findIndex(p=>p.id===pid);if(k<0)return;
+ if(S.status==='playing'||S.status==='lobby')seatToAI(pid,why);else{const N=clone(S);N.players[k].gone=1;N.players[k].bot=true;fixOver(N);commit(N);}}
+function viewFor(pid){if(!S)return null;const V=JE.redact(S,S.players.findIndex(p=>p.id===pid));delete V.seed;V.rs=0;return V;}
+function netState(v){if(!v||!Array.isArray(v.players))return;mode='online';const N=clone(v);if(N.turnAt)N.turnAt-=NET.skew();
+ if(screen!=='table'||!S||S.gid!==N.gid){S=N;closeSheet();closeOv();buildTable();draw();schedule();if(N.status==='lobby')openRules();return;}
+ if(N.status!=='lobby')closeRules();
+ /* only a lift or a face changed: no new move, keep your own lifted card */
+ const sameMove=S.ev&&N.ev&&S.ev.seq===N.ev.seq&&S.status===N.status&&S.seq===N.seq,L=N.lift,newLift=L&&(!S.lift||S.lift.n!==L.n);
+ if(sameMove){S=N;renderTable();if(newLift)showLift(L);return;}
+ commit(N);if(newLift)showLift(L);}
+/* I became the host: carry on from the last state; a round in progress is dealt again (only the old host knew every hand) */
+function netMigrate(o){mode='online';const v=o.view;if(!v){NET.again();return;}const N=clone(v);if(N.turnAt)N.turnAt-=o.skew||0;
+ const goneIds=new Set((o.meta.players||[]).filter(p=>p.gone).map(p=>p.id));N.players.forEach(p=>{if(goneIds.has(p.id)){p.gone=1;p.bot=true;p.sty='bluff';}});
+ N.rs=newSeed()|0;N.lift=null;S=N;if(screen!=='table')buildTable();
+ if(N.status==='lobby'){draw();nextT=setTimeout(()=>{if(isHostOn()&&S&&S.status==='lobby'){closeRules();act({k:'start'});}},2500);NET.sync();return;}
+ if(N.status==='playing'){const M=clone(N);M.status='handover';M.roundNo=Math.max(0,(M.roundNo|0)-1);M.dealer=((M.dealer|0)-1+M.players.length)%M.players.length;S=M;hostNext();toast('The host left, so this round was dealt again. Jokers stay the same.',4500);return;}
+ draw();hostAfter();NET.sync();}
+function netLobby(){clearTimeout(nextT);clearTimeout(botT);clearTimeout(turnT);clearTimeout(warnT);peekT.forEach(clearTimeout);closeOv();closeRules();closeSheet();S=null;if(screen==='table')renderHome();}
+function netEnd(){clearTimeout(nextT);clearTimeout(botT);clearTimeout(turnT);clearTimeout(warnT);peekT.forEach(clearTimeout);mode=null;closeOv();closeRules();closeSheet();S=null;document.documentElement.dataset.net='0';renderHome();}
+function initNet(){if(!window.DGNet)return;NET=DGNet.create({game:'joker',title:'Joker',min:2,max:5,id:myId,
+ me:()=>({name:myName(),look:{ch:myChar(),ring:myRing()}}),setName:v=>{ls.set('lg-name',v);if(screen==='home')renderHome();},
+ avatar:(seat,size)=>{const l=lookOf(seat.look);return avInner({name:seat.name,ch:l.ch,col:PC[0]},0,size);},
+ options:[{k:'rounds',label:'Match length',def:ROUNDS,choices:[[3,'Up to 3 rounds'],[5,'Up to 5 rounds'],[7,'Up to 7 rounds']],hint:o=>`Ends early at ${Math.ceil(o.rounds/2)} Jokers. Fewest Jokers wins.`}],
+ rulesNote:'2 to 5 players. 15 seconds to draw, then a card is drawn for you. While someone draws from you, pick the face your avatar shows. Miss 2 turns in a row, or leave, and a computer player finishes your round; then your seat leaves the match.',
+ listInfo:m=>m.status!=='lobby'&&S?'Round '+Math.max(1,S.roundNo)+' of '+S.rounds:'Up to '+(m.opts?m.opts.rounds:ROUNDS)+' rounds',
+ dropText:(nm,why)=>nm+(why==='afk'?' is away':why==='left'?' left':' lost connection')+'. A computer player finishes the round for them.',
+ afkText:'You missed 2 turns in a row, so a computer player finished your round. You can’t rejoin this match.',
+ hostAfkText:'You missed 2 turns in a row, so a computer player is finishing your round. Then you’ll leave the table.',
+ onStart:netStart,view:pid=>viewFor(pid),onAction:netAction,onDrop:netDrop,onState:netState,onLobby:netLobby,onMigrate:netMigrate,onEnd:netEnd,
+ onTell:d=>{if(d&&d.t==='timeout')toast('Time up: a card was drawn for you. Miss another turn and a computer player takes your seat.',3600);},
+ toast:(t,ms)=>toast(t,ms),
+ dockHost:()=>screen==='table'?document.querySelector('.topbar .tools'):null,
+ avatarEl:pid=>{if(!S||screen!=='table')return null;const k=S.players.findIndex(p=>p.id===pid);return k<0?null:k===vIdx()?document.querySelector('#meav'):document.querySelector(`.seat[data-k="${k}"] .av`);}});}
 
 /* =====================================================================
    UI: home, setup, how to play, rules card
@@ -637,7 +773,7 @@ ${heroFan()}
 <p class="mhint">Draw a hidden card from the player on your left, throw out your pairs, and <b>read their faces</b>.</p>
 <section class="modes">
 <button class="mode quick" data-a="goComputer"><span class="mi">${HI.bot}</span><span class="mt"><b>Play vs Computer</b><small>2 to 5 players · works offline</small></span></button>
-<button class="mode" disabled aria-disabled="true"><span class="tag">Soon</span><span class="mi">${HI.friends}</span><b>Play online</b><small>Coming soon</small></button>
+<button class="mode" data-a="online"><span class="mi">${HI.friends}</span><b>Play online</b><small>2 to 5 players · codes, Quick Match</small></button>
 <button class="mode" data-a="howto"><span class="mi">${HI.book}</span><b>How to play</b><small>Rules with pictures</small></button>
 </section>
 ${resumeHTML()}
@@ -687,7 +823,10 @@ li('✓','Run out of cards and you are <b>safe</b>.'),
 li('✕','Left holding the <b>Joker</b>? You lose the round.',1),
 li(String(N.rounds),`Up to ${N.rounds} rounds, three Jokers ends it early. <b>Fewest Jokers wins.</b>`)];
 return `<div class="rcard"><div class="rtop"><span class="rbadge">${cardHTML(JK)}</span><div><h2>Joker</h2><div class="rsub">${n} players · ${Math.floor(53/n)}${53%n?'–'+Math.ceil(53/n):''} cards each · up to ${N.rounds} rounds</div></div></div><ul class="rlist">${items.join('')}</ul></div>`;}
-function openRules(){const o=$('#rov');o.innerHTML=`<div class="ovc">${rulesCardHTML(S)}<div class="rfoot"><button class="btn primary wide" data-a="rulesDeal">Deal the cards</button><button class="btn ghost wide" style="margin-top:8px" data-a="leave">Not now</button></div></div>`;o.classList.add('show');setTimeout(()=>{const b=o.querySelector('.btn.primary');b&&b.focus({preventScroll:true});},60);}
+function openRules(){const o=$('#rov');const foot=mode!=='online'?`<button class="btn primary wide" data-a="rulesDeal">Deal the cards</button><button class="btn ghost wide" style="margin-top:8px" data-a="leave">Not now</button>`
+ :isHostOn()?`<button class="btn primary wide" data-a="rulesDeal">Deal the cards</button><p class="muted" style="font-size:12px;margin:8px 0 0">The cards are dealt automatically in a few seconds.</p>`
+ :`<button class="btn primary wide" data-a="rulesOk">Ready</button><p class="muted" style="font-size:12px;margin:8px 0 0">${meIdx()>=0?'The host deals in a few seconds.':'You are watching this match.'}</p>`;
+ o.innerHTML=`<div class="ovc">${rulesCardHTML(S)}<div class="rfoot">${foot}</div></div>`;o.classList.add('show');setTimeout(()=>{const b=o.querySelector('.btn.primary');b&&b.focus({preventScroll:true});},60);}
 function closeRules(){const o=$('#rov');o.classList.remove('show');o.innerHTML='';}
 function openName(){const nm=myName();sheet(`<div class="grab"></div><h2>Your name</h2><p class="muted" style="margin:4px 0 12px">Shown at the table. Your character and ring come from your Digu profile.</p>
 <label class="f" for="pnm">Name</label><input class="in" id="pnm" maxlength="14" value="${esc(nm)}" autocomplete="nickname" enterkeyhint="done">
@@ -723,11 +862,11 @@ function buildTable(){screen='table';offTable();closeOv();cardEls={};order=[];ha
 app.innerHTML=`<main class="table"><div class="tlayer" aria-hidden="true"><div class="tsc${isSmooth()?' still':''}" id="tsc">${sceneHTML()}</div></div>
 <div class="topbar"><button class="icon-btn" data-a="menu" aria-label="Scores and menu">${HI.menu}</button><div class="goal"><span id="goalt"></span></div><div class="tools"><button class="icon-btn" data-a="sfx" id="sfxbtn" aria-label="Sound effects" aria-pressed="${sfxOn()}">${HI.sound}</button></div></div>
 <section class="arena" id="arena"><div class="seats" id="opps"></div><div class="pile" id="pile" aria-hidden="true"></div><div class="stage" id="stage"></div><div class="status" id="status" aria-live="polite"></div></section>
-<section class="me"><div class="mebar"><div class="meinfo" id="meinfo"></div><div class="acts" id="acts"></div></div><div class="hand" id="hand"></div></section>
-</main>`;bindStage();layoutArena();}
+<section class="me"><div class="facebar" id="faces" hidden></div><div class="mebar"><div class="meinfo" id="meinfo"></div><div class="acts" id="acts"></div></div><div class="hand" id="hand"></div></section>
+</main>`;bindStage();layoutArena();document.documentElement.dataset.net=mode==='online'?'1':'0';if(mode==='online'&&NET)NET.updDock();}
 function tableAd(){const w=$('#tadw');if(!w||!S||!window.DGSponsors)return;let s=null;try{s=DGSponsors.felt('joker');}catch(e){}const k=s?s.title:'';if(w._k===k)return;w._k=k;
 w.innerHTML=s?`<div class="tad ticket" style="left:${TBL.at[0]}px;top:${TBL.at[1]}px"><b>${esc(s.title)}</b></div>`:'';}
-function seatOrder(){const n=S.players.length,m=Math.max(0,meIdx()),o=[];for(let i=1;i<n;i++)o.push((m+i)%n);return o;}
+function seatOrder(){const n=S.players.length,m=Math.max(0,vIdx()),o=[];for(let i=1;i<n;i++)o.push((m+i)%n);return o;}
 /* your left neighbour sits on the left (166°), the rest go round over the top to your right */
 const SEAT_ANG=[[],[90],[150,30],[156,90,24],[166,122,58,14]];
 function layoutArena(){const a=$('#arena');if(!a||!S)return;const W=a.clientWidth,H=a.clientHeight;if(!W||!H)return;
@@ -744,7 +883,7 @@ function placeSeats(){const oe=$('#opps');if(!oe||!AR)return;
 seatOrder().forEach(k=>{const el=oe.querySelector(`.seat[data-k="${k}"]`);if(!el)return;const q=seatXY(k);
 if(!el._placed){el._placed=1;el.style.transition='none';}el.style.transform=`translate(${q.x.toFixed(1)}px,${(q.y-30).toFixed(1)}px)`;if(el.style.transition){void el.offsetWidth;el.style.transition='';}});}
 function timerHTML(){return '<span class="tmr" aria-hidden="true"><i class="l"><b></b></i><i class="r"><b></b></i></span>';}
-function syncTimer(el,on){let t=el.querySelector('.tmr');const want=on&&!AUTO&&!auto;if(!want){if(t)t.remove();el.classList.remove('warn','hot');return;}
+function syncTimer(el,on,other){let t=el.querySelector('.tmr');const want=on&&(other||(!AUTO&&!auto));if(!want){if(t)t.remove();el.classList.remove('warn','hot');return;}
 const k=S.roundNo+':'+S.seq+':'+S.turnAt;if(t&&t._k===k)return;if(t)t.remove();el.classList.remove('warn','hot');el.insertAdjacentHTML('beforeend',timerHTML());t=el.lastElementChild;t._k=k;
 t.style.setProperty('--d',TURN_MS+'ms');t.style.setProperty('--dl',(S.turnAt-Date.now())+'ms');}
 function draw(){if(!S){renderHome();return;}if(screen!=='table')buildTable();renderTable();}
@@ -756,23 +895,24 @@ const oe=$('#opps'),so=seatOrder();oe.className='seats n'+so.length;oe._cnt=oe._
 so.forEach(k=>{const p=S.players[k];let el=oe.querySelector(`.seat[data-k="${k}"]`);
  if(!el){el=document.createElement('div');el.className='seat';el.dataset.k=k;el.innerHTML='<div class="av"><span class="avc"></span><span class="hfan" aria-hidden="true"></span></div><div class="nm"></div><div class="cnt"></div>';oe.appendChild(el);moved=true;}
  const h=S.hands[k]||[],cnt=h.length,prev=oe._cnt[k];oe._cnt[k]=cnt;const on=playing&&S.turn===k;
- const avc=el.querySelector('.avc');if(!avc._k){avc._k=1;avc.innerHTML=avatarHTML(p,k,46);}
+ const avc=el.querySelector('.avc');if(el._pid!==p.id){el._pid=p.id;avc._k=0;}if(!avc._k){avc._k=1;avc.innerHTML=avatarHTML(p,k,46);}
  const fan=el.querySelector('.hfan'),fk=Math.min(3,cnt);if(fan._k!==fk){fan._k=fk;fan.innerHTML=Array.from({length:fk},()=>'<i></i>').join('');}
  if(prev!=null&&cnt>prev){fan.classList.remove('bump');void fan.offsetWidth;fan.classList.add('bump');}
  const ne=el.querySelector('.nm'),nm=esc(p.name);if(ne.innerHTML!==nm)ne.innerHTML=nm;
+ {const avx=el.querySelector('.av'),ab=avx.querySelector('.aib'),isAI=mode==='online'&&p.bot;if(isAI&&!ab)avx.insertAdjacentHTML('beforeend',`<span class="aib" title="Computer">${BOT_IC}</span>`);else if(!isAI&&ab)ab.remove();}
  const si=S.safe.indexOf(k),lost=S.result&&S.result.loser===k&&S.status!=='playing';
  const ct=lost?'<span class="stag lose">Joker!</span>':playing&&si>=0?`<span class="stag">Safe · ${ord(si+1)}</span>`:`${playing?cnt+' card'+(cnt===1?'':'s'):''}${jpips(p.losses,S.need)}`;
  const ce=el.querySelector('.cnt');if(ce._k!==ct){ce._k=ct;ce.innerHTML=ct;}
  el.classList.toggle('safe',playing&&si>=0);el.classList.toggle('src',playing&&S.from===k&&S.turn===me);
- const av=el.querySelector('.av');av.classList.toggle('on',on);syncTimer(av,false);
+ const av=el.querySelector('.av');av.classList.toggle('on',on);syncTimer(av,mode==='online'&&on&&!p.bot,true);
  el.setAttribute('aria-label',`${p.name}, ${playing?(si>=0?'safe':cnt+' cards'):''}, ${p.losses} Joker${p.losses===1?'':'s'}${on?', drawing now':''}`);el.setAttribute('role','img');});
-oe.querySelectorAll('.seat').forEach(el=>{if(+el.dataset.k>=S.players.length||+el.dataset.k===me){el.remove();moved=true;}});
+oe.querySelectorAll('.seat').forEach(el=>{if(+el.dataset.k>=S.players.length||+el.dataset.k===vIdx()||!so.includes(+el.dataset.k)){el.remove();moved=true;}});
 if(moved||oe._n!==so.length){oe._n=so.length;layoutArena();}
 renderPile();renderStage();tableAd();renderStatus();
-const mi=$('#meinfo');if(me>=0){const p=S.players[me],myTurn=playing&&S.turn===me,cnt=(S.hands[me]||[]).length,si=S.safe.indexOf(me);
- if(!mi._built){mi._built=1;mi.innerHTML=`<span class="meav" id="meav">${avatarHTML(p,me,46)}</span><div></div>`;}
+const vm=vIdx(),mi=$('#meinfo');if(vm>=0){const p=S.players[vm],myTurn=playing&&S.turn===vm,cnt=(S.hands[vm]||[]).length,si=S.safe.indexOf(vm);
+ if(!mi._built||mi._pid!==p.id){mi._built=1;mi._pid=p.id;mi.innerHTML=`<span class="meav" id="meav">${avatarHTML(p,vm,46)}</span><div></div>`;}
  const h=`<b>${esc(p.name)}</b><span class="s">${playing?(si>=0?`safe, ${ord(si+1)} out`:`${cnt} card${cnt===1?'':'s'}`):'Jokers'}${jpips(p.losses,S.need)}</span>`;const tx=mi.lastElementChild;if(tx._h!==h){tx._h=h;tx.innerHTML=h;}
- const mav=$('#meav');mav.classList.toggle('on',myTurn);syncTimer(mav,myTurn);}
+ const mav=$('#meav');mav.classList.toggle('on',myTurn);syncTimer(mav,myTurn&&(me>=0||!p.bot),me<0);}
 renderHand();renderActs();renderOv();}
 function renderStatus(){const st=$('#status');const me=meIdx(),playing=S.status==='playing';let t='';
 if(S.status==='lobby')t='Read the rules, then deal';
@@ -807,8 +947,10 @@ if(box._k!==k||force){const fresh=box._k&&box._k.split(':')[0]===String(S.seq)?'
 const lb=$('#slbl');if(lb){const lt=lifted>=0?'Tap it again to <b>take it</b>':`${esc(S.players[S.from].name)}’s hand · tap to lift`;if(lb._t!==lt){lb._t=lt;lb.innerHTML=lt;}}
 box.querySelectorAll('.sc').forEach(el=>{const i=+el.dataset.i,q=stagePos(i,n,box._G);const up=i===lifted;el.classList.toggle('up',up);el.style.transform=`translate(${q.x.toFixed(1)}px,${(q.y-(up?22:0)).toFixed(1)}px) rotate(${(up?0:q.r).toFixed(1)}deg)${up?' scale(1.06)':''}`;el.style.zIndex=up?99:i+1;});}
 function bindStage(){const box=$('#stage');const pick=el=>{if(!el||!S||S.status!=='playing'||S.turn!==meIdx())return;const i=+el.dataset.i;
- if(lifted===i){buzz(12);act({k:'draw',i:i});return;}
+ if(lifted===i){buzz(12);sendDraw(i);return;}
  lifted=i;buzz(5);SFX.lift();renderStage();renderStatus();
+ /* online: the lift goes through the host, who shows the other player which card you touched, and their face */
+ if(mode==='online'){if(isHostOn())hostLift(meIdx(),i);else NET.send({t:'lift',i:i});return;}
  /* their face: an honest tell, a bluff or a poker face */
  const src=S.from,p=S.players[src];if(p&&p.bot)react(src,tellFor(p,S.hands[src][i]===JK),1300);};
 box.addEventListener('click',e=>pick(e.target.closest('.sc')));
@@ -821,7 +963,7 @@ function renderHand(){const box=$('#hand');if(!box)return;const me=meIdx();const
 const hk=S.gid+':'+S.roundNo;let dealt=false;if(handKey!==hk){handKey=hk;for(const id in cardEls)cardEls[id].remove();cardEls={};dealt=S.ev&&(S.ev.t==='deal'||(S.ev.t==='end'&&S.ev.deal));}
 order=sortHand(hand);
 for(const id in cardEls)if(!hand.includes(id)){cardEls[id].remove();delete cardEls[id];}
-let em=box.querySelector('.empty');const et=S.status==='playing'&&!hand.length?'You’re safe! Watch who ends up with the Joker.':'';
+let em=box.querySelector('.empty');const et=me<0?(mode==='online'&&S.status!=='lobby'?(NET&&NET.isWaiting()?'You play from the next match':'Watching live · the hands stay hidden'):''):S.status==='playing'&&!hand.length?'You’re safe! Watch who ends up with the Joker.':'';
 if(et){if(!em){box.insertAdjacentHTML('beforeend','<div class="empty"></div>');em=box.querySelector('.empty');}if(em.textContent!==et)em.textContent=et;}else if(em)em.remove();
 const fresh=[];order.forEach(id=>{let el=cardEls[id];if(!el){el=document.createElement('div');el.className='card nt'+(id===JK?' jk':'');el.dataset.id=id;el.innerHTML=faceHTML(id);el.setAttribute('role','img');el.setAttribute('aria-label',cname(id));box.appendChild(el);cardEls[id]=el;fresh.push(el);}});
 layoutHand();
@@ -839,7 +981,13 @@ el.style.zIndex=i+2;el.style.transform=`translate(${x.toFixed(1)}px,${y.toFixed(
 function dealIn(els){if(!AR)return;const a=$('#arena').getBoundingClientRect(),cx=a.left+AR.cx,cy=a.top+AR.cy;SFX.deal();
 els.forEach((el,i)=>{if(!el.animate)return;const r=el.getBoundingClientRect();const dx=cx-(r.left+r.width/2),dy=cy-(r.top+r.height/2);
 el.animate([{translate:`${dx}px ${dy}px`,scale:'.5',opacity:0},{opacity:1,offset:.15},{translate:'0 0',scale:'1',opacity:1}],{duration:640,delay:120+i*Math.max(18,300/els.length*2),easing:SPRING,fill:'backwards'});});}
-function renderActs(){const a=$('#acts');if(!a||!S)return;const me=meIdx(),playing=S.status==='playing';
+/* online: while someone draws from you, choose the face your avatar shows them */
+function facesOn(){const me=meIdx();return mode==='online'&&!!S&&S.status==='playing'&&me>=0&&S.from===me&&S.turn!==me&&(S.hands[me]||[]).length>0;}
+function renderFaces(){const box=$('#faces');if(!box||!S)return;const on=facesOn();box.hidden=!on;const st=$('#status');if(st&&on)st.hidden=true;if(!on){box._k='';return;}
+ const me=meIdx(),p=S.players[me],cur=S.lift&&S.lift.seq===S.seq&&S.lift.chosen?S.lift.face:'',k=S.seq+':'+cur+':'+S.turn;if(box._k===k)return;box._k=k;
+ const A=DGA();const ic=e=>{if(A&&p.ch){try{return `<span class="mini"><span class="pz chr">${A.render(p.ch,{size:64,expression:e})}</span></span>`;}catch(x){}}return '';};
+ box.innerHTML=`<span class="fl">${esc(S.players[S.turn].name)} is drawing · your face</span><div class="faces" role="group" aria-label="Your face">${FACES.map(([e,l])=>`<button data-a="face" data-e="${e}" aria-pressed="${cur===e}" aria-label="Show a ${l.toLowerCase()} face">${ic(e)}${l}</button>`).join('')}</div>`;}
+function renderActs(){const a=$('#acts');if(!a||!S)return;const me=meIdx(),playing=S.status==='playing';renderFaces();
 const h=playing&&me>=0?`${(S.hands[me]||[]).length>1?`<button class="btn soft shufb" data-a="shuffle" aria-label="Shuffle your hand">${HI.shuffle}<span>Shuffle</span></button>`:''}<button class="autob" data-a="auto" aria-pressed="${auto}" aria-label="Auto draw"><span class="sw" aria-hidden="true"><i></i></span><span>Auto</span></button>`:'';
 if(a._h!==h){a.innerHTML=h;a._h=h;}}
 
@@ -900,27 +1048,30 @@ if(D){const mineTo=D.p===me,mineFrom=D.from===me;SFX.slide(mineTo||mineFrom);
  (D.safe||[]).forEach((k,i)=>{setTimeout(()=>{react(k,'laugh',1600);SFX.safe(k===me);if(k===me)banner('You’re safe!',`${ord(N.safe.indexOf(k)+1)} out this round`);},900+i*300);});}
 if(e.t==='end'){const L=e.loser;setTimeout(()=>{if(L>=0)react(L,L===me?'sad':(Math.random()<.5?'angry':'sad'),2600);},1100);}
 if(N.status==='playing'&&N.turn===me&&me>=0&&!(prev.status==='playing'&&prev.turn===me))setTimeout(()=>{if(S&&S.turn===meIdx()&&S.status==='playing')SFX.turn();},Math.max(150,busyTill-Date.now()));}
-function roundAward(){if(!S||!S.result||meIdx()<0)return null;const me=meIdx(),r=S.result;let n=0;if(r.loser!==me){n+=6;if(r.order[0]===me)n+=4;}
+function roundAward(){if(!S||!S.result||meIdx()<0||(mode==='online'&&(NET.test||S.players[meIdx()].gone)))return null;const me=meIdx(),r=S.result;let n=0;if(r.loser!==me){n+=6;if(r.order[0]===me)n+=4;}
 if(S.status==='over'){n+=5;if(S.champs.includes(me))n+=25;}return n?award('joker:'+S.gid+':'+S.roundNo,n):null;}
 /* ---------- round and match results ---------- */
 function closeOv(){const o=$('#ov');o.classList.remove('show');o.innerHTML='';o._k=null;}
 function scoresHTML(){const rows=S.players.map((p,k)=>({p:p,k:k})).sort((a,b)=>a.p.losses-b.p.losses);const lo=Math.min(...S.players.map(p=>p.losses));
-return `<div class="scores">${rows.map(({p,k})=>`<div class="srow">${avatarHTML(p,k,30)}<div class="n">${esc(p.name)}${p.id===myId&&p.name!=='You'?' (you)':''}${p.losses===lo&&S.roundNo?'<small>fewest</small>':''}</div>${jpips(p.losses,S.need)}</div>`).join('')}</div>`;}
+return `<div class="scores">${rows.map(({p,k})=>`<div class="srow">${avatarHTML(p,k,30)}<div class="n">${esc(p.name)}${p.id===myId&&p.name!=='You'?' (you)':''}${p.losses===lo&&S.roundNo?'<small>fewest</small>':''}</div>${jpips(p.losses,S.need)}</div>`).join('')}${(S.left||[]).map(p=>`<div class="srow" style="opacity:.55">${avatarHTML(p,0,30)}<div class="n">${esc(p.name)}<small style="color:var(--muted)">left the match</small></div>${jpips(p.losses,S.need)}</div>`).join('')}</div>`;}
 function renderOv(){const o=$('#ov');if(S.status!=='handover'&&S.status!=='over'){if(o._k)closeOv();return;}
 const k=S.status+S.roundNo+S.gid;if(o._k===k)return;o._k=k;const aw=roundAward();const r=S.result,me=meIdx(),over=S.status==='over';const L=r.loser,lp=L>=0?S.players[L]:null;
 let head,sub,av;
 if(over){const ch=S.champs,won=ch.includes(me);av=avatarHTML(S.players[ch[0]],ch[0],72);head=won?(ch.length>1?'You share the win!':'You win the match!'):(ch.length>1?ch.map(i=>esc(S.players[i].name)).join(' & ')+' share the win':esc(S.players[ch[0]].name)+' wins the match');
  const lw=S.players[ch[0]].losses;sub=`<div class="pts ok">${lw} Joker${lw===1?'':'s'} in ${S.roundNo} round${S.roundNo===1?'':'s'}</div>`;setTimeout(()=>won?SFX.win():SFX.lose(),700);}
 else{av=lp?avatarHTML(lp,L,72):'';head=lp?(L===me?'You’re left with the Joker':esc(lp.name)+' is left with the Joker'):'Round over';
- const mi=r.order.indexOf(me);sub=L===me?`<div class="pts">A Joker mark for you</div>`:`<div class="pts ok">You were safe${mi>=0?', '+ord(mi+1)+' out':''}</div>`;setTimeout(()=>L===me?SFX.lose():SFX.safe(true),700);}
+ const mi=r.order.indexOf(me);sub=me<0?'':L===me?`<div class="pts">A Joker mark for you</div>`:`<div class="pts ok">You were safe${mi>=0?', '+ord(mi+1)+' out':''}</div>`;setTimeout(()=>L===me?SFX.lose():SFX.safe(true),700);}
 const orderH=`<div class="order" aria-label="Order out this round">${r.order.map((k2,i)=>`<span>${avatarHTML(S.players[k2],k2,24)}<i>${ord(i+1)}</i>${esc(S.players[k2].name)}</span>`).join('')}${lp?`<span class="lose">${avatarHTML(lp,L,24)}${esc(lp.name)}</span>`:''}</div>`;
 o.innerHTML=`<div class="ovc">${av}<h2>${head}</h2>${sub}${aw&&aw.sh>0?`<div class="earn">+${aw.sh} ${HI.shell} Boli${aw.capped?' (daily limit reached)':''}</div>`:aw&&aw.capped?'<div class="earn muted">Daily Boli limit reached</div>':''}
 ${lp?`<div class="jkshow" aria-label="The Joker">${cardHTML(JK)}</div>`:''}${orderH}
 <div class="muted totlbl"><span>${over?'Final Jokers':'Jokers after round '+S.roundNo+' of '+S.rounds}</span><span>${S.need} ends it</span></div>
 ${scoresHTML()}
-<button class="btn primary wide" data-a="${over?'again':'next'}">${over?'Play again':'Deal round '+(S.roundNo+1)}</button>
-<button class="btn ghost wide" style="margin-top:8px" data-a="leave">Back to home</button></div>`;
-o.classList.add('show');if(AUTO)setTimeout(()=>{if(S&&S.status==='handover')act({k:'next'});},FAST?150:1200);}
+${mode!=='online'?`<button class="btn primary wide" data-a="${over?'again':'next'}">${over?'Play again':'Deal round '+(S.roundNo+1)}</button>
+<button class="btn ghost wide" style="margin-top:8px" data-a="leave">Back to home</button>`
+ :(isHostOn()?`<button class="btn primary wide" data-a="${over?'netAgain':'next'}">${over?'Play again':'Deal round '+(S.roundNo+1)}</button>`
+  :`<p class="muted" style="font-size:13px;margin:10px 0 0">${over?(me<0?'The next match starts soon.':'Waiting for the host to start the next match…'):'The next round starts in a moment…'}</p>`)
+ +`<button class="btn ghost wide" style="margin-top:8px" data-a="netLeave">Leave table</button>`}</div>`;
+o.classList.add('show');if(AUTO&&mode!=='online')setTimeout(()=>{if(S&&S.status==='handover')act({k:'next'});},FAST?150:1200);}
 
 /* ---------- sheets, toasts, menu ---------- */
 function sheet(h){$('#sheetB').innerHTML=h;$('#sheet').classList.add('open');}
@@ -928,9 +1079,9 @@ function closeSheet(){$('#sheet').classList.remove('open');}
 let toastT=0;function toast(t,ms){const e=$('#toast');e.textContent=t;e.classList.remove('show');void e.offsetWidth;e.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>e.classList.remove('show'),ms||2600);}
 function openMenu(){if(!S)return;sheet(`<div class="grab"></div><h2>Joker</h2><p class="muted" style="margin:4px 0 0">${S.status==='lobby'?'Up to '+S.rounds+' rounds':'Round '+S.roundNo+' of '+S.rounds} · fewest Jokers wins</p>
 ${S.roundNo?scoresHTML():''}
-<div class="mlist"><button class="btn soft wide" data-a="menuRules">Rules</button><button class="btn soft wide" data-a="sfx" aria-pressed="${sfxOn()}">Sound: ${sfxOn()?'On':'Off'}</button><button class="btn ghost wide" data-a="leave">${S.status==='playing'?'Leave (your game is saved)':'Back to home'}</button></div>`);}
+<div class="mlist"><button class="btn soft wide" data-a="menuRules">Rules</button><button class="btn soft wide" data-a="sfx" aria-pressed="${sfxOn()}">Sound: ${sfxOn()?'On':'Off'}</button>${mode==='online'?`<button class="btn ghost wide" data-a="netLeave">Leave table</button>${meIdx()>=0&&S.status==='playing'?'<p class="muted" style="font-size:12px;margin:2px 2px 0">If you leave, a computer player finishes this round for you and you can’t rejoin this match.</p>':''}`:`<button class="btn ghost wide" data-a="leave">${S.status==='playing'?'Leave (your game is saved)':'Back to home'}</button>`}</div>`);}
 function toggleSfx(){ls.set('dd-sfx',sfxOn()?'0':'1');document.querySelectorAll('[data-a="sfx"]').forEach(b=>{b.setAttribute('aria-pressed',String(sfxOn()));if(b.classList.contains('btn'))b.textContent='Sound: '+(sfxOn()?'On':'Off');});if(sfxOn()){AU.unlock();SFX.turn();}}
-function leave(){clearTimeout(botT);clearTimeout(turnT);clearTimeout(warnT);peekT.forEach(clearTimeout);if(mode==='solo'&&S&&S.status!=='over'&&S.status!=='lobby')ls.set(SAVE_KEY,JSON.stringify(S));closeSheet();closeRules();closeOv();S=null;mode=null;renderHome();}
+function leave(){clearTimeout(botT);clearTimeout(turnT);clearTimeout(warnT);peekT.forEach(clearTimeout);if(mode==='online'&&NET&&NET.isOnline()){closeSheet();closeOv();NET.leave();return;}if(mode==='solo'&&S&&S.status!=='over'&&S.status!=='lobby')ls.set(SAVE_KEY,JSON.stringify(S));closeSheet();closeRules();closeOv();S=null;mode=null;renderHome();}
 
 /* ---------- one click handler for everything ---------- */
 document.addEventListener('click',e=>{AU.unlock();const b=e.target.closest('[data-a]');if(!b)return;const a=b.dataset.a;
@@ -945,25 +1096,31 @@ case 'bots':nBots=+b.dataset.n;renderComputer();break;
 case 'diff':diff=b.dataset.d;renderComputer();break;
 case 'solo':startSolo();break;
 case 'resume':resume();break;
-case 'rulesDeal':closeRules();act({k:'start'});break;
+case 'rulesDeal':closeRules();if(mode!=='online'||isHostOn())act({k:'start'});break;
+case 'online':if(NET)NET.open();else toast('Online play needs a newer browser.');break;
+case 'netLeave':closeSheet();closeOv();if(NET&&mode==='online')NET.leave();else leave();break;
+case 'netAgain':closeOv();if(NET)NET.again();break;
+case 'rulesOk':closeRules();break;
+case 'face':{const e=b.dataset.e;if(!facesOn()||!FACES.some(f=>f[0]===e))break;buzz(6);react(meIdx(),e,1500);
+ if(isHostOn()){faceSel={seq:S.seq,p:meIdx(),e:e};hostLift(S.turn,-1,e);}else{NET.send({t:'face',e:e});if(S.lift&&S.lift.seq===S.seq){S.lift.face=e;S.lift.chosen=true;}else S.lift={n:0,seq:S.seq,by:S.turn,from:meIdx(),i:-1,face:e,chosen:true};renderFaces();}break;}
 case 'menu':openMenu();break;
 case 'menuRules':sheet(`<div class="grab"></div>${rulesCardHTML(S)}${picsHTML()}<div class="row"><button class="btn primary" data-a="close">Back to the game</button></div>`);break;
 case 'sfx':toggleSfx();break;
 case 'leave':leave();break;
-case 'next':closeOv();act({k:'next'});break;
-case 'again':{const ps=S.players.map(p=>{const q=Object.assign({},p);delete q.losses;return q;});const st=styles(ps.length-1);let bi=0;ps.forEach(p=>{if(p.bot)p.sty=st[bi++];});closeOv();ls.del(SAVE_KEY);S=JE.create({players:ps,rounds:ROUNDS,need:NEED});S.diff=diff;mode='solo';draw();openRules();break;}
-case 'shuffle':if(S&&S.status==='playing'&&act({k:'shuffle'})){buzz(8);if(!reduce)for(const id in cardEls){const el=cardEls[id];el.animate&&el.animate([{translate:`${(Math.random()-.5)*60}px ${-10-Math.random()*20}px`},{translate:'0 0'}],{duration:420,easing:SPRING});}}break;
+case 'next':closeOv();if(mode==='online'){if(isHostOn())hostNext();}else act({k:'next'});break;
+case 'again':{if(mode==='online'){closeOv();if(NET)NET.again();break;}const ps=S.players.map(p=>{const q=Object.assign({},p);delete q.losses;return q;});const st=styles(ps.length-1);let bi=0;ps.forEach(p=>{if(p.bot)p.sty=st[bi++];});closeOv();ls.del(SAVE_KEY);S=JE.create({players:ps,rounds:ROUNDS,need:NEED});S.diff=diff;mode='solo';draw();openRules();break;}
+case 'shuffle':if(S&&S.status==='playing'&&(mode==='online'&&!isHostOn()?(NET.send({t:'shuffle'}),true):act({k:'shuffle'}))){buzz(8);if(!reduce)for(const id in cardEls){const el=cardEls[id];el.animate&&el.animate([{translate:`${(Math.random()-.5)*60}px ${-10-Math.random()*20}px`},{translate:'0 0'}],{duration:420,easing:SPRING});}}break;
 case 'auto':auto=!auto;ls.set('joker-auto',auto?'1':'0');b.setAttribute('aria-pressed',String(auto));toast(auto?'Auto is on: a card is drawn for you.':'Auto is off.',1600);if(S)renderTable();schedule();break;
 }});
 $('#sheet').addEventListener('click',e=>{if(e.target.id==='sheet')closeSheet();});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){if($('#sheet').classList.contains('open'))closeSheet();}if(e.key==='Enter'&&e.target&&e.target.id==='pnm')saveName();});
 let rzT=0;window.addEventListener('resize',()=>{if(rzT)return;rzT=requestAnimationFrame(()=>{rzT=0;if(screen==='table'&&S){layoutHand();layoutArena();}});});
-document.addEventListener('visibilitychange',()=>{if(document.hidden){AU.sleep();clearTimeout(botT);clearTimeout(turnT);clearTimeout(warnT);}
-else if(S&&screen==='table'){if(S.status==='playing'&&S.players[S.turn]&&S.players[S.turn].id===myId){S.turnAt=Date.now();renderTable();}schedule();}});
+document.addEventListener('visibilitychange',()=>{if(document.hidden){AU.sleep();if(mode!=='online'){clearTimeout(botT);clearTimeout(turnT);clearTimeout(warnT);}}
+else if(S&&screen==='table'){if(mode!=='online'&&S.status==='playing'&&S.players[S.turn]&&S.players[S.turn].id===myId){S.turnAt=Date.now();renderTable();}schedule();}});
 window.addEventListener('pagehide',()=>{if(mode==='solo'&&S&&S.status!=='over'&&S.status!=='lobby')ls.set(SAVE_KEY,JSON.stringify(S));});
 
 /* test hooks (localhost only) */
-if(LOCAL)window.__joker={E:JE,get S(){return S;},act:act,
+if(LOCAL)window.__joker={E:JE,get S(){return S;},get mode(){return mode;},get NET(){return NET;},get lifted(){return lifted;},act:act,
  geom(){const a=$('#arena');if(!a||!AR)return null;const ar=a.getBoundingClientRect();
   const seats=[...document.querySelectorAll('.seat')].map(e=>{const r=e.getBoundingClientRect(),n=e.querySelector('.nm');return{k:+e.dataset.k,box:[Math.round(r.left),Math.round(r.top),Math.round(r.right),Math.round(r.bottom)],nameClip:n.scrollWidth>n.clientWidth+1||n.scrollHeight>n.clientHeight+1};});
   const pile=pileRect(),felt={x:ar.left+AR.cx,y:ar.top+AR.cy};const sc=[...document.querySelectorAll('#stage .sc')].map(e=>{const r=e.getBoundingClientRect();return[Math.round(r.left),Math.round(r.top),Math.round(r.width),Math.round(r.height)];});
@@ -972,8 +1129,10 @@ if(LOCAL)window.__joker={E:JE,get S(){return S;},act:act,
  setAuto(v){auto=!!v;renderTable();schedule();}};
 
 /* ---------- boot ---------- */
-if(LOCAL&&Q.get('play')==='1'){if(Q.get('bots'))nBots=Math.max(1,Math.min(4,+Q.get('bots')||3));startSolo();}
-else renderHome();
+initNet();
+if(NET&&/^[A-Z]{4}$/i.test(Q.get('t')||'')){renderHome();NET.boot();}   /* invite link ?t=CODE */
+else if(LOCAL&&Q.get('play')==='1'){if(Q.get('bots'))nBots=Math.max(1,Math.min(4,+Q.get('bots')||3));startSolo();}
+else{renderHome();if(NET)NET.boot();}
 })();
 </script>
 </body>
