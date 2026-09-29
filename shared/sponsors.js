@@ -27,7 +27,8 @@
   'use strict';
   var SPONSORS = [
     { title: 'Your brand here', sub: 'The main sponsor spot on Dhivehi Games', cta: '', url: '', logo: 'DG', colors: ['#0E4C6B', '#1E8A8A', '#E9C476'], label: 'Advertise' },
-    { title: 'Binveriya', sub: 'Own the islands. Bend the rules. Coming soon', cta: '', url: '', logo: 'BV', colors: ['#0A6E8C', '#1BA7BF', '#F2C94C'], label: 'Coming soon', house: true, kicker: 'Coming soon' },
+    { title: 'Binveriya', sub: 'Own the islands. Bend the rules.', cta: 'Play', url: 'binveriya/', logo: 'BV', colors: ['#0A6E8C', '#1BA7BF', '#F2C94C'], label: 'New', house: true, kicker: 'New' },
+    { title: 'Bondi', sub: 'Noir card duel. Don\'t be the last one holding.', cta: 'Play', url: 'bondi/', logo: '♠', colors: ['#0B0B0D', '#2A2A30', '#C9A45C'], label: 'New', house: true, kicker: 'New' },
     { title: 'Digu Blitz', sub: '5 players, 5 seconds a turn. Keep up?', cta: 'Play', url: 'digu/', logo: '⚡', colors: ['#6A2C1A', '#C4552C', '#F2B35B'], label: 'New', house: true, kicker: 'Try' },
     { title: 'Dhogu is online', sub: 'Spot the lie with friends, any network', cta: 'Play', url: 'dhogu/', logo: '?', colors: ['#1B1B3A', '#4B3AA8', '#E68AB8'], label: 'New', house: true, kicker: 'Now online' }
   ];
