@@ -11,8 +11,9 @@
 <meta name="description" content="Juice: the fast Maldivian card game. Turn a card, play it on the next rank, and shout Juice! when someone misses a play. Play against the computer on your phone.">
 <link rel="manifest" href="/manifest.webmanifest">
 <title>Juice · Dhivehi Games</title>
-<link rel="icon" type="image/png" href="../icons/icon-192.png">
-<link rel="apple-touch-icon" href="../icons/icon-192.png">
+<link rel="icon" href="/icons/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="/icons/favicon-32.png" type="image/png" sizes="32x32">
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" sizes="180x180">
 <meta name="apple-mobile-web-app-title" content="Juice">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -53,6 +54,10 @@ button:focus-visible,input:focus-visible,a:focus-visible,[tabindex]:focus-visibl
 label.f{display:block;font:800 11px/1 var(--disp);letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
 .icon-btn{width:44px;height:44px;border-radius:14px;border:0;background:rgba(255,255,255,.9);box-shadow:0 2px 8px -3px rgba(120,60,10,.35),inset 0 0 0 1px rgba(18,53,50,.08);color:var(--ink);display:grid;place-items:center;cursor:pointer;flex:none;padding:0;text-decoration:none;position:relative}
 .icon-btn svg{width:20px;height:20px}
+/* Dhivehi Games home: back arrow + the small Punch Card tile */
+.icon-btn.dgh{width:auto;display:flex;align-items:center;gap:2px;padding:0 8px 0 4px}
+.icon-btn.dgh svg{width:18px;height:18px}@media (max-width:340px){.icon-btn.dgh svg{width:16px;height:16px}}.icon-btn .dgmk{display:block;width:24px;height:24px;flex:none;filter:drop-shadow(0 2px 4px rgba(120,60,10,.22))}
+@media (max-width:340px){.icon-btn.dgh{gap:1px;padding:0 6px 0 3px}.icon-btn .dgmk{width:21px;height:21px}}
 .icon-btn .mute{display:none}.icon-btn[aria-pressed="false"] .mute{display:block}.icon-btn[aria-pressed="false"] .snd{opacity:.5}
 .page{position:relative;z-index:1;max-width:540px;margin:0 auto;padding:calc(12px + env(safe-area-inset-top)) max(16px,env(safe-area-inset-right)) calc(32px + env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-left))}
 .panel{background:#fff;color:var(--ink);border-radius:24px;padding:18px;margin:14px 0;box-shadow:0 1px 0 rgba(255,255,255,.9) inset,0 0 0 1px rgba(18,53,50,.06),var(--shadow)}
@@ -747,7 +752,7 @@ function offTable(){document.documentElement.dataset.scr=screen;if(spCtl){try{sp
 function renderHome(){screen='home';offTable();closeOv();closeRules();
 const nm=myName(),me=meP();
 app.innerHTML=`<main class="page">
-<div class="hometop"><a class="icon-btn" href="../" aria-label="Back to Dhivehi Games">${HI.back}</a><button class="profbtn" data-a="name" aria-label="Your name: ${esc(nm||'not set')}. Change">${avatarHTML(me,0,38)}<span class="pwrap"><span class="pn">${nm?esc(nm):'Player'}</span><span class="ps">${nm?'Tap to rename':'Set your name'}</span></span></button><a class="shellpill" href="../digu/?open=boli" aria-label="${shells()} Boli">${HI.shell}<span>${compact(shells())}</span></a></div>
+<div class="hometop"><a class="icon-btn dgh" href="../" aria-label="Back to Dhivehi Games">${HI.back}<img class="dgmk" src="/icons/favicon.svg" alt="" width="24" height="24"></a><button class="profbtn" data-a="name" aria-label="Your name: ${esc(nm||'not set')}. Change">${avatarHTML(me,0,38)}<span class="pwrap"><span class="pn">${nm?esc(nm):'Player'}</span><span class="ps">${nm?'Tap to rename':'Set your name'}</span></span></button><a class="shellpill" href="../digu/?open=boli" aria-label="${shells()} Boli">${HI.shell}<span>${compact(shells())}</span></a></div>
 ${heroFan()}
 <div class="dtitle"><span class="kick">Tropical juice bar</span><h1>Juice!</h1><p>Turn it, play it, shout it</p></div>
 <p class="mhint">Play the next rank, K to A to 2. Miss a play and everyone shouts <b>Juice!</b></p>
