@@ -100,6 +100,30 @@ html[data-bg="cream"] .page{color:var(--ink)}
 .otable .ot{flex:1;min-width:0}
 .otable b{display:block;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .otable small{color:var(--muted);font-size:12px}
+/* leaderboard: menu podium and the top-10 list */
+.lbbox{display:block;width:100%;text-align:left;margin:12px 0 4px;padding:10px 12px 8px;border:1px solid var(--line);border-radius:16px;background:linear-gradient(180deg,#FFF9EC,#FFFDF8);color:var(--ink);cursor:pointer}
+.lbbox .lbh{display:block;font:800 11px/1 Sora,sans-serif;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+.lbmsg{margin:4px 0 6px;font-size:13px}
+.lbpod{display:grid;grid-template-columns:1fr 1.15fr 1fr;gap:6px;align-items:end}
+.lbp{position:relative;display:flex;flex-direction:column;align-items:center;text-align:center;min-width:0;padding:6px 2px 4px;border-radius:12px}
+.lbp:nth-child(1){order:2}.lbp:nth-child(2){order:1}.lbp:nth-child(3){order:3}
+.lbp.p1{background:rgba(242,201,76,.18)}
+.lbp.lbme{box-shadow:inset 0 0 0 2px var(--accent)}
+.lbp .lbr{position:absolute;top:2px;left:4px;font:800 11px/1 Sora,sans-serif;color:#8A6414}
+.lbp .lbf,.lbrow .lbf{display:grid;place-items:center;width:36px;height:36px;border-radius:50%;overflow:hidden;flex:none}
+.lbp b{font-size:12.5px;line-height:1.2;margin-top:4px;overflow-wrap:anywhere;word-break:break-word}
+.lbp small,.lbrow small{color:var(--muted);font-size:11.5px}
+.lbmore{display:flex;align-items:center;justify-content:center;gap:2px;margin-top:6px;font-size:12px;font-weight:700;color:var(--accent)}
+.lbmore svg{width:14px;height:14px}
+.lblist{display:flex;flex-direction:column;gap:2px}
+.lbrow{display:flex;align-items:center;gap:10px;padding:8px 8px;border-radius:12px}
+.lbrow.lbme{background:rgba(21,94,67,.1);box-shadow:inset 0 0 0 1.5px rgba(21,94,67,.45)}
+.lbrow.mine{margin-top:8px}
+.lbrow .lbn{width:22px;text-align:center;font:800 13px/1 Sora,sans-serif;color:var(--muted);flex:none}
+.lbrow .lbt{flex:1;min-width:0;display:flex;flex-direction:column}
+.lbrow .lbt b{font-size:14px;line-height:1.25;overflow-wrap:anywhere;word-break:break-word}
+.lbrow .lbs{display:flex;flex-direction:column;align-items:flex-end;flex:none;text-align:right}
+.lbrow .lbs b{font-size:13px}
 .empty-list{color:var(--muted);font-size:13px;margin:4px 0}
 .qwait{text-align:center}
 .spin{width:34px;height:34px;border-radius:50%;border:3px solid var(--line);border-top-color:var(--accent);margin:4px auto 12px;animation:spin 1s linear infinite}
@@ -126,8 +150,8 @@ html[data-bg="cream"] .page{color:var(--ink)}
 .crown{position:absolute;left:50%;top:-12px;width:24px;height:16px;translate:-50% 0;z-index:4;filter:drop-shadow(0 1px 2px rgba(0,0,0,.35));animation:crownin .6s var(--spring) both}
 .crown svg{width:100%;height:100%;display:block}
 @keyframes crownin{from{opacity:0;scale:.4}}
-.hostb{position:absolute;left:50%;bottom:-6px;transform:translateX(-50%);z-index:4;font:800 8px/1 Sora,sans-serif;letter-spacing:.08em;padding:3px 6px;border-radius:99px;background:#F2C94C;color:#3A2A05;box-shadow:0 0 0 1.5px #fff;text-transform:uppercase;white-space:nowrap}
-.hostpill{display:inline-block;vertical-align:2px;margin-left:6px;font:800 8.5px/1 Sora,sans-serif;letter-spacing:.08em;text-transform:uppercase;padding:3px 6px;border-radius:99px;background:#F2C94C;color:#3A2A05}
+.hostb{position:absolute;left:50%;bottom:-6px;transform:translateX(-50%);z-index:4;font:800 8px/1 Sora,sans-serif;letter-spacing:.08em;padding:3px 6px;border-radius:99px;background:#F4F7F8;color:#1E3036;box-shadow:0 0 0 1.5px rgba(10,25,30,.55);text-transform:uppercase;white-space:nowrap}
+.hostpill{display:inline-block;vertical-align:2px;margin-left:6px;font:800 8.5px/1 Sora,sans-serif;letter-spacing:.08em;text-transform:uppercase;padding:3px 6px;border-radius:99px;background:#E3EAEC;color:#1E3036;box-shadow:inset 0 0 0 1px rgba(30,48,54,.25)}
 .lefttag{display:inline-block;margin-left:6px;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#8A2B2B;opacity:.9}
 .vtalk{border-radius:50%!important;box-shadow:0 0 0 calc(2px + var(--vl,0)*6px) rgba(47,166,106,.6),0 0 calc(6px + var(--vl,0)*18px) rgba(47,166,106,.5)!important;transition:box-shadow .09s linear}
 /* ---------- playing cards ---------- */
@@ -715,12 +739,12 @@ main.table{background:var(--tbg,#040504)}
 <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs><linearGradient id="dgGold" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F7DE92"/><stop offset=".55" stop-color="#D9A94A"/><stop offset="1" stop-color="#A97A26"/></linearGradient></defs></svg>
 <script src="../shared/avatar.js?v=5"></script>
 <script src="../shared/cosmetics.js?v=2"></script>
-<script src="../shared/sponsors.js?v=3"></script>
+<script src="../shared/sponsors.js?v=4"></script>
 <script>
 (function(){
 
 
-/* ---------- sponsors: the list lives in ../shared/sponsors.js?v=3 (window.DGSponsors), shared by the whole site ---------- */
+/* ---------- sponsors: the list lives in ../shared/sponsors.js?v=4 (window.DGSponsors), shared by the whole site ---------- */
 /* Main sponsor, shown as "Powered by" under the title, in the lobby and on the table.
    Leave name and logo empty to show a placeholder on the home screen only. */
 const MAIN_SPONSOR={name:'', logo:'', url:''};
@@ -810,7 +834,9 @@ function publicPlayerData(){return{
   best:INV.stats.best==null?null:INV.stats.best,
   updatedAt:Date.now()
 };}
-async function fbSaveNow(){if(!FB.ready||!FB.user)return;try{
+/* localhost test tables (?ns=) never write to the live leaderboard or the live player count */
+const testNs=()=>{try{return NS.indexOf('/test-')>0;}catch(e){return false;}};
+async function fbSaveNow(){if(!FB.ready||!FB.user||testNs())return;try{
   await FB.setDoc(FB.doc(FB.db,'players',FB.user.uid),publicPlayerData(),{merge:true});
 }catch(e){console.warn('Firebase save failed',e);}}
 function fbQueueSave(){clearTimeout(fbSaveTimer);fbSaveTimer=setTimeout(fbSaveNow,350);}
@@ -837,13 +863,13 @@ async function initFirebase(){try{
   FB.auth=auth; FB.db=F.getFirestore(fa); Object.assign(FB,{doc:F.doc,setDoc:F.setDoc,getDoc:F.getDoc,collection:F.collection,query:F.query,orderBy:F.orderBy,limit:F.limit,getDocs:F.getDocs,createUserWithEmailAndPassword:U.createUserWithEmailAndPassword,signInWithEmailAndPassword:U.signInWithEmailAndPassword,signOut:U.signOut,deleteDoc:F.deleteDoc,addDoc:F.addDoc,serverTimestamp:F.serverTimestamp,EmailAuthProvider:U.EmailAuthProvider,reauthenticateWithCredential:U.reauthenticateWithCredential,deleteUser:U.deleteUser,signInAnonymously:U.signInAnonymously,getCountFromServer:F.getCountFromServer,where:F.where,Timestamp:F.Timestamp});
   /* wait until Firebase has restored the saved session, otherwise a refresh would sign the player out */
   try{if(auth.authStateReady)await auth.authStateReady();else await new Promise(r=>{const un=U.onAuthStateChanged(auth,()=>{un();r();});});}catch(e){}
-  let cred;if(auth.currentUser){cred={user:auth.currentUser};}else{cred=await U.signInAnonymously(auth);} FB.user=cred.user; FB.ready=true; presPing();
+  let cred;if(auth.currentUser){cred={user:auth.currentUser};}else{cred=await U.signInAnonymously(auth);} FB.user=cred.user; FB.ready=true; reloadBlk(); presPing(); flushReports();
   if(!FB.user.isAnonymous) await fbLoadAndMerge();
 }catch(e){console.warn('Firebase unavailable; local save still works',e);}}
 
 /* live player count for the Dhivehi Games home page: a tiny anonymous check-in once a minute while Digu is on screen */
 const PRES_GAME='digu';let presUid=null;
-function presPing(){try{if(!FB.ready||!FB.user||document.visibilityState!=='visible')return;presUid=FB.user.uid;
+function presPing(){try{if(!FB.ready||!FB.user||document.visibilityState!=='visible'||testNs())return;presUid=FB.user.uid;
  FB.setDoc(FB.doc(FB.db,'presence',PRES_GAME,'users',presUid),{t:FB.serverTimestamp()}).catch(()=>{});}catch(e){}}
 function presLeave(){try{if(!FB.ready||!presUid)return;FB.deleteDoc(FB.doc(FB.db,'presence',PRES_GAME,'users',presUid)).catch(()=>{});}catch(e){}}
 setInterval(presPing,60000);
@@ -861,9 +887,7 @@ async function loadWinsLeaderboard(){
   if(!FB.ready){setTimeout(loadWinsLeaderboard,900);return;}
   if(!liveN)loadLive();
   try{
-    const q=FB.query(FB.collection(FB.db,'players'),FB.orderBy('wins','desc'),FB.limit(10));
-    const ss=await FB.getDocs(q),players=[];
-    ss.forEach(d=>players.push(d.data()||{}));
+    const players=await lbFetch();
     boxes.forEach(box=>{
       if(box.dataset.podium){const t=players.slice(0,3);if(!t.length){box.innerHTML='<p class="muted">No wins recorded yet. Be the first!</p>';return;}
         const face=x=>DGA()?DGA().render(DGA().random('lb:'+(x.name||'')),{size:64}):'';
@@ -883,6 +907,32 @@ async function loadWinsLeaderboard(){
     boxes.forEach(box=>box.innerHTML='<p class="muted">Leaderboard unavailable right now.</p>');
   }
 }
+/* the same top-10-by-wins query, cached for a minute so the menu and the home page don't ask twice */
+let lbCache=null;
+async function lbFetch(){if(lbCache&&Date.now()-lbCache.t<60000)return lbCache.rows;
+  const ss=await FB.getDocs(FB.query(FB.collection(FB.db,'players'),FB.orderBy('wins','desc'),FB.limit(10))),rows=[];
+  ss.forEach(d=>rows.push(Object.assign({uid:d.id},d.data()||{})));lbCache={t:Date.now(),rows:rows};return rows;}
+const lbMe=x=>!!(FB.user&&x.uid===FB.user.uid);
+const lbFace=(x,sz)=>DGA()?DGA().render(DGA().random('lb:'+(x.name||'')),{size:sz}):'';
+const winsTxt=w=>(w|0)+((w|0)===1?' win':' wins');const lbTitle=x=>LEVELS[levelIdx(x.xp|0)][1];
+/* in-game menu: a compact top-3 podium; tap it for the full top 10 */
+async function loadMenuLb(){const box=$('#menulb');if(!box)return;
+  if(!FB.ready){box.innerHTML='<p class="muted lbmsg">Leaderboard is loading…</p>';setTimeout(()=>{if($('#menulb'))loadMenuLb();},900);return;}
+  try{const rows=await lbFetch(),b=$('#menulb');if(!b)return;const t=rows.slice(0,3);
+    if(!t.length){b.innerHTML='<p class="muted lbmsg">No wins recorded yet. Be the first!</p>';return;}
+    b.innerHTML=`<div class="lbpod">${t.map((x,i)=>`<div class="lbp${i===0?' p1':''}${lbMe(x)?' lbme':''}"><span class="lbr">${i+1}</span><span class="lbf">${lbFace(x,34)}</span><b>${esc(x.name||'Digu Player')}</b><small>${winsTxt(x.wins)}</small></div>`).join('')}</div><span class="lbmore">See top 10 ${HI.chev}</span>`;
+  }catch(e){const b=$('#menulb');if(b)b.innerHTML='<p class="muted lbmsg">Leaderboard unavailable right now.</p>';}}
+async function openTop10(){sheet(`<div class="grab"></div><h2>Top 10 players</h2><p class="muted" style="margin:2px 0 10px">Ranked by wins.</p><div id="lbfull"><p class="muted lbmsg">Loading…</p></div><div class="row"><button class="btn primary" data-a="${S&&screen==='table'?'menu':'close'}">Back</button></div>`);
+  if(!FB.ready){$('#lbfull').innerHTML='<p class="muted lbmsg">Leaderboard unavailable right now.</p>';return;}
+  try{const rows=await lbFetch(),box=$('#lbfull');if(!box)return;
+    if(!rows.length){box.innerHTML='<p class="muted lbmsg">No wins recorded yet. Be the first!</p>';return;}
+    const inTop=rows.some(lbMe);
+    box.innerHTML=`<div class="lblist">${rows.map((x,i)=>`<div class="lbrow${lbMe(x)?' lbme':''}"><span class="lbn">${i+1}</span><span class="lbf">${lbFace(x,36)}</span><span class="lbt"><b>${esc(x.name||'Digu Player')}${lbMe(x)?' (you)':''}</b><small>${esc(lbTitle(x))}</small></span><span class="lbs"><b>${winsTxt(x.wins)}</b><small>${compactNum(x.xp|0)} XP</small></span></div>`).join('')}</div><div id="lbmine"></div>`;
+    /* your own rank when you're outside the top 10: one count query, only for a signed-in account with a win */
+    if(!inTop&&FB.user&&!FB.user.isAnonymous&&FB.getCountFromServer&&(INV.stats.wins|0)>0){
+      try{const r=await FB.getCountFromServer(FB.query(FB.collection(FB.db,'players'),FB.where('wins','>',INV.stats.wins|0)));const m=$('#lbmine');
+        if(m)m.innerHTML=`<div class="lbrow lbme mine"><span class="lbn">${(r.data().count|0)+1}</span><span class="lbf">${avatarHTML(meP(),0,'',36)}</span><span class="lbt"><b>${esc(myName()||'You')} (you)</b><small>${esc(LEVELS[levelIdx(INV.xp)][1])}</small></span><span class="lbs"><b>${winsTxt(INV.stats.wins)}</b><small>${compactNum(INV.xp|0)} XP</small></span></div>`;}catch(e){}}
+  }catch(e){const box=$('#lbfull');if(box)box.innerHTML='<p class="muted lbmsg">Leaderboard unavailable right now.</p>';}}
 
 const buzz=ms=>{try{if(navigator.userActivation&&!navigator.userActivation.hasBeenActive)return;navigator.vibrate&&navigator.vibrate(ms)}catch(e){}};
 const P=c=>{const a=c.split('-');return{c:c,r:+a[0],s:a[1]};};
@@ -1050,10 +1100,12 @@ const canDiscard=()=>S&&S.status==='playing'&&S.turn===meIdx()&&S.phase==='disca
 const rndInt=n=>{try{const a=new Uint32Array(1);crypto.getRandomValues(a);return a[0]%n;}catch(e){return Math.floor(Math.random()*n);}};
 /* players who left keep the points they had; they are listed as "Left" and drop off before the next deal */
 function dropGone(N){const g=N.players.filter(p=>p.gone);if(!g.length)return;
-N.left=(N.left||[]).concat(g.map(p=>({id:p.id,name:p.name,piece:p.piece,score:p.score})));
+N.left=(N.left||[]).concat(g.map(p=>({id:p.id,name:p.name,piece:p.piece,score:p.score,afk:p.afk?1:0})));
 const cur=N.players[typeof N.dealer==='number'?N.dealer:0];N.players=N.players.filter(p=>!p.gone);if(N.hands)g.forEach(p=>{delete N.hands[p.id];});
 if(typeof N.dealer==='number'){const i=cur?N.players.indexOf(cur):-1;N.dealer=i>=0?i:(N.dealer-1+N.players.length)%Math.max(1,N.players.length);}}
-function deal(N){if(!N.gid||!N.handNo)N.gid=Math.random().toString(36).slice(2,10);dropGone(N);if(N.wait&&N.wait.length){N.wait.forEach(w=>{if(N.players.length<6&&!N.players.some(p=>p.id===w.id))N.players.push({id:w.id,name:w.name,piece:w.piece,score:0,cos:w.cos});});N.wait=[];}const n=N.players.length,decks=n>=6?2:1;const deck=[];
+/* people who joined a public table mid-match wait (watching) for the whole match to end; they take their seats when a new match starts */
+function seatWaiting(N){if(!N.wait||!N.wait.length)return;N.wait.forEach(w=>{if(N.players.length<6&&!N.players.some(p=>p.id===w.id))N.players.push({id:w.id,name:w.name,piece:w.piece,score:0,cos:w.cos});});N.wait=[];}
+function deal(N){if(!N.gid||!N.handNo)N.gid=Math.random().toString(36).slice(2,10);dropGone(N);const n=N.players.length,decks=n>=6?2:1;const deck=[];
 for(let d=0;d<decks;d++)for(const s of SUITS)for(let r=1;r<=13;r++)deck.push(r+'-'+s+'-'+d);shuffle(deck);
 N.dealer=((typeof N.dealer==='number'?N.dealer:-1)+1)%n;N.hands={};N.players.forEach(p=>{N.hands[p.id]=deck.splice(0,10);});
 N.blitz=n===5;N.from=null;
@@ -1065,7 +1117,7 @@ function mv(N,t,c){N.move={seq:(N.move?N.move.seq:0)+1,t:t,p:N.turn,c:c};}
 /* put a card down: in Digu Blitz a face-down draw goes back face down ('bury'), otherwise onto the discard pile */
 function putDown(N,h,c){h.splice(h.indexOf(c),1);if(N.blitz&&N.from==='down'){N.stock.push(c);mv(N,'bury',c);}else{N.discard.push(c);mv(N,'discard',c);}N.from=null;}
 function win(N,big){const w=N.turn,bonus=big?BIG:GIN;
-const rows=N.players.map((p,k)=>{const hs=handScore(N.hands[p.id]||[]);const b=k===w?bonus:0;const total=hs.plus-hs.minus+b;p.score+=total;return{plus:hs.plus,minus:hs.minus,bonus:b,total:total};});
+const rows=N.players.map((p,k)=>{const hs=handScore(N.hands[p.id]||[]);const b=k===w?bonus:0;const total=hs.plus-hs.minus+b;if(!p.afk)p.score+=total;return{plus:hs.plus,minus:hs.minus,bonus:b,total:total,fz:p.afk?1:0};});
 const live=N.players.map((p,k)=>k).filter(k=>!N.players[k].gone);let champ=live.length?live[0]:0;live.forEach(k=>{if(N.players[k].score>N.players[champ].score)champ=k;});
 const lay=N.players.map((p,k)=>{const h=(N.hands[p.id]||[]).slice();
 const ms=(k===w?cover(h):null)||partial(h);const used=new Set();ms.forEach(m=>m.forEach(c=>used.add(c)));
@@ -1083,13 +1135,13 @@ if(type==='discard'&&arg===S.took&&canDiscard()){toast('You can’t discard the 
 joinSend({k:'act',type:type,arg:arg}).then(ok=>{if(!ok)toast('Reconnecting to the host…');});return;}
 const me=bot?who:meIdx();let N=clone(S);
 if(type==='next'){if(S.status!=='handover'||me<0||N.players.filter(p=>!p.gone).length<2)return;deal(N);}
-else if(type==='again'){if(S.status!=='over'||me<0)return;dropGone(N);if(N.players.length<2)return;N.left=[];N.players.forEach(p=>p.score=0);N.handNo=0;deal(N);}
+else if(type==='again'){if(S.status!=='over'||me<0)return;dropGone(N);seatWaiting(N);if(N.players.length<2)return;N.left=[];N.players.forEach(p=>{p.score=0;p.to=0;});N.handNo=0;deal(N);}
 else if(type==='skip'){if(S.status!=='playing'||S.hostId!==myId||S.turn===me)return;
 const pid=N.players[N.turn].id;if(N.phase==='draw'&&!drawFor(N))return;
 const h=N.hands[pid];const c=h.find(x=>x!==N.took)||h[h.length-1];putDown(N,h,c);
 N.turn=(N.turn+1)%N.players.length;N.phase='draw';N.took=null;}
 else{
-if(S.status!=='playing'||me<0||S.turn!==me)return;if(!bot&&S.players[me].bot)return;const h=N.hands[N.players[N.turn].id];
+if(S.status!=='playing'||me<0||S.turn!==me)return;if(!bot&&S.players[me].bot)return;if(!N.players[me].bot)N.players[me].to=0;const h=N.hands[N.players[N.turn].id];
 if(type==='drawStock'){if(N.phase!=='draw')return;if(!drawFor(N)){if(bot){if(!N.discard.length)return;const c=N.discard.pop();h.push(c);N.took=c;N.from='up';N.phase='discard';mv(N,'take',c);}else{toast('No cards left to draw.');return;}}if(cover(h))win(N,true);}
 else if(type==='drawDiscard'){if(N.phase!=='draw'||!N.discard.length)return;const c=N.discard.pop();h.push(c);N.took=c;N.from='up';N.phase='discard';mv(N,'take',c);if(cover(h))win(N,true);}
 else if(type==='discard'){if(N.phase!=='discard'||!h.includes(arg))return;
@@ -1107,13 +1159,29 @@ N.rev=(S.rev||0)+1;N.by=myId;commit(N);}
 const TURN_MS=15000,BLITZ_MS=5000;const turnMs=()=>S&&S.blitz?BLITZ_MS:TURN_MS;let turnSeen=Date.now(),tmrLast=-1;
 const timedGame=()=>S&&S.status==='playing'&&S.players[S.turn]&&!S.players[S.turn].bot;
 const amAuthority=()=>mode==='solo'||(mode==='p2p'&&isHost)||(mode==='online'&&S&&S.hostId===myId);
-function autoTurn(){const N=clone(S);const p=N.players[N.turn],h=N.hands[p.id];
+function autoTurn(){const N=clone(S);const pi=N.turn,p=N.players[pi],h=N.hands[p.id];
  if(N.phase==='draw'){if(!drawFor(N)){if(!N.discard.length)return;const c=N.discard.pop();h.push(c);N.took=c;N.from='up';N.phase='discard';mv(N,'take',c);}
-  if(cover(h)){win(N,true);N.tmo={k:N.move.seq,n:p.name,me:p.id};N.rev=(S.rev||0)+1;N.by=myId;commit(N);return;}}
+  if(cover(h)){win(N,true);N.tmo={k:N.move.seq,n:p.name,me:p.id};const k0=afkCount(N,pi);N.rev=(S.rev||0)+1;N.by=myId;commit(N);if(k0)afkKick(k0);return;}}
  const c=pickDiscard(h,N.took);putDown(N,h,c);
  N.tmo={k:N.move.seq,n:p.name,me:p.id};
  if(cover(h))win(N,false);else{N.turn=(N.turn+1)%N.players.length;N.phase='draw';N.took=null;}
- if(p.id===myId)selected=null;N.rev=(S.rev||0)+1;N.by=myId;commit(N);}
+ const k1=afkCount(N,pi);
+ if(p.id===myId)selected=null;N.rev=(S.rev||0)+1;N.by=myId;commit(N);if(k1)afkKick(k1);}
+/* AFK (online only): 2 timed-out turns in a row and an AI Rookie takes the seat until the hand ends, then says goodbye and leaves.
+   Any real move resets the count (see act). The player's score is frozen from that moment and they can't rejoin this match.
+   Returns the id of a remote player to send away, if any. */
+const AFK_TURNS=2,AFK_MSG='You were away for 2 turns, so an AI finished your round.';
+function afkCount(N,pi){if(!(mode==='p2p'&&isHost))return null;const q=N.players[pi];if(!q||q.bot||q.gone)return null;
+q.to=(q.to||0)+1;if(q.to<AFK_TURNS)return null;
+q.gone=1;q.bot=true;q.ai=1;q.afk=1;
+N.note={k:(S.rev||0)+1,t:q.name+' was away for 2 turns. '+(N.status==='playing'?'An AI Rookie is finishing their hand.':'They leave the table after this hand.')};
+return q.id===myId?null:q.id;}
+function afkKick(id){const n=net;if(!n||n.role!=='host')return;n.players.forEach((pl,tp)=>{if(pl.pid===id){sendPlayer(tp,pl,{k:'afk',m:AFK_MSG});n.players.delete(tp);}});}
+function afkNotice(){sheet(`<div class="grab"></div><h2>You were away</h2><p class="muted" style="margin:8px 0 14px">${AFK_MSG} Your score for that match is frozen, and you can’t rejoin it.</p><button class="btn primary wide" data-a="close">OK</button>`);}
+/* the host itself went AFK: its AI finished the hand, so now it hands the table to the next player, like leaving */
+function hostAfkExit(){const n=net;if(!n||n.role!=='host')return;const nx=nextHostId(myId);quickRun++;
+n.players.forEach((pl,tp)=>sendPlayer(tp,pl,nx?{k:'bye',next:nx}:{k:'bye'}));
+mode=null;S=null;isHost=false;joinInfo=null;keepAwake(false);netClose();renderHome();afkNotice();}
 setInterval(()=>{const st=document.getElementById('status');
  if(screen!=='table'||!timedGame()){if(st&&st.dataset.t){delete st.dataset.t;delete st.dataset.hot;}tmrLast=-1;return;}
  const left=turnSeen+turnMs()-Date.now(),sec=Math.max(0,Math.ceil(left/1000)),mine=S.turn===meIdx(),hot=S.blitz?3:5;
@@ -1125,14 +1193,21 @@ setInterval(()=>{const st=document.getElementById('status');
  {const k=S.handNo+':'+S.turn+':'+turnSeen;if(thinkKey!==k&&left<turnMs()*.45&&left>1200){thinkKey=k;reactP(S.players[S.turn].id,'thinking',2200);}}
 },250);
 let soloSaveT=null;
-function commit(N){if(!S||N.turn!==S.turn||N.handNo!==S.handNo||N.status!==S.status||N.phase==='draw'&&S.phase!=='draw')N.turnAt=Date.now();apply(N);if(mode==='solo'){clearTimeout(soloSaveT);if(N.status==='over')ls.del('lg-solo');else soloSaveT=setTimeout(()=>{if(mode==='solo'&&S)ls.set('lg-solo',JSON.stringify(S));},400);scheduleBot();}if(mode==='p2p'&&isHost){broadcast();scheduleBot();hostFarewell();}if(ref){const snap=N;writeQ=writeQ.then(()=>ref.set(snap)).catch(e=>toast(errMsg(e)));}}
+function commit(N){if(!S||N.turn!==S.turn||N.handNo!==S.handNo||N.status!==S.status||N.phase==='draw'&&S.phase!=='draw')N.turnAt=Date.now();apply(N);if(mode==='solo'){clearTimeout(soloSaveT);if(N.status==='over')ls.del('lg-solo');else soloSaveT=setTimeout(()=>{if(mode==='solo'&&S)ls.set('lg-solo',JSON.stringify(S));},400);scheduleBot();}if(mode==='p2p'&&isHost){broadcast();scheduleBot();hostFarewell();afkHostCheck();}if(ref){const snap=N;writeQ=writeQ.then(()=>ref.set(snap)).catch(e=>toast(errMsg(e)));}}
 function willAnim(prev,N){return !(screen!=='table'||!prev||!N.move||!prev.move||prev.status==='lobby'||N.handNo!==prev.handNo||N.move.seq===prev.move.seq);}
 function apply(N){const prev=S;
 if(!prev||N.turn!==prev.turn||N.handNo!==prev.handNo||N.status!==prev.status||N.turnAt!==prev.turnAt)turnSeen=Date.now()+(N.move&&N.move.t==='deal'&&!reduce?2600:0);
 if(N.tmo&&prev&&(!prev.tmo||prev.tmo.k!==N.tmo.k))setTimeout(()=>toast(N.tmo.me===myId?'Time’s up, we played your turn for you.':esc(N.tmo.n)+' ran out of time.',3000),150);
 if(N.note&&(!prev||!prev.note||prev.note.k!==N.note.k)&&prev)setTimeout(()=>toast(N.note.t,4200),200);
 if(N.blitz&&N.status==='playing'&&N.move&&N.move.t==='deal'&&(!prev||!prev.blitz||prev.status==='lobby'))setTimeout(()=>toast('Digu Blitz! 5 seconds a turn. Draw face down or face up, and discard the same way.',4500),400);
+if(mode==='p2p'&&!isHost&&N.players&&N.players.some(p=>p.id===myId&&p.afk)){setTimeout(()=>{if(mode==='p2p'&&!isHost){endP2P();afkNotice();}},0);}
+if(mode==='p2p'&&N.players&&N.code){const b=N.players.find(p=>p.id!==myId&&!p.gone&&isBlocked(p.id)&&!blkSeen.has(N.code+':'+p.id));if(b){blkSeen.add(N.code+':'+b.id);setTimeout(()=>blockedHere(b),600);}}
 const anim=willAnim(prev,N);const before=anim?snapRects():null;S=N;draw();if(anim)animate(prev,N,before);if(prev&&screen==='table')setTimeout(()=>gameReacts(prev,N),80);}
+/* someone you blocked is at (or just joined) this table: say so once, and offer to leave */
+const blkSeen=new Set();
+function blockedHere(p){if(mode!=='p2p'||!S||!S.players.some(q=>q.id===p.id))return;
+if($('#sheet').classList.contains('open')){toast(p.name+', who you blocked, is at this table. Their chat and voice are hidden.',4500);return;}
+sheet(`<div class="grab"></div><h2>Blocked player here</h2><p class="muted" style="margin:6px 0 14px"><b>${esc(p.name)}</b>, who you blocked, is at this table. You won’t see their chat or reactions, or hear their voice.</p><div class="row"><button class="btn soft" data-a="leave">Leave table</button><button class="btn primary" data-a="close">Stay</button></div>`);}
 /* the characters react to the game (DGAvatar.react), one reaction per player at a time */
 const RX={};let thinkKey='';
 function reactP(id,expr,ms){ms=ms||1800;if(!window.DGAvatar||!DGAvatar.react||reduce||screen!=='table'||!id)return;const now=Date.now();if((RX[id]||0)>now)return;
@@ -1223,7 +1298,7 @@ function openAccount(kind){
  const guest=authIsGuest(),savedUser=authUsername()||myName(),isNew=kind==='register';
  sheet(`<div class="grab"></div><h2>${guest?(isNew?'Create your account':kind==='login'?'Welcome back':'Login or Register'):'Account'}</h2>
  ${guest?`<p class="muted" style="margin:0 0 12px">${isNew?'Pick a username and a password (6+ characters). Your Boli, wins and name are saved to it.':'Use your Dhivehi Games username and password.'}</p>
- <input class="in" id="authUser" type="text" maxlength="14" value="${esc(savedUser)}" placeholder="Username" autocomplete="username" autocapitalize="none" spellcheck="false" style="width:100%;margin-bottom:10px">
+ <input class="in" id="authUser" type="text" maxlength="${isNew?14:80}" value="${esc(savedUser)}" placeholder="Username" autocomplete="username" autocapitalize="none" spellcheck="false" style="width:100%;margin-bottom:10px">
  <input class="in" id="authPass" type="password" placeholder="Password (6+ characters)" autocomplete="${isNew?'new-password':'current-password'}" style="width:100%;margin-bottom:14px">
  <div class="row">${isNew?'<button class="btn primary" data-a="authRegister">Create account</button><button class="btn soft" data-a="authLogin">Log in</button>':'<button class="btn primary" data-a="authLogin">Login</button><button class="btn soft" data-a="authRegister">Register</button>'}</div>`:
  `<p class="muted" style="margin:0 0 12px">Signed in as <b>${esc(authUsername()||myName()||'Digu Player')}</b></p>
@@ -1232,31 +1307,32 @@ function openAccount(kind){
 }
 async function authDo(kind){
  if(!FB.ready||!FB.auth){toast('Account service is still connecting.');return;}
- const raw=(($('#authUser')||{}).value||'').trim(), user=normalUsername(raw), pass=($('#authPass')||{}).value||'';
- if(!user||user==='player'){toast('Enter a valid username.');return;}
+ const raw=(($('#authUser')||{}).value||'').trim(), pass=($('#authPass')||{}).value||'';
+ /* the login field takes a username, or (if it contains "@") a full email used as-is, for accounts made by the older email-login build */
+ const isEmail=raw.indexOf('@')>=0;
+ if(isEmail&&kind==='register'){toast('Pick a username for a new account, not an email.');return;}
+ if(isEmail&&!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(raw)){toast('Enter a valid email address.');return;}
+ let user=isEmail?'':normalUsername(raw);
+ if(!isEmail&&(!user||user==='player')){toast('Enter a valid username.');return;}
  if(pass.length<6){toast('Password must be at least 6 characters.');return;}
  if(kind==='register'&&user===ADMIN_NAME){toast('That username is reserved.');return;}
- const email=usernameEmail(user);
+ const email=isEmail?raw.toLowerCase():usernameEmail(user);
  try{
    let cred;
    if(kind==='register'){
      cred=await FB.createUserWithEmailAndPassword(FB.auth,email,pass);
    }else{
-     try{
-       // Existing admin account was created with the older email-login build.
-       // Player-facing UI remains username-only.
-       const loginEmail=(user==='dangerous')?'rasewps2@outlook.com':email;
-       cred=await FB.signInWithEmailAndPassword(FB.auth,loginEmail,pass);
-     }
+     try{cred=await FB.signInWithEmailAndPassword(FB.auth,email,pass);}
      catch(firstErr){
        // Compatibility for other accounts created by the older email-login build on this device.
        const legacy=rememberedLoginEmail();
-       if(legacy && user===(authUsername()||myName()||'').toLowerCase()){
+       if(!isEmail && legacy && user===(authUsername()||myName()||'').toLowerCase()){
          cred=await FB.signInWithEmailAndPassword(FB.auth,legacy,pass);
        }else throw firstErr;
      }
    }
-   FB.user=cred.user;
+   FB.user=cred.user; reloadBlk();
+   if(isEmail)user=FB.user.uid===ADMIN_UID?ADMIN_NAME:(normalUsername(raw.split('@')[0])||'player');
    ls.set('dd-auth-username',user);
    ls.set('lg-name',user);
    await fbLoadAndMerge();
@@ -1276,7 +1352,7 @@ async function authDo(kind){
 async function authLogout(){try{
   await FB.signOut(FB.auth);
   const U=await import('https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js');
-  const cred=await U.signInAnonymously(FB.auth); FB.user=cred.user;
+  const cred=await U.signInAnonymously(FB.auth); FB.user=cred.user; reloadBlk();
   INV.shells=WELCOME; INV.xp=0; INV.owned={}; INV.eq={}; INV.hist=[{id:'welcome',t:Date.now(),how:'gift',shells:WELCOME}];
   INV.stats={hands:0,gins:0,big:0,games:0,wins:0,online:0,best:null}; INV.aw=[]; INV.day=''; INV.dayEarned=0;
   ls.set('dd-inv',JSON.stringify(INV));
@@ -1323,7 +1399,7 @@ app.innerHTML=`<main class="page">
 <section class="panel"><h2>Join with a code</h2>
 <div class="row joinrow" style="margin-top:12px"><input class="in" id="code" maxlength="4" placeholder="CODE" autocomplete="off" autocapitalize="characters" autocorrect="off" spellcheck="false" enterkeyhint="go" aria-label="Table code" value="${esc(last||'')}"><button class="btn primary" data-a="join">Join</button></div></section>
 <section class="panel"><h2>Open tables</h2>${db?'':srvHTML()}<div id="openlist" style="margin-top:6px">${openListHTML()}</div></section>
-<section class="panel"><h2>Live tables</h2><p class="muted" style="font-size:12px;margin:4px 0 0">Watch a public game in play, or take a free seat from the next hand.</p><div id="livelist" style="margin-top:6px">${liveListHTML()}</div></section>
+<section class="panel"><h2>Live tables</h2><p class="muted" style="font-size:12px;margin:4px 0 0">Watch a public game in play, or take a free seat for the next game.</p><div id="livelist" style="margin-top:6px">${liveListHTML()}</div></section>
 </main>`;warmUp();}
 function roundsPickHTML(cur,can){return `<label class="f">Match length</label><div class="pick">${ROUND_OPTS.map(n=>`<button class="btn sm soft" data-a="rounds" data-n="${n}" aria-pressed="${n===cur}"${can?'':' disabled'}>${n} hands</button>`).join('')}</div>`;}
 const blitzHint=()=>soloBots===4?'5 players is <b>Digu Blitz</b>: one deck, a face-down and a face-up pile, 5 seconds a turn.':soloBots===5?'6 players: <b>two decks</b>, so duplicate cards can go in sets.':'One deck, 15 seconds a turn.';
@@ -1471,7 +1547,8 @@ function renderTable(){
 const me=meIdx(),cur=S.players[S.turn],R=roundsOf(S),playing=S.status==='playing';
 {const g=$('#goalt'),gt=S.status==='over'?'Final scores':(S.blitz?'<span class="bz">Digu Blitz</span> · ':'')+(S.handNo>R?'Tiebreak hand':`Hand <b>${S.handNo}</b> of ${R}`)+(S.viewers>0?`<span class="vw" aria-label="${S.viewers} watching">${HI.eye}${S.viewers}</span>`:'');if(g&&g._t!==gt){g.innerHTML=gt;g._t=gt;}}
 const oe=$('#opps');const seats=seatOrder(),nO=seats.length;oe.className='seats n'+nO;oe._cnt=oe._cnt||{};
-const topS=Math.max(...S.players.map(q=>q.score)),leaders=S.players.filter(q=>q.score===topS).length,leadK=topS>0&&leaders===1?S.players.findIndex(q=>q.score===topS):-1;
+/* points leader(s) wear the gold crown: every tied leader gets one, nobody before any points are scored; players who left don't count */
+const liveP=S.players.filter(q=>!q.gone),topS=liveP.length?Math.max(...liveP.map(q=>q.score)):0,isLead=k=>topS>0&&!!S.players[k]&&!S.players[k].gone&&S.players[k].score===topS;
 const keep=new Set();let moved=false;
 seats.forEach(k=>{const p=S.players[k];keep.add(p.id);let el=oe.querySelector(`[data-pid="${CSS.escape(p.id)}"]`);
 if(!el){el=document.createElement('div');el.className='seat';el.dataset.pid=p.id;el.dataset.a='opp';el.setAttribute('role','button');el.tabIndex=0;
@@ -1479,13 +1556,13 @@ if(!el){el=document.createElement('div');el.className='seat';el.dataset.pid=p.id
 el.dataset.k=k;const on=playing&&S.turn===k,cnt=(S.hands[p.id]||[]).length,prev=oe._cnt[p.id];oe._cnt[p.id]=cnt;
 const av=el.querySelector('.av');if(av.dataset.av!==String(k)){av.dataset.av=k;}
 const ak=JSON.stringify([p.cos||null,p.piece,k%PK.length]);const avc=el.querySelector('.avc');if(avc._k!==ak){avc._k=ak;avc.innerHTML=avatarHTML(p,k,'',46);}
-const isH=mode!=='solo'&&p.id===S.hostId&&!p.gone,bk=(k===leadK?CROWN:'')+(isH?'<span class="hostb">Host</span>':'');const bd=el.querySelector('.sbd');if(bd._k!==bk){bd._k=bk;bd.innerHTML=bk;}
+const isH=mode!=='solo'&&p.id===S.hostId&&!p.gone,bk=(isLead(k)?CROWN:'')+(isH?'<span class="hostb">Host</span>':'');const bd=el.querySelector('.sbd');if(bd._k!==bk){bd._k=bk;bd.innerHTML=bk;}
 const fan=el.querySelector('.hfan'),fk=backIdOf(p)+':'+Math.min(3,cnt);if(fan._k!==fk){fan._k=fk;const mb=miniBack(p);fan.innerHTML=Array.from({length:Math.min(3,cnt)},()=>`<i ${mb}></i>`).join('');}
 if(prev!=null&&prev!==cnt){fan.classList.remove('bump');void fan.offsetWidth;fan.classList.add('bump');}
 const nm=esc(p.name);if(el.querySelector('.nm').innerHTML!==nm)el.querySelector('.nm').innerHTML=nm;
 const tag=p.bye?'<span class="aitag left">Left</span>':p.ai?'<span class="aitag">AI Rookie</span>':'',ct=tag||`${cnt} · ${p.score} pts`;const ce=el.querySelector('.cnt');if(ce._k!==ct){ce._k=ct;ce.innerHTML=ct;ce.className='cnt'+(tag?' tg':'');}
 av.classList.toggle('on',on);el.classList.toggle('gone',!!p.bye);syncTimer(av,on);
-el.setAttribute('aria-label',`${p.name}${isH?', host':''}${p.bye?', left the table':p.ai?', AI Rookie playing for them':''}, ${cnt} cards, ${p.score} points${k===leadK?', leading':''}, view player`);});
+el.setAttribute('aria-label',`${p.name}${isH?', host':''}${p.bye?', left the table':p.ai?', AI Rookie playing for them':''}, ${cnt} cards, ${p.score} points${isLead(k)?', leading on points':''}, view player`);});
 oe.querySelectorAll('.seat').forEach(el=>{if(!keep.has(el.dataset.pid)){el.remove();moved=true;}});
 if(moved||oe._n!==nO){oe._n=nO;layoutArena();}
 const st=$('#status');let t='';
@@ -1510,10 +1587,10 @@ if(me>=0){const p=S.players[me],myTurn=playing&&S.turn===me;
  const h=`<div><b>${esc(p.name)}${mode==='p2p'&&S.hostId===myId?'<span class="hostpill">Host</span>':''}</b><span class="s">${p.score} points${playing?` · hand ${fmt(handScore(myHand()).net)}`:''}</span></div>`;
  if(!mi._built){mi._built=1;mi.innerHTML='<span class="meav" id="meav"><span class="avc"></span><span class="sbd"></span></span><div></div>';}
  const avc=mi.querySelector('.avc'),ak=JSON.stringify([p.cos||null,p.piece]);if(avc._k!==ak){avc._k=ak;avc.innerHTML=avatarHTML(p,me,'',50);}
- const bk=p.score===topS&&me===leadK?CROWN:'';const bd=mi.querySelector('.sbd');if(bd._k!==bk){bd._k=bk;bd.innerHTML=bk;}
+ const bk=isLead(me)?CROWN:'';const bd=mi.querySelector('.sbd');if(bd._k!==bk){bd._k=bk;bd.innerHTML=bk;}
  const tx=mi.lastElementChild;if(tx._h!==h){tx.innerHTML=h;tx._h=h;}
  const mav=$('#meav');mav.classList.toggle('on',myTurn);syncTimer(mav,myTurn);}
-else{const wt=(S.wait||[]).some(q=>q.id===myId),h=`<div class="watchbar"><span class="eye">${HI.eye}</span><div><b>${wt?'You’re in from the next hand':'Watching live'}</b><span class="s">${wt?'Sit tight, you’ll be dealt in when this hand ends':'Spectators can’t see anyone’s cards'}</span></div></div>`;if(mi._h!==h){mi._h=h;mi._built=0;mi.innerHTML=h;}}
+else{const wt=(S.wait||[]).some(q=>q.id===myId),h=`<div class="watchbar"><span class="eye">${HI.eye}</span><div><b>${wt?'You’re in for the next game':'Watching live'}</b><span class="s">${wt?'Waiting for this match to finish. Everyone starts at 0.':'Spectators can’t see anyone’s cards'}</span></div></div>`;if(mi._h!==h){mi._h=h;mi._built=0;mi.innerHTML=h;}}
 {const eb=$('#emobtn');if(eb)eb.hidden=me<0;const cb=$('#chatbtn');if(cb)cb.hidden=me<0||mode!=='p2p'||chatOff();if(chatCode!==S.code){chatCode=S.code;chatLog.length=0;}}vcUI();renderHand();renderActs();renderOv();}
 function renderActs(){const a=$('#acts');if(!a||!S)return;let h='';
 const me=meIdx(),sel=canDiscard()&&selected&&myHand().includes(selected);
@@ -1541,7 +1618,7 @@ if(handKey!==hk){handKey=hk;order=arranged(hand);for(const id in cardEls)cardEls
 order=order.filter(id=>hand.includes(id));if(hand.some(id=>!order.includes(id)))order=arranged(hand);
 if(selected&&!hand.includes(selected))selected=null;
 for(const id in cardEls)if(!hand.includes(id)){cardEls[id].remove();delete cardEls[id];}
-let w=box.querySelector('.watch');if(meIdx()<0){const tx=(S.wait||[]).some(q=>q.id===myId)?'You’ll be dealt in next hand':'You’re watching this table';if(!w){box.insertAdjacentHTML('beforeend','<div class="watch"></div>');w=box.querySelector('.watch');}if(w.textContent!==tx)w.textContent=tx;return;}else if(w)w.remove();
+let w=box.querySelector('.watch');if(meIdx()<0){const tx=(S.wait||[]).some(q=>q.id===myId)?'Waiting for this match to finish':'You’re watching this table';if(!w){box.insertAdjacentHTML('beforeend','<div class="watch"></div>');w=box.querySelector('.watch');}if(w.textContent!==tx)w.textContent=tx;return;}else if(w)w.remove();
 const g=groups(hand);
 {const tmp={};for(const id in g)(tmp[g[id]]=tmp[g[id]]||[]).push(id);const sigs=new Set(Object.values(tmp).map(a=>a.sort().join(',')));
 if(meldKey===hk&&!dealt){for(const x of sigs)if(!prevMelds.has(x)){setTimeout(()=>SFX.meld(),S.move&&(S.move.t==='stock'||S.move.t==='take')?460:0);break;}}
@@ -1633,10 +1710,10 @@ else if(m.t==='bury'){const to=rectOf($('#stockTop'))||b.stock;const from=mine?b
 /* ---------- overlay ---------- */
 function closeOv(){const o=$('#ov');o.classList.remove('show');o.innerHTML='';o._k=null;}
 function scoresHTML(){const ps=S.players.map((p,k)=>({p:p,k:k})).sort((a,b)=>b.p.score-a.p.score);const TOP=Math.max(1,...S.players.map(p=>p.score));
-const gone=(S.left||[]).map(q=>`<div class="srow left"><span class="mini">${pieceHTML(PIECES[q.piece]?q.piece:'manta','#8C9AA0')}</span><div class="n"><span>${esc(q.name)}<small class="lefttag">Left</small></span><div class="bar"><i style="--c:#8C9AA0;width:${Math.max(0,Math.min(100,q.score/TOP*100))}%"></i></div></div><b>${q.score}</b></div>`).join('');
-return `<div class="scores">${ps.map(({p,k})=>`<div class="srow${p.gone?' left':''}">${avatarHTML(p,k,'',30)}<div class="n"><span>${esc(p.name)}${p.id===myId&&p.name!=='You'?' (you)':''}${p.gone?'<small class="lefttag">Left</small>':''}${mode!=='solo'&&p.id===S.hostId?'<span class="hostpill">Host</span>':''}</span><div class="bar"><i style="--c:${PC[k]};width:${Math.max(0,Math.min(100,p.score/TOP*100))}%"></i></div></div><b>${p.score}</b></div>`).join('')}${gone}</div>`;}
+const gone=(S.left||[]).map(q=>`<div class="srow left"><span class="mini">${pieceHTML(PIECES[q.piece]?q.piece:'manta','#8C9AA0')}</span><div class="n"><span>${esc(q.name)}<small class="lefttag">${q.afk?'Away':'Left'}</small></span><div class="bar"><i style="--c:#8C9AA0;width:${Math.max(0,Math.min(100,q.score/TOP*100))}%"></i></div></div><b>${q.score}</b></div>`).join('');
+return `<div class="scores">${ps.map(({p,k})=>`<div class="srow${p.gone?' left':''}">${avatarHTML(p,k,'',30)}<div class="n"><span>${esc(p.name)}${p.id===myId&&p.name!=='You'?' (you)':''}${p.gone?`<small class="lefttag">${p.afk?'Away':'Left'}</small>`:''}${mode!=='solo'&&p.id===S.hostId&&!p.gone?'<span class="hostpill">Host</span>':''}</span><div class="bar"><i style="--c:${PC[k]};width:${Math.max(0,Math.min(100,p.score/TOP*100))}%"></i></div></div><b>${p.score}</b></div>`).join('')}${gone}</div>`;}
 function handRowsHTML(r){const rows=S.players.map((p,k)=>({p:p,k:k,x:r.rows[k]})).filter(o=>o.x).sort((a,b)=>b.x.total-a.x.total);
-return `<div class="hands"><div class="hhead"><span></span><span>This hand</span><span>Melded</span><span>Left out</span><span>Total</span></div>${rows.map(({p,k,x})=>`<div class="hrow">${avatarHTML(p,k,'',26)}<span class="hn">${esc(p.name)}${x.bonus?`<small>${r.big?'Big gin':'Gin'} +${x.bonus}</small>`:''}</span><span class="hp">+${x.plus}</span><span class="hm">−${x.minus}</span><b class="${x.total<0?'neg':''}">${fmt(x.total)}</b></div>`).join('')}</div>`;}
+return `<div class="hands"><div class="hhead"><span></span><span>This hand</span><span>Melded</span><span>Left out</span><span>Total</span></div>${rows.map(({p,k,x})=>`<div class="hrow">${avatarHTML(p,k,'',26)}<span class="hn">${esc(p.name)}${x.bonus?`<small>${r.big?'Big gin':'Gin'} +${x.bonus}</small>`:''}${x.fz?'<small>Away, score frozen</small>':''}</span><span class="hp">+${x.plus}</span><span class="hm">−${x.minus}</span><b class="${x.total<0?'neg':''}">${fmt(x.total)}</b></div>`).join('')}</div>`;}
 function revealHTML(r){if(!r.lay)return '';
 const others=S.players.map((p,k)=>({p:p,k:k,l:r.lay[k]})).filter(o=>o.l&&o.k!==r.w&&(o.l.m.length||o.l.d.length));
 if(!others.length)return '';
@@ -1883,10 +1960,16 @@ const EMOTE_PACKS=[{id:'basic',name:'Reactions',items:[
 {id:'ocean',name:'Ocean Pack',items:[{id:'o-turtle',t:'🐢',n:'Turtle'},{id:'o-fish',t:'🐠',n:'Reef fish'},{id:'o-shark',t:'🦈',n:'Shark'},{id:'o-wave',t:'🌊',n:'Wave'},{id:'o-shell',t:'🐚',n:'Shell'},{id:'o-coco',t:'🥥',n:'Coconut'}]},
 {id:'island',name:'Island Pack',items:[{id:'i-isle',t:'🏝️',n:'Island'},{id:'i-sun',t:'☀️',n:'Sunny'},{id:'i-boat',t:'⛵',n:'Sailing'},{id:'i-mango',t:'🥭',n:'Mango'},{id:'i-sleep',t:'😴',n:'Sleepy'},{id:'i-wow',t:'WOW',n:'Wow',txt:true},{id:'i-nice',t:'NICE',n:'Nice',txt:true}]}];
 const EMOTES={};EMOTE_PACKS.forEach(p=>p.items.forEach(it=>{EMOTES[it.id]=it;}));
-const EMOTE_CD=4000;let lastEmote=0;const BLK=(()=>{try{const a=JSON.parse(ls.get('dd-blocked')||'[]');return Array.isArray(a)?a.filter(x=>x&&x.id):[];}catch(e){return [];}})();
-const saveBlk=()=>ls.set('dd-blocked',JSON.stringify(BLK.slice(-200)));
+/* blocked players are kept on this device, one list per account (guests share the device list). They are not saved to the
+   profile doc: players/{uid} is publicly readable and its rules only allow the leaderboard fields. */
+const blkKey=()=>FB.user&&!FB.user.isAnonymous?'dd-blocked:'+FB.user.uid:'dd-blocked';
+const blkRead=k=>{try{const a=JSON.parse(ls.get(k)||'[]');return Array.isArray(a)?a.filter(x=>x&&x.id):[];}catch(e){return [];}};
+const EMOTE_CD=4000;let lastEmote=0;const BLK=blkRead('dd-blocked');
+const saveBlk=()=>ls.set(blkKey(),JSON.stringify(BLK.slice(-200)));
 const isBlocked=id=>BLK.some(x=>x.id===id);
 const mutedP=new Set(BLK.map(x=>x.id)),emoteT={};
+/* after login / logout: switch to that account's list (an account's first list starts from this device's guest list) */
+function reloadBlk(){const k=blkKey(),a=ls.get(k)==null&&k!=='dd-blocked'?blkRead('dd-blocked'):blkRead(k);BLK.length=0;a.forEach(x=>BLK.push(x));mutedP.clear();BLK.forEach(x=>mutedP.add(x.id));}
 const emotesMuted=()=>ls.get('dd-emute')==='1';
 function toggleEmotes(){const t=$('#emotray');if(!t)return;closeChat();if(Date.now()-lastEmote<EMOTE_CD){toast('Wait a moment before the next reaction.');return;}t.hidden=!t.hidden;}
 function closeEmotes(){const t=$('#emotray');if(t)t.hidden=true;}
@@ -1933,7 +2016,7 @@ chatLog.push({pid:pid,name:p.name,m:m});if(chatLog.length>30)chatLog.shift();
 const bar=$('#chatbar');if(bar&&!bar.hidden)renderChatLog();else if(pid!==myId){const d=document.querySelector('#chatbtn .dot');if(d)d.hidden=false;}
 bubbleAt(pid,m,'chat',3600);}
 
-const REPORT_REASONS=['Offensive chat','Offensive name','Cheating or unfair play','Harassment','Something else'];
+const REPORT_REASONS=['Cheating or unfair play','Abusive chat','Offensive name','Other'];
 
 /* ---------- Boli: get more (packs + rewarded ads). Payments switch on with the app release. ---------- */
 const PAY_ENABLED=false,ADS_ENABLED=false,AD_REWARD=25,AD_DAILY=5;
@@ -1960,12 +2043,17 @@ const note=cleanText((($('#rnote')||{}).value||'').slice(0,300));const alsoBlock
 const rep={reason:reason,note:String((($('#rnote')||{}).value||'')).slice(0,300),targetId:String(id).slice(0,40),targetName:String(p.name||'').slice(0,20),
  byId:myId,byName:(myName()||'Player').slice(0,20),table:String(S.code||'').slice(0,8),mode:mode||'',
  chat:chatLog.filter(c=>c.pid===id).slice(-10).map(c=>String(c.m).slice(0,60)),t:Date.now()};
-let ok=false;try{if(FB.ready&&FB.addDoc){await FB.addDoc(FB.collection(FB.db,'reports'),Object.assign(rep,{uid:FB.user?FB.user.uid:'',at:FB.serverTimestamp()}));ok=true;}}catch(e){console.warn('report failed',e);}
+const ok=await postReport(rep);
+if(!ok)queueReport(rep);
 if(alsoBlock&&!isBlocked(id)){BLK.push({id:id,name:p.name,t:Date.now()});mutedP.add(id);saveBlk();}
 closeSheet();
-if(ok)toast('Report sent. Thank you for helping keep Digu friendly.',4000);
-else if(SUPPORT_EMAIL){location.href='mailto:'+SUPPORT_EMAIL+'?subject='+encodeURIComponent('Report: '+rep.targetName)+'&body='+encodeURIComponent(reason+'\n'+rep.note+'\nTable '+rep.table+'\nChat: '+rep.chat.join(' | '));}
-else toast('Couldn’t send the report right now. Please try again when you’re online.',4500);}
+/* the reported player is never told */
+toast(ok?'Report sent. Thank you for helping keep Digu friendly.':'Report saved. It will be sent when you’re back online.',4000);}
+/* reports go to the Firestore "reports" collection (create-only in the rules); if that fails they wait on this device */
+async function postReport(rep){try{if(FB.ready&&FB.addDoc&&FB.user&&!testNs()){await FB.addDoc(FB.collection(FB.db,'reports'),Object.assign({},rep,{uid:FB.user.uid,at:FB.serverTimestamp()}));return true;}}catch(e){console.warn('report failed',e);}return false;}
+function queueReport(rep){let q=[];try{q=JSON.parse(ls.get('dd-report-queue')||'[]');if(!Array.isArray(q))q=[];}catch(e){}q.push(rep);ls.set('dd-report-queue',JSON.stringify(q.slice(-20)));}
+async function flushReports(){let q=[];try{q=JSON.parse(ls.get('dd-report-queue')||'[]');}catch(e){}if(!Array.isArray(q)||!q.length)return;
+const left=[];for(const r of q){if(!(await postReport(r)))left.push(r);}if(left.length)ls.set('dd-report-queue',JSON.stringify(left));else ls.del('dd-report-queue');}
 function openBlocked(){sheet(`<div class="grab"></div><h2>Blocked players</h2>${BLK.length?`<div class="blist">${BLK.slice().reverse().map(x=>`<div class="lrow"><span class="lname">${esc(x.name||'Player')}</span><button class="btn soft sm" data-a="unblock" data-id="${esc(x.id)}">Unblock</button></div>`).join('')}</div>`:'<p class="muted">You haven’t blocked anyone. Tap a player’s avatar during a game to block or report them.</p>'}
 <div class="row"><button class="btn primary" data-a="close">Done</button></div>`);}
 function openSupport(){sheet(`<div class="grab"></div><h2>Help &amp; support</h2><p class="muted" style="margin:4px 0 12px">Questions, a bug, or a problem with another player? Send us a message.${SUPPORT_EMAIL?` You can also email <b>${esc(SUPPORT_EMAIL)}</b>.`:''}</p>
@@ -1978,15 +2066,22 @@ else if(SUPPORT_EMAIL){location.href='mailto:'+SUPPORT_EMAIL+'?subject=Dhivehi%2
 else toast('Couldn’t send right now. Please try again when you’re online.',4500);}
 function openDeleteAccount(){if(authIsGuest())return;
 sheet(`<div class="grab"></div><h2>Delete account</h2><p class="muted" style="margin:4px 0 12px">This permanently deletes <b>${esc(authUsername()||myName()||'your account')}</b>, your leaderboard entry and your saved progress on this phone. It can’t be undone.</p>
-<input class="in" id="delPass" type="password" placeholder="Enter your password to confirm" autocomplete="current-password" style="width:100%">
+<label class="f" for="delWord">Type DELETE to confirm</label>
+<input class="in" id="delWord" type="text" placeholder="DELETE" autocomplete="off" autocapitalize="characters" spellcheck="false" style="width:100%;margin-bottom:10px">
+<input class="in" id="delPass" type="password" placeholder="Your password" autocomplete="current-password" style="width:100%">
 <div class="row"><button class="btn ghost" data-a="close">Cancel</button><button class="btn danger-solid" data-a="delAcctGo">Delete forever</button></div>`);}
 async function deleteAccount(){const u=FB.auth&&FB.auth.currentUser;if(!u||u.isAnonymous)return;const pass=(($('#delPass')||{}).value||'');
+if(String((($('#delWord')||{}).value||'')).trim().toUpperCase()!=='DELETE'){toast('Type DELETE to confirm.');return;}
 if(pass.length<6){toast('Enter your password to confirm.');return;}
 const btn=document.querySelector('[data-a="delAcctGo"]');if(btn)btn.disabled=true;
-try{await FB.reauthenticateWithCredential(u,FB.EmailAuthProvider.credential(u.email,pass));
+try{/* Firebase needs a recent login before deleting an account, so sign in again with the password first */
+ await FB.reauthenticateWithCredential(u,FB.EmailAuthProvider.credential(u.email,pass));
+ /* the player's own docs: the leaderboard/profile doc and the "playing now" check-in (the rules let the owner delete both) */
  try{await FB.deleteDoc(FB.doc(FB.db,'players',u.uid));}catch(e){console.warn('profile delete failed',e);}
- await FB.deleteUser(u);
- ['dd-auth-username','dd-login-email','lg-name','lg-solo','dd-blocked'].forEach(k=>ls.del(k));
+ try{await FB.deleteDoc(FB.doc(FB.db,'presence',PRES_GAME,'users',u.uid));}catch(e){console.warn('presence delete failed',e);}
+ presUid=null;
+ await FB.deleteUser(u);lbCache=null;
+ ['dd-auth-username','dd-login-email','lg-name','lg-solo','dd-blocked','dd-blocked:'+u.uid].forEach(k=>ls.del(k));
  INV.shells=WELCOME;INV.xp=0;INV.owned={};INV.eq={};INV.hist=[{id:'welcome',t:Date.now(),how:'gift',shells:WELCOME}];
  INV.stats={hands:0,gins:0,big:0,games:0,wins:0,online:0,best:null};INV.aw=[];INV.day='';INV.dayEarned=0;ls.set('dd-inv',JSON.stringify(INV));
  BLK.length=0;mutedP.clear();
@@ -1996,7 +2091,7 @@ try{await FB.reauthenticateWithCredential(u,FB.EmailAuthProvider.credential(u.em
  toast(/wrong-password|invalid-credential/.test(c)?'That password isn’t right.':c==='auth/too-many-requests'?'Too many attempts. Try again later.':'Couldn’t delete the account'+(c?' ('+c+')':'')+'.',4500);}}
 function openPlayer(k){const p=S&&S.players[k];if(!p)return;const muted=mutedP.has(p.id);
 sheet(`<div class="grab"></div><div class="pprof">${avatarHTML(p,k,'',72)}<h2>${esc(p.name)}</h2>${!p.bot&&p.cos&&BYID[p.cos.t]?`<div style="margin-top:6px"><span class="badge-t">${esc(BYID[p.cos.t].name)}</span></div>`:''}<p class="muted">${p.ai?(p.bye?'Left the table':'AI Rookie is playing their hand'):p.bot?'Computer player':(p.id===S.hostId?'Host (party leader)':'Player')}, ${p.score} points</p>${!p.bot&&p.cos&&p.cos.g?`<p class="muted" style="font-size:12px">${p.cos.w} wins from ${p.cos.g} games</p>`:''}</div>
-${p.bot||mode!=='p2p'?'':`<div class="row"><button class="btn soft" data-a="mutep" data-id="${esc(p.id)}">${muted?'Unmute this player':'Mute chat and reactions'}</button></div>`}
+${p.bot||mode!=='p2p'||p.id===myId?'':`<div class="row"><button class="btn soft" data-a="mutep" data-id="${esc(p.id)}">${muted?'Unmute this player':'Mute chat and reactions'}</button></div>`}
 ${p.bot||p.id===myId?'':`<div class="row"><button class="btn soft" data-a="blockp" data-id="${esc(p.id)}">${isBlocked(p.id)?'Unblock':'Block player'}</button><button class="btn soft danger" data-a="reportp" data-id="${esc(p.id)}">Report player</button></div>`}
 <div class="row"><button class="btn primary" data-a="close">Close</button></div>`);}
 
@@ -2017,13 +2112,14 @@ function sheet(h){if(charB){charB.destroy();charB=null;}const sb=$('#sheetB');sb
 function closeSheet(){$('#sheet').classList.remove('open');}
 function openMenu(){const cur=S.players[S.turn];
 sheet(`<div class="grab"></div><div class="row" style="justify-content:space-between"><h2>Scores</h2><span class="tag">${mode==='solo'?'Solo':'Table '+esc(S.code)}</span></div>${scoresHTML()}
+<button class="lbbox" data-a="top10" aria-label="Top players, see the top 10"><span class="lbh">Top players</span><div id="menulb"><p class="muted lbmsg">Loading the leaderboard…</p></div></button>
 <label class="f" style="margin-top:2px">Your table</label>${tablePickHTML()}
 <div class="rules">${S.blitz?'<p><b>Digu Blitz</b>: 5 seconds a turn. If you draw face down, discard face down; if you draw face up, discard face up.</p>':''}<p>Gin: after your discard, all 10 cards are in melds. Big gin: all 11 meld right after you draw. Melds are 3 or more of a rank, or 3 or more in a row of one suit, aces low. You can’t discard the card you just took from the discard pile.</p><p>Scoring: melded cards count for you, cards left out count against you. Aces 15, J, Q and K 10, other cards their number. Gin adds ${GIN}, big gin ${BIG}. Play 3, 5 or 10 hands. Most points at the end wins; a tie plays one more hand.</p><p>Tap a card to lift it, then tap Discard or the discard pile. You can also drag it onto the pile. Cards with a gold edge and a tick are already a set or run. When you can go gin, a gold GIN button appears.</p></div>
 ${(mode==='online'||(mode==='p2p'&&isHost))&&S.hostId===myId&&S.status==='playing'&&S.turn!==meIdx()?`<div class="row"><button class="btn soft" data-a="skip">Play ${esc(cur.name)}’s turn for them</button></div>`:''}
 <div class="row"><button class="btn soft" data-a="music" aria-pressed="${Music.on}">Music: ${Music.on?'On':'Off'}</button><button class="btn soft" data-a="sfx" aria-pressed="${ls.get('dd-sfx')!=='0'}">Sound effects: ${ls.get('dd-sfx')!=='0'?'On':'Off'}</button></div>
 <div class="row"><button class="btn soft" data-a="smoothToggle" aria-pressed="${isSmooth()}">Smooth mode: ${isSmooth()?'On':'Off'}</button></div>
 <div class="row"><button class="btn soft" data-a="emute" aria-pressed="${!emotesMuted()}">Reactions: ${emotesMuted()?'Muted':'On'}</button>${mode==='p2p'?`<button class="btn soft" data-a="chatToggle" aria-pressed="${!chatOff()}">Chat: ${chatOff()?'Off':'On'}</button>`:''}</div>
-<div class="row"><button class="btn soft" data-a="leave">Leave table</button><button class="btn primary" data-a="close">Back to game</button></div>`);}
+<div class="row"><button class="btn soft" data-a="leave">Leave table</button><button class="btn primary" data-a="close">Back to game</button></div>`);loadMenuLb();}
 
 /* ---------- online play: encrypted relay ----------
    Phones talk through public MQTT relays over secure WebSockets, so players on mobile data
@@ -2092,17 +2188,17 @@ const p=pool;p.forEach(o=>{o.h=onLobbyMsg;o.subs=()=>[NS+'lobby/+'];if(o.ok)o.c.
 clearTimeout(poolT);poolT=setTimeout(()=>{if(pool!==p)return;if(screen==='friends'||screen==='quick'){warmUp();return;}p.forEach(o=>o.c.end());pool=null;},5*60*1000);}
 function onLobbyMsg(o,topic,m){const pre=NS+'lobby/';if(topic.indexOf(pre)!==0)return;const code=topic.slice(pre.length);if(!/^[A-Z]{4}$/.test(code))return;
 if(!m||!m.t){delete lobbyList[code];}
-else{const cur=lobbyList[code];if(!cur||+m.t>=cur.t)lobbyList[code]={code:code,name:cleanName(m.name),pc:String(m.pc||''),n:Math.max(1,Math.min(6,m.n|0)),t:+m.t,c:+m.c||+m.t,status:m.status==='lobby'?'lobby':m.status==='playing'?'playing':'busy',q:!!m.q,host:String(m.host||''),h:Math.max(0,m.h|0),r:Math.max(1,m.r|0||DEF_ROUNDS),vw:Math.max(0,m.vw|0),f:Math.max(0,Math.min(5,m.f|0))};}
+else{const cur=lobbyList[code];if(!cur||+m.t>=cur.t)lobbyList[code]={code:code,name:cleanName(m.name),pc:String(m.pc||''),n:Math.max(1,Math.min(6,m.n|0)),t:+m.t,c:+m.c||+m.t,status:m.status==='lobby'?'lobby':m.status==='playing'?'playing':'busy',q:!!m.q,host:String(m.host||''),h:Math.max(0,m.h|0),r:Math.max(1,m.r|0||DEF_ROUNDS),vw:Math.max(0,m.vw|0),f:Math.max(0,Math.min(5,m.f|0)),ids:Array.isArray(m.ids)?m.ids.slice(0,6).map(x=>String(x).slice(0,24)):[]};}
 if(screen==='friends')updOpenList();quickCheck();}
 const fresh=x=>Math.abs(Date.now()-x.t)<45000&&x.host!==myId;
 function openTables(){return Object.values(lobbyList).filter(x=>x.status==='lobby'&&x.n<6&&fresh(x)).sort((a,b)=>b.n-a.n||b.t-a.t);}
-/* public tables in play: anyone can watch; with a free seat you are dealt in at the next hand */
+/* public tables in play: anyone can watch; with a free seat you wait for this match to end and play the next game */
 function liveTables(){return Object.values(lobbyList).filter(x=>x.status==='playing'&&fresh(x)).sort((a,b)=>b.f-a.f||b.vw-a.vw||b.t-a.t);}
 function openListHTML(){if(db)return '<p class="empty-list">Open tables are available in the published game.</p>';const l=openTables();
 if(!l.length)return `<p class="empty-list">${srvState==='fail'?'Can’t load open tables on this network.':srvState==='checking'?'Loading open tables…':'No open tables right now. Create a public table, or try Quick Match.'}</p>`;
 return l.map(x=>`<div class="otable"><span class="mini">${pieceHTML(PIECES[x.pc]?x.pc:'manta',PC[0])}</span><div class="ot"><b>${esc(x.name)}’s table</b><small>${x.n} of 6 players${x.q?', quick match':''}</small></div><button class="btn soft sm" data-a="joinOpen" data-code="${esc(x.code)}">Join</button></div>`).join('');}
 function liveListHTML(){if(db)return '';const l=liveTables();if(!l.length)return `<p class="empty-list">${srvState==='ok'?'No public games in play right now.':'Loading live tables…'}</p>`;
-return l.map(x=>`<div class="otable"><span class="mini">${pieceHTML(PIECES[x.pc]?x.pc:'manta',PC[1])}</span><div class="ot"><b>${esc(x.name)}’s table</b><small>${x.n}/6 players · hand ${Math.max(1,x.h)}/${x.r}${x.vw?` · ${x.vw} watching`:''}</small></div><div class="row" style="gap:6px">${x.f>0?`<button class="btn soft sm" data-a="joinLive" data-code="${esc(x.code)}" aria-label="Join ${esc(x.name)}’s table next hand">Join</button>`:''}<button class="btn primary sm" data-a="watchLive" data-code="${esc(x.code)}">Watch</button></div></div>`).join('');}
+return l.map(x=>`<div class="otable"><span class="mini">${pieceHTML(PIECES[x.pc]?x.pc:'manta',PC[1])}</span><div class="ot"><b>${esc(x.name)}’s table</b><small>${x.n}/6 players · hand ${Math.max(1,x.h)}/${x.r}${x.vw?` · ${x.vw} watching`:''}</small>${x.f>0?'<small style="display:block">Match in progress: join for the next game</small>':''}</div><div class="row" style="gap:6px">${x.f>0?`<button class="btn soft sm" data-a="joinLive" data-code="${esc(x.code)}" aria-label="Join ${esc(x.name)}’s table for the next game">Join</button>`:''}<button class="btn primary sm" data-a="watchLive" data-code="${esc(x.code)}">Watch</button></div></div>`).join('');}
 let listT=0;function updOpenList(){if(listT)return;listT=setTimeout(()=>{listT=0;const e=$('#openlist');if(e)e.innerHTML=openListHTML();const v=$('#livelist');if(v)v.innerHTML=liveListHTML();},250);}
 setInterval(()=>{if(screen==='friends'&&!document.hidden){if(!net&&!pool)warmUp();updOpenList();}},5000);
 const netErrMsg='Can’t reach the game server. If you’re on office or school Wi-Fi, try mobile data.';
@@ -2127,7 +2223,7 @@ function broadcast(){const n=net;if(!n||n.role!=='host')return;n.players.forEach
 function updListing(){const n=net;if(!n||n.role!=='host'||!n.code||!S)return;const topic=NS+'lobby/'+n.code;
 const live=S.status==='playing'||S.status==='handover',here=S.players.filter(p=>!p.gone).length;
 const show=n.isPublic&&((S.status==='lobby'&&S.players.length<6)||live);
-if(show){const h=S.players.find(p=>p.id===S.hostId)||S.players[0]||{};n.listed=true;const msg={v:2,code:n.code,name:h.name,pc:h.piece,n:S.status==='lobby'?S.players.length:here,t:Date.now(),c:n.created,status:S.status==='lobby'?'lobby':'playing',q:n.quick,host:myId,h:S.handNo|0,r:roundsOf(S),vw:S.viewers|0,f:Math.max(0,6-here-(S.wait||[]).length)};n.clients.forEach(o=>pub(o,topic,msg,true));}
+if(show){const h=S.players.find(p=>p.id===S.hostId)||S.players[0]||{};n.listed=true;const msg={v:2,code:n.code,name:h.name,pc:h.piece,n:S.status==='lobby'?S.players.length:here,t:Date.now(),c:n.created,status:S.status==='lobby'?'lobby':'playing',q:n.quick,host:myId,h:S.handNo|0,r:roundsOf(S),vw:S.viewers|0,f:Math.max(0,6-here-(S.wait||[]).length),ids:S.players.filter(p=>!p.gone).map(p=>p.id).slice(0,6)};n.clients.forEach(o=>pub(o,topic,msg,true));}
 else if(n.listed){n.listed=false;n.clients.forEach(o=>{if(o.ok)o.c.publish(topic,'',true);});}}
 /* spectators: kept apart from the players, capped to spare the host's data */
 const MAX_VIEW=30;
@@ -2141,7 +2237,7 @@ function kickPlayer(id){const n=net;if(!n||n.role!=='host'||!S||S.status!=='lobb
 n.players.forEach((pl,tp)=>{if(pl.pid===id){sendPlayer(tp,pl,{k:'err',m:'The host removed you from this table.'});n.players.delete(tp);}});
 const idx=S.players.findIndex(q=>q.id===id);if(idx>=0){const N=clone(S);N.players.splice(idx,1);N.rev++;N.by=myId;commit(N);}}
 function quickCheck(){const n=net;if(!n||n.role!=='host'||!n.quick||!S||S.status!=='lobby'||S.players.length>1||n.merging)return;
-const other=openTables().filter(x=>x.q&&x.code!==n.code&&(x.c<n.created||(x.c===n.created&&x.code<n.code)))[0];if(!other)return;
+const other=openTables().filter(x=>x.q&&x.code!==n.code&&![x.host].concat(x.ids||[]).some(isBlocked)&&(x.c<n.created||(x.c===n.created&&x.code<n.code)))[0];if(!other)return;
 n.merging=true;mode=null;S=null;isHost=false;cleanupP2P();renderQuickWait('Joining '+other.name+'’s table…');const run=quickRun;
 setTimeout(()=>{if(run!==quickRun)return;const btn=$('#qbtn');if(btn)netJoin(btn,myName(),other.code,{timeout:6000,onFail:()=>{if(run===quickRun)tryQuick(run,new Set([other.code]));}});},200);}
 /* the host keeps an eye on every player: 30 s of silence means they left. Mid-hand an AI Rookie finishes for them. */
@@ -2164,6 +2260,10 @@ function hostFarewell(){if(!(mode==='p2p'&&isHost)||!S||(S.status!=='handover'&&
 const key=S.gid+':'+S.handNo;if(byeKey===key)return;byeKey=key;
 setTimeout(()=>{if(!S||!(mode==='p2p'&&isHost))return;g.forEach(p=>{if(S.players.some(q=>q.id===p.id)){receiveChat(p.id,BYE_MSG);relayChat(p.id,BYE_MSG,true);}});
 setTimeout(()=>{if(!S||!(mode==='p2p'&&isHost))return;const N=clone(S);let any=false;N.players.forEach(p=>{if(p.gone&&!p.bye){p.bye=1;any=true;}});if(!any)return;endIfAlone(N);N.rev=(S.rev||0)+1;N.by=myId;commit(N);},1800);},1400);}
+/* host went AFK: once its AI has said goodbye (or the others already dealt on without it), hand the table over */
+let afkExitT=0;
+function afkHostCheck(){if(!(mode==='p2p'&&isHost)||!S||afkExitT)return;const me=S.players.find(p=>p.id===myId);
+if(!me||(me.afk&&me.bye))afkExitT=setTimeout(()=>{afkExitT=0;if(mode==='p2p'&&isHost)hostAfkExit();},600);}
 /* the next player in seat order who is still here */
 function nextHostId(excl){if(!S)return null;const n=S.players.length,hi=Math.max(0,S.players.findIndex(q=>q.id===excl));for(let i=1;i<n;i++){const q=S.players[(hi+i)%n];if(q.id!==excl&&!q.gone&&!q.bot)return q.id;}return null;}
 async function netCreate(btn,name,opts){opts=opts||{};const failed=()=>{if(opts.onFail)opts.onFail();};const done0=netPrecheck(btn,'Connecting…');if(!done0){failed();return;}const done=()=>{done0();};let n=null;
@@ -2198,7 +2298,7 @@ const d=await unseal(pl.key,m);if(net!==n)return;pl.bi=o.bi;pl.seen=Date.now();o
 function onHostData(pl,topic,d){if(!S||!d||typeof d!=='object')return;const n=net;
 if(d.k==='hello'){const id=String(d.id||'').slice(0,24),name=cleanName(d.name);if(!id||id===myId)return;
 if(n.banned.has(id)){sendPlayer(topic,pl,{k:'err',m:'The host removed you from this table.'});return;}
-if(S.players.some(q=>q.id===id&&q.gone)||(S.left||[]).some(q=>q.id===id)){sendPlayer(topic,pl,{k:'err',m:'You left this match, so you can’t rejoin it.'});return;}
+if(S.players.some(q=>q.id===id&&q.gone)||(S.left||[]).some(q=>q.id===id)){const afk=S.players.some(q=>q.id===id&&q.afk)||(S.left||[]).some(q=>q.id===id&&q.afk);sendPlayer(topic,pl,{k:'err',m:afk?'You were away for 2 turns, so you can’t rejoin this match.':'You left this match, so you can’t rejoin it.'});return;}
 if(S.players.some(q=>q.id===id)){n.players.forEach((q,tp)=>{if(tp!==topic&&q.pid===id)n.players.delete(tp);});pl.pid=id;pl.spec=false;sendState(topic,pl);return;}
 if(S.status!=='lobby'||d.spec){
 if(!S.pub){sendPlayer(topic,pl,{k:'err',m:d.spec?'That table is private, so it can’t be watched.':'That game has already started.'});return;}
@@ -2207,14 +2307,14 @@ if(!waiting&&viewers()>=MAX_VIEW&&![...n.players.values()].some(q=>q.pid===id&&q
 n.players.forEach((q,tp)=>{if(tp!==topic&&q.pid===id)n.players.delete(tp);});pl.pid=id;pl.spec=true;pl.seen=Date.now();
 const free=6-S.players.filter(q=>!q.gone).length-(S.wait||[]).length,N=clone(S);
 if(!d.spec&&!waiting&&free>0&&S.status!=='lobby'){const used=q=>S.players.some(x=>x.piece===q)||(S.wait||[]).some(x=>x.piece===q);const want=PIECES[d.pc]&&!used(d.pc)?d.pc:(PK.find(x=>!used(x))||PK[0]);
- N.wait=(S.wait||[]).concat([{id:id,name:name,piece:want,cos:validCos(d.cos)}]);N.note={k:(S.rev||0)+1,t:name+' joins at the next hand.'};}
+ N.wait=(S.wait||[]).concat([{id:id,name:name,piece:want,cos:validCos(d.cos)}]);N.note={k:(S.rev||0)+1,t:name+' joins for the next game.'};}
 N.viewers=viewers();N.rev=(S.rev||0)+1;N.by=myId;commit(N);return;}
 if(S.players.length>=6){sendPlayer(topic,pl,{k:'err',m:'That table is full.'});return;}
 n.players.forEach((q,tp)=>{if(tp!==topic&&q.pid===id)n.players.delete(tp);});pl.pid=id;
 const want=PIECES[d.pc]&&!S.players.some(q=>q.piece===d.pc)?d.pc:(PK.find(x=>!S.players.some(q=>q.piece===x))||PK[0]);
 const N=clone(S);N.players.push({id:id,name:name,piece:want,score:0,cos:validCos(d.cos)});N.rev++;N.by=myId;commit(N);return;}
 if(!pl.pid)return;const idx=S.players.findIndex(q=>q.id===pl.pid);
-if(idx>=0&&S.players[idx].gone&&d.k!=='leave'){sendPlayer(topic,pl,{k:'err',m:'You were away too long. An AI Rookie finished your hand.'});n.players.delete(topic);return;}
+if(idx>=0&&S.players[idx].gone&&d.k!=='leave'){sendPlayer(topic,pl,S.players[idx].afk?{k:'afk',m:AFK_MSG}:{k:'err',m:'You were away too long. An AI Rookie finished your hand.'});n.players.delete(topic);return;}
 if(d.k==='ping'){if((d.rev||0)!==(S.rev||0))sendState(topic,pl);else sendPlayer(topic,pl,{k:'pong'});return;}
 if(d.k==='emote'){if(idx>=0)relayEmote(pl.pid,String(d.e||''));return;}
 if(d.k==='chat'){if(idx>=0&&S.status!=='lobby')relayChat(pl.pid,String(d.m||''));return;}
@@ -2270,6 +2370,7 @@ if(topic!==NS+n.code+'/p/'+n.topic||!n.key)return;
 let d;try{d=await unseal(n.key,m);}catch(e){return;}if(net!==n)return;
 n.bi=o.bi;n.last=Date.now();if(n.warned){n.warned=false;toast('Back at the table.');}
 if(d.k==='err'){if(!n.ready){n.fail(String(d.m||'Couldn’t join that table.'));return;}toast(String(d.m||''),4000);endP2P();return;}
+if(d.k==='afk'){endP2P();afkNotice();return;}
 if(!n.ready){n.ready=true;clearTimeout(n.failT);n.onReady();}
 if(d.k==='emote'){showEmote(String(d.p||''),String(d.e||''));return;}
 if(d.k==='chat'){receiveChat(String(d.p||''),String(d.m||''));return;}
@@ -2365,9 +2466,11 @@ setSrv('ok');setQuickText('Looking for an open table…');
 await sleep(Object.keys(lobbyList).length?300:1600);if(run!==quickRun)return;
 tryQuick(run,new Set());}
 function tryQuick(run,tried){if(run!==quickRun)return;if(screen!=='quick')renderQuickWait('Looking for an open table…');
-const l=openTables().filter(x=>!tried.has(x.code)).sort((a,b)=>(b.q-a.q)||(b.n-a.n)||(a.c-b.c));const btn=$('#qbtn');if(!btn)return;
-const lv=liveTables().filter(x=>x.f>0&&!tried.has(x.code));
-const x=l[0]||lv[0];if(x){tried.add(x.code);setQuickText(l[0]?'Joining '+x.name+'’s table…':'Joining '+x.name+'’s game. You’ll be dealt in next hand…');
+/* Quick Match skips tables where someone you blocked is sitting */
+const blockedAt=x=>[x.host].concat(x.ids||[]).some(isBlocked);
+const l=openTables().filter(x=>!tried.has(x.code)&&!blockedAt(x)).sort((a,b)=>(b.q-a.q)||(b.n-a.n)||(a.c-b.c));const btn=$('#qbtn');if(!btn)return;
+const lv=liveTables().filter(x=>x.f>0&&!tried.has(x.code)&&!blockedAt(x));
+const x=l[0]||lv[0];if(x){tried.add(x.code);setQuickText(l[0]?'Joining '+x.name+'’s table…':'Joining '+x.name+'’s game. You’re in for the next game…');
 netJoin(btn,myName(),x.code,{timeout:6000,onFail:()=>{if(run!==quickRun)return;warmUp();tryQuick(run,tried);}});}
 else{setQuickText('No open tables. Creating one…');netCreate(btn,myName(),{pub:true,quick:true,onFail:()=>{if(run===quickRun)renderHome();}});}}
 
@@ -2476,7 +2579,7 @@ case 'chatQuick':sendChat(b.dataset.m);break;
 case 'chatToggle':ls.set('dd-chat',chatOff()?'1':'0');if(chatOff())closeChat();if(S){renderTable();openMenu();}break;
 case 'emote':sendEmote(b.dataset.e);break;
 case 'opp':openPlayer(+b.dataset.k);break;
-case 'blockp':{const id=b.dataset.id;const k=S?S.players.findIndex(q=>q.id===id):-1;const p=k>=0?S.players[k]:null;if(isBlocked(id)){BLK.splice(BLK.findIndex(x=>x.id===id),1);mutedP.delete(id);toast('Player unblocked.');}else{BLK.push({id:id,name:p?p.name:'Player',t:Date.now()});mutedP.add(id);toast('Blocked. You won’t see their chat or reactions.');}saveBlk();if(k>=0)openPlayer(k);else if(screen==='profile')openBlocked();break;}
+case 'blockp':{const id=b.dataset.id;const k=S?S.players.findIndex(q=>q.id===id):-1;const p=k>=0?S.players[k]:null;if(isBlocked(id)){BLK.splice(BLK.findIndex(x=>x.id===id),1);mutedP.delete(id);toast('Player unblocked.');}else{BLK.push({id:id,name:p?p.name:'Player',t:Date.now()});mutedP.add(id);toast('Blocked. You won’t see their chat or reactions, or hear their voice.');}saveBlk();if(k>=0)openPlayer(k);else if(screen==='profile')openBlocked();break;}
 case 'reportp':openReport(b.dataset.id);break;
 case 'sendReport':sendReport(b.dataset.id);break;
 case 'blocked':openBlocked();break;
@@ -2506,6 +2609,7 @@ case 'setPiece':setPiece(b.dataset.p);break;
 case 'start':b.disabled=true;startGame();break;
 case 'leave':leave();break;
 case 'menu':openMenu();break;
+case 'top10':openTop10();break;
 case 'close':closeSheet();break;
 case 'tableSet':if(TABLES[b.dataset.id]){INV.eq.table=b.dataset.id;saveInv();applyTable();buzz(6);if(S)openMenu();}break;
 case 'profMode':profMode=b.dataset.v;drawProfileSheet((($('#pnm')||{}).value)||'');break;
