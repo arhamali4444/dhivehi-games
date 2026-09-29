@@ -11,8 +11,9 @@
 <meta name="description" content="Bondi and Ranga Bondi: the Maldivian card game where nobody wants to be left holding cards. Play against the computer on your phone.">
 <link rel="manifest" href="/manifest.webmanifest">
 <title>Bondi · Dhivehi Games</title>
-<link rel="icon" type="image/png" href="../icons/icon-192.png">
-<link rel="apple-touch-icon" href="../icons/icon-192.png">
+<link rel="icon" href="/icons/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="/icons/favicon-32.png" type="image/png" sizes="32x32">
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" sizes="180x180">
 <meta name="apple-mobile-web-app-title" content="Bondi">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -64,6 +65,9 @@ button:focus-visible,input:focus-visible,a:focus-visible,[tabindex]:focus-visibl
 label.f{display:block;font:600 11px/1 var(--cond);letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
 .icon-btn{width:44px;height:44px;border-radius:13px;border:0;background:rgba(18,19,22,.72);box-shadow:inset 0 0 0 1px rgba(230,234,242,.18);color:#fff;display:grid;place-items:center;cursor:pointer;flex:none;padding:0;text-decoration:none;position:relative}
 .icon-btn svg{width:20px;height:20px}
+/* Dhivehi Games home: back arrow + the mono white Punch Card (noir keeps its colours) */
+.icon-btn.dgh{width:auto;display:flex;align-items:center;gap:2px;padding:0 8px 0 4px}
+.icon-btn.dgh svg{width:18px;height:18px}@media (max-width:340px){.icon-btn.dgh svg{width:16px;height:16px}}.icon-btn .dgmk{display:block;flex:none}.icon-btn.dgh .dgmk.dgmono{width:17px;height:22px;color:#fff}
 .icon-btn .mute{display:none}.icon-btn[aria-pressed="false"] .mute{display:block}.icon-btn[aria-pressed="false"] .snd{opacity:.55}
 .page{position:relative;z-index:1;max-width:540px;margin:0 auto;padding:calc(12px + env(safe-area-inset-top)) max(16px,env(safe-area-inset-right)) calc(32px + env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-left));color:#fff}
 .panel{background:linear-gradient(180deg,#17181b,#111214);color:var(--ink);border-radius:22px;padding:18px;margin:14px 0;box-shadow:inset 0 0 0 1px rgba(255,255,255,.08),inset 0 1px 0 rgba(255,255,255,.06),var(--shadow)}
@@ -725,7 +729,7 @@ function offTable(){document.documentElement.dataset.scr=screen;if(spCtl){try{sp
 function renderHome(){screen='home';offTable();closeOv();closeRules();document.documentElement.dataset.ranga=ranga?'1':'0';
 const nm=myName(),me=meP();
 app.innerHTML=`<main class="page">
-<div class="hometop"><a class="icon-btn" href="../" aria-label="Back to Dhivehi Games">${HI.back}</a><button class="profbtn" data-a="name" aria-label="Your name: ${esc(nm||'not set')}. Change">${avatarHTML(me,0,38)}<span class="pwrap"><span class="pn">${nm?esc(nm):'Player'}</span><span class="ps">${nm?'Tap to rename':'Set your name'}</span></span></button><a class="shellpill" href="../digu/?open=boli" aria-label="${shells()} Boli">${HI.shell}<span>${compact(shells())}</span></a></div>
+<div class="hometop"><a class="icon-btn dgh" href="../" aria-label="Back to Dhivehi Games">${HI.back}<svg class="dgmk dgmono" viewBox="14.4 6.4 71.2 88.2" width="19" height="24" aria-hidden="true"><defs><mask id="dgmkM" maskUnits="userSpaceOnUse" x="-60" y="-60" width="120" height="120"><rect x="-30" y="-40" width="60" height="80" rx="8" fill="#fff"/><path d="M50,32.65 A14.5,14.5 0 1 0 26.01,48.85 Q39.27,63.45 50,80 Q60.73,63.45 73.99,48.85 A14.5,14.5 0 1 0 50,32.65Z" transform="translate(0,1.5) scale(0.7778) translate(-50,-52.75)" fill="#000"/></mask></defs><g transform="translate(50,50.5) rotate(-8)"><rect x="-30" y="-40" width="60" height="80" rx="8" fill="currentColor" mask="url(#dgmkM)"/></g></svg></a><button class="profbtn" data-a="name" aria-label="Your name: ${esc(nm||'not set')}. Change">${avatarHTML(me,0,38)}<span class="pwrap"><span class="pn">${nm?esc(nm):'Player'}</span><span class="ps">${nm?'Tap to rename':'Set your name'}</span></span></button><a class="shellpill" href="../digu/?open=boli" aria-label="${shells()} Boli">${HI.shell}<span>${compact(shells())}</span></a></div>
 ${heroFan()}
 <div class="dtitle"><span class="kick">${ranga?'Ranga · colour':'Ace of spades leads'}</span><h1>BONDI</h1><p>${ranga?'Throw a whole suit at them':'Don’t be left holding the cards'}</p></div>
 <div class="mseg" role="group" aria-label="Game"><button data-a="mode" data-v="0" aria-pressed="${!ranga}">Bondi<small>Classic</small></button><button data-a="mode" data-v="1" aria-pressed="${ranga}">Ranga Bondi<small>Throw a suit</small></button></div>
