@@ -88,7 +88,7 @@ button:disabled{cursor:default}
 .cell .rt{display:none;align-items:baseline;justify-content:center;gap:.2em;padding:.16em .4em .13em;border-radius:99px;background:var(--oc);color:var(--rc,#fff);font:900 calc(var(--B)*0.0185*var(--rf,1))/1 Sora,sans-serif;letter-spacing:-.01em;white-space:nowrap;font-variant-numeric:tabular-nums;box-shadow:0 0 0 calc(var(--B)*0.002) #fff,0 1px 2px rgba(0,0,0,.28);position:relative;z-index:1}
 .cell .rt small{font-size:.7em;font-weight:800;opacity:.85}
 .cell.hasrt .pr,.cell.hasrt .od{display:none}
-.cell .rt svg{width:1.15em;height:1.15em;align-self:center;margin-left:.1em}.cell.hasrt .rt{display:inline-flex}
+.cell .rt svg{width:1em;height:1em;margin:-.1em 0 -.1em .1em;align-self:center;flex:none}.cell.hasrt .rt{display:inline-flex}
 .cell .rt.rs{background:linear-gradient(180deg,#FFEDB5,#E7B53C);box-shadow:0 0 0 calc(var(--B)*0.0035) var(--oc),0 1px 2px rgba(0,0,0,.3)}
 .cell .rt.x2{box-shadow:0 0 0 calc(var(--B)*0.002) #fff,0 0 0 calc(var(--B)*0.0042) var(--oc),0 1px 2px rgba(0,0,0,.28)}
 .cell .rt.ln{background:#6B6354;color:#fff;text-transform:uppercase;letter-spacing:.04em;font-size:calc(var(--B)*0.017*var(--rf,1))}
@@ -99,7 +99,8 @@ button:disabled{cursor:default}
 .cell .bar{position:absolute;display:flex;align-items:center;justify-content:center;gap:calc(var(--B)*0.004)}
 .cell.b .bar{top:0;left:0;right:0;height:calc(var(--B)*0.0412)}.cell.t .bar{bottom:0;left:0;right:0;height:calc(var(--B)*0.0412)}
 .cell.l .bar{right:0;top:0;bottom:0;width:calc(var(--B)*0.0412);flex-direction:column}.cell.r .bar{left:0;top:0;bottom:0;width:calc(var(--B)*0.0412);flex-direction:column}
-.cell.b{padding-top:calc(var(--B)*0.0412)}.cell.t{padding-bottom:calc(var(--B)*0.0412)}.cell.l{padding-right:calc(var(--B)*0.0412)}.cell.r{padding-left:calc(var(--B)*0.0412)}
+/* only island spaces carry a colour bar, so only they reserve room for it; every other space centres on the whole tile */
+.cell.b.kp{padding-top:calc(var(--B)*0.0412)}.cell.t.kp{padding-bottom:calc(var(--B)*0.0412)}.cell.l.kp{padding-right:calc(var(--B)*0.0412)}.cell.r.kp{padding-left:calc(var(--B)*0.0412)}
 .cell.own{box-shadow:inset 0 0 0 calc(var(--B)*0.006) var(--oc)}
 .cell .od{position:absolute;width:calc(var(--B)*0.0213);height:calc(var(--B)*0.0213);border-radius:50%;background:var(--oc);box-shadow:0 0 0 calc(var(--B)*0.0027) #fff;z-index:2}
 .cell.b .od{bottom:calc(var(--B)*0.0053);right:calc(var(--B)*0.0053)}.cell.t .od{top:calc(var(--B)*0.0053);right:calc(var(--B)*0.0053)}
@@ -114,6 +115,7 @@ button:disabled{cursor:default}
 .corner{background:linear-gradient(160deg,#FFFCF2,#EEDFBF)}
 .corner .ic{width:calc(var(--B)*0.0692);height:calc(var(--B)*0.0692)}
 .corner .nm{--fs:calc(var(--B)*0.0233)}
+.corner .sub{display:block;max-width:100%;font:800 calc(var(--B)*0.016)/1.1 Sora,sans-serif;color:#155E43;white-space:nowrap}
 .corner.go{background:linear-gradient(160deg,#E7F6EC,#C8E8D3)}
 .corner.jail{background:repeating-linear-gradient(90deg,#F4E7CC 0 5px,#E8D8B6 5px 6px)}
 .corner.gojail{background:linear-gradient(160deg,#FCE6D6,#F2CDB2)}
@@ -181,6 +183,11 @@ button:disabled{cursor:default}
 .sus b{display:block;height:100%;width:var(--s,0%);background:linear-gradient(90deg,#F06A5A,#D8262B);border-radius:99px;transition:width .6s var(--out)}
 .sus.hot{box-shadow:0 0 0 1px rgba(255,120,110,.7)}
 .pl .tx{min-width:0;flex:1}
+/* progress toward the Classic win target */
+.pl .goal{display:block;height:3px;margin-top:4px;border-radius:99px;background:rgba(255,255,255,.2);overflow:hidden}
+.pl .goal b{display:block;height:100%;width:var(--g,0%);background:linear-gradient(90deg,#E7B53C,#FFD36E);border-radius:99px;transition:width .6s var(--out)}
+.pl .goal.near{box-shadow:0 0 0 1px rgba(255,211,110,.8)}
+.pl .goal.near b{background:linear-gradient(90deg,#FFD36E,#FFF1C2)}
 .pl b{display:block;font-size:12px;line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .pl small{display:flex;align-items:center;gap:4px;font-size:11.5px;font-weight:800;color:#FFE3A8;white-space:nowrap}
 .pl .tk{flex:none;width:24px;height:24px;border-radius:50%;background:#fff;display:grid;place-items:center;box-shadow:0 0 0 1.5px var(--c)}
@@ -228,10 +235,12 @@ button:disabled{cursor:default}
 .sheet .x{position:absolute;right:10px;top:8px;width:44px;height:44px;border-radius:14px;border:0;background:transparent;color:var(--muted);display:grid;place-items:center}
 .sheet .x svg{width:20px;height:20px}
 .shead{position:relative;padding-right:44px;min-height:46px}
+/* close button sits on the title's centre line (h2: 2px margin + 22px x 1.15 line) and its glyph lines up with the content edge */
+.shead .x{top:calc(2px + 22px*1.15/2 - 22px);right:-12px}
 .pcard{border-radius:20px;overflow:hidden;background:#fff;box-shadow:0 10px 24px -12px rgba(0,0,0,.35),inset 0 0 0 1px var(--line)}
 .pcard .hd{padding:10px 14px;color:#fff;display:flex;align-items:center;justify-content:space-between;gap:10px}
 .pcard .hd b{font:900 24px/1.05 Fraunces,Georgia,serif;min-width:0}
-.pcard .hd small{font-size:10px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;opacity:.92;text-align:right;flex:none;max-width:48%}
+.pcard .hd small{font-size:10px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;opacity:.92;text-align:right;flex:none;max-width:48%;line-height:1.3;text-wrap:balance}
 .pcard .hd.lt{color:var(--ink)}
 .iart{display:block;width:100%;height:120px}
 .rent{display:grid;grid-template-columns:1fr auto;gap:3px 10px;padding:10px 14px;font-size:12.5px}
@@ -350,7 +359,7 @@ button:disabled{cursor:default}
 .mb:disabled{opacity:.35}
 .mb svg{width:18px;height:18px}
 .stepper{display:flex;align-items:center;gap:8px}
-.stepper output{min-width:86px;text-align:center;font:900 20px/1 Fraunces,serif}
+.stepper output{flex:1;min-width:86px;text-align:center;font:900 20px/1 Fraunces,serif}
 .chips{display:flex;flex-wrap:wrap;gap:6px}
 .pchip{display:inline-flex;align-items:center;gap:6px;min-height:44px;padding:0 12px 0 0;border-radius:12px;border:0;background:#fff;box-shadow:inset 0 0 0 1.5px var(--line);color:var(--ink);font-weight:700;font-size:12.5px;overflow:hidden}
 .pchip i{width:8px;align-self:stretch;flex:none}
@@ -376,6 +385,9 @@ button:disabled{cursor:default}
 .seg button[aria-checked="true"]{box-shadow:inset 0 0 0 2.5px #155E43;background:#E4F4EA}
 .seg button svg{width:26px;height:26px;display:block;margin:0 auto}
 .seg.tk{display:grid;grid-template-columns:repeat(6,minmax(0,1fr))}
+.seg.goalseg{display:grid;grid-template-columns:repeat(4,minmax(0,1fr))}
+.seg.goalseg button{padding:0 4px;text-align:center}
+.seg.goalseg button:last-child{grid-column:1/-1}
 @media (max-width:359px){.seg.tk{grid-template-columns:repeat(3,1fr)}}
 .field{display:grid;gap:4px;margin:8px 0}
 .field label{font-size:12px;font-weight:800;color:var(--muted)}
@@ -393,6 +405,8 @@ button:disabled{cursor:default}
 .win .crown{width:92px;height:92px;margin:6px auto 2px;border-radius:50%;overflow:hidden;box-shadow:0 0 0 4px #FFD36E,0 10px 30px -8px rgba(0,0,0,.4)}
 .win .crown svg{width:100%;height:100%;display:block}
 .rank{display:grid;gap:6px;margin-top:10px;text-align:left}
+.goalwin{display:inline-block;margin:4px auto 0;padding:7px 16px;border-radius:99px;background:linear-gradient(180deg,#FFE9A8,#E7B53C);color:#4A3208;font-weight:900;font-size:15px;box-shadow:0 4px 14px -6px rgba(150,100,10,.6),inset 0 0 0 1px rgba(255,255,255,.5);font-variant-numeric:tabular-nums;white-space:nowrap}
+.win .goalwin+p{margin-top:8px}
 .reward{display:inline-flex;align-items:center;gap:6px;margin-top:8px;padding:8px 14px;border-radius:99px;background:#FFF3D6;box-shadow:inset 0 0 0 1px #E7C97F;font-weight:900;color:#6B4A14}
 .reward img{width:20px;height:20px}
 .sp-box{margin-top:12px}
@@ -401,11 +415,24 @@ button:disabled{cursor:default}
 .switch i:after{content:"";position:absolute;left:3px;top:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:transform .2s var(--out)}
 .switch[aria-checked="true"] i{background:#155E43}.switch[aria-checked="true"] i:after{transform:translateX(18px)}
 .menu{display:grid;gap:8px}
+/* Sandbank choice: three big buttons */
+.choices{display:grid;gap:10px;margin-top:10px}
+.choice{display:flex;align-items:center;gap:12px;width:100%;min-height:74px;padding:10px 14px;border:0;border-radius:18px;background:#fff;box-shadow:inset 0 0 0 1px var(--line),0 4px 0 #CDBB97;text-align:left;color:var(--ink);transition:transform .12s var(--out)}
+.choice:active{transform:translateY(3px);box-shadow:inset 0 0 0 1px var(--line),0 1px 0 #CDBB97}
+.choice .ci{flex:none;display:grid;place-items:center;width:48px;height:48px;border-radius:14px}
+.choice .ci svg{width:28px;height:28px}
+.choice .ct{min-width:0}
+.choice b{display:block;font:800 16px/1.2 Sora,sans-serif}
+.choice small{display:block;font-size:12px;line-height:1.35;color:var(--muted);margin-top:2px}
+.choice.mn .ci{background:#DDF1F8}.choice.cc .ci{background:#F7ECD2}.choice.rx .ci{background:#E7F6EC}
+.choice.rx{background:linear-gradient(180deg,#F2FBF5,#E3F4E9);box-shadow:inset 0 0 0 1px #BFE3CB,0 4px 0 #9CCBAE}
+/* numbers that sit in columns or tick up and down use even-width digits */
+.chip b,.pl small,.cell .pr,.owner .amt,.price b,.hbid b,.stepper output,.riskmini,.risk,.row2 .tx b,.rn small,.btn,.mb,.seg button,.logl{font-variant-numeric:tabular-nums}
 
 /* compact phones (short screens): one-row player strip, dice beside the buttons */
 #game.compact .pls{display:flex;overflow-x:auto;scrollbar-width:none;margin:0 -12px;padding:4px 12px}
 #game.compact .pls::-webkit-scrollbar{display:none}
-#game.compact .pl{flex:none;width:136px}
+#game.compact .pl{flex:none;width:auto;min-width:136px}
 #game.compact .act{grid-template-columns:auto minmax(0,1fr);align-items:start;gap:8px}
 #game.compact .status,#game.compact .pumping #abtns>.btn{opacity:.55;pointer-events:none;filter:saturate(.6)}
 .riskmini{grid-column:1/-1}
@@ -518,42 +545,53 @@ const BOLI_IMG='data:image/webp;base64,UklGRrgJAABXRUJQVlA4WAoAAAAQAAAARwAARwAAQ
 const GROUPS={
  br:{c:'#8B5A2B',n:'Brown',hc:50},lb:{c:'#6FC8EC',n:'Light blue',hc:50,lt:1},pk:{c:'#E86FA8',n:'Pink',hc:100},or:{c:'#F29A3A',n:'Orange',hc:100},
  rd:{c:'#D9383A',n:'Red',hc:150},ye:{c:'#F2C94C',n:'Yellow',hc:150,lt:1},gr:{c:'#2E9E5B',n:'Green',hc:200},db:{c:'#1F4FA8',n:'Dark blue',hc:200}};
-/* ONE economy table. k: go p(island) c(City Council card) n(Monsoon card) t(tax) r(transport) u(utility) jail free gojail
-   rent: [base, 1 gh, 2 gh, 3 gh, 4 gh, resort]  ·  loan = price/2, repay loan +10% */
+/* ONE economy table. k: go p(island) r(transport) jail free gojail  (c/n card spaces are still understood by the
+   engine and layouts, but this board draws cards at Start and the Sandbank instead)
+   Board "Layout B · 4 transports": 28 spaces, 6 per side; every side is a pair of islands, a transport and a group of 3
+   (side 4 mirrors it: 3, transport, 2). lab: tile label, \n = line break,   keeps words together.
+   rent: [base, 1 gh, 2 gh, 3 gh, 4 gh, resort], taken from ONE curve by price  ·  loan = price/2, repay loan +10% */
+const BOARD_ID='b2-4t';/* saves from another board cannot be resumed */
+const RENT_BY_PRICE={60:[2,10,30,90,160,250],80:[4,20,60,180,320,450],100:[6,30,90,270,400,550],120:[8,40,100,300,450,600],
+ 140:[10,50,150,450,625,750],160:[12,60,180,500,700,900],180:[14,70,200,550,750,950],200:[16,80,220,600,800,1000],
+ 220:[18,90,250,700,875,1050],240:[20,100,300,750,925,1100],260:[22,110,330,800,975,1150],280:[24,120,360,850,1025,1200],
+ 300:[26,130,390,900,1100,1275],320:[28,150,450,1000,1200,1400],350:[35,175,500,1100,1300,1500],400:[50,200,600,1400,1700,2000]};
+const ISL=(name,g,price,atoll,art,lab)=>({k:'p',name,g,price,rent:RENT_BY_PRICE[price],atoll,art,lab});
+const TRN=(name,lab,icon,art)=>({k:'r',name,lab,price:200,icon,art});
 const SP=[
  {k:'go',name:'Start: Malé Jetty',lab:'Start\nMalé Jetty'},
- {k:'p',name:'Thilafushi',g:'br',price:60,rent:[2,10,30,90,160,250],atoll:'Kaafu Atoll',art:'thilafushi'},
- {k:'c',name:'City Council',lab:'City\nCouncil'},
- {k:'p',name:'Gulhifalhu',g:'br',price:80,rent:[4,20,60,180,320,450],atoll:'Kaafu Atoll',art:'gulhifalhu'},
- {k:'t',name:'MIRA tax',lab:'MIRA\nMVR 150',tax:150},
- {k:'p',name:'Dhiffushi',g:'lb',price:100,rent:[6,30,90,270,400,550],atoll:'Kaafu Atoll',art:'dhiffushi'},
- {k:'p',name:'Hinnavaru',g:'lb',price:120,rent:[8,40,100,300,450,600],atoll:'Lhaviyani Atoll',art:'hinnavaru'},
+ ISL('Thilafushi','br',60,'Kaafu Atoll','thilafushi'),
+ ISL('Gulhifalhu','br',80,'Kaafu Atoll','gulhifalhu'),
+ TRN('Malé Ferry Terminal','Malé Ferry\nTerminal','ferry','ferry'),
+ ISL('Dhiffushi','lb',100,'Kaafu Atoll','dhiffushi'),
+ ISL('Hinnavaru','lb',100,'Lhaviyani Atoll','hinnavaru'),
+ ISL('Thulusdhoo','lb',120,'Kaafu Atoll','thulusdhoo'),
  {k:'jail',name:'Maafushi Prison',lab:'Maafushi\nPrison'},
- {k:'p',name:'Thoddoo',g:'pk',price:140,rent:[10,50,150,450,625,750],atoll:'Alif Alif Atoll',art:'thoddoo'},
- {k:'u',name:'STELCO',lab:'STELCO',price:150,icon:'power',art:'power',sub:'Electricity'},
- {k:'p',name:'Fulidhoo',g:'pk',price:160,rent:[12,60,180,500,700,900],atoll:'Vaavu Atoll',art:'fulidhoo'},
- {k:'r',name:'Velana Airport',lab:'Velana Airport',price:200,icon:'air',art:'airport'},
- {k:'p',name:'Ukulhas',g:'or',price:180,rent:[14,70,200,550,750,950],atoll:'Alif Alif Atoll',art:'ukulhas'},
- {k:'p',name:'Rasdhoo',g:'or',price:200,rent:[16,80,220,600,800,1000],atoll:'Alif Alif Atoll',art:'rasdhoo'},
- {k:'free',name:'Sandbank',lab:'Sandbank\nFree rest'},
- {k:'p',name:'Dhigurah',g:'rd',price:220,rent:[18,90,250,700,875,1050],atoll:'Alif Dhaal Atoll',art:'dhigurah'},
- {k:'n',name:'Monsoon',lab:'Monsoon'},
- {k:'p',name:'Eydhafushi',g:'rd',price:240,rent:[20,100,300,750,925,1100],atoll:'Baa Atoll',art:'eydhafushi'},
- {k:'r',name:'Ferry Terminal',lab:'Ferry Terminal',price:200,icon:'ferry',art:'ferry'},
- {k:'p',name:'Fuvahmulah',g:'ye',price:260,rent:[22,110,330,800,975,1150],atoll:'Gnaviyani Atoll',art:'fuvahmulah'},
- {k:'p',name:'Hithadhoo (Addu City)',lab:'Hithadhoo',g:'ye',price:280,rent:[24,120,360,850,1025,1200],atoll:'Addu City',art:'hithadhoo'},
+ ISL('Thoddoo','pk',140,'Alif Alif Atoll','thoddoo'),
+ ISL('Fulidhoo','pk',160,'Vaavu Atoll','fulidhoo'),
+ TRN('Velana Airport','Velana\nAirport','air','airport'),
+ ISL('Ukulhas','or',180,'Alif Alif Atoll','ukulhas'),
+ ISL('Rasdhoo','or',180,'Alif Alif Atoll','rasdhoo'),
+ ISL('Guraidhoo','or',200,'Kaafu Atoll','guraidhoo'),
+ {k:'free',name:'Sandbank',lab:'Sandbank',sub:'Your choice'},
+ ISL('Dhigurah','rd',220,'Alif Dhaal Atoll','dhigurah'),
+ ISL('Eydhafushi','rd',240,'Baa Atoll','eydhafushi'),
+ TRN('Seaplane Dock','Seaplane\nDock','seaplane','seaplane'),
+ ISL('Fuvahmulah','ye',260,'Gnaviyani Atoll','fuvahmulah'),
+ ISL('Hithadhoo (Addu City)','ye',260,'Addu City','hithadhoo','Hithadhoo'),
+ ISL('Kulhudhuffushi','ye',280,'Haa Dhaalu Atoll','kulhudhuffushi'),
  {k:'gojail',name:'Supreme Court Verdict',lab:'Supreme Court\nVerdict'},
- {k:'p',name:'Villimalé',g:'gr',price:300,rent:[26,130,390,900,1100,1275],atoll:'Malé City',art:'villimale'},
- {k:'u',name:'MWSC',lab:'MWSC',price:150,icon:'water',art:'desal',sub:'Water'},
- {k:'p',name:'Himmafushi',g:'gr',price:320,rent:[28,150,450,1000,1200,1400],atoll:'Kaafu Atoll',art:'himmafushi'},
- {k:'p',name:'Hulhumalé',g:'db',price:350,rent:[35,175,500,1100,1300,1500],atoll:'Malé City',art:'hulhumale'},
- {k:'t',name:'Green Tax',lab:'Green Tax\nMVR 100',tax:100},
- {k:'p',name:'Malé',g:'db',price:400,rent:[50,200,600,1400,1700,2000],atoll:'Malé City',art:'male'}];
+ ISL('Villimalé','gr',300,'Malé City','villimale'),
+ ISL('Himmafushi','gr',300,'Kaafu Atoll','himmafushi'),
+ ISL('Dhangethi','gr',320,'Alif Dhaal Atoll','dhangethi'),
+ TRN('Hulhumalé Bus Stop','Hulhumalé\nBus Stop','bus','bus'),
+ ISL('Hulhumalé','db',350,'Malé City','hulhumale'),
+ ISL('Malé','db',400,'Malé City','male')];
 SP.forEach((s,i)=>{s.i=i;if(!s.lab)s.lab=s.name;});
 const GMEM={};SP.forEach(s=>{if(s.g)(GMEM[s.g]=GMEM[s.g]||[]).push(s.i);});
-const RAILS=SP.filter(s=>s.k==='r').map(s=>s.i),UTILS=SP.filter(s=>s.k==='u').map(s=>s.i);
+const RAILS=SP.filter(s=>s.k==='r').map(s=>s.i);
 const OWNABLE=SP.filter(s=>s.price).map(s=>s.i);
-const TRANSPORT_RENT=[0,40,100];
+/* transport set: rent by how many of the 4 the owner holds */
+const TRANSPORT_RENT=[0,25,50,100,200];
 const NSP=SP.length;
 const START_CASH=1500,SALARY=200,JAIL_FEE=50,JAIL=SP.findIndex(x=>x.k==='jail'),GOJAIL=SP.findIndex(x=>x.k==='gojail');
 const BLURB={
@@ -568,11 +606,15 @@ const BLURB={
  hithadhoo:'Addu City: islands joined by a causeway around the atoll ring.',
  himmafushi:'Surf breaks, souvenir shops and a view of the city.',villimalé:'The green, quiet corner of the capital.',villimale:'The green, quiet corner of the capital.',
  hulhumale:'The city of hope: new towers, wide roads and a city beach.',male:'The capital. Towers wall to wall, the busiest square mile around.',
+ thulusdhoo:'A famous surf break, a busy harbour and a fizzy-drinks bottling plant.',
+ guraidhoo:'Guesthouses, a surf point and a lagoon full of turtles.',
+ kulhudhuffushi:'The big northern town, built around a mangrove lake.',
+ dhangethi:'Whale shark country: boats head out every morning.',
  airport:'Every holiday starts and ends here.',ferry:'Slow, cheap and always full of gossip.',
- power:'The electricity company: keeps the fans spinning and the fridges cold.',desal:'The water company: turns the lagoon into drinking water.'};
+ seaplane:'Floatplanes line up at the dock, bound for the far atolls.',bus:'The city bus: air-conditioned, on time, and packed at rush hour.'};
 
 /* ---------------------------------------------------------------- cards (fictional, no real people / parties / companies) */
-// e: effect  money|move|back|jail|goo|each|collect|repair|nearR|nearU|risk|amnesty|raid
+// e: effect  money|move|back|jail|goo|each|collect|repair|nearR|risk|amnesty|raid
 const CARDS={
  c:[ // City Council
   {t:'The council approves a new harbour wall. Collect MVR 100.',e:'money',v:100},
@@ -598,7 +640,7 @@ const CARDS={
   {t:'Sunny break. Take a day trip to Rasdhoo. Collect MVR 200 if you pass Start.',e:'move',to:'Rasdhoo'},
   {t:'Flights diverted. Go to the nearest transport. If it is owned, pay the owner twice the fare.',e:'nearR'},
   {t:'Anti-Corruption Raid! The coastguard boards every boat in the harbour. Every player with suspicion is audited.',e:'raid'},
-  {t:'Lightning knocks the power out. Go to the nearest utility. If owned, roll and pay 10× the roll.',e:'nearU'},
+  {t:'A seaplane pilot owes you a favour. Fly to the Seaplane Dock. Collect MVR 200 if you pass Start.',e:'move',to:'Seaplane Dock'},
   {t:'Huge catch of skipjack tuna! Collect MVR 150.',e:'money',v:150},
   {t:'Your yellowfin sells well at the fish market. Collect MVR 50.',e:'money',v:50},
   {t:'Get out of Maafushi, free. The storm floods the courtroom. Keep this card until needed.',e:'goo'},
@@ -613,14 +655,13 @@ const CARDS={
 const ICON={
  majlis:'<svg viewBox="0 0 24 24" fill="#8A6414" aria-hidden="true"><path d="M12 2 2 7h20zM4 9h2v9H4zm4 0h2v9H8zm4 0h2v9h-2zm4 0h2v9h-2zM2 20h20v2H2z"/></svg>',
  monsoon:'<svg viewBox="0 0 24 24" fill="#1B7FA6" aria-hidden="true"><path d="M7 15a5 5 0 0 1 .4-10A6 6 0 0 1 19 7a4 4 0 0 1-1 8z"/><path d="M8 17l-1 4M12 17l-1 4M16 17l-1 4" stroke="#1B7FA6" stroke-width="2" stroke-linecap="round"/></svg>',
- tax:'<svg viewBox="0 0 24 24" fill="#6B6354" aria-hidden="true"><path d="M6 2h12v20l-3-2-3 2-3-2-3 2z"/><path d="M9 7h6M9 11h6M9 15h4" stroke="#fff" stroke-width="1.6"/></svg>',
- leaf:'<svg viewBox="0 0 24 24" fill="#2E9E5B" aria-hidden="true"><path d="M20 3C9 3 4 9 4 16c0 2 .5 3.5 1 5 1-6 5-10 11-12-5 3-8 7-9 12 9 0 13-7 13-18z"/></svg>',
+ bus:'<svg viewBox="0 0 24 24" fill="#15241F" aria-hidden="true"><path d="M5 3h14a2 2 0 0 1 2 2v12a2 2 0 0 1-1 1.7V21h-3v-2H7v2H4v-2.3A2 2 0 0 1 3 17V5a2 2 0 0 1 2-2zm1 3v5h12V6zm1.5 8a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zm9 0a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3z"/></svg>',
+ seaplane:'<svg viewBox="0 0 24 24" fill="#15241F" aria-hidden="true"><path d="M2 11h8l3-6h2l-1.5 6H19l2-3h1.5l-1 3.6.8 2.4H21l-1.5-1.5H13l1.5 4h-2L10 13H2z"/><path d="M5 14v3M15 14v3" stroke="#15241F" stroke-width="1.6"/><rect x="2" y="17" width="17" height="2.2" rx="1.1"/></svg>',
+ relax:'<svg viewBox="0 0 24 24" fill="none" stroke="#155E43" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 20h18"/><path d="M6 20l6-9"/><path d="M4 11c3-4 13-4 16 0z" fill="#8FD3A8"/><circle cx="18" cy="5" r="2" fill="#F2C94C" stroke="#E0A21B"/></svg>',
  air:'<svg viewBox="0 0 24 24" fill="#15241F" aria-hidden="true"><path d="M21 16v-2l-8-5V3.5a1.5 1.5 0 0 0-3 0V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5z"/></svg>',
  plane:'<svg viewBox="0 0 24 24" fill="#15241F" aria-hidden="true"><path d="M3 13h7l4-7h2l-2 7h5l2-3h1l-1 4 1 4h-1l-2-3h-5l2 7h-2l-4-7H3z"/></svg>',
  ferry:'<svg viewBox="0 0 24 24" fill="#15241F" aria-hidden="true"><path d="M4 15h16l-2 5H6zM7 9h10l1 5H6zM11 5h2v3h-2z"/></svg>',
  boat:'<svg viewBox="0 0 24 24" fill="#15241F" aria-hidden="true"><path d="M2 16h20l-3 4H5zM6 12h9l3 3H4z"/></svg>',
- power:'<svg viewBox="0 0 24 24" fill="#E0A21B" aria-hidden="true"><path d="M13 2 4 14h7l-1 8 9-12h-7z"/></svg>',
- water:'<svg viewBox="0 0 24 24" fill="#1B7FA6" aria-hidden="true"><path d="M12 2C9 7 6 10 6 14a6 6 0 0 0 12 0c0-4-3-7-6-12z"/></svg>',
  go:'<svg viewBox="0 0 24 24" fill="#155E43" aria-hidden="true"><path d="M4 12h12l-4-4 1.4-1.4L20 13l-6.6 6.4L12 18l4-4H4z"/></svg>',
  jail:'<svg viewBox="0 0 24 24" fill="none" stroke="#15241F" stroke-width="2" aria-hidden="true"><rect x="4" y="3" width="16" height="18" rx="1"/><path d="M8 3v18M12 3v18M16 3v18"/></svg>',
  free:'<svg viewBox="0 0 24 24" aria-hidden="true"><ellipse cx="12" cy="17" rx="10" ry="3" fill="#F2DDAE"/><path d="M12 16c0-5 1-9 4-12" stroke="#7A5230" stroke-width="1.6" fill="none"/><path d="M16 4c-3-2-7-1-9 2 3-1 6-1 9-2zm0 0c3-1 6 1 7 4-2-2-5-3-7-4z" fill="#2E7D4F"/></svg>',
@@ -706,8 +747,13 @@ const ART=(()=>{
    s+=`<g stroke="#fff" stroke-width="1.6" fill="none"><path d="M270 96q15-30 30-28"/><path d="M262 104h38"/></g><path d="M262 104h38" stroke="#D8D2C4" stroke-width="3"/>`+dhoni(50,128,.9)+dhoni(80,132,.8,'#F2C94C')+speed(120,134,.7)+waves(r,2);return s;},
   airport:(r,id)=>rect(id,20,76,260,34,'#E9DDC0')+`<rect x="30" y="86" width="240" height="14" fill="#5E6A70"/><path d="M40 93h220" stroke="#fff" stroke-width="1.5" stroke-dasharray="10 8"/><rect x="200" y="58" width="8" height="22" fill="#F4F1EA"/><rect x="196" y="54" width="16" height="7" fill="#6FC8EC"/>`+plane(120,48,1.3,'#fff',-10)+palms(r,[[40,82],[260,82]])+waves(r,3),
   ferry:(r,id)=>`<path d="M0 60h90v12H0z" fill="#D8C49A"/><rect x="10" y="44" width="50" height="16" fill="#FFFDF7"/><path d="M6 46l30-10 30 10z" fill="#2E9E5B"/><path d="M100 104h130l-12 16H112z" fill="#F4F1EA"/><rect x="118" y="90" width="92" height="14" fill="#FFFDF7"/><path d="M122 94h84" stroke="#1F4FA8" stroke-width="3" stroke-dasharray="6 3"/><rect x="140" y="80" width="40" height="10" fill="#D9383A"/><path d="M100 118h130" stroke="#1F4FA8" stroke-width="2"/><path d="M230 112q20 4 50 2" stroke="#fff" stroke-width="2" fill="none" opacity=".7"/>`+waves(r,3),
-  power:(r,id)=>rect(id,40,70,220,44,'#E6DDC4')+`<rect x="80" y="74" width="80" height="30" fill="#D8D2C4"/><rect x="80" y="74" width="80" height="6" fill="#F2C94C"/>`+chimney(100,74,26)+chimney(125,74,34)+`<path d="M185 104l10-40 10 40M188 88h14M183 74h24" stroke="#5E6A70" stroke-width="2" fill="none"/><path d="M207 74q30 10 60-4M183 74q-30 10-60-6" stroke="#15241F" stroke-width=".8" fill="none"/><path d="M140 90l-8 10h6l-3 8 10-12h-6l3-6z" fill="#E0A21B"/>`+waves(r,3),
-  desal:(r,id)=>rect(id,40,70,220,44,'#E6DDC4')+`<g fill="#F4F1EA" stroke="#B9AE92"><rect x="70" y="72" width="34" height="30" rx="4"/><rect x="112" y="68" width="34" height="34" rx="4"/><rect x="154" y="74" width="30" height="28" rx="4"/></g><path d="M70 96h140M20 110h60" stroke="#6FC8EC" stroke-width="4"/><path d="M225 70c-8 12-12 18-12 24a12 12 0 0 0 24 0c0-6-4-12-12-24z" fill="#1B7FA6"/>`+waves(r,3)};
+  thulusdhoo:(r,id)=>isle(id,140,90,100,24)+trees(r,140,84,70,12,8)+houses(r,90,170,82,5)+`<rect x="190" y="76" width="34" height="18" fill="#F4F1EA"/><rect x="190" y="76" width="34" height="5" fill="#D9383A"/><rect x="214" y="62" width="6" height="16" fill="#8E8A80"/>`+harbour(60,108,50)+dhoni(80,126,.8)+surf(230,40)+surf(250,120)+palms(r,[[55,98],[228,100]])+waves(r,2),
+  guraidhoo:(r,id)=>isle(id,150,88,96,26)+trees(r,150,82,68,12,8)+houses(r,100,200,80,6)+umbrellas(r,190,240,112,3)+surf(30,44)+`<g fill="#2E7D4F" opacity=".75"><ellipse cx="70" cy="126" rx="7" ry="5"/><ellipse cx="96" cy="132" rx="5" ry="4"/></g>`+dhoni(250,128,.8,'#F2C94C')+palms(r,[[64,100],[236,98]])+waves(r,2),
+  kulhudhuffushi:(r,id)=>isle(id,150,86,118,32)+`<ellipse cx="190" cy="84" rx="30" ry="12" fill="#5FB7C9"/><g fill="#2E6B3E">${Array.from({length:9},(_,k)=>`<circle cx="${162+k*7}" cy="${k%2?74:95}" r="4"/>`).join('')}</g>`+town(r,110,80,52,14,20)+mosque(96,86)+harbour(40,112,60)+dhoni(70,128,.9)+waves(r,3),
+  dhangethi:(r,id)=>isle(id,160,80,84,22)+trees(r,160,75,60,10,7)+houses(r,120,200,72,6)+umbrellas(r,200,240,100,3)+shark(80,122,1.4)+speed(215,132,.8)+palms(r,[[96,90],[238,86]])+waves(r,2),
+  seaplane:(r,id)=>`<path d="M40 104h220v8H40z" fill="#B9A57B"/><g fill="#8E7A55">${Array.from({length:9},(_,k)=>`<rect x="${46+k*26}" y="112" width="4" height="14"/>`).join('')}</g><rect x="210" y="84" width="40" height="20" fill="#FFFDF7"/><path d="M206 86l24-10 24 10z" fill="#1F4FA8"/>`+float(90,94,1.3)+float(160,96,1.1)+float(70,40,.9)+waves(r,3),
+  bus:(r,id)=>{let s=rect(id,10,58,280,58,'#EFE7D2')+`<rect x="10" y="96" width="280" height="16" fill="#6B6E70"/><path d="M16 104h268" stroke="#fff" stroke-width="1.5" stroke-dasharray="10 8"/>`;const cs=['#FFFFFF','#E9F3F7','#CDE6F2','#F4F1EA'];for(let i=0;i<10;i++)s+=tower(20+i*27,94,18,R(r,20,34)|0,cs[(r()*cs.length)|0]);
+   s+=`<rect x="92" y="82" width="70" height="22" rx="4" fill="#2E9E5B"/><rect x="96" y="86" width="56" height="8" fill="#CDE6F2"/><circle cx="104" cy="105" r="3.5" fill="#15241F"/><circle cx="150" cy="105" r="3.5" fill="#15241F"/><rect x="190" y="72" width="3" height="24" fill="#5E6A70"/><rect x="184" y="68" width="15" height="8" rx="2" fill="#1F4FA8"/>`+palms(r,[[40,112],[260,112]])+waves(r,2);return s;}};
  function draw(key,seed){const id='a'+(++AID),r=mulberry(seed*7919+13);const f=D[key]||D.dhiffushi;return head(id,key==='thilafushi')+f(r,id)+'</svg>';}
  return {draw,has:k=>!!D[k]};
 })();
@@ -722,10 +768,12 @@ const ART=(()=>{
 const E=(()=>{
  let G=null,EV=[];
  const AUC_START=9000,AUC_EXT=4000,SALE_MS=30000,OFFER_GAP=6000,OFFER_TTL=90000;
- /* bribes go to OFFICIALS only (tax officer, prison guard, judge, council permit office), never to players.
+ /* bribes go to OFFICIALS only (prison guard, judge, council permit office), never to players.
+    (This board has no tax spaces, so there is no tax-officer bribe.)
     Suspicion: +20 per bribe (cap 100), -5 at the start of each of your turns if you did not bribe since.
     Caught: pay back 2x everything dodged since the last reset, go to Maafushi, the government seizes your
     most built-up space (auctioned to the others), suspicion and dodged reset to 0. */
+ const ROUND_WARN=110,ROUND_CAP=120;
  const SUS_STEP=20,SUS_MAX=100,SUS_DECAY=5,REPORT_FEE=50,GUARD_BRIBE=20,JUDGE_BRIBE=40;
  const emit=e=>{EV.push(e);};
  const r6=()=>1+((Math.random()*6)|0);
@@ -744,12 +792,10 @@ const E=(()=>{
  const hc=sp=>GROUPS[SP[sp].g].hc;
  const loanVal=sp=>SP[sp].price/2;
  const repayCost=sp=>Math.round(SP[sp].price*0.55);
- const taxBribe=amt=>Math.max(5,Math.round(amt*0.3/5)*5);
  const permitBribe=sp=>hc(sp)/2;
  function rentOf(sp,roll,o={}){const s=SP[sp],w=G.own[sp];if(!w||w.m)return 0;
   if(s.k==='p')return w.h>0?s.rent[w.h]:s.rent[0]*(ownsAll(w.o,s.g)?2:1);
-  if(s.k==='r')return TRANSPORT_RENT[countOf(w.o,RAILS)]*(o.mult||1);
-  if(s.k==='u')return (countOf(w.o,UTILS)===2?10:4)*(roll||7);return 0;}
+  if(s.k==='r')return TRANSPORT_RENT[countOf(w.o,RAILS)]*(o.mult||1);return 0;}
  function propsOf(p){return OWNABLE.filter(i=>G.own[i]&&G.own[i].o===p);}
  function bldCount(p){let h=0,r=0;propsOf(p).forEach(i=>{const w=G.own[i];if(w.h===5)r++;else h+=w.h;});return {h,r};}
  function netWorth(p){const pl=P(p);if(pl.out)return 0;let v=pl.cash;propsOf(p).forEach(i=>{const w=G.own[i];v+=w.m?SP[i].price/2:SP[i].price;if(w.h)v+=w.h*hc(i);});return v;}
@@ -787,7 +833,7 @@ const E=(()=>{
   emit({t:'audit',p:pid,caught,chance,kind,cost,dodge});
   if(caught){p.caught++;log(`BUSTED! ${p.name} was caught bribing the ${OFFICIAL[kind]}`);}
   else log(`${p.name} slipped the ${OFFICIAL[kind]} ${fmt(cost)}`);return caught;}
- const OFFICIAL={tax:'tax officer',guard:'prison guard',judge:'judge',permit:'council permit office'};
+ const OFFICIAL={guard:'prison guard',judge:'judge',permit:'council permit office'};
  /* start the penalty for pid: pay back 2x dodged, then (cont 'bust') prison + seizure + auction */
  function bust(pid){const p=P(pid),pay=2*p.dodged;p.sus=0;p.dodged=0;p.bribed=false;
   log(`${p.name} must pay back ${fmt(pay)}, goes to Maafushi and loses an island`);emit({t:'busted',p:pid,amt:pay,props:propsOf(pid).length});
@@ -800,31 +846,39 @@ const E=(()=>{
   log(`The government seizes ${SP[sp].name} from ${P(pid).name}`);emit({t:'seize',p:pid,sp});startAuction(sp,[pid]);return true;}
  /* ---------- movement ---------- */
  function moveBy(pid,n){const p=P(pid),path=[];let pos=p.pos,passed=false;for(let k=0;k<n;k++){pos=(pos+1)%NSP;path.push(pos);if(pos===0)passed=true;}
-  p.pos=pos;emit({t:'move',p:pid,path});if(passed){const sal=salary();if(sal){xfer(-1,pid,sal);log(`${p.name} passed Malé Jetty and collected ${fmt(sal)}`);}else log(`${p.name} passed Malé Jetty, but the treasury is empty`);}}
- function salary(){return G.mode==='classic'&&G.round>100?0:G.mode==='classic'&&G.round>60?100:SALARY;}
+  p.pos=pos;emit({t:'move',p:pid,path});if(passed){const sal=salary();xfer(-1,pid,sal);log(`${p.name} passed Malé Jetty and collected ${fmt(sal)}`);}}
+ function salary(){return SALARY;}/* Start always pays MVR 200 (owner rule) */
  function moveTo(pid,dest,passGo=true){const p=P(pid);const n=(dest-p.pos+NSP)%NSP;if(!passGo){const path=[];let pos=p.pos;for(let k=0;k<n;k++){pos=(pos+1)%NSP;path.push(pos);}p.pos=dest;emit({t:'move',p:pid,path});return;}moveBy(pid,n||NSP);}
  function moveBack(pid,n){const p=P(pid),path=[];let pos=p.pos;for(let k=0;k<n;k++){pos=(pos+NSP-1)%NSP;path.push(pos);}p.pos=pos;emit({t:'move',p:pid,path,back:1});}
  function goJail(pid){const p=P(pid);p.pos=JAIL;p.jail=true;p.jt=0;G.dbl=0;emit({t:'jail',p:pid});log(`${p.name} is locked up in Maafushi Prison`);}
  /* ---------- turn flow ---------- */
  function startTurn(i){G.turn=i;G.dbl=0;G.tn=(G.tn||0)+1;const p=P(i);if(!p.bribed&&p.sus>0){p.sus=Math.max(0,p.sus-SUS_DECAY);emit({t:'sus',p:i});}p.bribed=false;G.pend={t:'turn',p:i};emit({t:'turn',p:i});}
  function done(){const i=G.turn,p=P(i);if(G.over)return;if(p.out){return nextTurn();}G.pend={t:'post',p:i,again:G.dbl>0&&!p.jail};}
- function nextTurn(){if(G.over)return;if(G.final)return gameOver('time');const n=G.players.length;let j=G.turn;
-  for(let k=0;k<n;k++){j=(j+1)%n;if(!P(j).out)break;}if(j<=G.turn)G.round++;startTurn(j);}
+ /* Classic win target: the first landowner whose net worth reaches G.target at the end of a turn wins.
+    (G.target 0 = "Last one standing"; that option ends after ROUND_CAP rounds with the richest winning.) */
+ function goalWinner(){if(!G.target)return -1;const ok=alive().filter(i=>netWorth(i)>=G.target).sort((a,b)=>netWorth(b)-netWorth(a));return ok.length?ok[0]:-1;}
+ function nextTurn(){if(G.over)return;if(G.final)return gameOver('time');if(goalWinner()>=0)return gameOver('goal');const n=G.players.length;let j=G.turn;
+  for(let k=0;k<n;k++){j=(j+1)%n;if(!P(j).out)break;}
+  if(j<=G.turn){G.round++;if(G.mode==='classic'&&!G.target){
+   if(G.round>ROUND_CAP)return gameOver('rounds');
+   if(G.round===ROUND_WARN){log(`Round ${ROUND_WARN}: the game ends after round ${ROUND_CAP}. Then the highest net worth wins.`);emit({t:'capwarn'});}}}
+  startTurn(j);}
  function land(pid,o={}){const p=P(pid),s=SP[p.pos];emit({t:'land',p:pid,sp:s.i});
-  if(s.k==='p'||s.k==='r'||s.k==='u'){const w=G.own[s.i];
+  if(s.k==='p'||s.k==='r'){const w=G.own[s.i];
    if(!w){G.pend={t:'buy',p:pid,sp:s.i};emit({t:'offerbuy',p:pid,sp:s.i});return;}
    if(w.o===pid)return done();
    if(w.m){log(`${s.name} has a loan on it, so ${P(w.o).name} collects no rent`);return done();}
-   let amt;if(s.k==='u'&&o.u10){const d=[r6(),r6()];emit({t:'dice',p:pid,d,extra:1});amt=10*(d[0]+d[1]);}
-   else amt=rentOf(s.i,G.dice[0]+G.dice[1],o);
+   const amt=rentOf(s.i,G.dice[0]+G.dice[1],o);
    /* rent is always paid in full to the owner */
    log(`${p.name} paid ${fmt(amt)} rent to ${P(w.o).name} for ${s.name}`);emit({t:'rent',p:pid,to:w.o,sp:s.i,amt});
    return charge(pid,[{to:w.o,amt}],{k:'post'});}
-  if(s.k==='t'){G.pend={t:'tax',p:pid,sp:s.i,amt:s.tax,bribe:taxBribe(s.tax)};return;}
-  if(s.k==='c'||s.k==='n'){G.pend={t:'draw',p:pid,deck:s.k};emit({t:'drawask',p:pid,deck:s.k});return;}
+  if(s.k==='c'||s.k==='n')return askDraw(pid,s.k);
+  /* the Sandbank: choose Monsoon, City Council or relax (a card that moves you here just rests) */
+  if(s.k==='free'&&!o.card){G.pend={t:'sandbank',p:pid};emit({t:'sandbank',p:pid});return;}
   if(s.k==='gojail'){log(`The Supreme Court rules against ${p.name}!`);G.pend={t:'court',p:pid,bribe:JUDGE_BRIBE};return;}
-  if(s.k==='free'&&!o.quiet)log(`${p.name} rests on the Sandbank`);
+  if(s.k==='free')log(`${p.name} rests on the Sandbank`);
   return done();}
+ function askDraw(pid,deck){G.pend={t:'draw',p:pid,deck};emit({t:'drawask',p:pid,deck});}
  /* cards: land -> pend 'draw' (player taps the deck) -> pend 'card' (card face up, player reads it)
     -> 'cardok' applies it. "Get out of Maafushi" can be kept (hand) or discarded (back under the deck). */
  function drawCard(pid){const pe=G.pend,d=G.decks[pe.deck],deck=pe.deck;const idx=d.shift(),c=CARDS[deck][idx],p=P(pid);if(c.e!=='goo')d.push(idx);
@@ -836,15 +890,14 @@ const E=(()=>{
   switch(c.e){
    case 'money':if(c.v>0){xfer(-1,pid,c.v);return done();}return charge(pid,[{to:-1,amt:-c.v}],{k:'post'});
    case 'move':{/* targets by space name, so a new board layout needs no index changes */
-    const t=c.to!=null?SP.findIndex(s=>s.name===c.to):c.v;moveTo(pid,t>=0?t:0,true);return land(pid);}
-   case 'back':moveBack(pid,c.v);return land(pid);
+    const t=c.to!=null?SP.findIndex(s=>s.name===c.to):c.v;moveTo(pid,t>=0?t:0,true);return land(pid,{card:1});}
+   case 'back':moveBack(pid,c.v);return land(pid,{card:1});
    case 'jail':goJail(pid);return done();
    case 'goo':if(kept)p.cards.push(deck);return done();
    case 'each':return charge(pid,alive().filter(j=>j!==pid).map(j=>({to:j,amt:c.v})),{k:'post'});
    case 'collect':alive().filter(j=>j!==pid).forEach(j=>xfer(j,pid,Math.min(Math.max(0,P(j).cash),c.v)));return done();
    case 'repair':{const b=bldCount(pid),amt=b.h*c.v[0]+b.r*c.v[1];if(!amt){log(`${p.name} has nothing to pay for`);return done();}return charge(pid,[{to:-1,amt}],{k:'post'});}
-   case 'nearR':{let t=p.pos;do t=(t+1)%NSP;while(SP[t].k!=='r');moveTo(pid,t,true);return land(pid,{mult:2});}
-   case 'nearU':{let t=p.pos;do t=(t+1)%NSP;while(SP[t].k!=='u');moveTo(pid,t,true);return land(pid,{u10:1});}
+   case 'nearR':{let t=p.pos;do t=(t+1)%NSP;while(SP[t].k!=='r');moveTo(pid,t,true);return land(pid,{mult:2,card:1});}
    case 'risk':p.sus=Math.min(SUS_MAX,p.sus+c.v);emit({t:'sus',p:pid});return done();
    case 'amnesty':p.sus=0;p.dodged=0;emit({t:'sus',p:pid});return done();
    case 'raid':{/* every player with suspicion is audited; clean players are always safe */
@@ -873,7 +926,8 @@ const E=(()=>{
   if(G.turn===pid){G.pend=null;G.resume=null;return bustNext();}
   if(G.pend&&G.pend.t==='debt'&&G.pend.p===pid){G.pend=null;return bustNext();}}
  function gameOver(reason){const rank=G.players.map((p,i)=>({i,nw:netWorth(i),out:p.out,outAt:p.outAt||0})).sort((a,b)=>(a.out-b.out)||(b.nw-a.nw)||(b.outAt-a.outAt));
-  G.over={reason,rank,winner:rank[0].i};G.pend={t:'over'};log(`Game over! ${P(rank[0].i).name} wins${reason==='time'?' with the highest net worth':''}.`);emit({t:'over'});}
+  G.over={reason,rank,winner:rank[0].i};G.pend={t:'over'};
+  log(`Game over! ${P(rank[0].i).name} wins${reason==='goal'?` by reaching ${fmt(G.target)} net worth`:reason==='time'||reason==='rounds'?' with the highest net worth':''}.`);emit({t:'over'});}
  /* ---------- actions ---------- */
  const A={
   roll(pid){const pe=G.pend;if(!pe||pe.p!==pid)return 'Not your turn';if(!(pe.t==='turn'||(pe.t==='post'&&pe.again)))return 'You cannot roll now';
@@ -895,10 +949,10 @@ const E=(()=>{
   /* legacy: saves made before rent became automatic can still hold a 'rent' pend */
   pay(pid){const pe=G.pend;if(!pe||pe.t!=='rent'||pe.p!==pid)return 'No rent due';G.pend=null;log(`${P(pid).name} paid ${fmt(pe.amt)} rent to ${P(pe.to).name} for ${SP[pe.sp].name}`);
    charge(pid,[{to:pe.to,amt:pe.amt}],{k:'post'});},
-  paytax(pid){const pe=G.pend;if(!pe||pe.t!=='tax'||pe.p!==pid)return 'No tax due';G.pend=null;log(`${P(pid).name} paid ${SP[pe.sp].name}: ${fmt(pe.amt)}`);
-   charge(pid,[{to:-1,amt:pe.amt}],{k:'post'});},
-  bribetax(pid){const pe=G.pend;if(!pe||pe.t!=='tax'||pe.p!==pid)return 'No tax due';if(P(pid).cash<pe.bribe)return 'Not enough cash';G.pend=null;
-   if(bribeRoll(pid,pe.amt-pe.bribe,'tax',pe.bribe)){G.bq=[pid];return bustNext();}xfer(pid,-1,pe.bribe);done();},
+  /* Sandbank choice: a.c = 'n' (Monsoon card), 'c' (City Council card) or 'relax' */
+  sandbank(pid,a){const pe=G.pend;if(!pe||pe.t!=='sandbank'||pe.p!==pid)return 'Not on the Sandbank';const c=a&&a.c;
+   if(c==='n'||c==='c'){log(`${P(pid).name} picks a ${c==='c'?'City Council':'Monsoon'} card at the Sandbank`);return askDraw(pid,c);}
+   if(c!=='relax')return 'Pick Monsoon, City Council or relax';G.pend=null;log(`${P(pid).name} relaxes on the Sandbank`);done();},
   court(pid){const pe=G.pend;if(!pe||pe.t!=='court'||pe.p!==pid)return 'No verdict';G.pend=null;goJail(pid);done();},
   bribejudge(pid){const pe=G.pend;if(!pe||pe.t!=='court'||pe.p!==pid)return 'No verdict';if(P(pid).cash<pe.bribe)return 'Not enough cash';G.pend=null;
    if(bribeRoll(pid,JAIL_FEE,'judge',pe.bribe)){G.bq=[pid];return bustNext();}xfer(pid,-1,pe.bribe);log(`The case against ${P(pid).name} is dismissed`);done();},
@@ -958,12 +1012,15 @@ const E=(()=>{
   if(!rem.length||(rem.length===1&&rem[0]===a.by))closeAuction();}
  /* ---------- public ---------- */
  return {
-  create(o){G={v:1,id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),mode:o.mode,limit:o.mode==='quick'?(o.minutes||30)*60000:0,elapsed:0,now:0,nid:0,seq:0,
+  create(o){G={v:1,board:BOARD_ID,id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),mode:o.mode,limit:o.mode==='quick'?(o.minutes||30)*60000:0,target:o.mode==='classic'?Math.max(0,+o.target||0):0,elapsed:0,now:0,nid:0,seq:0,
     players:o.players.map(p=>Object.assign({cash:START_CASH,pos:0,jail:false,jt:0,cards:[],out:false,sus:0,dodged:0,bribed:false,bribes:0,caught:0,mute:false,lastOffer:-1e9},p)),
     own:{},turn:0,round:1,dice:[0,0],dbl:0,pend:null,decks:{c:shuf(16),n:shuf(16)},disc:{},bq:[],resume:null,tn:0,offers:[],sale:null,log:[],final:false,over:null};
    EV=[];log('Welcome to Binveriya! Own the islands. Bend the rules.');startTurn(o.first!=null?o.first:(Math.random()*G.players.length)|0);return G;},
+  /* a save made on another board cannot be mapped onto this one */
+  sameBoard:g=>!!g&&g.board===BOARD_ID,
   load(g){G=g;EV=[];/* older saves: rent-bribe risk -> suspicion */
    G.players.forEach(p=>{if(p.sus==null){p.sus=0;p.dodged=0;p.bribed=false;delete p.risk;}});if(!G.bq)G.bq=[];if(!G.disc)G.disc={};if(G.tn==null)G.tn=0;
+   if(G.target==null)G.target=0;/* saves from before the win target: "Last one standing" */
    if(G.pend&&G.pend.t==='rent'&&G.pend.bribe!=null){delete G.pend.bribe;delete G.pend.fine;}return G;},
   get G(){return G;},
   act(pid,a){if(!G)return 'No game';if(G.over)return 'Game over';const f=A[a.t];if(!f)return 'Unknown action';let e;
@@ -975,10 +1032,10 @@ const E=(()=>{
    G.offers.forEach(o=>{if(o.st==='open'&&G.now-o.at>OFFER_TTL){o.st='void';ch=true;emit({t:'reject',id:o.id,from:o.from,to:o.to,expired:1});}});
    return ch;},
   drain(){const e=EV;EV=[];return e;},
-  rentOf,netWorth,propsOf,ownsAll,tradable,groupBuilt,countOf,ownerOf,bldCount,hc,loanVal,repayCost,taxBribe,permitBribe,fmt,alive,
+  rentOf,netWorth,propsOf,ownsAll,tradable,groupBuilt,countOf,ownerOf,bldCount,hc,loanVal,repayCost,permitBribe,fmt,alive,
   chkBuild,chkBribeBuild,chkSellB,chkLoan,chkRepay,chkTrade,
   canReport(pid,to){const pe=G.pend,p=P(pid),t=P(to);return !!pe&&pe.p===pid&&(pe.t==='turn'||pe.t==='post')&&!!t&&to!==pid&&!t.out&&t.sus>0&&p.repAt!==G.tn&&p.cash>=REPORT_FEE;},
-  C:{AUC_START,AUC_EXT,SALE_MS,OFFER_GAP,SUS_STEP,SUS_MAX,SUS_DECAY,REPORT_FEE,GUARD_BRIBE,JUDGE_BRIBE}};
+  C:{ROUND_WARN,ROUND_CAP,AUC_START,AUC_EXT,SALE_MS,OFFER_GAP,SUS_STEP,SUS_MAX,SUS_DECAY,REPORT_FEE,GUARD_BRIBE,JUDGE_BRIBE}};
 })();
 </script>
 
@@ -991,6 +1048,13 @@ const AI=(()=>{
  const mem={}; // per bot memory: next think times, declined trade keys
  const M=i=>mem[i]||(mem[i]={t:0,no:{},auc:{},sale:{}});
  const P=i=>G().players[i];
+ /* Classic win target: how close player j is (net worth / target; 0 when there is no target) */
+ const NEAR=0.75;
+ function goal(j){const g=G();return g.target&&!P(j).out?E.netWorth(j)/g.target:0;}
+ function rivalNear(i){return Math.max(0,...E.alive().filter(j=>j!==i).map(goal));}
+ /* net worth change for 'from' if offer o is accepted (islands at their net-worth value) */
+ function nwDelta(o){const g=G(),v=sp=>g.own[sp]&&g.own[sp].m?SP[sp].price/2:SP[sp].price;
+  return o.get.cash-o.give.cash+o.get.sp.reduce((a,sp)=>a+v(sp),0)-o.give.sp.reduce((a,sp)=>a+v(sp),0);}
  function reserve(i){const g=G(),r=g.round;const threat=g.players.some((p,j)=>j!==i&&!p.out&&Object.keys(GROUPS).some(k=>E.ownsAll(j,k)&&E.groupBuilt(k)));return (r<5?60:r<12?140:220)+(threat?120:0);}
  /* value of an island to player i if i gets it */
  function valueFor(i,sp){const s=SP[sp],g=G();let v=s.price;
@@ -998,7 +1062,6 @@ const AI=(()=>{
    if(mine===others.length)v*=2.3;else if(mine>0)v*=1.35;
    const opp=others.map(E.ownerOf).filter(o=>o>=0&&o!==i);if(opp.length===others.length&&opp.every(o=>o===opp[0]))v*=1.45;}
   else if(s.k==='r')v*=1+0.22*E.countOf(i,RAILS.filter(x=>x!==sp));
-  else if(s.k==='u')v*=E.countOf(i,UTILS.filter(x=>x!==sp))?1.25:0.9;
   const w=g.own[sp];if(w&&w.m)v-=s.price*0.55;return v;}
  /* what i loses by giving sp to j */
  function lossFor(i,sp,j,extraTo){const s=SP[sp];let v=SP[sp].price;const w=G().own[sp];if(w&&w.m)v-=s.price*0.55;
@@ -1011,10 +1074,18 @@ const AI=(()=>{
   o.give.sp.forEach(sp=>gain+=valueFor(i,sp));o.get.sp.forEach(sp=>loss+=lossFor(i,sp,j,o.give.sp.length?null:null));
   // extra: do they complete a set with what they ask?
   const cashAfter=P(i).cash-o.get.cash+o.give.cash;if(cashAfter<Math.min(60,P(i).cash))loss+=200;
-  return {gain,loss,ok:gain>=loss*(G().round>60?0.92:1.05)};}
+  /* win target: never hand a rival the win; drive a hard bargain with a player close to it,
+     and deal more freely with others while someone else is close */
+  let need=G().round>60?0.92:1.05;const g=G();
+  if(g.target){const gf=goal(j);if(E.netWorth(j)+nwDelta(o)>=g.target)return {gain,loss,ok:false};
+   if(gf>=NEAR)need*=1.35;else if(rivalNear(i)>=NEAR&&goal(i)<NEAR)need*=0.9;}
+  return {gain,loss,ok:gain>=loss*need};}
  function think(i,min,max){const m=M(i);const g=G();if(g.now<m.t)return false;const f=UI_SPEED();m.t=g.now+(min+Math.random()*(max-min))*f;return true;}
  function raise(i,need){const g=G();let guard=60;
+  /* close to the win target: loans keep net worth, selling buildings at half price loses it, so borrow first */
+  const keepNW=g.target&&goal(i)>=NEAR*0.9;
   while(P(i).cash<need&&guard-->0){
+   if(keepNW){const l=E.propsOf(i).filter(sp=>!E.chkLoan(i,sp)).sort((a,b)=>SP[a].price-SP[b].price);if(l.length){E.act(i,{t:'loan',sp:l[0]});continue;}}
    const built=E.propsOf(i).filter(sp=>g.own[sp].h>0&&!E.chkSellB(i,sp)).sort((a,b)=>g.own[b].h-g.own[a].h||SP[a].price-SP[b].price);
    if(built.length){E.act(i,{t:'sellb',sp:built[0]});continue;}
    const loanable=E.propsOf(i).filter(sp=>!E.chkLoan(i,sp)).sort((a,b)=>{const ca=SP[a].g&&E.ownsAll(i,SP[a].g)?1:0,cb=SP[b].g&&E.ownsAll(i,SP[b].g)?1:0;return ca-cb||SP[a].price-SP[b].price;});
@@ -1037,10 +1108,11 @@ const AI=(()=>{
   const nw=E.alive().map(j=>[j,E.netWorth(j)]).sort((a,b)=>b[1]-a[1]),lead=nw[0][0];
   const t=E.alive().filter(j=>E.canReport(i,j)).map(j=>{const q=P(j);const stake=2*q.dodged+(E.propsOf(j).length?150:0)+(j===lead?150:0);return [j,q.sus/100*stake,q.sus];}).sort((a,b)=>b[1]-a[1])[0];
   if(t&&t[2]>=40&&t[1]>=E.C.REPORT_FEE*1.5&&Math.random()<0.4)E.act(i,{t:'report',to:t[0]});}
- function proposeTrade(i){const g=G();if(Math.random()>(g.round>60?0.7:0.3))return;const m=M(i);
+ function proposeTrade(i){const g=G();if(Math.random()>(g.round>60||rivalNear(i)>=NEAR?0.7:0.3))return;const m=M(i);
   for(const k of Object.keys(GROUPS)){const mem_=GMEM[k],mine=mem_.filter(x=>E.ownerOf(x)===i);if(!mine.length||mine.length===mem_.length)continue;
    const miss=mem_.filter(x=>E.ownerOf(x)!==i);const owners=[...new Set(miss.map(E.ownerOf))];if(owners.length!==1||owners[0]<0)continue;
    const j=owners[0],pj=P(j);if(pj.out||(pj.human&&pj.mute))continue;if(!miss.every(E.tradable))continue;
+   if(goal(j)>=NEAR)continue;/* paying a player close to the target pushes them over it */
    const key=j+':'+miss.join(',');if(m.no[key]&&g.round-m.no[key]<4)continue;
    const want=miss.reduce((a,x)=>a+SP[x].price,0);
    // swap: both sides complete a colour group (breaks stalemates)
@@ -1059,6 +1131,11 @@ const AI=(()=>{
  function maybeSell(i){const g=G();if(g.sale||P(i).cash>120||Math.random()>0.15)return;
   const lone=E.propsOf(i).filter(sp=>E.tradable(sp)&&!g.own[sp].m&&SP[sp].k==='p'&&GMEM[SP[sp].g].filter(x=>E.ownerOf(x)===i).length===1);
   if(lone.length)E.act(i,{t:'list',sp:lone[0],min:Math.round(SP[lone[0]].price*1.05/10)*10});}
+ /* Sandbank: both decks hold a raid, so a player with a lot of suspicion relaxes, or tries City Council for its amnesty
+    card; a player short of cash relaxes (cards can cost money); otherwise gamble, mostly on Monsoon */
+ function sandbankPick(i){const p=P(i),x=Math.random();
+  if(p.sus>=50)return x<0.75?'relax':'c';if(p.sus>=25)return x<0.5?'relax':'c';
+  if(p.cash<reserve(i)*0.6)return x<0.7?'relax':'n';return x<0.6?'n':x<0.9?'c':'relax';}
  /* one decision for the pending action that belongs to bot i */
  function step(i){const g=G(),pe=g.pend;if(!pe||pe.p!==i||g.over)return;const p=P(i);
   switch(pe.t){
@@ -1071,7 +1148,7 @@ const AI=(()=>{
    case 'buy':{const s=SP[pe.sp],v=valueFor(i,pe.sp);
     if(p.cash>=s.price&&(p.cash-s.price>=reserve(i)||(v>=s.price*1.4&&p.cash-s.price>=20)))E.act(i,{t:'buy'});else E.act(i,{t:'decline'});break;}
    case 'rent':E.act(i,{t:'pay'});break;
-   case 'tax':E.act(i,{t:p.cash>=pe.bribe&&(willBribe(i,pe.amt-pe.bribe)||(p.cash<pe.amt&&p.sus<=40))?'bribetax':'paytax'});break;
+   case 'sandbank':E.act(i,{t:'sandbank',c:sandbankPick(i)});break;
    case 'court':{const early=OWNABLE.filter(x=>!g.own[x]).length>4||g.round<25;E.act(i,{t:p.cash>=pe.bribe+reserve(i)*0.3&&early&&willBribe(i,50)?'bribejudge':'court'});break;}
    case 'draw':E.act(i,{t:'draw'});break;
    case 'card':E.act(i,{t:'cardok',keep:true});break;
@@ -1081,7 +1158,9 @@ const AI=(()=>{
  function tick(isBot){const g=G();if(!g||g.over)return;const pe=g.pend;
   if(pe&&pe.t==='auction'){const bots=E.alive().filter(i=>isBot(i)&&!pe.out.includes(i)&&pe.by!==i);
    bots.forEach(i=>{const m=M(i);if(!think(i,500,1600))return;const key=pe.id;if(m.auc[key]==null)m.auc[key]=0.82+Math.random()*0.3;
-    const max=Math.min(P(i).cash-reserve(i)*0.5,valueFor(i,pe.sp)*m.auc[key]);const inc=pe.high<100?10:pe.high<300?20:50,bid=Math.max(10,pe.high+inc);
+    /* bid harder against a player close to the win target */
+    const deny=pe.by>=0&&goal(pe.by)>=NEAR?1.3:1;
+    const max=Math.min(P(i).cash-reserve(i)*0.5,valueFor(i,pe.sp)*m.auc[key]*deny);const inc=pe.high<100?10:pe.high<300?20:50,bid=Math.max(10,pe.high+inc);
     if(bid<=max)E.act(i,{t:'bid',amt:bid});else E.act(i,{t:'pass'});});}
   g.offers.filter(o=>o.st==='open'&&isBot(o.to)).forEach(o=>{if(g.now-o.at<1400*UI_SPEED())return;const i=o.to,r=evalOffer(i,o);
    if(r.ok){E.act(i,{t:'accept',id:o.id});return;}
@@ -1090,7 +1169,10 @@ const AI=(()=>{
     const e=E.act(i,{t:'offer',to:o.from,re:o.id,give:{sp:o.get.sp,cash:o.get.cash,cards:o.get.cards},get:{sp:o.give.sp,cash:o.give.cash+ask,cards:o.give.cards}});if(e)E.act(i,{t:'reject',id:o.id});}
    else E.act(i,{t:'reject',id:o.id});});
   const s=g.sale;if(s){if(s.st==='bid')E.alive().filter(i=>isBot(i)&&i!==s.seller).forEach(i=>{const m=M(i);if(m.sale[s.id])return;if(g.now<(s.ends-s.dur)+2000*UI_SPEED()+i*700)return;m.sale[s.id]=1;
-     const v=valueFor(i,s.sp)*(0.8+Math.random()*0.2),cap=P(i).cash-reserve(i);const top=Math.max(0,...Object.values(s.bids));const b=Math.min(v,cap);
+     const rivalBid=Object.keys(s.bids).some(b=>+b!==i&&goal(+b)>=NEAR);
+     const v=valueFor(i,s.sp)*(0.8+Math.random()*0.2)*(rivalBid?1.25:1),cap=P(i).cash-reserve(i);const top=Math.max(0,...Object.values(s.bids));let b=Math.min(v,cap);
+     /* never pay a seller close to the target enough to push them over it */
+     if(g.target&&goal(s.seller)>=NEAR)b=Math.min(b,g.target-1-(E.netWorth(s.seller)-SP[s.sp].price));
      if(b>=s.min&&b>top)E.act(i,{t:'sbid',amt:Math.round(Math.max(s.min,Math.min(b,top+40+Math.random()*60))/10)*10});});
    if(s.st==='pick'&&isBot(s.seller)){const bids=Object.entries(s.bids).map(([b,a])=>[+b,a]).filter(([b,a])=>P(b).cash>=a).sort((x,y)=>y[1]-x[1]);
     if(bids.length)E.act(s.seller,{t:'spick',b:bids[0][0]});else E.act(s.seller,{t:'scancel'});}}}
@@ -1115,13 +1197,12 @@ LAYOUTS.square={
  pos(i,o={}){const[r,c]=this.grid(i),w=k=>(k===1||k===8)?1.55:1;let x=0,y=0;for(let k=1;k<c;k++)x+=w(k);x+=w(c)/2;for(let k=1;k<r;k++)y+=w(k);y+=w(r)/2;
   let px=x/9.1*100,py=y/9.1*100;if(i===JAIL){if(o.jailed){px+=2.5;py-=2.5;}else{px-=3;py+=3;}}return {x:px,y:py};},
  cellHTML(s,i){const sd=this.side(i),[r,c]=this.grid(i),lab=esc(s.lab).replace(/\n/g,'<br>'),pos=`grid-row:${r};grid-column:${c}`;
-  if(sd==='c'){const ic=ICON[s.k]||'';return `<div class="cell corner ${s.k}" style="${pos}" data-sp="${i}"><span class="ic">${ic}</span><span class="nm">${lab}</span></div>`;}
+  if(sd==='c'){const ic=ICON[s.k]||'';return `<div class="cell corner ${s.k}" style="${pos}" data-sp="${i}"><span class="ic">${ic}</span><span class="nm">${lab}</span>${s.sub?`<span class="sub">${esc(s.sub)}</span>`:''}</div>`;}
   let inner='';
   if(s.k==='p')inner=`<i class="bar" style="background:${GROUPS[s.g].c}"></i><span class="nm">${lab}</span><span class="pr">MVR ${s.price}</span>`;
-  else if(s.k==='r'||s.k==='u')inner=`<span class="ic">${ICON[s.icon]}</span><span class="nm">${lab}</span><span class="pr">MVR ${s.price}</span>`;
+  else if(s.k==='r')inner=`<span class="ic">${ICON[s.icon]}</span><span class="nm">${lab}</span><span class="pr">MVR ${s.price}</span>`;
   else if(s.k==='c')inner=`<span class="ic">${ICON.majlis}</span><span class="nm">${lab}</span>`;
   else if(s.k==='n')inner=`<span class="ic">${ICON.monsoon}</span><span class="nm">${lab}</span>`;
-  else if(s.k==='t')inner=`<span class="ic">${s.tax===150?ICON.tax:ICON.leaf}</span><span class="nm">${lab}</span>`;
   return `<div class="cell ${sd} k${s.k}" style="${pos}" data-sp="${i}">${inner}</div>`;},
  build(host,opts={}){const el=document.createElement('div');el.className='board';el.dataset.layout='square';
   const isl=[[22,62,1],[30,70,.7],[68,60,.8],[74,70,1.1],[47,80,.9],[58,84,.6],[38,86,.7]].map(([x,y,s])=>`<i class="isl" style="left:${x}%;top:${y}%;--s:${s}"></i>`).join('');
@@ -1145,21 +1226,33 @@ LAYOUTS.square.deco=function(view,i,w,col,ini,tag){const c=view.cells[i];c.class
   if(rt.dataset.k!==k){rt.dataset.k=k;rt.className='rt'+(tag.c?' '+tag.c:'');rt.innerHTML=(tag.mvr?'<small>MVR</small>':'')+esc(tag.t)+(tag.ic&&ICON[tag.ic]?ICON[tag.ic]:'');rt.style.setProperty('--rc',tag.fg||'#fff');fitTag(c);
    if(tag.pulse&&!RM.matches){rt.classList.remove('bump');void rt.offsetWidth;rt.classList.add('bump');}}}
  else{if(rt)rt.remove();c.classList.remove('hasrt');}};
+/* side margin every label keeps: clear of the owner's coloured frame (drawn at B*0.006) whether or not the space is owned yet */
+const EDGE=c=>Math.max(4,2*(c.parentElement.clientWidth*0.006+1));
 /* shrink a rent tag that is wider than its space (4-digit rents on narrow phone tiles) */
-function fitTag(c){const rt=c&&c.querySelector('.rt');if(!rt)return;rt.style.removeProperty('--rf');const cs=getComputedStyle(c),avail=c.clientWidth-parseFloat(cs.paddingLeft)-parseFloat(cs.paddingRight)-4,w=rt.offsetWidth;if(avail>0&&w>avail)rt.style.setProperty('--rf',(avail/w*.97).toFixed(3));}
+function fitTag(c){const rt=c&&c.querySelector('.rt');if(!rt)return;rt.style.removeProperty('--rf');const cs=getComputedStyle(c),avail=c.clientWidth-parseFloat(cs.paddingLeft)-parseFloat(cs.paddingRight)-EDGE(c),w=rt.offsetWidth;if(avail>0&&w>avail)rt.style.setProperty('--rf',(avail/w*.97).toFixed(3));}
 
 let LAYOUT=LAYOUTS.square;
 
-/* fit every label on its space without ever breaking a word (tap-to-zoom handles the rest) */
+/* fit every label on its space without ever breaking a word (tap-to-zoom handles the rest).
+   1) each label gets the largest size at which its widest word fits the tile (measured in the real
+      label font: Sora 800, -0.02em tracking);
+   2) labels share ONE size per kind (corners / edge spaces) so the board reads evenly: the size that
+      3 in 4 labels can take. Only the few longest names go below it, each just enough to fit;
+   3) a final DOM check shrinks a label only if it really overflows its space. */
 const FIT=(()=>{const cx=document.createElement('canvas').getContext('2d');const cache={};
- function w(word,px){const k=word+'|'+px;if(cache[k]==null){cx.font=`700 ${px}px Sora, system-ui, sans-serif`;cache[k]=cx.measureText(word).width*1.01;}return cache[k];}
- return function(view){const B=view.B();if(!B)return;view.el.style.setProperty('--T',Math.round(B*.34)+'px');view.el.style.setProperty('--T2',Math.round(B*.34*1.37)+'px');const base=B*0.0215;
-  view.cells.forEach(c=>{const nm=c.querySelector('.nm');if(!nm)return;const corner=c.classList.contains('corner');const b0=corner?B*0.023:base;
-   nm.style.removeProperty('--fs');const cw=c.clientWidth,cs=getComputedStyle(c),avail=cw-parseFloat(cs.paddingLeft)-parseFloat(cs.paddingRight)-4;
-   const words=nm.textContent.replace(/\s+/g,' ').trim().split(' ');const widest=Math.max(...words.map(x=>w(x,100)))/100;
-   let fs=Math.min(b0,avail/Math.max(1,widest));nm.style.setProperty('--fs',fs.toFixed(2)+'px');
-   fitTag(c);
-   for(let k=0;k<8&&(c.scrollHeight>c.clientHeight+.5||nm.scrollWidth>avail+2.5);k++){fs*=0.9;nm.style.setProperty('--fs',fs.toFixed(2)+'px');}});};})();
+ function w(word){if(cache[word]==null){cx.font='800 100px Sora, system-ui, sans-serif';cache[word]=(cx.measureText(word).width-2*[...word].length)/100*1.03;}return cache[word];}
+ const q25=a=>{const s=[...a].sort((x,y)=>x-y);return s[Math.floor((s.length-1)*.25)];};
+ const over=(c,nm)=>c.scrollHeight>c.clientHeight+.5||nm.scrollWidth>nm.clientWidth+.5;
+ return function(view){const B=view.B();if(!B)return;view.el.style.setProperty('--T',Math.round(B*.34)+'px');view.el.style.setProperty('--T2',Math.round(B*.34*1.37)+'px');
+  const L=[];
+  view.cells.forEach(c=>{const nm=c.querySelector('.nm');if(!nm)return;const corner=c.classList.contains('corner');
+   nm.style.removeProperty('--fs');const cs=getComputedStyle(c),avail=c.clientWidth-parseFloat(cs.paddingLeft)-parseFloat(cs.paddingRight)-EDGE(c);
+   /* the unbreakable pieces: split at <br> and ordinary spaces only (a no-break space keeps "Bus Stop" together) */
+   const words=[...nm.childNodes].filter(n=>n.nodeType===3).map(n=>n.textContent).join(' ').split(/[ \n\t]+/).filter(Boolean);const widest=Math.max(...words.map(w));
+   L.push({c,nm,corner,fit:Math.min(corner?B*0.023:B*0.0215,avail/Math.max(1,widest))});});
+  for(const corner of [true,false]){const g=L.filter(o=>o.corner===corner);if(!g.length)continue;const common=q25(g.map(o=>o.fit));
+   g.forEach(o=>{let fs=Math.min(common,o.fit);o.nm.style.setProperty('--fs',fs.toFixed(2)+'px');fitTag(o.c);
+    for(let k=0;k<10&&over(o.c,o.nm);k++){fs*=0.95;o.nm.style.setProperty('--fs',fs.toFixed(2)+'px');}});}};})();
 </script>
 
 <script>
@@ -1173,7 +1266,7 @@ const FAST=LOCAL&&Q.has('fast'),AUTO=LOCAL&&Q.has('auto');
 const RM=matchMedia('(prefers-reduced-motion: reduce)');
 const ls={get(k){try{return localStorage.getItem(k);}catch(e){return null;}},set(k,v){try{localStorage.setItem(k,v);}catch(e){}},del(k){try{localStorage.removeItem(k);}catch(e){}}};
 const esc=s=>String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
-const fmt=n=>'MVR '+Math.round(n).toLocaleString('en-US');
+const fmt=n=>'MVR '+Math.round(n).toLocaleString('en-US');/* no-break space: an amount never splits across lines */
 const sleep=ms=>(FAST||ms<=0)?Promise.resolve():new Promise(r=>setTimeout(r,ms));
 const macro=f=>{const c=new MessageChannel();c.port1.onmessage=()=>{c.port1.close();f();};c.port2.postMessage(0);};
 let G=null,ME=0,SCREEN='home',WATCH=false;
@@ -1303,7 +1396,6 @@ const onCol=hex=>{const n=parseInt(String(hex).slice(1),16);return ((n>>16)*.299
 /* the rent someone pays right now on an owned space, as a board tag */
 function rentTag(sp){const w=G.own[sp];if(!w)return null;const s=SP[sp],col=G.players[w.o].col;
  if(w.m)return {t:'Loan',c:'ln',fg:'#fff',say:'has a loan, no rent'};
- if(s.k==='u'){const m=E.countOf(w.o,UTILS)===2?10:4;return {t:m+'×',ic:'dice',c:'u',fg:onCol(col),say:`rent ${m} times the dice`};}
  const amt=E.rentOf(sp,7),full=s.k==='p'&&!w.h&&E.ownsAll(w.o,s.g);
  return {t:amt.toLocaleString('en-US'),mvr:1,c:s.k==='p'&&w.h===5?'rs':full?'x2':'',fg:s.k==='p'&&w.h===5?'#4A3308':onCol(col),say:`rent ${fmt(amt)}${full?' (whole colour group, doubled)':''}`};}
 let TAGK={};
@@ -1344,12 +1436,16 @@ function sizeBoard(){const W=innerWidth,H=innerHeight,land=W>H&&W>=560,root=docu
 addEventListener('resize',()=>{clearTimeout(sizeBoard.t);sizeBoard.t=setTimeout(()=>{if(SCREEN==='game')sizeBoard();else homeFit();},80);});
 
 /* ---------------------------------------------------------------- players strip + actions */
-function buildPlayers(){$('#pls').innerHTML=G.players.map((p,i)=>`<button class="pl" type="button" data-pl="${i}" style="--c:${p.col}"><span class="pfw"><span class="pf">${avHTML(i,34,null,true)}</span><i class="sus" aria-hidden="true"><b></b></i></span><span class="tx"><b>${i===ME?'You':esc(p.name)}</b><small class="cs"></small></span><span class="tk">${TOKENS[p.tok].s}</span><span class="st"></span></button>`).join('');}
+function buildPlayers(){$('#pls').innerHTML=G.players.map((p,i)=>`<button class="pl" type="button" data-pl="${i}" style="--c:${p.col}"><span class="pfw"><span class="pf">${avHTML(i,34,null,true)}</span><i class="sus" aria-hidden="true"><b></b></i></span><span class="tx"><b>${i===ME?'You':esc(p.name)}</b><small class="cs"></small>${G.target?'<i class="goal" aria-hidden="true"><b></b></i>':''}</span><span class="tk">${TOKENS[p.tok].s}</span><span class="st"></span></button>`).join('');}
 function renderPlayers(){$$('#pls .pl').forEach((el,i)=>{const p=G.players[i];el.classList.toggle('on',i===G.turn&&!G.over);el.classList.toggle('out',p.out);
  el.querySelector('.cs').textContent=p.out?'Bankrupt':fmt(VIEW.cash[i]);
  el.querySelector('.st').innerHTML=(p.jail?'<i>Prison</i>':'')+(p.cards.length?`<i class="card">${p.cards.length>1?p.cards.length+' ':''}Card</i>`:'');
  const sb=el.querySelector('.sus');sb.style.setProperty('--s',(p.out?0:p.sus)+'%');sb.classList.toggle('hot',p.sus>=60&&!p.out);sb.title=`Suspicion ${p.sus}%`;
- el.setAttribute('aria-label',`${nameOf(i)}: ${p.out?'bankrupt':fmt(p.cash)}${p.jail?', in prison':''}${!p.out?`, suspicion ${p.sus}%`:''}${i===G.turn?', playing now':''}`);});}
+ const gp=goalPct(i),gb=el.querySelector('.goal');if(gb){gb.style.setProperty('--g',gp+'%');gb.classList.toggle('near',gp>=80);}
+ el.title=G.target&&!p.out?`Net worth ${fmt(E.netWorth(i))} · ${gp}% of the ${fmt(G.target)} goal`:'';
+ el.setAttribute('aria-label',`${nameOf(i)}: ${p.out?'bankrupt':fmt(p.cash)}${p.jail?', in prison':''}${!p.out?`, suspicion ${p.sus}%`:''}${G.target&&!p.out?`, ${gp}% of the goal`:''}${i===G.turn?', playing now':''}`);});}
+/* progress toward the Classic win target, 0 to 100 */
+function goalPct(i){if(!G||!G.target||G.players[i].out)return 0;return Math.max(0,Math.min(100,Math.floor(E.netWorth(i)/G.target*100)));}
 const REACT_OK=['shocked','smug','happy','sad','angry','blink','wink','thinking'];
 function react(i,expr,ms=1600){if(FAST||!G||!G.players[i]||!window.DGAvatar)return;const el=$$('#pls .pl')[i];if(!el)return;const pf=el.querySelector('.pf');
  if(DGAvatar.react){try{DGAvatar.react(pf,expr,ms);return;}catch(e){}}
@@ -1362,7 +1458,7 @@ function statusText(){const pe=G.pend,p=meP();if(G.over)return 'Game over';if(p.
   case 'post':return mine?(pe.again?'Doubles! Roll again':'Build, trade or end your turn'):`${who.name} is thinking…`;
   case 'buy':return mine?`Buy ${SP[pe.sp].name}?`:`${who.name} is looking at ${SP[pe.sp].name}`;
   case 'rent':return mine?`Rent due on ${SP[pe.sp].name}`:`${who.name} owes rent`;
-  case 'tax':return mine?`${SP[pe.sp].name}: pay or bribe`:`${who.name} is at the tax office`;
+  case 'sandbank':return mine?'Sandbank: pick a card or relax':`${who.name} is on the Sandbank`;
   case 'court':return mine?'The Supreme Court rules against you':`${who.name} faces the judge`;
   case 'debt':return mine?`You owe ${fmt(pe.total)} · raise money`:`${who.name} is raising money`;
   case 'auction':return `Auction · ${SP[pe.sp].name}`;
@@ -1379,7 +1475,7 @@ function renderActions(){const pe=G.pend,p=meP(),mine=pe&&pe.p===ME&&!AUTO;$('#s
    else if(mine&&pe.t==='post')h=pe.again?`<button class="btn" data-a="roll">${ICON.dice}Roll again</button>`:`<button class="btn em" data-a="end">End turn${ICON.end}</button>`;
    else if(mine&&pe.t==='draw')h=`<button class="btn" data-a="drawcard">Draw a ${DECKN[pe.deck]} card</button>`;
    else if(mine&&pe.t==='card')h=`<button class="btn" data-a="showcard">Read your card</button>`;
-   else if(mine&&(pe.t==='buy'||pe.t==='rent'||pe.t==='debt'||pe.t==='tax'||pe.t==='court'))h=`<button class="btn" data-a="decision">${{buy:'Buy or auction',rent:'Pay rent',debt:'Raise money',tax:'Pay or bribe',court:'Hear the verdict'}[pe.t]}</button>`;
+   else if(mine&&(pe.t==='buy'||pe.t==='rent'||pe.t==='debt'||pe.t==='sandbank'||pe.t==='court'))h=`<button class="btn" data-a="decision">${{buy:'Buy or auction',rent:'Pay rent',debt:'Raise money',sandbank:'Choose at the Sandbank',court:'Hear the verdict'}[pe.t]}</button>`;
    else if(pe&&pe.t==='auction'&&!pe.out.includes(ME))h=`<button class="btn" data-a="decision">Open auction</button>`;
    h+=`<div class="row"><button class="btn soft sm" data-a="manage">${ICON.island}My islands</button><button class="btn soft sm" data-a="trade">${ICON.handshake}Trade</button></div>`;}
   $('#abtns').innerHTML=h;}
@@ -1388,6 +1484,8 @@ function renderActions(){const pe=G.pend,p=meP(),mine=pe&&pe.p===ME&&!AUTO;$('#s
 function riskLine(sus){return sus>0?`${sus}% chance you're caught: pay back double, prison, lose an island`:`First bribe is safe, but suspicion rises to ${E.C.SUS_STEP}%`;}
 function renderClock(){const c=$('#clockChip');if(!G)return;let h=`Round <b>${G.round}</b>`;
  if(G.over)h='Game over';else if(G.limit){if(G.final){h='<b>Last turn!</b>';}else{const left=Math.max(0,G.limit-G.elapsed),m=Math.floor(left/60000),s=Math.floor(left/1000)%60;h+=` · <b>${m}:${String(s).padStart(2,'0')}</b> left`;}}
+ else if(G.target)h+=` · Goal <b>${fmt(G.target)}</b>`;
+ else if(G.round>=E.C.ROUND_WARN)h=`Round <b>${G.round}</b> of ${E.C.ROUND_CAP}`;
  else h+=' · Classic';c.innerHTML=h;c.classList.toggle('warn',!!(G.limit&&!G.over&&(G.final||G.limit-G.elapsed<60000)));}
 function render(){if(!G)return;renderPlayers();renderActions();renderClock();decorate();placeTokens();updLive();syncDraw();}
 
@@ -1402,23 +1500,22 @@ const X=`<button class="x" type="button" data-a="close" aria-label="Close">${ICO
 const shead=(title,sub)=>`<div class="grab" aria-hidden="true"></div><div class="shead"><h2 id="sheetTitle">${title}</h2>${sub?`<p style="margin-top:-4px">${sub}</p>`:''}${X}</div>`;
 
 /* island / space card */
-function spaceSub(s){if(s.k==='p')return `${GROUPS[s.g].n} group · ${s.atoll}`;if(s.k==='r')return 'Transport';if(s.k==='u')return (s.sub||'')+' utility';return '';}
-function cardHead(sp){const s=SP[sp];let col='#155E43',lt=false;if(s.k==='p'){col=GROUPS[s.g].c;lt=!!GROUPS[s.g].lt;}else if(s.k==='r')col='#15241F';else if(s.k==='u')col='#5D6B64';
+function spaceSub(s){if(s.k==='p')return `${GROUPS[s.g].n} group · ${s.atoll}`;if(s.k==='r')return `Transport · set of ${RAILS.length}`;return '';}
+function cardHead(sp){const s=SP[sp];let col='#155E43',lt=false;if(s.k==='p'){col=GROUPS[s.g].c;lt=!!GROUPS[s.g].lt;}else if(s.k==='r')col='#15241F';
  return `<div class="hd${lt?' lt':''}" style="background:${col}"><b>${esc(s.name)}</b><small>${esc(spaceSub(s))}</small></div>`;}
 function rentRows(sp){const s=SP[sp],w=G.own[sp];let h='';const cur=(c)=>c?' class="cur"':'';
  if(s.k==='p'){const full=w&&E.ownsAll(w.o,s.g),lv=w?w.h:-1;
   h+=`<span${cur(lv===0&&!full)}>Rent</span><b${cur(lv===0&&!full)}>${fmt(s.rent[0])}</b><span${cur(lv===0&&full)}>Whole colour group</span><b${cur(lv===0&&full)}>${fmt(s.rent[0]*2)}</b>`;
   for(let k=1;k<=4;k++)h+=`<span${cur(lv===k)}>With ${k} guesthouse${k>1?'s':''}</span><b${cur(lv===k)}>${fmt(s.rent[k])}</b>`;
   h+=`<span class="hl${lv===5?' cur':''}">With a luxury resort</span><b class="hl${lv===5?' cur':''}">${fmt(s.rent[5])}</b><i class="sep"></i><span>Guesthouse cost</span><b>${fmt(GROUPS[s.g].hc)} each</b><span>Resort</span><b>4 guesthouses + ${fmt(GROUPS[s.g].hc)}</b>`;}
- else if(s.k==='r'){const n=w?E.countOf(w.o,RAILS):0;[1,2,3,4].forEach(k=>h+=`<span${cur(n===k)}>Owner has ${k} transport${k>1?'s':''}</span><b${cur(n===k)}>${fmt(TRANSPORT_RENT[k])}</b>`);}
- else if(s.k==='u'){const n=w?E.countOf(w.o,UTILS):0;h+=`<span${cur(n===1)}>Owner has 1 utility</span><b${cur(n===1)}>4 × dice</b><span${cur(n===2)}>Owner has both</span><b${cur(n===2)}>10 × dice</b>`;}
+ else if(s.k==='r'){const n=w?E.countOf(w.o,RAILS):0;RAILS.forEach((_,j)=>{const k=j+1;h+=`<span${cur(n===k)}>Owner has ${k===RAILS.length?'all '+k:k} transport${k>1?'s':''}</span><b${cur(n===k)}>${fmt(TRANSPORT_RENT[k])}</b>`;});}
  h+=`<span>Loan value</span><b>${fmt(s.price/2)}</b>`;return `<div class="rent">${h}</div>`;}
 const SPACE_TEXT={go:'Collect MVR 200 every time you pass or land on Malé Jetty.',jail:'Just visiting? Wave through the fence. Locked up? Pay MVR 50, use a Get out of Maafushi card, bribe the guard, or roll doubles (3 tries, then pay MVR 50 and move).',
- free:'A free rest on the sandbank. Nothing happens. Enjoy the view.',gojail:'The Supreme Court rules against you. Go straight to Maafushi Prison without passing Start, unless you bribe the judge.',
+ free:'Your choice: draw a Monsoon card, draw a City Council card, or relax. Relaxing is always safe.',gojail:'The Supreme Court rules against you. Go straight to Maafushi Prison without passing Start, unless you bribe the judge.',
  c:'Draw a City Council card: grants, fees, inspections and the odd scandal.',n:'Draw a Monsoon card: weather, luck and fishing.'};
 function spaceCard(sp){const s=SP[sp];if(s.price)return `<div class="pcard">${cardHead(sp)}${ART.draw(s.art,sp)}${BLURB[s.art]?`<p style="margin:8px 14px 0;font-size:12.5px;color:var(--muted)">${esc(BLURB[s.art])}</p>`:''}${rentRows(sp)}</div>`;
- const ic=s.k==='t'?(s.tax===150?ICON.tax:ICON.leaf):ICON[s.k==='c'?'majlis':s.k==='n'?'monsoon':s.k]||'';
- return `<div class="pcard"><div class="hd" style="background:#155E43"><b>${esc(s.name)}</b><small>${s.k==='t'?'Tax':'Space'}</small></div><div style="display:flex;gap:14px;align-items:center;padding:16px"><span style="width:56px;height:56px;flex:none;display:block">${ic.replace('<svg','<svg width="56" height="56"')}</span><p style="margin:0">${esc(s.k==='t'?`Pay ${fmt(s.tax)} to the bank when you land here, or slip the tax officer ${fmt(E.taxBribe(s.tax))}.`:SPACE_TEXT[s.k]||'')}</p></div></div>`;}
+ const ic=ICON[s.k==='c'?'majlis':s.k==='n'?'monsoon':s.k]||'';
+ return `<div class="pcard"><div class="hd" style="background:#155E43"><b>${esc(s.name)}</b><small>Space</small></div><div style="display:flex;gap:14px;align-items:center;padding:16px"><span style="width:56px;height:56px;flex:none;display:block">${ic.replace('<svg','<svg width="56" height="56"')}</span><p style="margin:0">${esc(SPACE_TEXT[s.k]||'')}</p></div></div>`;}
 function ownerRow(sp,amt,sub){const w=G.own[sp];if(!w)return '';const p=G.players[w.o];
  return `<div class="owner" style="--c:${p.col}"><span class="pf">${avHTML(w.o,40)}</span><span><b>${w.o===ME?'You own':esc(p.name)+' owns'} ${esc(SP[sp].name)}</b><small>${sub||(w.m?'Has a loan: no rent':w.h===5?'With a luxury resort':w.h?`With ${w.h} guesthouse${w.h>1?'s':''}`:'No buildings yet')}</small></span>${amt!=null?`<span class="amt">${fmt(amt)}</span>`:''}</div>`;}
 function mgmtButtons(sp){const w=G.own[sp];if(!w||w.o!==ME||meP().out||G.over)return '';const s=SP[sp];let h='<div class="acts" style="grid-template-columns:repeat(2,1fr)">';
@@ -1435,17 +1532,17 @@ function openInfo(sp){if(!G)return;const s=SP[sp],w=G.own[sp];let h=shead(esc(s.
   if(w.o!==ME&&!meP().out&&!G.players[w.o].out&&!G.over)h+=`<div class="acts one"><button class="btn sm" data-a="tradefor" data-sp="${sp}">${ICON.handshake}Propose a trade for it</button></div>`;}
  else if(s.price)h+=`<div class="price">Still owned by the bank<span><b>${fmt(s.price)}</b></span></div>`;
  openSheet('info:'+sp,h.replace(shead(esc(s.name),''),'<div class="grab" aria-hidden="true"></div><h2 id="sheetTitle" class="sr">'+esc(s.name)+'</h2>')+'<div class="acts one"><button class="btn lite sm" data-a="close">Close</button></div>');}
-function openDeckInfo(d){openSheet('deck',shead(d==='c'?'City Council':'Monsoon')+`<p>${d==='c'?'Grants, fees and inspections. Land on a City Council space to draw one.':'Weather, luck and fishing. Land on a Monsoon space to draw one.'} There are 16 cards in each deck, including a <b>Get out of Maafushi</b> card you can keep, use or trade.</p>`);}
+function openDeckInfo(d){openSheet('deck',shead(d==='c'?'City Council':'Monsoon')+`<p>${d==='c'?'Grants, fees and inspections. Draw one by choosing it at the Sandbank.':'Weather, luck and fishing. Draw one by choosing it at the Sandbank.'} There are 16 cards in each deck, including a <b>Get out of Maafushi</b> card you can keep, use or trade.</p>`);}
 
 /* decisions */
 function pendKey(pe){return pe?[pe.t,pe.p,pe.sp,pe.id,G.round,G.turn].join(':'):'';}
 function needsMe(){if(!G||G.over||AUTO||meP().out)return null;const pe=G.pend;
- if(pe&&pe.p===ME&&(pe.t==='buy'||pe.t==='rent'||pe.t==='debt'||pe.t==='tax'||pe.t==='court'))return pe;
+ if(pe&&pe.p===ME&&(pe.t==='buy'||pe.t==='rent'||pe.t==='debt'||pe.t==='sandbank'||pe.t==='court'))return pe;
  if(pe&&pe.t==='auction'&&!pe.out.includes(ME))return pe;
  if(G.sale&&G.sale.seller===ME&&G.sale.st==='pick')return {t:'salepick',id:G.sale.id};return null;}
 function syncDecision(){if(PUMPING)return;const pe=needsMe();if(!pe)return;const k=pendKey(pe);if(MIN[k])return;if(SH.key===k)return;if(SH.key&&!SH.decision)return;openDecision(pe);}
 function openDecision(pe){const k=pendKey(pe);delete MIN[k];
- if(pe.t==='buy')return openBuy(pe,k);if(pe.t==='rent')return openRent(pe,k);if(pe.t==='tax')return openTax(pe,k);if(pe.t==='court')return openCourt(pe,k);if(pe.t==='debt')return openDebt(pe,k);if(pe.t==='auction')return openAuction(pe,k);if(pe.t==='salepick')return openSaleSeller();}
+ if(pe.t==='buy')return openBuy(pe,k);if(pe.t==='rent')return openRent(pe,k);if(pe.t==='sandbank')return openSandbank(pe,k);if(pe.t==='court')return openCourt(pe,k);if(pe.t==='debt')return openDebt(pe,k);if(pe.t==='auction')return openAuction(pe,k);if(pe.t==='salepick')return openSaleSeller();}
 function openBuy(pe,k){const s=SP[pe.sp],p=meP(),can=p.cash>=s.price;
  openSheet(k,`<div class="grab" aria-hidden="true"></div><h2 id="sheetTitle" class="sr">Buy ${esc(s.name)}?</h2>${spaceCard(pe.sp)}<div class="price">You rolled ${G.dice[0]} + ${G.dice[1]} and landed here<span><b>${fmt(s.price)}</b></span></div>
  ${can?'':`<p style="color:#8A2B2B;font-weight:700">You have ${fmt(p.cash)}. Take a loan or sell buildings in My islands, or send it to auction.</p>`}
@@ -1456,13 +1553,16 @@ function openRent(pe,k){const s=SP[pe.sp];
  openSheet(k,`<div class="grab" aria-hidden="true"></div><h2 id="sheetTitle" class="sr">Rent due</h2><div class="pcard">${cardHead(pe.sp)}${ART.draw(s.art,pe.sp)}</div>${ownerRow(pe.sp,pe.amt)}
  <div class="acts one"><button class="btn red" data-a="pay" data-focus>Pay ${fmt(pe.amt)}</button></div>`,{decision:1});}
 /* the bribe box used by tax and court sheets: amount, one-line risk and the suspicion meter */
-function bribeBox(title,sub){const s=meP().sus;return `<div class="bribe"><b>${ICON.bribe}${title}</b><p>${sub}</p><p><b style="display:inline;font-size:12px">${riskLine(s)}.</b></p>
+function bribeBox(title,sub){const s=meP().sus;return `<div class="bribe"><b>${ICON.bribe}${title}</b><p>${sub}</p><p><b style="display:inline;font-size:inherit">${riskLine(s)}.</b></p>
  <div class="risk" role="meter" aria-valuenow="${s}" aria-valuemin="0" aria-valuemax="100" aria-label="Your suspicion">Suspicion<i style="--r:${s}%"></i>${s}%</div></div>`;}
-function openTax(pe,k){const s=SP[pe.sp],p=meP();
- openSheet(k,`<div class="grab" aria-hidden="true"></div><h2 id="sheetTitle" class="sr">${esc(s.name)}</h2>${spaceCard(pe.sp)}
- ${bribeBox(`Or slip the tax officer ${fmt(pe.bribe)}`,`You dodge ${fmt(pe.amt-pe.bribe)} of tax, and your suspicion goes up ${E.C.SUS_STEP}%.`)}
- <div class="acts"><button class="btn em" data-a="paytax" data-focus>Pay ${fmt(pe.amt)}</button><button class="btn bribeb" data-a="bribetax" ${p.cash<pe.bribe?'disabled':''}>Bribe ${fmt(pe.bribe)}</button></div>
- ${p.cash<pe.amt?`<p style="font-size:12px;color:#8A2B2B;font-weight:700;text-align:center">You only have ${fmt(p.cash)}. Paying will ask you to raise money.</p>`:''}`,{decision:1});}
+/* Sandbank choice: three big buttons */
+function openSandbank(pe,k){const s=meP().sus;
+ openSheet(k,`<div class="grab" aria-hidden="true"></div><div class="shead"><h2 id="sheetTitle">You reached the Sandbank</h2></div><p style="margin-top:-2px">Pick one. Each card deck is a gamble. Relaxing is always safe.</p>
+ <div class="choices">
+  <button class="choice mn" data-a="sbpick" data-c="n" data-focus><span class="ci">${ICON.monsoon}</span><span class="ct"><b>Draw a Monsoon card</b><small>The weather decides: a big catch, a free trip, or a storm bill.</small></span></button>
+  <button class="choice cc" data-a="sbpick" data-c="c"><span class="ci">${ICON.majlis}</span><span class="ct"><b>Draw a City Council card</b><small>Grants, fees, an amnesty, or a raid.</small></span></button>
+  <button class="choice rx" data-a="sbpick" data-c="relax"><span class="ci">${ICON.relax}</span><span class="ct"><b>Relax</b><small>Safe. Nothing happens and your turn ends.</small></span></button>
+ </div>${s>0?`<p style="font-size:12px;color:#8A2B2B;font-weight:700;margin-top:10px">Your suspicion is ${s}%. Both decks hold an Anti-Corruption Raid.</p>`:''}`,{decision:1});}
 function openCourt(pe,k){const p=meP();
  openSheet(k,`<div class="grab" aria-hidden="true"></div><h2 id="sheetTitle" class="sr">Supreme Court Verdict</h2>${spaceCard(GOJAIL)}
  ${bribeBox(`Or pay the judge ${fmt(pe.bribe)}`,'The case is dismissed and you stay free. Your suspicion goes up '+E.C.SUS_STEP+'%.')}
@@ -1523,7 +1623,7 @@ function openTrade(){const to=TR.to,them=G.players[to],me=meP();const others=E.a
 function offerSummary(o){const part=(x)=>[...x.sp.map(sp=>SP[sp].name),x.cash?fmt(x.cash):'',x.cards?'Get out of Maafushi card':''].filter(Boolean).join(', ')||'nothing';
  return `Gives ${part(o.give)} · wants ${part(o.get)}`;}
 function openOffer(id){const o=G.offers.find(x=>x.id===id);if(!o||o.st!=='open'){toast('That offer is no longer open');return;}const from=G.players[o.from],err=E.chkTrade(o);
- const lst=(x)=>(x.sp.map(sp=>`<div class="row2"><i class="sw" style="background:${SP[sp].g?GROUPS[SP[sp].g].c:'#15241F'}"></i><button class="tx" data-a="info" data-sp="${sp}" style="border:0;background:none;text-align:left;padding:0;color:inherit"><b>${esc(SP[sp].name)}</b><small>${esc(spaceSub(SP[sp]))}${G.own[sp]&&G.own[sp].m?' · has a loan':''}</small></button></div>`).join('')+(x.cash?`<div class="row2"><span class="tx"><b>${fmt(x.cash)}</b><small>Cash</small></span></div>`:'')+(x.cards?`<div class="row2"><span class="tx"><b>Get out of Maafushi card</b></span></div>`:''))||'<p style="margin:0;color:var(--muted)">Nothing</p>';
+ const lst=(x)=>(x.sp.map(sp=>`<div class="row2"><i class="sw" style="background:${SP[sp].g?GROUPS[SP[sp].g].c:'#15241F'}"></i><button class="tx" data-a="info" data-sp="${sp}" style="border:0;background:none;text-align:left;padding:0;color:inherit"><b>${esc(SP[sp].name)}</b><small>${esc(spaceSub(SP[sp]))}${G.own[sp]&&G.own[sp].m?' · has a loan':''}</small></button></div>`).join('')+(x.cash?`<div class="row2"><i class="sw" style="background:#C9A45C"></i><span class="tx"><b>${fmt(x.cash)}</b><small>Cash</small></span></div>`:'')+(x.cards?`<div class="row2"><i class="sw" style="background:#1B7FA6"></i><span class="tx"><b>Get out of Maafushi card</b><small>Card</small></span></div>`:''))||'<p style="margin:0;color:var(--muted)">Nothing</p>';
  openSheet('offer:'+id,shead(`${esc(from.name)} ${o.re?'counters':'offers a deal'}`,'')+`<div class="owner" style="--c:${from.col};margin-top:0"><span class="pf">${avHTML(o.from,40,'smug')}</span><span><b>${esc(from.name)}</b><small>Cash ${fmt(from.cash)}</small></span></div>
   <h3>You get</h3><div class="list">${lst(o.give)}</div><h3>You give</h3><div class="list">${lst(o.get)}</div>${err?`<p style="color:#8A2B2B;font-weight:700">${esc(err)}</p>`:''}
   <div class="acts three"><button class="btn em sm" data-a="acceptof" data-id="${id}" ${err?'disabled':''}>Accept</button><button class="btn lite sm" data-a="rejectof" data-id="${id}">Decline</button><button class="btn sm" data-a="counterof" data-id="${id}">Counter</button></div>`);}
@@ -1548,7 +1648,7 @@ function openSaleBid(){const s=G.sale;if(!s)return;const top=Math.max(s.min-10,.
 
 /* player sheet, menu, log, rules */
 function openPlayer(i){const p=G.players[i];const props=E.propsOf(i);
- openSheet('player:'+i,shead(i===ME?'You':esc(p.name),'')+`<div class="owner" style="--c:${p.col};margin-top:0"><span class="pf">${avHTML(i,40)}</span><span><b>${p.out?'Bankrupt':fmt(p.cash)+' cash'}</b><small>Net worth ${fmt(E.netWorth(i))} · suspicion ${p.sus}%${p.bribes?` · ${p.bribes} bribe${p.bribes>1?'s':''}`:''}${p.caught?` · busted ${p.caught}×`:''}${p.jail?' · in prison':''}</small></span><span class="tk" style="margin-left:auto;width:34px;height:34px;display:grid;place-items:center;border-radius:50%;box-shadow:0 0 0 2px ${p.col}">${TOKENS[p.tok].s.replace('<svg','<svg width="24" height="24"')}</span></div>
+ openSheet('player:'+i,shead(i===ME?'You':esc(p.name),'')+`<div class="owner" style="--c:${p.col};margin-top:0"><span class="pf">${avHTML(i,40)}</span><span><b>${p.out?'Bankrupt':fmt(p.cash)+' cash'}</b><small>Net worth ${fmt(E.netWorth(i))}${G.target&&!p.out?` (${goalPct(i)}% of goal)`:''} · suspicion ${p.sus}%${p.bribes?` · ${p.bribes} bribe${p.bribes>1?'s':''}`:''}${p.caught?` · busted ${p.caught}×`:''}${p.jail?' · in prison':''}</small></span><span class="tk" style="margin-left:auto;width:34px;height:34px;display:grid;place-items:center;border-radius:50%;box-shadow:0 0 0 2px ${p.col}">${TOKENS[p.tok].s.replace('<svg','<svg width="24" height="24"')}</span></div>
  <h3>Islands</h3>${props.length?'<div class="chips">'+props.map(sp=>`<button class="pchip" data-a="info" data-sp="${sp}"><i style="background:${SP[sp].g?GROUPS[SP[sp].g].c:'#15241F'}"></i>${esc(SP[sp].lab.replace(/\n/g,' '))}${G.own[sp].h?` · ${G.own[sp].h===5?'resort':G.own[sp].h+'gh'}`:''}${G.own[sp].m?' (loan)':''}</button>`).join('')+'</div>':'<p>None yet.</p>'}
  ${i!==ME&&!p.out&&!meP().out&&!G.over?`<div class="acts one"><button class="btn em sm" data-a="tradewith" data-p="${i}">${ICON.handshake}Propose a trade</button></div>`:''}
  ${i!==ME&&!p.out&&!meP().out&&!G.over&&!AUTO&&p.sus>0?`<h3>Report to the Anti-Corruption Commission</h3><p style="font-size:12px;color:var(--muted);margin:0">Pay ${fmt(E.C.REPORT_FEE)} on your turn for an audit: ${p.sus}% chance ${esc(p.name)} is busted (pays back double, goes to Maafushi, loses an island). One report per turn.</p>
@@ -1562,16 +1662,17 @@ function openMenu(){const p=meP();openSheet('menu',shead('Menu','')+`<div class=
  <button class="btn lite sm" data-a="home">Save and exit</button><button class="btn lite sm" data-a="newgame">Abandon and start a new game</button></div>`);}
 function openLog(){openSheet('log',shead('Game log','')+`<div class="logl">${G.log.slice().reverse().map(l=>`<div>${esc(human(l.s))}</div>`).join('')}</div>`);}
 const RULES=`<div class="rules"><p><b>Binveriya</b> (ބިންވެރިޔާ, "landowner") is a Maldivian island property game for 2 to 5 players.</p>
-<h3>Your turn</h3><ul><li>Roll two dice and hop around the 28 spaces. Pass <b>Malé Jetty</b> to collect MVR 200.</li><li>Land on an island, transport or utility nobody owns: <b>buy it</b> or send it to <b>auction</b>, where everyone bids.</li><li>Doubles: roll again. Three doubles in a row: straight to Maafushi.</li></ul>
-<h3>Rent</h3><ul><li>Land on someone else's island and pay the rent shown on its tag. Owning the whole colour group doubles the base rent; guesthouses and resorts raise it much more. Tap any space for its full rent table.</li></ul>
-<h3>Bribes and suspicion</h3><ul><li>You never bribe players, only <b>officials</b>: the tax officer (pay about 30% of the tax), the prison guard (${fmt(E.C.GUARD_BRIBE)} to walk out now), the judge at the Supreme Court (${fmt(E.C.JUDGE_BRIBE)} to stay free), or the council permit office (a guesthouse at half price, on your turn).</li>
+<h3>The board</h3><ul><li>28 spaces, 6 on each side: a pair of islands, a transport and a group of three islands. Colour groups have 2 or 3 islands.</li><li>The four transports are <b>Malé Ferry Terminal</b>, <b>Velana Airport</b>, <b>Seaplane Dock</b> and <b>Hulhumalé Bus Stop</b>.</li></ul>
+<h3>Your turn</h3><ul><li>Roll two dice and hop around the board. Every time you pass or land on <b>Malé Jetty</b> (Start) you collect MVR 200.</li><li>Land <b>right on</b> Malé Jetty with your dice roll and you also draw a <b>City Council</b> card.</li><li>Land on an island or transport nobody owns: <b>buy it</b> or send it to <b>auction</b>, where everyone bids.</li><li>Land on the <b>Sandbank</b> and choose: draw a Monsoon card, draw a City Council card, or relax (always safe).</li><li>Doubles: roll again. Three doubles in a row: straight to Maafushi.</li></ul>
+<h3>Rent</h3><ul><li>Land on someone else's island and pay the rent shown on its tag. Owning the whole colour group (all 2 or all 3 islands) doubles the base rent; guesthouses and resorts raise it much more. Tap any space for its full rent table.</li><li>Transports: rent is MVR 25 if the owner has one, 50 for two, 100 for three and 200 for all four.</li></ul>
+<h3>Bribes and suspicion</h3><ul><li>You never bribe players, only <b>officials</b>: the prison guard (${fmt(E.C.GUARD_BRIBE)} to walk out now), the judge at the Supreme Court (${fmt(E.C.JUDGE_BRIBE)} to stay free), or the council permit office (a guesthouse at half price, on your turn).</li>
 <li>Every bribe adds ${E.C.SUS_STEP}% <b>suspicion</b> (the red bar under each avatar, up to 100%). It drops ${E.C.SUS_DECAY}% at the start of each turn you didn't bribe.</li>
 <li>You get <b>busted</b> three ways: on the spot (each bribe rolls a catch chance equal to your suspicion before it rises, so the first one is safe), by an <b>Anti-Corruption Raid</b> card (one in each deck: everyone with suspicion is checked, clean players are always safe), or when another player <b>reports</b> you (they pay ${fmt(E.C.REPORT_FEE)} on their turn for an audit roll at your suspicion).</li>
 <li>Busted: pay back double everything you dodged, go to Maafushi Prison, and the government seizes your most built-up island and auctions it to the others. Your suspicion resets to 0.</li></ul>
-<h3>Building</h3><ul><li>Own both islands of a colour to build <b>guesthouses</b> (1 to 4), then a <b>luxury resort</b> with overwater villas. Build evenly.</li><li>Transports (Velana Airport and Ferry Terminal): rent is MVR 40, or MVR 100 if you own both. Utilities: rent is 4× the dice, or 10× with both.</li><li>Short of cash? <b>Take a loan</b> on an island for half its price (no rent while the loan runs; repay +10%).</li></ul>
+<h3>Building</h3><ul><li>Own every island of a colour (2 or 3) to build <b>guesthouses</b> (1 to 4), then a <b>luxury resort</b> with overwater villas. Build evenly.</li><li>Short of cash? <b>Take a loan</b> on an island for half its price (no rent while the loan runs; repay +10%).</li></ul>
 <h3>Trading and sales</h3><ul><li><b>Trade any time</b>, even on other players' turns: islands, cash and Get out of Maafushi cards. Accept, decline or counter.</li><li><b>Put an island up for sale</b>: everyone bids for 30 seconds, you choose.</li></ul>
-<h3>Cards and Maafushi Prison</h3><ul><li>On City Council or Monsoon, draw the top card, read it and tap OK. A <b>Get out of Maafushi</b> card can be kept (use it or trade it later) or put back.</li><li>In prison: pay MVR 50, use a Get out of Maafushi card, bribe the guard, or roll doubles. After three tries, pay and move.</li></ul>
-<h3>Winning</h3><ul><li><b>Quick game</b>: 30 minutes, then the richest net worth (cash + islands + buildings) wins.</li><li><b>Classic</b>: play until one landowner is left. In long games the treasury runs dry: after round 60 Malé Jetty pays MVR 100, after round 100 nothing. Can't pay? You're bankrupt and your islands go to whoever you owe.</li></ul>
+<h3>Cards and Maafushi Prison</h3><ul><li>You draw cards at the Sandbank: pick Monsoon or City Council (or relax). Draw the top card, read it and tap OK. A card that moves you onto the Sandbank does not draw another card.</li><li>A <b>Get out of Maafushi</b> card can be kept (use it or trade it later) or put back.</li><li>In prison: pay MVR 50, use a Get out of Maafushi card, bribe the guard, or roll doubles. After three tries, pay and move.</li></ul>
+<h3>Winning</h3><ul><li><b>Quick game</b>: 30 minutes, then the richest net worth (cash + islands + buildings) wins.</li><li><b>Classic</b>: pick a <b>win target</b> before you start: MVR 3,000, 5,000, 7,000 or 10,000. The first landowner whose net worth (cash + islands + buildings; an island with a loan counts half) reaches the target at the end of a turn wins at once. The gold bar under each player shows how close they are.</li><li><b>Last one standing</b> (a Classic option): play until one landowner is left. So a game can't run forever, it ends after round ${E.C.ROUND_CAP} (you're warned at round ${E.C.ROUND_WARN}) and then the highest net worth wins.</li><li>Can't pay? You're bankrupt and your islands go to whoever you owe.</li></ul>
 <p style="font-size:12px;color:var(--muted)">All cards and events are fictional and just for fun.</p></div>`;
 function openRules(){openSheet('rules',shead('How to play','')+RULES);}
 
@@ -1586,7 +1687,7 @@ const H={
  decision(){const pe=needsMe();if(pe)openDecision(pe);},
  buy(){closeSheet(false);doAct({t:'buy'});},decline(){closeSheet(false);doAct({t:'decline'});},
  pay(){closeSheet(false);doAct({t:'pay'});},
- paytax(){closeSheet(false);doAct({t:'paytax'});},bribetax(){closeSheet(false);doAct({t:'bribetax'});},
+ sbpick(b){closeSheet(false);doAct({t:'sandbank',c:b.dataset.c});},
  court(){closeSheet(false);doAct({t:'court'});},bribejudge(){closeSheet(false);doAct({t:'bribejudge'});},
  bribeguard(){doAct({t:'bribeguard'});},
  buildbribe(b){const e=doAct({t:'build',sp:+b.dataset.sp,bribe:true});if(!e)SND.build();refreshSheet();},
@@ -1618,7 +1719,8 @@ const H={
  log(){openLog();},rules(){openRules();},
  home(){closeSheet();saveGame();showHome();},
  newgame(b){if(!b.dataset.sure){b.dataset.sure=1;b.textContent='Tap again to abandon this game';return;}ls.del('bv-save');closeSheet();G=null;showHome();openSetup();},
- again(){closeSheet();ls.del('bv-save');showHome();openSetup();},results(){openOver();},
+ again(){closeSheet();ls.del('bv-save');showHome();openSetup();},
+ oldnew(){closeSheet();ls.del('bv-save');showHome();openSetup();},results(){openOver();},
  watch(){WATCH=true;ACTKEY='';render();schedule();}};
 function refreshSheet(){const k=SH.key||'';if(k==='manage')openManage();else if(k.startsWith('info:'))openInfo(+k.slice(5));else if(SH.debt!=null||k.startsWith('debt')){const pe=G.pend;if(pe&&pe.t==='debt')openDebt(pe,k);}}
 function onClick(e){const b=e.target.closest('[data-a]');if(!b||b.disabled)return;SND.unlock();const f=H[b.dataset.a];if(f)f(b);}
@@ -1699,7 +1801,7 @@ async function drawDone(ev){if(FAST||!DRAW.open){if(DRAW.open)closeDraw(true);re
   if(ev.keep&&ev.p===ME)toast('Get out of Maafushi card kept. Use it in prison or trade it.',3200);
   await closeDraw();}
  finally{DRAW.busy=false;}}
-const OFFICIAL={tax:'tax officer',guard:'prison guard',judge:'judge',permit:'permit office'};
+const OFFICIAL={guard:'prison guard',judge:'judge',permit:'permit office'};
 let LASTAUDIT=null;
 function showAudit(ev){const who=nameOf(ev.p);if(ev.caught){LASTAUDIT=ev;SND.alarm();return Promise.resolve();}
  SND.coin();const sus=G.players[ev.p].sus;
@@ -1760,19 +1862,22 @@ async function play(ev){const slow=ev.p!=null&&isBot(ev.p)&&!WATCH?1:1;
   case 'bid':SND.tick();break;
   case 'turn':placeTokens();if(ev.p===ME&&!AUTO){SND.turn();if(!FAST)setDice(G.dice[0]?G.dice:[1,1]);}follow(ev.p);break;
   case 'final':toast("Time's up! Finishing this turn…",3500);break;
+  case 'capwarn':toast(`Round ${E.C.ROUND_WARN}: the game ends after round ${E.C.ROUND_CAP}. Then the highest net worth wins.`,5000);break;
   case 'risk':renderActions();break;}}
 
 /* ---------------------------------------------------------------- scheduling (AI turns, decisions) */
 let aiTimer=null,aiSeq=-1;
+/* the safe default when a computer player makes no move */
+const FALLBACK=pe=>({turn:{t:'roll'},buy:{t:'decline'},rent:{t:'pay'},debt:{t:'bankrupt'},post:{t:pe.again?'roll':'end'},draw:{t:'draw'},card:{t:'cardok'},sandbank:{t:'sandbank',c:'relax'},court:{t:'court'}}[pe.t]||null);
 function schedule(){if(!G||G.over||SCREEN!=='game')return;const pe=G.pend;syncDecision();
  /* fast test mode: draw and accept my own cards automatically */
  if(FAST&&pe&&pe.p===ME&&!isBot(ME)&&(pe.t==='draw'||pe.t==='card')){const key='me:'+G.seq+':'+pe.t;if(aiSeq===key)return;aiSeq=key;
   macro(()=>{if(G&&G.pend===pe)E.act(ME,pe.t==='draw'?{t:'draw'}:{t:'cardok',keep:true});aiSeq=-1;pump(true);});return;}
  if(!pe||pe.p==null||!isBot(pe.p)||pe.t==='auction')return;
- if(!['turn','buy','rent','debt','post','draw','card','tax','court'].includes(pe.t))return;const key=G.seq+':'+pe.t;if(aiSeq===key)return;aiSeq=key;clearTimeout(aiTimer);
- const base={turn:650,buy:900,rent:1000,debt:700,post:600,draw:700,card:1900,tax:900,court:1000}[pe.t]*UI_SPEED();
+ if(!['turn','buy','rent','debt','post','draw','card','sandbank','court'].includes(pe.t))return;const key=G.seq+':'+pe.t;if(aiSeq===key)return;aiSeq=key;clearTimeout(aiTimer);
+ const base={turn:650,buy:900,rent:1000,debt:700,post:600,draw:700,card:1900,sandbank:1100,court:1000}[pe.t]*UI_SPEED();
  const run=()=>{if(!G||G.pend!==pe||SCREEN!=='game')return;const s0=G.seq;AI.step(pe.p);
-  if(G.pend===pe&&G.seq===s0){const fb={turn:'roll',buy:'decline',rent:'pay',debt:'bankrupt',post:pe.again?'roll':'end',draw:'draw',card:'cardok',tax:'paytax',court:'court'}[pe.t];E.act(pe.p,{t:fb});}aiSeq=-1;pump(true);};
+  if(G.pend===pe&&G.seq===s0)E.act(pe.p,FALLBACK(pe));aiSeq=-1;pump(true);};
  if(FAST)macro(run);else aiTimer=setTimeout(run,base);}
 let lastT=performance.now();
 function clock(){const now=performance.now();let dt=Math.min(1000,now-lastT);lastT=now;if(!G||G.over||SCREEN!=='game')return;
@@ -1782,7 +1887,10 @@ setInterval(clock,FAST?60:250);
 
 /* ---------------------------------------------------------------- save / resume, rewards */
 function saveGame(){if(!G||AUTO||FAST&&!Q.has('save'))return;if(G.over){ls.del('bv-save');return;}ls.set('bv-save',JSON.stringify({v:1,G,ME,at:Date.now()}));}
-function loadSave(){try{const d=JSON.parse(ls.get('bv-save')||'null');if(d&&d.v===1&&d.G&&d.G.players&&!d.G.over)return d;}catch(e){}return null;}
+function loadSave(){try{const d=JSON.parse(ls.get('bv-save')||'null');if(d&&d.v===1&&d.G&&d.G.players&&!d.G.over){if(!E.sameBoard(d.G))d.old=true;return d;}}catch(e){}return null;}
+/* a save from the old board cannot be mapped onto this one: say so and offer a new game */
+function openOldSave(){openSheet('oldsave',shead('A new board!','')+`<p>This game was saved on the old Binveriya board, so it can't be resumed. The new board has four transports and a Sandbank choice.</p>
+ <div class="acts"><button class="btn em" data-a="oldnew" data-focus>Start a new game</button><button class="btn lite" data-a="close">Not now</button></div>`);}
 function awardBoli(){if(!G||!G.over||AUTO||FAST||G.round<8)return null;const win=G.over.winner===ME;const key='bv:'+G.id;let d=null;try{d=JSON.parse(ls.get('dd-inv')||'null');}catch(e){}
  if(!d||d.v!==1)d={v:1,shells:100,xp:0,owned:{},eq:{},hist:[{id:'welcome',t:Date.now(),how:'gift',shells:100}],stats:{},aw:[],day:'',dayEarned:0};
  d.aw=Array.isArray(d.aw)?d.aw:[];if(d.aw.includes(key))return null;d.aw.push(key);if(d.aw.length>80)d.aw.shift();
@@ -1793,18 +1901,19 @@ let REWARD=null,OVERSHOWN=null;
 function onOver(){if(OVERSHOWN===G.id)return;OVERSHOWN=G.id;ls.del('bv-save');REWARD=awardBoli();if(G.over.winner===ME)SND.win();else SND.gavel();setTimeout(openOver,FAST?0:900);}
 function openOver(){if(!G||!G.over)return;const o=G.over,w=o.winner,win=w===ME;
  openSheet('over',`<div class="grab" aria-hidden="true"></div><div class="win"><div class="crown">${avHTML(w,92,win?'happy':'smug')}</div><h2 id="sheetTitle">${win?'You win!':esc(G.players[w].name)+' wins!'}</h2>
- <p>${o.reason==='time'?'Time is up. The richest landowner takes the islands.':'Last landowner standing.'}</p>
+ ${o.reason==='goal'?`<span class="goalwin">Reached ${fmt(G.target)}</span><p>${win?'You were':esc(G.players[w].name)+' was'} the first to reach the ${fmt(G.target)} net worth goal.</p>`:
+  `<p>${o.reason==='time'?'Time is up. The richest landowner takes the islands.':o.reason==='rounds'?`Round ${E.C.ROUND_CAP} is over. The richest landowner takes the islands.`:'Last landowner standing.'}</p>`}
  ${REWARD&&REWARD.sh?`<span class="reward"><img src="${BOLI_IMG}" alt="">+${REWARD.sh} Boli${REWARD.capped?' (daily limit)':''}</span>`:REWARD&&REWARD.capped?'<span class="reward">Daily Boli limit reached</span>':''}</div>
- <div class="rank">${o.rank.map((r,k)=>{const p=G.players[r.i];return `<div class="row2"><b style="width:22px;text-align:center">${k+1}</b><span class="pf" style="width:36px;height:36px;border-radius:50%;overflow:hidden;flex:none">${avHTML(r.i,36)}</span><span class="tx"><b>${r.i===ME?'You':esc(p.name)}</b><small>${p.out?'Bankrupt':`Net worth ${fmt(r.nw)} · ${E.propsOf(r.i).length} properties`}</small></span></div>`;}).join('')}</div>
+ <div class="rank">${o.rank.map((r,k)=>{const p=G.players[r.i];return `<div class="row2"><b style="width:22px;text-align:center">${k+1}</b><span class="pf" style="width:36px;height:36px;border-radius:50%;overflow:hidden;flex:none">${avHTML(r.i,36)}</span><span class="tx"><b>${r.i===ME?'You':esc(p.name)}</b><small>${p.out?'Bankrupt':`Net worth ${fmt(r.nw)} · ${E.propsOf(r.i).length} propert${E.propsOf(r.i).length===1?'y':'ies'}`}</small></span></div>`;}).join('')}</div>
  <div class="acts"><button class="btn em" data-a="again">Play again</button><button class="btn lite" data-a="home">Home</button></div><div class="sp-box" id="spBox"></div>`);
  try{if(window.DGSponsors&&DGSponsors.list&&DGSponsors.list.length)DGSponsors.box($('#spBox'));}catch(e){}}
 
 /* ---------------------------------------------------------------- home + setup */
 let MODE=ls.get('bv-mode')==='classic'?'classic':'quick',HOMEBV=null;
 function showHome(){SCREEN='home';clearBanner();closeDraw(true);$('#game').hidden=true;$('#home').hidden=false;$('#boliN').textContent=boliCount().toLocaleString('en-US');
- const s=loadSave();$('#resumeBtn').hidden=!s;if(s)$('#resumeSub').textContent=`${s.G.mode==='quick'?'Quick game':'Classic'} · round ${s.G.round} · ${s.G.players.length} players`;
+ const s=loadSave();$('#resumeBtn').hidden=!s;if(s)$('#resumeSub').textContent=s.old?'Saved on the old board':`${s.G.mode==='quick'?'Quick game':s.G.target?'Goal '+fmt(s.G.target):'Classic'} · round ${s.G.round} · ${s.G.players.length} players`;
  $$('.modes button').forEach(b=>b.setAttribute('aria-checked',b.dataset.mode===MODE));
- if(!HOMEBV){HOMEBV=LAYOUT.build($('#tilt'));const demo={27:[0,5],25:[0,2],12:[1,0],13:[1,1],5:[2,3],6:[2,0],18:[3,0]};
+ if(!HOMEBV){HOMEBV=LAYOUT.build($('#tilt'));const demo={27:[0,5],26:[0,2],12:[1,0],13:[1,1],5:[2,3],6:[2,0],17:[3,0]};
   Object.entries(demo).forEach(([i,[o,h]])=>deco(HOMEBV,+i,{o,h,m:false},PCOL[o],'YIMH'[o]));
   HOMEBV.tokens.innerHTML=[['dhoni',13,0],['turtle',17,1],['manta',27,2],['seaplane',7,3]].map(([t,i,k])=>{const p=LAYOUT.pos(i);return `<span class="tok" style="--c:${PCOL[k]};left:${p.x}%;top:${p.y}%"><i>${TOKENS[t].s}</i></span>`;}).join('');}
  homeFit();}
@@ -1812,8 +1921,11 @@ function homeFit(){const t=$('#tilt');if(!t||SCREEN!=='home')return;const hb=Mat
 $$('.modes button').forEach(b=>b.addEventListener('click',()=>{MODE=b.dataset.mode;ls.set('bv-mode',MODE);$$('.modes button').forEach(x=>x.setAttribute('aria-checked',x===b));}));
 $('#playBtn').addEventListener('click',()=>{SND.unlock();openSetup();});
 $('#howBtn').addEventListener('click',openRules);
-$('#resumeBtn').addEventListener('click',()=>{const s=loadSave();if(!s)return;SND.unlock();startWith(E.load(s.G),s.ME);toast('Welcome back!');});
+$('#resumeBtn').addEventListener('click',()=>{const s=loadSave();if(!s)return;SND.unlock();if(s.old)return openOldSave();startWith(E.load(s.G),s.ME);toast('Welcome back!');});
 let SETUP={n:4,tok:ls.get('bv-tok')||'dhoni'};
+/* Classic win target (net worth); 0 = Last one standing */
+const GOALS=[3000,5000,7000,10000,0],GOAL_DEFAULT=7000;/* ~40 rounds with 4 players: about 30-40 minutes with a human */
+let TARGET=(()=>{const v=ls.get('bv-goal');return v!=null&&GOALS.includes(+v)?+v:GOAL_DEFAULT;})();
 function botRoster(n){const pre=BOTS.slice(0,5).sort(()=>Math.random()-.5),rest=BOTS.slice(5).sort(()=>Math.random()-.5);return pre.slice(0,3).concat(rest).slice(0,n);}
 let ROSTER=botRoster(4);
 function openSetup(){const nm=myName();if(!TOKENS[SETUP.tok])SETUP.tok='dhoni';
@@ -1823,16 +1935,18 @@ function openSetup(){const nm=myName();if(!TOKENS[SETUP.tok])SETUP.tok='dhoni';
  <div class="bots">${ROSTER.slice(0,SETUP.n-1).map((b,k)=>{const cfg=b[1]&&window.DGAvatar?DGAvatar.presets[b[1]]:window.DGAvatar?DGAvatar.random(b[0]+'bv'):null;return `<span style="--c:${PCOL[k+1]}"><span class="pf">${cfg?DGAvatar.render(cfg,{size:44}):''}</span>${esc(b[0])}</span>`;}).join('')}<span style="justify-content:center"><button class="mb" data-s="shuffle" aria-label="Shuffle opponents" style="margin-top:0">Shuffle</button></span></div>
  <h3>Your token</h3><div class="seg tk" role="radiogroup" aria-label="Your token">${TOKEN_KEYS.map(k=>`<button role="radio" aria-checked="${SETUP.tok===k}" data-s="tok" data-v="${k}" aria-label="${TOKENS[k].n}" title="${TOKENS[k].n}">${TOKENS[k].s}</button>`).join('')}</div>
  <h3>Game length</h3><div class="seg" role="radiogroup">${[['quick','Quick · 30 min'],['classic','Classic']].map(([k,l])=>`<button role="radio" aria-checked="${MODE===k}" data-s="mode" data-v="${k}">${l}</button>`).join('')}</div>
- <p style="font-size:12px;color:var(--muted)">${MODE==='quick'?'After 30 minutes the richest net worth wins.':'Play until only one landowner is left.'}</p>
+ ${MODE==='classic'?`<h3>Win target</h3><div class="seg goalseg" role="radiogroup" aria-label="Win target">${GOALS.map(v=>`<button role="radio" aria-checked="${TARGET===v}" data-s="goal" data-v="${v}"${v?` aria-label="${fmt(v)}"`:''}>${v?v.toLocaleString('en-US'):'Last one standing'}</button>`).join('')}</div>`:''}
+ <p style="font-size:12px;color:var(--muted)">${MODE==='quick'?'After 30 minutes the richest net worth wins.':TARGET?`The first to reach ${fmt(TARGET)} net worth (cash + islands + buildings) wins.`:`Play until only one landowner is left. After round ${E.C.ROUND_CAP} the richest wins.`}</p>
  <div class="acts one"><button class="btn" data-s="start" data-focus>${ICON.dice}Start game</button></div>`;
  openSheet('setup',html);}
 $('#sheet').addEventListener('click',e=>{const b=e.target.closest('[data-s]');if(!b)return;const s=b.dataset.s,nmv=($('#nmIn')||{}).value;if(nmv!=null)ls.set('bv-name',nmv.trim().slice(0,14));
  if(s==='n'){SETUP.n=+b.dataset.v;openSetup();}else if(s==='tok'){SETUP.tok=b.dataset.v;ls.set('bv-tok',SETUP.tok);openSetup();}else if(s==='mode'){MODE=b.dataset.v;ls.set('bv-mode',MODE);showHome();openSetup();}
+ else if(s==='goal'){TARGET=+b.dataset.v;ls.set('bv-goal',String(TARGET));openSetup();}
  else if(s==='shuffle'){ROSTER=botRoster(4);openSetup();}else if(s==='start')newGame();});
 function newGame(opts={}){const n=opts.n||SETUP.n,mode=opts.mode||MODE;const toks=TOKEN_KEYS.filter(k=>k!==SETUP.tok).sort(()=>Math.random()-.5);
  const players=[{name:myName()||'You',human:true,av:myAvatar(),tok:SETUP.tok,col:PCOL[0]}];
  ROSTER.slice(0,n-1).forEach((b,k)=>players.push({name:b[0],human:false,av:window.DGAvatar?(b[1]?DGAvatar.presets[b[1]]:DGAvatar.random(b[0]+'bv')):null,tok:toks[k],col:PCOL[k+1]}));
- closeSheet();AI.reset();OVERSHOWN=null;REWARD=null;const g=E.create({mode,players,minutes:opts.minutes});startWith(g,0);}
+ closeSheet();AI.reset();OVERSHOWN=null;REWARD=null;const g=E.create({mode,players,minutes:opts.minutes,target:opts.target!=null?opts.target:TARGET});startWith(g,0);}
 function startWith(g,me){G=g;ME=me;WATCH=false;ACTKEY='';aiSeq=-1;DRAW.busy=false;closeDraw(true);for(const k in MIN)delete MIN[k];SCREEN='game';$('#home').hidden=true;$('#game').hidden=false;
  G.players.forEach((p,i)=>{VIEW.pos[i]=p.pos;VIEW.cash[i]=p.cash;});buildPlayers();buildBoard();setDice(G.dice[0]?G.dice:[3,4]);
  const last=G.log[G.log.length-1];if(last)ticker(last.s);E.drain();render();lastT=performance.now();
@@ -1840,12 +1954,13 @@ function startWith(g,me){G=g;ME=me;WATCH=false;ACTKEY='';aiSeq=-1;DRAW.busy=fals
 
 /* ---------------------------------------------------------------- boot + test hooks */
 showHome();if(document.fonts&&document.fonts.ready)document.fonts.ready.then(homeFit);
-if(LOCAL&&Q.has('autostart')){SETUP.n=+(Q.get('n')||4);newGame({n:SETUP.n,mode:Q.get('mode')||MODE,minutes:Q.has('min')?+Q.get('min'):undefined});}
+if(LOCAL&&Q.has('autostart')){SETUP.n=+(Q.get('n')||4);newGame({n:SETUP.n,mode:Q.get('mode')||MODE,minutes:Q.has('min')?+Q.get('min'):undefined,target:Q.has('goal')?+Q.get('goal'):undefined});}
 window.BINVERIYA={E,AI,get G(){return G;},get ME(){return ME;},pump,newGame,LAYOUTS,
- sim(games=20,n=4,mode='classic',maxTurns=4000){const out=[];const save=[G,ME];for(let g=0;g<games;g++){AI.reset();const players=[...Array(n)].map((_,k)=>({name:'Bot'+k,human:false,av:null,tok:TOKEN_KEYS[k],col:PCOL[k]}));
-   const gg=E.create({mode,players,minutes:mode==='quick'?30:0});let steps=0;const cnt={bribeOk:0,caughtBribe:0,busted:0,raid:0,report:0,seize:0,card:0,kept:0,rent:0,auction:0};
+ /* all-computer test games; target = Classic win target (0 = Last one standing) */
+ sim(games=20,n=4,mode='classic',maxTurns=4000,target=0){const out=[];const save=[G,ME];for(let g=0;g<games;g++){AI.reset();const players=[...Array(n)].map((_,k)=>({name:'Bot'+k,human:false,av:null,tok:TOKEN_KEYS[k],col:PCOL[k]}));
+   const gg=E.create({mode,players,minutes:mode==='quick'?30:0,target});let steps=0;const cnt={bribeOk:0,caughtBribe:0,busted:0,raid:0,report:0,seize:0,card:0,kept:0,rent:0,auction:0};
    while(!gg.over&&steps++<maxTurns*6){const pe=gg.pend;E.tick(400);AI.tick(()=>true);if(gg.over)break;const p2=gg.pend;
-    if(p2&&p2.t!=='auction'&&p2.p!=null){const s0=gg.seq;AI.step(p2.p);if(gg.pend===p2&&gg.seq===s0){const fb={turn:'roll',buy:'decline',rent:'pay',debt:'bankrupt',post:p2.again?'roll':'end',draw:'draw',card:'cardok',tax:'paytax',court:'court'}[p2.t];if(fb)E.act(p2.p,{t:fb});}}
+    if(p2&&p2.t!=='auction'&&p2.p!=null){const s0=gg.seq;AI.step(p2.p);if(gg.pend===p2&&gg.seq===s0){const fb=FALLBACK(p2);if(fb)E.act(p2.p,fb);}}
     E.drain().forEach(e=>{if(e.t==='audit')cnt[e.caught?'caughtBribe':'bribeOk']++;else if(e.t in cnt)cnt[e.t]++;if(e.t==='carddone'&&e.keep)cnt.kept++;});}
    out.push({over:!!gg.over,reason:gg.over&&gg.over.reason,rounds:gg.round,winner:gg.over&&gg.over.winner,alive:E.alive().length,bribes:gg.players.reduce((a,p)=>a+p.bribes,0),caught:gg.players.reduce((a,p)=>a+p.caught,0),trades:gg.offers.filter(o=>o.st==='done').length,offers:gg.offers.length,log:gg.log.length,ev:cnt,stuck:!gg.over?JSON.stringify(gg.pend):undefined});}
   if(save[0])E.load(save[0]);return out;}};
