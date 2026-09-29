@@ -6,6 +6,7 @@
 <title>Atolls · އަތޮޅު · Dhivehi Games</title>
 <meta name="description" content="Atolls (އަތޮޅު): settle the islands, build dhoni routes and trade across the lagoon. A Maldivian settle-build-trade board game seen from a drone. Play against the computer on your phone.">
 <meta name="theme-color" content="#06304f">
+<link rel="preload" as="image" href="terrain.webp?v=bc9eb32a" type="image/webp" fetchpriority="high">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700;800&family=Unbounded:wght@500;700&family=Noto+Sans+Thaana:wght@700&display=swap">
@@ -313,7 +314,10 @@ button:disabled{cursor:default}
 .glow{animation:glw 1.1s ease-in-out 3}
 @keyframes glw{50%{opacity:.25}}
 .fogc{transition:opacity 1.2s}
-#loading{position:fixed;left:50%;top:50%;z-index:20;transform:translate(-50%,-50%);color:#fff;font:600 11px/1.4 Inter;letter-spacing:.2em;text-transform:uppercase;text-shadow:0 1px 3px rgba(0,0,0,.6);text-align:center;pointer-events:none}
+#loading{position:fixed;left:50%;top:50%;z-index:20;transform:translate(-50%,-50%);width:200px;color:#fff;font:600 10.5px/1.4 Inter;letter-spacing:.2em;text-transform:uppercase;text-shadow:0 1px 3px rgba(0,0,0,.6);text-align:center;pointer-events:none;animation:fd .4s}
+#loading .lbar{display:block;height:2px;margin-top:8px;background:rgba(255,255,255,.25);border-radius:1px;overflow:hidden}
+#loading .lbar i{display:block;height:100%;width:0;background:#fff;box-shadow:0 0 6px #fff;transition:width .2s}
+#L_fb{transition:opacity .7s}
 @media (max-height:620px){#pls .pc{height:52px}.pc b{margin-top:3px}#hand{height:76px}.rs .sw{width:38px;height:38px}.rs .sw svg{width:38px;height:38px}.rs small{margin-top:4px}.ab{height:48px}#prompt{min-height:56px}.logo{top:calc(var(--sat) + 96px)}.logo .coords{margin-bottom:10px}.logo .dv{font-size:26px}#homeBuoy{display:none}#home .tele{display:none}}
 @media (max-width:350px){.ab{font-size:10.5px}.rs small{font-size:9.5px}.mode b{font-size:12px}.mode small{font-size:10.5px}#prompt .btn{padding:0 11px}}
 @media (min-width:700px){#bot{left:50%;right:auto;width:540px;transform:translateX(-50%)}#pls{max-width:560px;margin:0 auto}}
@@ -362,7 +366,7 @@ button:disabled{cursor:default}
   <div id="hand" class="wg"></div>
  </div>
 </section>
-<div id="loading" hidden><span class="tele" style="display:block"><b></b>Drone launching</span></div>
+<div id="loading" hidden><span class="tele" style="display:block"><span><b></b>Surveying the atoll…</span></span><span class="lbar"><i id="lprog"></i></span></div>
 <div id="banner"></div>
 <div id="toasts" aria-live="polite"></div>
 <div id="dim" hidden></div>
@@ -1026,7 +1030,7 @@ void main(){vec2 fc=gl_FragCoord.xy;vec2 uv=vec2(fc.x-uRes.x*.5,(uRes.y-fc.y)-uR
   if(anim){times.push(dt);if(times.length>24){times.shift();const avg=times.reduce((a,b)=>a+b,0)/times.length;if(avg>58&&qual>.5){qual*=.8;times.length=0;resize();}}}}
  addEventListener('resize',resize);document.addEventListener('visibilitychange',()=>{dirty=true;});
  if(ok){resize();requestAnimationFrame(frame);}
- return {get ok(){return ok;},get baked(){return baked||!ok;},get baking(){return baking;},setBoard,setAtlas,atlasFail,
+ return {get ok(){return ok;},get baked(){return baked||!ok;},get baking(){return baking;},get progress(){return !ok||baked?1:waitAtlas?0.05:.1+.9*Math.min(1,bakeY/Math.max(1,texH));},setBoard,setAtlas,atlasFail,
   setMode(m){mode=ok?m:'none';cv.style.visibility=mode==='none'?'hidden':'visible';dirty=true;},
   setCam(c){cam.x=c.x;cam.y=c.y;cam.z=c.z;cam.ox=c.ox;cam.oy=c.oy;cam.haze=c.haze||0;dirty=true;},
   setDim(v){dimTo=v;dirty=true;},poke(){dirty=true;}};
@@ -1132,10 +1136,10 @@ function cardArt(k){const sky='<defs><linearGradient id="ca-s'+k+'" x1="0" y1="0
 const SW={};const FBC={wood:'#3d7a33',brick:'#b3643c',sheep:'#8dbb4c',wheat:'#dfbe5c',ore:'#8d9298',sand:'#efe2c2',sea:'#1e7fa0'};
 function initSwatches(){RES.concat(['sand']).forEach(r=>{SW[r]=`radial-gradient(circle at 35% 30%,rgba(255,255,255,.35),rgba(255,255,255,0) 60%),linear-gradient(${FBC[r]},${FBC[r]})`;});
  const img=new Image();img.decoding='async';
- img.onload=()=>{try{GLR.setAtlas(img);}catch(e){}try{const T=img.width/3,c=document.createElement('canvas');c.width=c.height=112;const x=c.getContext('2d');
+ img.fetchPriority='high';img.onload=()=>{const go=()=>{try{GLR.setAtlas(img);}catch(e){}try{const T=img.width/3,c=document.createElement('canvas');c.width=c.height=112;const x=c.getContext('2d');
    ['wood','brick','sheep','wheat','ore','sand'].forEach((r,k)=>{const col=k%3,row=(k/3)|0;x.drawImage(img,col*T+T*.28,row*T+T*.28,T*.36,T*.36,0,0,112,112);SW[r]=`url(${c.toDataURL('image/jpeg',.84)})`;});}catch(e){}
-  if(G&&SCREEN==='game'){if(!GLR.ok)buildOverlay();renderAll();}};
- img.onerror=()=>{GLR.atlasFail();};img.src='terrain.webp?v=483ff9f5';}
+  RES.forEach(r=>{const p=document.getElementById('sw-'+r);if(p&&/^url\(/.test(SW[r]))p.innerHTML=`<rect width="1" height="1" fill="${FBC[r]}"/><image href="${SW[r].slice(4,-1)}" width="1" height="1" preserveAspectRatio="xMidYMid slice"/>`;});if(G&&SCREEN==='game')renderAll();};if(img.decode)img.decode().then(go,go);else go();};
+ img.onerror=()=>{GLR.atlasFail();};img.src='terrain.webp?v=bc9eb32a';}
 const swI=r=>`<i style="background-image:${SW[r]}"></i>`;
 function rr(o){return RES.filter(r=>o&&o[r]).map(r=>`<span class="rr">${swI(r)}<b>${o[r]}</b></span>`).join(' ')||'nothing';}
 function rrTxt(o){return RES.filter(r=>o&&o[r]).map(r=>o[r]+' '+RNAME[r]).join(', ');}
@@ -1193,9 +1197,9 @@ function buildOverlay(){BB=boardBB();
 function drawStatic(){const H=G.map.hexes;let fb='',grid='',sea='';
  H.forEach((h,i)=>{const [x,y]=hxy(i);const d=rpath(hexPts(x,y,S),2.4);
   if(h.t==='sea'){sea+=`<path d="${rpath(hexPts(x,y,S*.96),3)}"/>`;return;}
-  if(!GLR.ok){fb+=`<path d="${rpath(hexPts(x,y,S*1.34),10)}" fill="#5cc7b6" opacity=".35"/>`;}
+  fb+=`<path d="${rpath(hexPts(x,y,S*1.34),10)}" fill="#5cc7b6" opacity=".35"/>`;
   grid+=`<path d="${d}"/>`;});
- if(!GLR.ok)H.forEach((h,i)=>{if(h.t==='sea')return;const [x,y]=hxy(i);fb+=`<path d="${rpath(hexPts(x,y,S*1.06),6)}" fill="#efe2c2"/><path d="${rpath(hexPts(x,y,S*.97),3)}" fill="${h.t==='sand'?FBC.sand:`url(#sw-${h.t})`}"/>`;});
+ H.forEach((h,i)=>{if(h.t==='sea')return;const [x,y]=hxy(i);fb+=`<path d="${rpath(hexPts(x,y,S*1.06),6)}" fill="#efe2c2"/><path d="${rpath(hexPts(x,y,S*.97),3)}" fill="${h.t==='sand'?FBC.sand:`url(#sw-${h.t})`}"/>`;});
  $('#L_fb').innerHTML=fb;
  $('#L_grid').innerHTML=(sea?`<g fill="none" stroke="#fff" stroke-opacity=".18" stroke-width=".8" stroke-dasharray="3 4">${sea}</g>`:'')+`<g fill="none" stroke="#1c2a14" stroke-opacity=".32" stroke-width=".9">${grid}</g><g fill="none" stroke="#fff" stroke-opacity=".34" stroke-width=".7" transform="translate(.55 .75)">${grid}</g>`;
  drawHarbours();drawTokens();drawBuoy();}
@@ -1674,7 +1678,10 @@ function newGame(o){o=o||{mode:HMODE,n:SETUP.n,opts:{target:SETUP.target,fair:SE
 function startWith(g,me){E.use(g);G=g;ME=me;SCREEN='game';SEL=null;BUSY=false;OFFER_T0=0;TMR.stop();for(const k in LASTH)delete LASTH[k];
  $('#home').hidden=true;$('#game').hidden=false;closeSheet(true);clearBanner();GLR.setMode('board');
  buildOverlay();MM.setup();renderAll();layoutView();const d=defaultCam();Object.assign(CAM,d);applyCam();renderTele();
- ov.style.opacity='0';if(GLR.ok){$('#loading').hidden=false;}LEGEND.hide();let shown=false;const reveal=()=>{if(shown||G!==g)return;shown=true;$('#loading').hidden=true;ov.style.transition='opacity .45s';ov.style.opacity='1';LEGEND.first();};GLR.setBoard(G.map,S,BB,reveal);setTimeout(reveal,FAST?0:1800);if(!GLR.ok)reveal();
+ ov.style.opacity='0';if(GLR.ok){$('#loading').hidden=false;}LEGEND.hide();ov.style.transition='';ov.style.opacity='1';const fbL=$('#L_fb');fbL.style.opacity='1';let done=false;const g0=G;$('#loading').hidden=true;
+ const finish=()=>{if(done||G!==g0)return;done=true;$('#loading').hidden=true;if(GLR.ok)requestAnimationFrame(()=>requestAnimationFrame(()=>{fbL.style.opacity='0';}));LEGEND.first();};
+ GLR.setBoard(G.map,S,BB,finish);if(!GLR.ok)finish();
+ setTimeout(()=>{if(done||G!==g0||SCREEN!=='game')return;const L=$('#loading');L.hidden=false;const t=setInterval(()=>{if(done||G!==g0||SCREEN!=='game'){clearInterval(t);L.hidden=true;return;}$('#lprog').style.width=Math.round(GLR.progress*100)+'%';},120);},FAST?0:350);
  if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>{if(SCREEN==='game'){layoutView();applyCam();}});
  if(G.phase==='setup'&&E.cur()!==ME)toast(`${esc(G.players[E.cur()].name)} places first`);kick(FAST?0:500);}
 addEventListener('resize',()=>{if(SCREEN==='game'&&G){renderTele();layoutView();if(Date.now()-userCamT>6000)Object.assign(CAM,defaultCam());applyCam();}});
