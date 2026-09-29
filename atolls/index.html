@@ -9,7 +9,7 @@
 <link rel="icon" href="/icons/favicon.svg" type="image/svg+xml">
 <link rel="icon" href="/icons/favicon-32.png" type="image/png" sizes="32x32">
 <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" sizes="180x180">
-<link rel="preload" as="image" href="terrain.webp?v=bc9eb32a" type="image/webp" fetchpriority="high">
+<link rel="preload" as="image" href="terrain.webp?v=6e3d2a47" type="image/webp" fetchpriority="high">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700;800&family=Unbounded:wght@500;700&family=Noto+Sans+Thaana:wght@700&display=swap">
@@ -961,7 +961,7 @@ vec2 hcen(vec2 a,float s){return vec2(s*1.7320508*(a.x+a.y*.5),s*1.5*a.y);}
 uniform vec4 uBox;uniform vec2 uTex;uniform float uS;uniform sampler2D uMap;uniform sampler2D uAtlas;uniform float uTexK;uniform float uHasAtlas;
 ${NOISE}
 float tileAt(vec2 a){vec2 t=(a+16.5)/32.;if(t.x<0.||t.y<0.||t.x>1.||t.y>1.)return -1.;float c=floor(texture2D(uMap,t).r*255.+.5);return c-1.;}
-vec3 flatCol(float t){return t<.5?vec3(.2,.38,.16):t<1.5?vec3(.72,.4,.24):t<2.5?vec3(.47,.62,.27):t<3.5?vec3(.86,.74,.4):t<4.5?vec3(.55,.55,.54):vec3(.94,.9,.8);}
+vec3 flatCol(float t){return t<.5?vec3(.18,.42,.2):t<1.5?vec3(.85,.5,.29):t<2.5?vec3(.53,.71,.31):t<3.5?vec3(.91,.76,.37):t<4.5?vec3(.42,.47,.53):vec3(.93,.88,.76);}
 vec3 tileTex(float tt,vec2 p,vec2 a){
  if(uHasAtlas<.5)return flatCol(tt)*(.9+.2*fbm(p*.2));
  float v=step(.5,h1(a*1.37+.5));vec2 off=h2(a+3.1);vec2 uv=fract(p*uTexK/512.+off);uv=clamp(uv,.002,.998);
@@ -1120,14 +1120,17 @@ const verb=(i,a,b)=>i===ME&&!AUTO?a:b;
 const cnt=h=>RES.reduce((s,r)=>s+(h[r]|0),0);
 
 /* ---------------------------------------------------------------- sound (soft WebAudio, shared mute key dd-sfx) */
-const SND=(()=>{let ctx=null,master=null,nb=null;const on=()=>ls.get('dd-sfx')!=='0';
+const SND=(()=>{let ctx=null,master=null,nb=null;const on=()=>{const v=ls.get('dd-sfx');return v!=='0'&&v!=='off';};
  function ac(){if(!on())return null;try{if(!ctx){const C=window.AudioContext||window.webkitAudioContext;if(!C)return null;ctx=new C();master=ctx.createGain();master.gain.value=.5;master.connect(ctx.destination);}if(ctx.state==='suspended')ctx.resume();}catch(e){return null;}return ctx;}
  function tone(f,dt,dur,o={}){const c=ac();if(!c)return;const t=c.currentTime+dt,os=c.createOscillator(),g=c.createGain();os.type=o.type||'sine';os.frequency.setValueAtTime(f,t);if(o.to)os.frequency.exponentialRampToValueAtTime(o.to,t+dur);
   g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(o.vol||.08,t+.012);g.gain.exponentialRampToValueAtTime(.0001,t+dur);os.connect(g);g.connect(master);os.start(t);os.stop(t+dur+.03);}
  function noise(dt,dur,o={}){const c=ac();if(!c)return;if(!nb){nb=c.createBuffer(1,c.sampleRate*.5|0,c.sampleRate);const d=nb.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;}
   const t=c.currentTime+dt,s=c.createBufferSource();s.buffer=nb;const fl=c.createBiquadFilter();fl.type=o.type||'bandpass';fl.frequency.setValueAtTime(o.f||2000,t);if(o.to)fl.frequency.exponentialRampToValueAtTime(o.to,t+dur);fl.Q.value=o.q||1;
   const g=c.createGain();g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(o.vol||.15,t+(o.att||.005));g.gain.exponentialRampToValueAtTime(.0001,t+dur);s.connect(fl);fl.connect(g);g.connect(master);s.start(t);s.stop(t+dur+.03);}
- return {get on(){return on();},set(v){ls.set('dd-sfx',v?'1':'0');if(v)ac();},unlock(){ac();},
+ /* inside a tap / key press: resume, and (iOS Safari) play a silent buffer to unlock the output */
+ function unlock(){if(document.hidden)return;const c=ac();if(!c||(c._primed&&c.state==='running'))return;c._primed=1;try{if(c.state!=='running'){const p=c.resume();p&&p.catch&&p.catch(()=>{});}}catch(e){}try{const b=c.createBuffer(1,1,22050),s=c.createBufferSource();s.buffer=b;s.connect(c.destination);s.start(0);}catch(e){}}
+ ['pointerdown','touchstart','touchend','click','keydown'].forEach(ev=>document.addEventListener(ev,unlock,{capture:true,passive:true}));
+ return {get on(){return on();},set(v){ls.set('dd-sfx',v?'1':'0');if(v)unlock();},unlock,
   dice(){for(let i=0;i<7;i++)noise(i*.07+Math.random()*.03,.045,{f:1500+Math.random()*2200,q:4,vol:.2});noise(.55,.07,{f:700,q:2,vol:.18});},
   build(){noise(0,.05,{f:1400,q:4,vol:.16});noise(.1,.05,{f:1150,q:4,vol:.16});tone(880,.16,.2,{type:'triangle',vol:.045});},
   capital(){[523,659,784,1046].forEach((f,i)=>tone(f,i*.08,.3,{type:'triangle',vol:.05}));},
@@ -1191,13 +1194,14 @@ function cardArt(k){const sky='<defs><linearGradient id="ca-s'+k+'" x1="0" y1="0
  return `<svg viewBox="0 0 160 110" preserveAspectRatio="xMidYMid slice" aria-hidden="true">${sky}${a}</svg>`;}
 
 /* ---------------------------------------------------------------- swatches (GL aerial textures, CSS fallback) */
-const SW={};const FBC={wood:'#3d7a33',brick:'#b3643c',sheep:'#8dbb4c',wheat:'#dfbe5c',ore:'#8d9298',sand:'#efe2c2',sea:'#1e7fa0'};
+/* flat colours for the plain-drawing fallback: the owner's tile picks (W3 B4 S3 H4 O3 D4), at the same brightness steps as the atlas */
+const SW={};const FBC={wood:'#2f6a33',brick:'#d9804a',sheep:'#86b64e',wheat:'#e8c35e',ore:'#6b7888',sand:'#ece0c2',sea:'#1e7fa0'};
 function initSwatches(){RES.concat(['sand']).forEach(r=>{SW[r]=`radial-gradient(circle at 35% 30%,rgba(255,255,255,.35),rgba(255,255,255,0) 60%),linear-gradient(${FBC[r]},${FBC[r]})`;});
  const img=new Image();img.decoding='async';
  img.fetchPriority='high';img.onload=()=>{const go=()=>{try{GLR.setAtlas(img);}catch(e){}try{const T=img.width/3,c=document.createElement('canvas');c.width=c.height=112;const x=c.getContext('2d');
-   ['wood','brick','sheep','wheat','ore','sand'].forEach((r,k)=>{const col=k%3,row=(k/3)|0;x.drawImage(img,col*T+T*.28,row*T+T*.28,T*.36,T*.36,0,0,112,112);SW[r]=`url(${c.toDataURL('image/jpeg',.84)})`;});}catch(e){}
+   ['wood','brick','sheep','wheat','ore','sand'].forEach((r,k)=>{const col=k%3,row=(k/3)|0;x.drawImage(img,col*T+T*.38,row*T+T*.38,T*.24,T*.24,0,0,112,112);SW[r]=`url(${c.toDataURL('image/jpeg',.84)})`;});}catch(e){}
   RES.forEach(r=>{const p=document.getElementById('sw-'+r);if(p&&/^url\(/.test(SW[r]))p.innerHTML=`<rect width="1" height="1" fill="${FBC[r]}"/><image href="${SW[r].slice(4,-1)}" width="1" height="1" preserveAspectRatio="xMidYMid slice"/>`;});if(G&&SCREEN==='game')renderAll();};if(img.decode)img.decode().then(go,go);else go();};
- img.onerror=()=>{GLR.atlasFail();};img.src='terrain.webp?v=bc9eb32a';}
+ img.onerror=()=>{GLR.atlasFail();};img.src='terrain.webp?v=6e3d2a47';}
 const swI=r=>`<i style="background-image:${SW[r]}"></i>`;
 function rr(o){return RES.filter(r=>o&&o[r]).map(r=>`<span class="rr">${swI(r)}<b>${o[r]}</b></span>`).join(' ')||'nothing';}
 function rrTxt(o){return RES.filter(r=>o&&o[r]).map(r=>o[r]+' '+RNAME[r]).join(', ');}
@@ -1262,7 +1266,7 @@ function drawStatic(){const H=G.map.hexes;let fb='',grid='',sea='';
  $('#L_fb').innerHTML=fb;
  $('#L_grid').innerHTML=(sea?`<g fill="none" stroke="#fff" stroke-opacity=".18" stroke-width=".8" stroke-dasharray="3 4">${sea}</g>`:'')+`<g fill="none" stroke="#1c2a14" stroke-opacity=".32" stroke-width=".9">${grid}</g><g fill="none" stroke="#fff" stroke-opacity=".34" stroke-width=".7" transform="translate(.55 .75)">${grid}</g>`;
  drawHarbours();drawTokens();}
-const BADGE={wood:'#1f4a36',brick:'#b0502c',sheep:'#6f9e2e',wheat:'#c0921e',ore:'#56647c'};
+const BADGE={wood:'#24562a',brick:'#c0643a',sheep:'#6f9e2e',wheat:'#c49a2c',ore:'#4f5a67'};
 const USES={wood:'Builds routes and villages',brick:'Builds routes and villages',sheep:'Builds villages and Raajje cards',wheat:'Builds villages, capitals and Raajje cards',ore:'Builds capitals and Raajje cards'};
 /* numbers only; a tile's resource icon appears when you tap it (tapBadge) */
 function drawTokens(){let g='';G.map.hexes.forEach((h,i)=>{if(!h.n||h.fog)return;const [x,y]=hxy(i);g+=`<g transform="translate(${f1(x)} ${f1(y)})"><g class="tok">${tokenSVG(h.n)}</g></g>`;});
@@ -1700,7 +1704,7 @@ function openRules(){const pic=(inner,vb)=>`<svg viewBox="${vb||'-42 -42 84 84'}
  const defs=`<defs>${RES.map(r=>`<pattern id="rp-${r}" patternContentUnits="objectBoundingBox" width="1" height="1"><rect width="1" height="1" fill="${FBC[r]}"/>${/^url\(/.test(SW[r])?`<image href="${SW[r].slice(4,-1)}" width="1" height="1" preserveAspectRatio="xMidYMid slice"/>`:''}</pattern>`).join('')}<radialGradient id="dome" cx=".35" cy=".3" r=".8"><stop offset="0" stop-color="#fff"/><stop offset="1" stop-color="#c9d3da"/></radialGradient></defs>`;
  const R=[
   ['Race to 10 points',`Villages are worth 1 point and atoll capitals 2. Awards and some Raajje cards add more. The first player to reach the target on their own turn wins (12 in Island Hopping for 3 or 4 players).`,pic(`${hex(0,4,30,'wheat')}<g transform="translate(-12 -6)">${housePath('#ff453a')}</g><g transform="translate(12 14)">${housePath('#0a84ff',true)}</g>`)],
-  ['Five resources',`<span class="keyl">${RES.map(r=>`<span><i style="background-image:${SW[r]}">${glyph(r)}</i><b>${RNAME[r]}</b> ${({wood:'dark palm forest',brick:'orange clay pits',sheep:'bright green meadow',wheat:'golden fields',ore:'blue-grey rocks'})[r]}</span>`).join('')}</span>The sandbank makes nothing. Tap any tile to see its icon and what it makes, or tap ? on the board.`,pic(`${hex(-17,-14,17,'wood')}${hex(17,-14,17,'brick')}${hex(0,15,17,'sheep')}${hex(-34,15,17,'wheat')}${hex(34,15,17,'ore')}`)],
+  ['Five resources',`<span class="keyl">${RES.map(r=>`<span><i style="background-image:${SW[r]}">${glyph(r)}</i><b>${RNAME[r]}</b> ${({wood:'dark green forest',brick:'orange brick walls',sheep:'green meadow with white sheep',wheat:'golden striped fields',ore:'grey mountain peaks'})[r]}</span>`).join('')}</span>The sandbank makes nothing. Tap any tile to see its icon and what it makes, or tap ? on the board.`,pic(`${hex(-17,-14,17,'wood')}${hex(17,-14,17,'brick')}${hex(0,15,17,'sheep')}${hex(-34,15,17,'wheat')}${hex(34,15,17,'ore')}`)],
   ['Roll and collect',`Each turn starts with a roll of two dice. Every tile with that number pays 1 card to each village on its corners, and 2 to each capital. Red 6 and 8 come up most; the dots show how often.`,pic(`${hex(0,0,32,'ore')}<g>${tokenSVG(8)}</g><g transform="translate(20 -22)">${housePath('#ffcc00')}</g>`)],
   ['Build',`Dhoni route: Wood + Brick. Village: Wood + Brick + Sheep + Wheat. Atoll capital (upgrade a village): 2 Wheat + 3 Ore. Raajje card: Sheep + Wheat + Ore. New villages must touch your routes and sit at least two corners from any other village.`,pic(`${hex(0,0,32,'sheep')}${routeSVG([-28,-16],[0,-32],'#ff453a')}${routeSVG([0,-32],[28,-16],'#ff453a')}<g transform="translate(28 -16)">${housePath('#ff453a')}</g><g transform="translate(-28 -16)">${housePath('#ff453a',true)}</g>`)],
   ['Trade',`After you roll you can offer cards to everyone. Players accept, decline or send a counter-offer. You can also trade 4 of one resource to the bank for 1 of any other. A village or capital on a harbour gives 3:1, or 2:1 for that harbour's resource.`,pic(`<g transform="scale(1.6)"><rect x="-17" y="-9" width="34" height="18" rx="9" fill="#fff"/><circle cx="-8.5" r="6.2" fill="url(#rp-sheep)"/><text x="5.5" y="3.5" text-anchor="middle" font-weight="800" font-size="9.5" fill="#0d1b24" font-family="Inter">2:1</text></g>`)],
