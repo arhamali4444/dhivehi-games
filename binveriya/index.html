@@ -991,7 +991,8 @@ const FIT=(()=>{const cx=document.createElement('canvas').getContext('2d');const
    ===================================================================== */
 const $=(s,r=document)=>r.querySelector(s),$$=(s,r=document)=>Array.from(r.querySelectorAll(s));
 const Q=new URLSearchParams(location.search);
-const FAST=Q.has('fast'),AUTO=Q.has('auto');
+const LOCAL=/^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname)||/\.(localhost|test)$/.test(location.hostname);
+const FAST=LOCAL&&Q.has('fast'),AUTO=LOCAL&&Q.has('auto');
 const RM=matchMedia('(prefers-reduced-motion: reduce)');
 const ls={get(k){try{return localStorage.getItem(k);}catch(e){return null;}},set(k,v){try{localStorage.setItem(k,v);}catch(e){}},del(k){try{localStorage.removeItem(k);}catch(e){}}};
 const esc=s=>String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
@@ -1516,7 +1517,7 @@ function startWith(g,me){G=g;ME=me;WATCH=false;ACTKEY='';aiSeq=-1;for(const k in
 
 /* ---------------------------------------------------------------- boot + test hooks */
 showHome();if(document.fonts&&document.fonts.ready)document.fonts.ready.then(homeFit);
-if(Q.has('autostart')){SETUP.n=+(Q.get('n')||4);newGame({n:SETUP.n,mode:Q.get('mode')||MODE,minutes:Q.has('min')?+Q.get('min'):undefined});}
+if(LOCAL&&Q.has('autostart')){SETUP.n=+(Q.get('n')||4);newGame({n:SETUP.n,mode:Q.get('mode')||MODE,minutes:Q.has('min')?+Q.get('min'):undefined});}
 window.BINVERIYA={E,AI,get G(){return G;},get ME(){return ME;},pump,newGame,LAYOUTS,
  sim(games=20,n=4,mode='classic',maxTurns=4000){const out=[];const save=[G,ME];for(let g=0;g<games;g++){AI.reset();const players=[...Array(n)].map((_,k)=>({name:'Bot'+k,human:false,av:null,tok:TOKEN_KEYS[k],col:PCOL[k]}));
    const gg=E.create({mode,players,minutes:mode==='quick'?30:0});let steps=0;
