@@ -1598,7 +1598,7 @@ let BV=null;const VIEW={pos:[],cash:[]};
 /* Statue pieces (enamel & gold): pre-rendered sprites in pieces/ with three layers per figure: statue (_b),
    a tint layer (_t: red = diffuse, green = gloss) that takes the player's colour, and a separate shadow (_s).
    Tinted composites are made once per figure + colour and cached; until they are ready the SVG icon shows. */
-const PK=(()=>{const BASE='pieces/',S=92,ALIAS={whaleshark:'conch'},img={},cache={};
+const PK=(()=>{const BASE='pieces/',S=(window.devicePixelRatio||1)>1.2?184:92,ALIAS={whaleshark:'conch'},img={},cache={};
  const s2l=v=>{v/=255;return v<=.04045?v/12.92:Math.pow((v+.055)/1.055,2.4)},l2s=v=>{v=Math.min(Math.max(v,0),1);return v<=.0031308?12.92*v:1.055*Math.pow(v,1/2.4)-.055};
  const aces=x=>Math.min(Math.max((x*(2.51*x+.03))/(x*(2.43*x+.59)+.14),0),1),lin=h=>[1,3,5].map(i=>s2l(parseInt(String(h).slice(i,i+2),16)||136));
  const load=k=>img[k]||(img[k]=new Promise(r=>{const im=new Image();im.onload=()=>r(im);im.onerror=()=>r(null);im.src=BASE+k+'.webp';}));
