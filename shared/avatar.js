@@ -1,7 +1,21 @@
 /* Dhivehi Games - shared cartoon character avatars (window.DGAvatar)
    Dependency-free, no modules. Include with <script src="/shared/avatar.js"></script>.
    Art: flat vector bust in a circle, same family as the Dhogu suspects (ink #231942, no outlines),
-   with soft gradients on skin / hair / clothes, catchlights and a light rim shade. */
+   with soft gradients on skin / hair / clothes, catchlights and a light rim shade.
+
+   QUICK API
+   DGAvatar.render(cfg, {size, expression, animate, ring, title, crop, bust, bg}) -> SVG string
+     animate:true  = idle life: random blink / double blink, breathing, glances, a rare small smile (off with reduced motion)
+     expression    = 'happy' | 'laugh' | 'wink' | 'shocked' | 'smug' | 'thinking' | 'sad' | 'angry' | 'sleepy' | 'blink'
+   DGAvatar.react(el, expression, ms = 1600)
+     Briefly switches an avatar already on the page to an expression with a springy pop, then returns to idle.
+     el = the <svg class="dga-av"> or any element containing one (e.g. a seat). Safe to call often:
+     a new call replaces the running reaction. Returns false if no avatar was found.
+     e.g.  DGAvatar.react(seatEl, 'shocked');  DGAvatar.react(meEl, 'laugh', 2000);
+   DGAvatar.random(seed?, {body:'f'|'m'}?)  DGAvatar.load(owned?)  DGAvatar.save(cfg)  DGAvatar.validate(cfg, owned)
+   DGAvatar.openBuilder(el, {cfg, owned, boli, onSave, onBuy, onBoli, onClose, theme, boliIcon, boliManaged, tab})
+     owned: Set | array | {id:true} map of bought item ids, or true = every item unlocked.
+   DGAvatar.looks = ready-made starter characters; DGAvatar.presets = the Dhogu suspects. */
 (function (root) {
   'use strict';
   var INK = '#231942';
@@ -19,6 +33,7 @@
   /* ---------------------------------------------------------------- catalog */
   // [id, name, value, price, rarity]  price 0 = free.  value: hex | [hexTop, hexBottom] | {p:pattern, base, css}
   var SPEC = {
+    body: [['f', 'Female'], ['m', 'Male']],
     skin: [['porcelain', 'Porcelain', '#FFE3CF'], ['light', 'Light', '#F8D0AF'], ['fair', 'Fair', '#EDBB8C'], ['golden', 'Golden', '#DCA36C'],
       ['tan', 'Tan', '#C68650'], ['brown', 'Brown', '#A2663B'], ['deep', 'Deep', '#7F4B2B'], ['ebony', 'Ebony', '#5B331E']],
     face: [['round', 'Round'], ['oval', 'Oval'], ['square', 'Square'], ['heart', 'Heart'], ['full', 'Full']],
@@ -36,7 +51,8 @@
       ['berry', 'Berry', '#8E2A4E', 100, 'rare'], ['plum', 'Plum', '#6A2A55', 100, 'rare'], ['goldgloss', 'Gold gloss', '#D9AA3A', 300, 'epic']],
     hair: [['short', 'Short crop'], ['buzz', 'Buzz cut'], ['fade', 'Fade'], ['undercut', 'Undercut'], ['sidepart', 'Side part'], ['messy', 'Messy'], ['tufts', 'Kid spiky'],
       ['spiky', 'Spiky'], ['curlytop', 'Curly top'], ['curly', 'Curly'], ['afro', 'Afro'], ['cornrows', 'Cornrows'], ['braids', 'Braids'], ['wavy', 'Wavy'],
-      ['long', 'Long straight'], ['bob', 'Bob'], ['ponytail', 'Ponytail'], ['bun', 'Bun'], ['manbun', 'Man bun'], ['mohawk', 'Mohawk', 0, 200, 'rare'],
+      ['long', 'Long straight'], ['fringelong', 'Long with fringe'], ['curtain', 'Curtain bangs'], ['sideswept', 'Side-swept bangs'], ['bob', 'Fringe bob'], ['sleekbob', 'Sleek bob'],
+      ['ponytail', 'Ponytail'], ['fringepony', 'Fringe ponytail'], ['bun', 'Bun'], ['highbun', 'High bun & fringe'], ['halfup', 'Half-up'], ['manbun', 'Man bun'], ['mohawk', 'Mohawk', 0, 200, 'rare'],
       ['bald', 'Bald'], ['headscarf', 'Headscarf'], ['hijab', 'Hijab']],
     hairColor: [['black', 'Black', '#1E1B24'], ['darkbrown', 'Dark brown', '#3A2519'], ['brown', 'Brown', '#6A4128'], ['auburn', 'Auburn', '#8C3A22'],
       ['ginger', 'Ginger', '#C8642E'], ['blonde', 'Blonde', '#E2B75E'], ['grey', 'Grey', '#A7A4AE'], ['white', 'Snow', '#ECE7DF'],
@@ -88,7 +104,7 @@
   // saved configs from v1 used bg:'night' - map it to the renamed item
   var ALIASES = { bg: { night: 'stars' } };
   var CATS = Object.keys(SPEC);
-  var CAT_NAMES = { skin: 'Skin tone', face: 'Face shape', nose: 'Nose', cheeks: 'Blush', marks: 'Freckles & marks', eyes: 'Eye shape', eyeColor: 'Eye colour', lashes: 'Eyelashes',
+  var CAT_NAMES = { body: 'Body', skin: 'Skin tone', face: 'Face shape', nose: 'Nose', cheeks: 'Blush', marks: 'Freckles & marks', eyes: 'Eye shape', eyeColor: 'Eye colour', lashes: 'Eyelashes',
     brows: 'Eyebrows', mouth: 'Mouth', lips: 'Lipstick', hair: 'Hair style', hairColor: 'Hair colour', facial: 'Facial hair', glasses: 'Glasses', glassesColor: 'Frame colour',
     lens: 'Lens colour', hat: 'Hat', hatColor: 'Hat colour', mask: 'Masks', outfit: 'Outfit', outfitColor: 'Outfit colour', scarfColor: 'Scarf colour', neck: 'Necklace', paint: 'Face paint',
     earrings: 'Earrings', bg: 'Background' };
@@ -100,27 +116,37 @@
       BYID[it.id] = it; catalog.push(it); return it;
     });
   });
-  var DEFAULTS = { v: 1, skin: 'golden', face: 'round', nose: 'button', cheeks: 'soft', marks: 'none', eyes: 'round', eyeColor: 'darkbrown', lashes: 'none', brows: 'soft',
+  var DEFAULTS = { v: 1, body: 'm', skin: 'golden', face: 'round', nose: 'button', cheeks: 'soft', marks: 'none', eyes: 'round', eyeColor: 'darkbrown', lashes: 'none', brows: 'soft',
     mouth: 'smile', lips: 'none', hair: 'short', hairColor: 'black', facial: 'none', glasses: 'none', glassesColor: 'black', lens: 'dark', hat: 'none', hatColor: 'red',
     outfit: 'tee', outfitColor: 'ocean', scarfColor: 'rose', neck: 'none', paint: 'none', earrings: 'none', bg: 'sky', mask: 'none' };
   var COVER = { headscarf: 1, hijab: 1 };
+  /* v3: every hat can be worn over a hijab / headscarf (it sits on top of the scarf); kept for older callers */
   var COVER_HATS = { none: 1, crown: 1, headphones: 1, flower: 1, halo: 1, horns: 1, bunny: 1 };
+  var HATS_OK_ON_SCARF = true;
   var HAT_TINTED = { cap: 1, capback: 1, beanie: 1, bucket: 1, fisher: 1, headband: 1, headphones: 1, cowboy: 1, party: 1, kulhi: 1, helmet: 1, tophat: 1 };
   var HAT_NOCOMPRESS = { headband: 1, headphones: 1, flower: 1, party: 1, halo: 1, horns: 1, bunny: 1 };
-  var BIG_HAIR = /^(afro|spiky|bun|mohawk|manbun|curlytop|tufts|messy)$/;
+  var BIG_HAIR = /^(afro|spiky|bun|highbun|mohawk|manbun|curlytop|tufts|messy)$/;
   var LENS_GLASSES = { sunglasses: 1, aviator: 1, sporty: 1, heart: 1 };
   function item(cat, key) { return BYID[cat + '.' + key] || null; }
   function val(cat, key) { var i = item(cat, key); return i ? i.value : item(cat, DEFAULTS[cat]).value; }
 
+  /* hair styles listed first for each body (every style stays allowed for both) */
+  var FEM_HAIR = ['long', 'fringelong', 'curtain', 'sideswept', 'wavy', 'bob', 'sleekbob', 'ponytail', 'fringepony', 'bun', 'highbun', 'halfup', 'braids', 'curly', 'afro', 'hijab', 'headscarf'];
+  var MALE_HAIR = ['short', 'fade', 'undercut', 'sidepart', 'buzz', 'messy', 'tufts', 'spiky', 'curlytop', 'curly', 'afro', 'cornrows', 'manbun', 'mohawk', 'bald'];
+  var FEM_HINT = /^(long|fringelong|curtain|sideswept|wavy|bob|sleekbob|ponytail|fringepony|bun|highbun|halfup|braids|headscarf|hijab)$/;
   function norm(cfg) {
     var c = {}, src = cfg && typeof cfg === 'object' ? cfg : {};
     CATS.forEach(function (cat) {
       var k = src[cat]; if (ALIASES[cat] && ALIASES[cat][k]) k = ALIASES[cat][k];
       c[cat] = item(cat, k) ? k : DEFAULTS[cat];
     });
+    /* v1/v2 configs have no body: guess it (beard -> male, feminine hair / lipstick / lashes -> female, else male) */
+    if (!item('body', src.body)) c.body = c.facial !== 'none' ? 'm' : (FEM_HINT.test(c.hair) || c.lips !== 'none' || c.lashes !== 'none') ? 'f' : 'm';
+    if (c.body === 'f') c.facial = 'none';
     c.v = 1; return c;
   }
   function ownedHas(owned, id) {
+    if (owned === true || owned === '*') return true;
     if (!owned) return false;
     if (typeof owned.has === 'function') return owned.has(id);
     if (Array.isArray(owned)) return owned.indexOf(id) >= 0;
@@ -130,14 +156,14 @@
   function validate(cfg, owned) {
     var c = norm(cfg);
     CATS.forEach(function (cat) { var it = item(cat, c[cat]); if (!it.free && !ownedHas(owned, it.id)) c[cat] = DEFAULTS[cat]; });
-    if (COVER[c.hair]) { if (!COVER_HATS[c.hat]) c.hat = 'none'; c.earrings = 'none'; if (c.hair === 'hijab') c.neck = 'none'; }
+    if (COVER[c.hair]) { if (!HATS_OK_ON_SCARF && !COVER_HATS[c.hat]) c.hat = 'none'; c.earrings = 'none'; if (c.hair === 'hijab') c.neck = 'none'; }
     if (c.mask === 'patchR' && c.glasses === 'monocle') c.glasses = 'none';
     return c;
   }
   /* Why an option is unavailable with the current config (for UI). Returns reason string or ''. */
   function conflict(cfg, cat, key) {
     var c = norm(cfg), what = c.hair === 'hijab' ? 'hijab' : 'headscarf';
-    if (cat === 'hat' && COVER[c.hair] && !COVER_HATS[key]) return 'Most hats are off with a ' + what + ' (crown, headphones and hibiscus still fit)';
+    if (cat === 'hat' && !HATS_OK_ON_SCARF && COVER[c.hair] && !COVER_HATS[key]) return 'Most hats are off with a ' + what + ' (crown, headphones and hibiscus still fit)';
     if (cat === 'earrings' && COVER[c.hair] && key !== 'none') return 'Earrings are hidden under a ' + what;
     if (cat === 'neck' && c.hair === 'hijab' && key !== 'none') return 'Necklaces are hidden under a hijab';
     if (cat === 'mask' && key === 'patchR' && c.glasses === 'monocle') return 'The monocle is on that eye. Take it off first';
@@ -165,8 +191,10 @@
   /* ---------------------------------------------------------------- seeded random */
   function hashStr(s) { var h = 1779033703 ^ s.length; for (var i = 0; i < s.length; i++) { h = Math.imul(h ^ s.charCodeAt(i), 3432918353); h = (h << 13) | (h >>> 19); } return function () { h = Math.imul(h ^ (h >>> 16), 2246822507); h = Math.imul(h ^ (h >>> 13), 3266489909); return (h ^= h >>> 16) >>> 0; }; }
   function mulberry(a) { return function () { a |= 0; a = (a + 0x6D2B79F5) | 0; var t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
-  function random(seed) {
+  /* random(seed?, {body:'f'|'m'}?) - deterministic for a seed, free items only */
+  function random(seed, ro) {
     var r = mulberry(hashStr(seed == null ? String(Math.random()) + Date.now() : String(seed))());
+    var body = ro && (ro.body === 'f' || ro.body === 'm') ? ro.body : (r() < 0.5 ? 'f' : 'm');
     function pick(cat, w) {
       var list = PARTS[cat].filter(function (i) { return i.free; }), tot = 0, ws = list.map(function (i) { var x = w && w[i.key] != null ? w[i.key] : 1; tot += x; return x; });
       var n = r() * tot; for (var k = 0; k < list.length; k++) { n -= ws[k]; if (n <= 0) return list[k].key; } return list[list.length - 1].key;
@@ -175,18 +203,23 @@
     c.skin = pick('skin'); c.face = pick('face'); c.eyes = pick('eyes'); c.eyeColor = pick('eyeColor', { darkbrown: 4, brown: 3, black: 2, hazel: 1.2 });
     c.brows = pick('brows', { angry: 0.4, raised: 0.5 }); c.mouth = pick('mouth', { smile: 3, grin: 2, pout: 0.4, tongue: 0.4 });
     c.nose = pick('nose'); c.cheeks = pick('cheeks', { soft: 4, none: 1, rosy: 1 });
-    c.hair = pick('hair', { bald: 0.5, headscarf: 0.5, hijab: 0.6, buzz: 0.8 });
+    var hw = {};
+    PARTS.hair.forEach(function (i) { hw[i.key] = body === 'f' ? (FEM_HAIR.indexOf(i.key) >= 0 ? 1 : 0.04) : (MALE_HAIR.indexOf(i.key) >= 0 ? 1 : 0.04); });
+    if (body === 'f') { hw.hijab = 0.8; hw.headscarf = 0.6; hw.afro = 0.6; hw.curly = 0.7; } else { hw.bald = 0.5; hw.buzz = 0.8; hw.afro = 0.6; hw.curly = 0.7; }
+    c.body = body;
+    c.hair = pick('hair', hw);
     c.hairColor = pick('hairColor', { black: 5, darkbrown: 3.5, brown: 2, auburn: 0.7, ginger: 0.5, blonde: 0.7, grey: 0.6, white: 0.3 });
-    var cover = !!COVER[c.hair], fem = /^(long|ponytail|bun|wavy|bob|braids|headscarf|hijab)$/.test(c.hair);
+    var cover = !!COVER[c.hair], fem = body === 'f';
     c.marks = r() < 0.2 ? pick('marks', { none: 0 }) : 'none';
-    c.lashes = fem && r() < 0.6 ? pick('lashes', { none: 0 }) : 'none';
-    c.lips = fem && r() < 0.35 ? pick('lips', { none: 0 }) : 'none';
-    c.facial = cover || (fem && r() < 0.85) || r() < 0.6 ? 'none' : pick('facial', { none: 0 });
+    c.lashes = fem ? (r() < 0.75 ? pick('lashes', { none: 0 }) : 'subtle') : 'none';
+    c.lips = fem && r() < 0.4 ? pick('lips', { none: 0 }) : 'none';
+    c.facial = fem || r() < 0.6 ? 'none' : pick('facial', { none: 0 });
+    if (fem) { c.brows = pick('brows', { bushy: 0, thick: 0.3, angry: 0.1, straight: 0.5 }); c.nose = pick('nose', { wide: 0.3, pointy: 0.5 }); }
     c.glasses = r() < 0.26 ? pick('glasses', { none: 0 }) : 'none';
     c.glassesColor = pick('glassesColor'); c.lens = pick('lens');
     c.hat = !cover && r() < 0.28 ? pick('hat', { none: 0, police: 0.4, deerstalker: 0.5 }) : 'none';
     c.hatColor = pick('hatColor');
-    c.outfit = pick('outfit', { police: 0.35, libaas: fem ? 2 : 0.4, school: 0.6 });
+    c.outfit = pick('outfit', { police: 0.35, libaas: fem ? 2.5 : 0.2, school: 0.6, feyli: fem ? 0.3 : 1, fishshirt: fem ? 0.3 : 1 });
     c.outfitColor = pick('outfitColor'); c.scarfColor = pick('scarfColor');
     c.neck = c.hair !== 'hijab' && r() < 0.18 ? pick('neck', { none: 0 }) : 'none';
     c.paint = r() < 0.06 ? pick('paint', { none: 0 }) : 'none';
@@ -203,6 +236,13 @@
     square: { d: 'M50 24C64 24 72.2 31.5 72.2 44V54.5C72.2 63.5 64.5 70 55.5 70.5H44.5C35.5 70 27.8 63.5 27.8 54.5V44C27.8 31.5 36 24 50 24Z', l: 27.8 },
     heart: { d: 'M50 24C64 24 73 32.5 72.6 45.5 72.2 56 61.5 67.5 50 71.2 38.5 67.5 27.8 56 27.4 45.5 27 32.5 36 24 50 24Z', l: 27.4 },
     full: { d: 'M50 25C65 25 73.4 33.5 73.4 47 73.4 62 63 70.2 50 70.2S26.6 62 26.6 47C26.6 33.5 35 25 50 25Z', l: 26.6 }
+  };
+  /* softer jaw / chin for the female body */
+  var FACES_F = {
+    round: { d: 'M50 24C62.7 24 72 34 72 46.4 72 58.4 61.4 70.2 50 70.2S28 58.4 28 46.4C28 34 37.3 24 50 24Z', l: 28 },
+    oval: { d: 'M50 23.5C62.5 23.5 71 32.5 71 45 71 58.6 61 70.6 50 70.6S29 58.6 29 45C29 32.5 37.5 23.5 50 23.5Z', l: 29 },
+    square: { d: 'M50 24C63.6 24 72 31.6 72 44V52.6C72 61.6 62.6 70.2 50 70.4 37.4 70.2 28 61.6 28 52.6V44C28 31.6 36.4 24 50 24Z', l: 28 },
+    full: { d: 'M50 25C65 25 73.2 33.5 73.2 46.6 73.2 60.6 62 70.2 50 70.2S26.8 60.6 26.8 46.6C26.8 33.5 35 25 50 25Z', l: 26.8 }
   };
   var MIR = 'transform="matrix(-1 0 0 1 100 0)"';
   function both(s) { return s + '<g ' + MIR + '>' + s + '</g>'; }
@@ -234,6 +274,11 @@
     return P('M27.2 47C25.5 29 37 20 50 20S74.5 29 72.8 47C71 39 66 32.4 58 30.4 53 29.4 47 29.4 42 30.4 34 32.4 29 39 27.2 47Z', k.hg) + S('M36.5 25Q43 22.2 50 22.2', '#fff', 2, HL) +
       S('M50 20.6Q48 25.6 42.6 30.2M50 20.6Q56 25 61.4 30.6M45 21.4Q40 25 35.4 31', k.hcB, 0.8, ' opacity=".55"');
   }
+  function fringe(k) {
+    return P('M27.2 50C25.6 30 37 20 50 20S74.4 30 72.8 50C72 45 71.4 42 70.6 39.6Q67 41.2 63.4 39.8 60 41.4 56.6 40 53 41.6 50 40.2 47 41.6 43.4 40 40 41.4 36.6 39.8 33 41.2 29.4 39.6C28.6 42 28 45 27.2 50Z', k.hg) +
+      S('M36.6 31V38.6M43.4 29.4V38.8M50 28.6V39M56.6 29.4V38.8M63.4 31V38.6', k.hcB, 0.7, ' opacity=".4"') + S('M37 24.4Q44 21.6 52 22', '#fff', 2, HL);
+  }
+  var LOCKS = both(P('M27.4 47C26.6 56 27 62 28.4 67.4 30 68.4 32 68.2 33.4 67.4 32 62 31.4 56 31.6 48Z', 'url(#§hg)'));
   function shaved(k, op) { return P(BUZZ, k.hc, ' opacity="' + (op || 0.42) + '"'); }
   var HAIR = {
     bald: { front: function () { return '<ellipse cx="41" cy="31" rx="6.5" ry="3.2" fill="#fff" opacity=".22" transform="rotate(-24 41 31)"/>'; } },
@@ -319,6 +364,41 @@
       back: function (k) { return P('M25 48C23 28 35 18 50 18S77 28 75 48L75.6 64.4Q75.6 67.6 72.4 67.6H63C62 66 61.8 64 62 62H38C38.2 64 38 66 37 67.6H27.6Q24.4 67.6 24.4 64.4Z', k.hcB); },
       front: function (k) { return P('M27.2 52C25.6 30 37 20 50 20S74.4 30 72.8 52C72 46 71.4 42 70.4 38.8H29.6C28.6 42 28 46 27.2 52Z', k.hg) + both(P('M27.4 47C26.6 56 27 62 28.4 67.4H33.6C32.2 62 31.6 56 31.8 48Z', k.hg)) + S('M40 30V38.2M50 28.4V38.4M60 30V38.2M45 29V38.4M55 29V38.4', k.hcB, 0.7, ' opacity=".45"') + S('M37 24.4Q44 21.6 52 22', '#fff', 2, HL); }
     },
+    fringelong: {
+      back: function (k) { return HAIR.long.back(k); }, mid: function (k) { return HAIR.long.mid(k); },
+      front: function (k) { return fringe(k) + LOCKS; }
+    },
+    curtain: {
+      back: function (k) { return HAIR.long.back(k); }, mid: function (k) { return HAIR.long.mid(k); },
+      front: function (k) {
+        return P('M50 21C39 21 29.5 28 27.8 45 27.4 50 27.6 55 28.4 60 29.6 52 31.6 45.6 35.2 41.6 39.4 37.6 45.4 35.4 50 28.6 54.6 35.4 60.6 37.6 64.8 41.6 68.4 45.6 70.4 52 71.6 60 72.4 55 72.6 50 72.2 45 70.5 28 61 21 50 21Z', k.hg) +
+          S('M50 22.4V28M46 30Q40 33 34 40M54 30Q60 33 66 40', k.hcB, 0.8, ' opacity=".5"') + S('M38.5 26.5Q43.5 23.4 48 23', '#fff', 2, HL);
+      }
+    },
+    sideswept: {
+      back: function (k) { return HAIR.long.back(k); }, mid: function (k) { return HAIR.long.mid(k); },
+      front: function (k) {
+        return P('M27 50C25.4 30 37 19.6 50 19.6S74.6 30 73 50C72.4 44.6 71.6 40.6 70.2 37.4 64.6 34.6 57 34.2 50 35.4 42 36.8 35.4 40.4 31.2 45.6 29.4 47.4 28 48.8 27 50Z', k.hg) + LOCKS +
+          S('M66 30Q56 31 46 35.6M62 26Q52 28 40 34', k.hcB, 0.8, ' opacity=".5"') + S('M40 24Q48 21 58 22.4', '#fff', 2, HL);
+      }
+    },
+    sleekbob: {
+      back: function (k) { return HAIR.bob.back(k); },
+      front: function (k) { return P('M27 50C25 29 36.6 19 51 19S75.4 28 73.2 50C72 44 70.4 39.6 67 36 60 34.6 52 32.4 45.6 27.6 42 33 35.6 37.4 31 40 29 43 27.6 46.6 27 50Z', k.hg) + LOCKS + S('M45.6 27.6Q47 23.4 50.6 20.4', k.hcB, 1) + S('M53 23.4Q62 23 68 29', '#fff', 2, HL); }
+    },
+    fringepony: {
+      back: function (k) { return HAIR.ponytail.back(k); },
+      front: fringe
+    },
+    highbun: {
+      front: function (k) { return circ(50, 12.6, 9.6, k.hg) + S('M42.6 14Q50 7 57.4 14M44.6 17Q50 12 55.4 17', k.hcB, 1.1, ' opacity=".7"') + S('M45.4 7.8Q50 5.6 54.6 7.4', '#fff', 1.6, HL) + fringe(k) + S('M42.6 21Q50 18.6 57.4 21', '#F07BA8', 2.4); },
+      hatFront: fringe
+    },
+    halfup: {
+      back: function (k) { return HAIR.long.back(k) + circ(50, 16.4, 5.8, k.hcB); }, mid: function (k) { return HAIR.long.mid(k); },
+      hatBack: function (k) { return HAIR.long.back(k); },
+      front: function (k) { return sleekFront(k) + LOCKS + S('M44.6 20.6Q50 18.6 55.4 20.6', '#F07BA8', 2.2); }
+    },
     ponytail: {
       back: function (k) { return P('M65 27C79 24.5 85.5 40 82.5 56 80.5 66 76.5 76 70.5 84 71.6 74 72 64 70.8 54 70 46 68.6 37 63.6 31Z', k.hcB) + S('M75 40Q78.6 50 76.4 62', k.hc, 1.2, ' opacity=".5"') + S('M63.6 28.4Q67.4 25.4 70.6 28.8', '#E5484D', 3.2); },
       front: sleekFront
@@ -367,7 +447,7 @@
     capback: function (c, k) {
       return P('M35.5 13.5C39 7 61 7 64.5 13.5 60.5 15.2 39.5 15.2 35.5 13.5Z', shade(c, 0.22)) +
         P('M25.5 35C25 19 36 11.5 50 11.5S75 19 74.5 35Z', c) + P('M50 11.5C64 11.5 75 19 74.5 35H65.5C65.5 22 60 14 50 11.5Z', '#000', ' opacity=".12"') + S('M31 26Q36 16 46 13.4', '#fff', 1.8, ' opacity=".22"') +
-        P('M43 35.2C43 29.6 46 27.2 50 27.2S57 29.6 57 35.2Z', k.bald ? k.sk : k.hc) + S('M42 31.8H58', shade(c, 0.3), 1.6) + S('M25.8 35H74.2', shade(c, 0.2), 2.2);
+        P('M43 35.2C43 29.6 46 27.2 50 27.2S57 29.6 57 35.2Z', k.cover ? k.sc : k.bald ? k.sk : k.hc) + S('M42 31.8H58', shade(c, 0.3), 1.6) + S('M25.8 35H74.2', shade(c, 0.2), 2.2);
     },
     beanie: function (c) {
       var ribs = ''; for (var x = 27; x <= 73; x += 3.3) ribs += 'M' + x.toFixed(1) + ' 31.6V39';
@@ -668,27 +748,31 @@
     return S(s, INK, w);
   }
   function eye(style, x, y, ec, k, e, side, lashes) {
-    if (e === 'happy') return S('M' + (x - 4) + ' ' + (y + 1.4) + 'Q' + x + ' ' + (y - 3.8) + ' ' + (x + 4) + ' ' + (y + 1.4), INK, 2.3);
+    var closedUp = function (w2) { return S('M' + (x - 4) + ' ' + (y + 1.4) + 'Q' + x + ' ' + (y - 3.8) + ' ' + (x + 4) + ' ' + (y + 1.4), INK, w2); };
+    if (e === 'happy') return closedUp(2.3) + lashFlicks(lashes === 'none' ? '' : 'subtle', x, y + 0.6, side, 'round');
+    if (e === 'laugh') return closedUp(2.6);
+    if (e === 'wink' && side === 1) return S('M' + (x - 4.2) + ' ' + (y + 0.8) + 'Q' + x + ' ' + (y - 2.6) + ' ' + (x + 4.2) + ' ' + (y + 0.8), INK, 2.4);
     if (e === 'blink') return S('M' + (x - 4.2) + ' ' + y + 'Q' + x + ' ' + (y + 3) + ' ' + (x + 4.2) + ' ' + y, INK, 2.1);
-    var st = e === 'shocked' ? 'shock' : style, dy = e === 'sad' ? 0.9 : 0, s = '';
-    var ecD = mix(ec, INK, 0.35);
+    var st = e === 'shocked' ? 'shock' : style, s = '';
+    var dy = e === 'sad' ? 0.9 : e === 'thinking' ? -1.3 : e === 'sleepy' ? 0.8 : 0, dx = e === 'thinking' ? 1 : 0;
+    var X = x + dx, ecD = mix(ec, INK, 0.35);
     var iris = function (r, pr, hr) {
-      return circ(x, y + 0.3 + dy, r, ec) + P('M' + (x - r) + ' ' + (y + 0.3 + dy) + 'a' + r + ' ' + r + ' 0 0 1 ' + 2 * r + ' 0z', ecD, ' opacity=".55"') +
-        circ(x, y + 0.3 + dy, pr, INK) + circ(x + r * 0.36, y - r * 0.4 + dy, hr, '#fff') + circ(x - r * 0.4, y + r * 0.45 + dy, hr * 0.45, '#fff', ' opacity=".85"');
+      return '<g class="dga-iris">' + circ(X, y + 0.3 + dy, r, ec) + P('M' + (X - r) + ' ' + (y + 0.3 + dy) + 'a' + r + ' ' + r + ' 0 0 1 ' + 2 * r + ' 0z', ecD, ' opacity=".55"') +
+        circ(X, y + 0.3 + dy, pr, INK) + circ(X + r * 0.36, y - r * 0.4 + dy, hr, '#fff') + circ(X - r * 0.4, y + r * 0.45 + dy, hr * 0.45, '#fff', ' opacity=".85"') + '</g>';
     };
     switch (st) {
-      case 'dot': s = '<ellipse cx="' + x + '" cy="' + (y + dy * 0.5) + '" rx="2.8" ry="3.5" fill="' + mix(ec, INK, 0.62) + '"/>' + circ(x + 1, y - 1.3 + dy * 0.5, 1, '#fff') + circ(x - 0.9, y + 1.2 + dy * 0.5, 0.45, '#fff', ' opacity=".8"'); break;
+      case 'dot': s = '<g class="dga-iris"><ellipse cx="' + X + '" cy="' + (y + dy * 0.5) + '" rx="2.8" ry="3.5" fill="' + mix(ec, INK, 0.62) + '"/>' + circ(X + 1, y - 1.3 + dy * 0.5, 1, '#fff') + circ(X - 0.9, y + 1.2 + dy * 0.5, 0.45, '#fff', ' opacity=".8"') + '</g>'; break;
       case 'almond': case 'lashes':
         s = P('M' + (x - 5) + ' ' + y + 'Q' + x + ' ' + (y - 5.2) + ' ' + (x + 5) + ' ' + y + 'Q' + x + ' ' + (y + 4) + ' ' + (x - 5) + ' ' + y + 'Z', '#fff') + iris(2.6, 1.3, 0.85) +
           S('M' + (x - 5.4) + ' ' + (y + 0.2) + 'Q' + x + ' ' + (y - 5.4) + ' ' + (x + 5.4) + ' ' + (y - 0.3), INK, 1.7);
         if (st === 'lashes') { var ox = x + side * 5.2; s += S('M' + ox + ' ' + (y - 0.6) + 'l' + side * 1.9 + ' -1.5M' + (ox - side * 0.9) + ' ' + (y - 1.9) + 'l' + side * 1.5 + ' -1.9', INK, 1.1); }
         break;
       case 'wide':
-        s = '<ellipse cx="' + x + '" cy="' + y + '" rx="4.8" ry="5.3" fill="#fff"/>' + circ(x, y + 0.5 + dy, 3.5, ec) + P('M' + (x - 3.5) + ' ' + (y + 0.5 + dy) + 'a3.5 3.5 0 0 1 7 0z', ecD, ' opacity=".55"') + circ(x, y + 0.5 + dy, 1.8, INK) + circ(x + 1.3, y - 1.3 + dy, 1.4, '#fff') + circ(x - 1.3, y + 2 + dy, 0.7, '#fff') +
+        s = '<ellipse cx="' + x + '" cy="' + y + '" rx="4.8" ry="5.3" fill="#fff"/><g class="dga-iris">' + circ(X, y + 0.5 + dy, 3.5, ec) + P('M' + (X - 3.5) + ' ' + (y + 0.5 + dy) + 'a3.5 3.5 0 0 1 7 0z', ecD, ' opacity=".55"') + circ(X, y + 0.5 + dy, 1.8, INK) + circ(X + 1.3, y - 1.3 + dy, 1.4, '#fff') + circ(X - 1.3, y + 2 + dy, 0.7, '#fff') + '</g>' +
           S('M' + (x - 4.9) + ' ' + (y - 0.6) + 'Q' + x + ' ' + (y - 6.6) + ' ' + (x + 4.9) + ' ' + (y - 0.6), INK, 1.5);
         break;
       case 'starry':
-        s = '<ellipse cx="' + x + '" cy="' + y + '" rx="4.6" ry="5" fill="#fff"/>' + circ(x, y + 0.4 + dy, 3.3, ec) + circ(x, y + 0.4 + dy, 1.6, INK) + star(x + 1.2, y - 1 + dy, 1.7, '#fff') + circ(x - 1.4, y + 1.8 + dy, 0.6, '#fff') +
+        s = '<ellipse cx="' + x + '" cy="' + y + '" rx="4.6" ry="5" fill="#fff"/><g class="dga-iris">' + circ(X, y + 0.4 + dy, 3.3, ec) + circ(X, y + 0.4 + dy, 1.6, INK) + star(X + 1.2, y - 1 + dy, 1.7, '#fff') + circ(X - 1.4, y + 1.8 + dy, 0.6, '#fff') + '</g>' +
           S('M' + (x - 4.7) + ' ' + (y - 0.5) + 'Q' + x + ' ' + (y - 6.4) + ' ' + (x + 4.7) + ' ' + (y - 0.5), INK, 1.5);
         break;
       case 'shock':
@@ -699,8 +783,8 @@
           S('M' + (x - 4.4) + ' ' + (y - 0.4) + 'Q' + x + ' ' + (y - 6.4) + ' ' + (x + 4.4) + ' ' + (y - 0.4), INK, 1.4);
     }
     var w = EW[st] + 1.4;
-    if (st === 'sleepy' || e === 'smug') {
-      var cy = st === 'sleepy' && e !== 'smug' ? y - 0.8 : y - 0.2;
+    if (st === 'sleepy' || e === 'smug' || e === 'sleepy') {
+      var cy = e === 'sleepy' ? y + 0.9 : st === 'sleepy' && e !== 'smug' ? y - 0.8 : y - 0.2;
       s += P('M' + (x - w) + ' ' + (y - 7.6) + 'H' + (x + w) + 'V' + cy + 'Q' + x + ' ' + (cy + 1.2) + ' ' + (x - w) + ' ' + cy + 'Z', k.sk) +
         S('M' + (x - w + 1.2) + ' ' + cy + 'Q' + x + ' ' + (cy + 1.2) + ' ' + (x + w - 1.2) + ' ' + cy, INK, 1.6);
     } else if (e === 'angry') {
@@ -722,7 +806,10 @@
     else if (e === 'angry') { d1 = d2 = 1.3; a1 = a2 = 17; }
     else if (e === 'sad') { d1 = d2 = -0.8; a1 = a2 = -15; }
     else if (e === 'smug') { d1 = 0.6; a1 = 7; d2 = -2.6; a2 = -9; }
-    else if (e === 'happy') { d1 = d2 = -1.4; }
+    else if (e === 'happy' || e === 'laugh') { d1 = d2 = e === 'laugh' ? -2 : -1.4; }
+    else if (e === 'thinking') { d1 = 0.4; a1 = 4; d2 = -2.4; a2 = -8; }
+    else if (e === 'wink') { d1 = -1; d2 = 0.9; a2 = 6; }
+    else if (e === 'sleepy') { d1 = d2 = 0.7; a1 = a2 = -4; }
     var s = '<g transform="translate(41 ' + (BY + d1) + ') rotate(' + a1 + ')">' + p + '</g><g transform="translate(59 ' + (BY + d2) + ') scale(-1 1) rotate(' + a2 + ')">' + p + '</g>';
     if (style === 'unibrow') s += S('M45.6 ' + (42 + d1) + 'Q50 ' + (43.2 + (d1 + d2) / 2) + ' 54.4 ' + (42 + d2), col, 2.2);
     return s;
@@ -735,6 +822,10 @@
     if (e === 'happy') return fl('M42.6 61Q50 62.6 57.4 61 56.8 70 50 70 43.2 70 42.6 61Z', MOUTH_DARK) + P('M43.8 61.7Q50 63 56.2 61.7L55.8 63.9Q50 64.9 44.2 63.9Z', '#fff') + P('M45.8 68.4Q50 65.2 54.2 68.4 50 70.2 45.8 68.4Z', TONGUE);
     if (e === 'sad') return ln('M45 65.8Q50 61.4 55 65.8', 2.2);
     if (e === 'angry') return P('M44.2 65.6Q50 61.8 55.8 65.6 50 64.2 44.2 65.6Z', MOUTH_DARK, ' stroke="' + (lip || INK) + '" stroke-width="1.8" stroke-linejoin="round"');
+    if (e === 'laugh') return fl('M41.6 60.4Q50 62.4 58.4 60.4 57.6 71.6 50 71.6 42.4 71.6 41.6 60.4Z', MOUTH_DARK) + P('M43 61.2Q50 62.8 57 61.2L56.6 63.4Q50 64.6 43.4 63.4Z', '#fff') + P('M45.4 69.6Q50 65.6 54.6 69.6 50 71.8 45.4 69.6Z', TONGUE);
+    if (e === 'thinking') return ln('M46.2 64.4Q49.6 63.6 53.6 62', 2.2);
+    if (e === 'sleepy') return '<ellipse cx="50.4" cy="64" rx="1.7" ry="2.1" fill="' + MOUTH_DARK + '"' + (lip ? ' stroke="' + lip + '" stroke-width="1.2"' : '') + '/>';
+    if (e === 'wink') m = m === 'grin' || m === 'open' ? 'grin' : 'smirk';
     if (e === 'smug') m = 'smirk';
     switch (m) {
       case 'grin': case 'gap':
@@ -853,22 +944,24 @@
     var h0 = Array.isArray(hv) ? hv[0] : hv, h1 = Array.isArray(hv) ? hv[1] : hv, hc = Array.isArray(hv) ? mix(h0, h1, 0.35) : hv;
     var cover = !!COVER[c.hair];
     var k = { sk: sk, skS: mix(sk, '#7a3320', 0.2), skD: mix(sk, '#5a2414', 0.34), hc: hc, hcB: shade(hc, 0.2), hg: 'url(#§hg)', sc: sc, scS: shade(sc, 0.2), scL: tint(sc, 0.5), sg: 'url(#§sg)',
-      og: 'url(#§og)', ogR: 'url(#§or)', fh: h0, fhD: shade(h0, 0.35), cover: cover, bald: c.hair === 'bald', bigTop: /^(afro|mohawk|bun|spiky)$/.test(c.hair) };
-    var F = FACES[c.face], ex = F.l + 0.4;
-    var hatId = cover && !COVER_HATS[c.hat] ? 'none' : c.hat;
+      og: 'url(#§og)', ogR: 'url(#§or)', fh: h0, fhD: shade(h0, 0.35), cover: cover, bald: c.hair === 'bald', bigTop: /^(afro|mohawk|bun|highbun|spiky)$/.test(c.hair) };
+    var fem = c.body === 'f', F = (fem && FACES_F[c.face]) || FACES[c.face], ex = F.l + 0.4;
+    var hatId = cover && !HATS_OK_ON_SCARF && !COVER_HATS[c.hat] ? 'none' : c.hat;
     var H = HAIR[c.hair];
     var compress = hatId !== 'none' && !HAT_NOCOMPRESS[hatId] && (hatId !== 'crown' || BIG_HAIR.test(c.hair));
     var hb = compress && H.hatBack ? H.hatBack : H.back, hf = compress && H.hatFront ? H.hatFront : H.front;
     var O = OUTFITS[c.outfit](oc, k);
     var fx = facial(c.facial, k);
-    var lipIt = item('lips', c.lips), lip = lipIt && lipIt.value ? lipIt.value : null;
+    var lipIt = item('lips', c.lips), lip = lipIt && lipIt.value ? lipIt.value : (c.body === 'f' ? mix(sk, '#D0566A', 0.45) : null);
     var size = o.size || 96, vb = crop || '0 0 100 100';
     var title = o.title ? esc(o.title) : '';
     var lensV = val('lens', c.lens);
     var cheeks = c.cheeks, blushOp = cheeks === 'none' ? 0 : cheeks === 'rosy' ? 0.8 : 0.45;
-    if (e === 'angry') blushOp = 0.9; else if ((e === 'happy' || e === 'shocked') && blushOp) blushOp = Math.min(1, blushOp + 0.15);
+    if (e === 'angry') blushOp = 0.9; else if (/^(happy|shocked|laugh|wink)$/.test(e || '')) blushOp = Math.min(1, (blushOp || 0.3) + 0.2);
     var blushC = e === 'angry' ? '#FF4D5E' : '#FF6F84';
+    var ro = {}; ['size', 'crop', 'bust', 'bg', 'ring', 'title', 'animate', 'className', 'expression'].forEach(function (n) { if (o[n] != null && o[n] !== '') ro[n] = o[n]; });
     var s = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="' + vb + '" width="' + size + '" height="' + size + '" class="dga-av' + (o.animate ? ' dga-anim' : '') + (o.className ? ' ' + esc(o.className) : '') + '"' +
+      ' data-dga="' + CATS.map(function (x) { return c[x]; }).join(',') + '" data-dgo="' + esc(JSON.stringify(ro)) + '"' + (o.animate ? ' style="¤"' : '') +
       (title ? ' role="img" aria-label="' + title + '"><title>' + title + '</title>' : ' aria-hidden="true" focusable="false">');
     s += '<defs><clipPath id="§h"><path d="' + F.d + '"/></clipPath>' + (crop ? '' : '<clipPath id="§c"><circle cx="50" cy="50" r="50"/></clipPath>') +
       '<radialGradient id="§s" cx=".4" cy=".3" r=".78"><stop offset="0" stop-color="' + tint(sk, 0.12) + '"/><stop offset=".55" stop-color="' + sk + '"/><stop offset="1" stop-color="' + mix(sk, k.skS, 0.7) + '"/></radialGradient>' +
@@ -877,11 +970,12 @@
       (Array.isArray(lensV) ? lin('§ln', lensV[0], lensV[1], 0.3, 1) : '') + '</defs>';
     s += crop ? '<g>' : '<g clip-path="url(#§c)">';
     if (o.bg !== false && !(o.bust === false && !o.crop)) s += bgSVG(c.bg, !!crop);
-    s += '<g transform="translate(3 1.7) scale(.94)">';
+    s += '<g class="dga-fig"><g transform="translate(3 1.7) scale(.94)">';
     if (hb) s += hb(k);
-    if (O.back) s += O.back;
+    var BW = fem ? '<g transform="translate(4 0) scale(.92 1)">' : '<g>';
+    if (O.back) s += BW + O.back + '</g>';
     if (c.hair !== 'hijab') s += P('M42.5 60V78.5Q50 83 57.5 78.5V60Z', sk) + P('M42.5 62Q50 74 57.5 62V70.5Q50 78.5 42.5 70.5Z', k.skS);
-    s += O.front;
+    s += BW + O.front + '</g>';
     if (c.neck !== 'none' && c.hair !== 'hijab' && NECK[c.neck]) s += NECK[c.neck]();
     if (H.mid) s += H.mid(k);
     if (!cover) s += circ(ex, 50, 5, sk) + S('M' + (ex + 0.5) + ' 47.4Q' + (ex - 1.9) + ' 49.6 ' + (ex + 0.3) + ' 52.6', k.skD, 1.4, ' opacity=".6"') +
@@ -894,10 +988,10 @@
     var MK = c.mask !== 'none' && MASKS[c.mask] ? MASKS[c.mask](k, ex) : {};
     if (MK.under) s += MK.under;
     s += nose(c.nose, k);
-    s += fx.under + mouth(c.mouth, e, lip) + fx.over;
+    s += fx.under + '<g class="dga-mouth">' + mouth(c.mouth, e, lip) + '</g>' + fx.over;
     if (MK.mid) s += MK.mid;
-    var ec = val('eyeColor', c.eyeColor);
-    s += '<g class="dga-eyes"' + (o.animate ? ' style="animation-delay:¤"' : '') + '>' + eye(c.eyes, 41, 49, ec, k, e, -1, c.lashes) + eye(c.eyes, 59, 49, ec, k, e, 1, c.lashes) + '</g>';
+    var ec = val('eyeColor', c.eyeColor), closed = /^(happy|laugh|blink)$/.test(e || '');
+    s += '<g class="dga-eyes' + (closed ? ' dga-closed' : '') + '">' + eye(c.eyes, 41, 49, ec, k, e, -1, c.lashes) + eye(c.eyes, 59, 49, ec, k, e, 1, c.lashes) + '</g>';
     s += brows(c.brows, c.hair === 'bald' || c.hair === 'buzz' ? mix(h0, INK, 0.3) : mix(h0, INK, 0.4), e);
     if (MK.eye) s += MK.eye;
     s += glasses(c.glasses, val('glassesColor', c.glassesColor), ex, c.lens);
@@ -908,14 +1002,37 @@
     else if (e === 'sad') s += P('M61 54.6c1.2 1.8 1.8 2.8 1.8 3.6a1.8 1.8 0 0 1-3.6 0c0-.8.6-1.8 1.8-3.6z', '#8FD8FF');
     else if (e === 'angry') s += S('M73.4 25.4l2.2 2.2M79.6 25.4l-2.2 2.2M73.4 31.6l2.2-2.2M79.6 31.6l-2.2-2.2', '#E5484D', 1.8);
     else if (e === 'happy') s += spark(76, 28.6, 3.2, '#fff', 0.9) + spark(22, 37.8, 2.2, '#fff', 0.8);
-    s += '</g></g>';
+    else if (e === 'laugh') s += both(P('M33.6 51.4c1.3 1.9 1.9 3 1.9 3.8a1.9 1.9 0 0 1-3.8 0c0-.8.6-1.9 1.9-3.8z', '#8FD8FF')) + spark(78, 26, 3, '#FFE39A') + spark(21, 30, 2.2, '#fff', 0.9);
+    else if (e === 'wink') s += spark(72, 40, 2.6, '#FFE39A') + spark(76.6, 35, 1.5, '#fff', 0.9);
+    else if (e === 'thinking') s += circ(70.6, 33.6, 1.3, '#fff', ' stroke="' + INK + '" stroke-width=".6"') + circ(74.6, 27.6, 2, '#fff', ' stroke="' + INK + '" stroke-width=".6"') +
+      '<ellipse cx="81" cy="18.6" rx="5.4" ry="4.2" fill="#fff" stroke="' + INK + '" stroke-width=".6"/>' + circ(78.8, 18.8, 0.7, INK) + circ(81, 18.8, 0.7, INK) + circ(83.2, 18.8, 0.7, INK);
+    else if (e === 'sleepy') s += S('M71.4 29.6h3.6l-3.6 4.4h3.6', '#5A6CB8', 1.2) + S('M77 20.6h5l-5 6h5', '#5A6CB8', 1.5);
+    s += '</g></g></g>';
     if (o.ring && !crop) s += '<circle cx="50" cy="50" r="48.4" fill="none" stroke="' + (typeof o.ring === 'string' ? esc(o.ring) : '#fff') + '" stroke-width="3.2"/>';
     return s + '</svg>';
   }
 
   /* ---------------------------------------------------------------- base css + render */
-  var BASE_CSS = '.dga-av{display:block;overflow:hidden}.dga-anim .dga-eyes{transform-box:fill-box;transform-origin:center;animation:dga-blink 5.2s infinite}' +
-    '@keyframes dga-blink{0%,91%,97%,100%{transform:scaleY(1)}94%{transform:scaleY(.1)}}@media (prefers-reduced-motion:reduce){.dga-anim .dga-eyes{animation:none}}';
+  /* Idle life (render with {animate:true}): random blink / double blink, breathing, glances, a rare small smile.
+     Every avatar gets its own random timings (CSS variables on the <svg>). transform-only; all off under reduced motion. */
+  var BASE_CSS = '.dga-av{display:block;overflow:hidden}' +
+    '.dga-anim .dga-eyes{transform-box:fill-box;transform-origin:center;animation:var(--dga-bk,dga-blink) var(--dga-bd,5.2s) var(--dga-bo,0s) infinite}' +
+    '.dga-anim .dga-eyes.dga-closed{animation:none}' +
+    '.dga-anim .dga-iris{animation:dga-glance var(--dga-gl,9s) var(--dga-go,0s) infinite}' +
+    '.dga-anim .dga-fig{animation:dga-breathe var(--dga-br,3.8s) ease-in-out var(--dga-bo2,0s) infinite}' +
+    '.dga-anim .dga-mouth{transform-box:fill-box;transform-origin:center;animation:dga-smile var(--dga-sm,14s) var(--dga-so,0s) infinite}' +
+    '@keyframes dga-blink{0%,91%,97%,100%{transform:scaleY(1)}94%{transform:scaleY(.1)}}' +
+    '@keyframes dga-blink2{0%,84%,88%,90.5%,94.5%,100%{transform:scaleY(1)}86%,92.5%{transform:scaleY(.1)}}' +
+    '@keyframes dga-glance{0%,56%,100%{transform:translate(0,0)}59%,68%{transform:translate(1.1px,0)}71%,80%{transform:translate(0,0)}83%,91%{transform:translate(-1.1px,-.2px)}94%{transform:translate(0,0)}}' +
+    '@keyframes dga-breathe{0%,100%{transform:translateY(0)}50%{transform:translateY(-.9px)}}' +
+    '@keyframes dga-smile{0%,84%,100%{transform:scale(1)}88%,95%{transform:scale(1.12,1.1)}}' +
+    '.dga-react{transform-origin:50% 50%;animation:dga-rpop .55s cubic-bezier(.34,1.56,.64,1)}@keyframes dga-rpop{0%{transform:scale(1)}40%{transform:scale(1.08)}100%{transform:scale(1)}}' +
+    '@media (prefers-reduced-motion:reduce){.dga-anim .dga-eyes,.dga-anim .dga-iris,.dga-anim .dga-fig,.dga-anim .dga-mouth,.dga-react{animation:none}}';
+  function idleVars() {
+    var R = Math.random, f = function (n) { return n.toFixed(2) + 's'; }, bd = 3.6 + R() * 3.4, gl = 7 + R() * 6, sm = 11 + R() * 10;
+    return '--dga-bk:' + (R() < 0.3 ? 'dga-blink2' : 'dga-blink') + ';--dga-bd:' + f(bd) + ';--dga-bo:' + f(-R() * bd) + ';--dga-br:' + f(3.2 + R() * 1.6) + ';--dga-bo2:' + f(-R() * 4) +
+      ';--dga-gl:' + f(gl) + ';--dga-go:' + f(-R() * gl) + ';--dga-sm:' + f(sm) + ';--dga-so:' + f(-R() * sm);
+  }
   var baseDone = false;
   function injectCSS(id, css) {
     if (typeof document === 'undefined') return;
@@ -933,8 +1050,36 @@
     if (!t) { if (++CN > 800) { CACHE = {}; CN = 1; } t = CACHE[key] = build(c, o); }
     var id = 'dga' + (++SEQ).toString(36);
     t = t.replace(/§/g, id);
-    if (o.animate) t = t.replace('¤', (-(Math.random() * 5)).toFixed(2) + 's');
+    if (o.animate) t = t.replace('¤', idleVars());
     return t;
+  }
+  /* react(el, expression, ms=1600): briefly show an expression on an avatar that is already on the page, with a springy pop,
+     then go back to how it was. el = the <svg class="dga-av"> or any element containing one. Safe to call often. */
+  function react(el, expression, ms) {
+    if (!el || typeof document === 'undefined') return false;
+    var svg = el.matches && el.matches('svg.dga-av') ? el : el.querySelector && el.querySelector('svg.dga-av');
+    if (!svg || !svg.parentNode) return false;
+    var host = svg.parentNode, base = host.__dgaBase;
+    if (!base) {
+      var vals = (svg.getAttribute('data-dga') || '').split(','), cfg = {}, o = {};
+      if (vals.length !== CATS.length) return false;
+      CATS.forEach(function (c, i) { cfg[c] = vals[i]; });
+      try { o = JSON.parse(svg.getAttribute('data-dgo') || '{}'); } catch (e) { }
+      base = host.__dgaBase = { cfg: cfg, o: o };
+    }
+    function put(html, pop) {
+      var cur = host.querySelector('svg.dga-av'), t = document.createElement('div'); t.innerHTML = html;
+      var n = t.firstChild; if (pop) n.classList.add('dga-react');
+      if (cur) host.replaceChild(n, cur); else host.appendChild(n);
+    }
+    clearTimeout(host.__dgaT);
+    put(render(base.cfg, Object.assign({}, base.o, { expression: expression || null })), true);
+    host.__dgaT = setTimeout(function () {
+      var cur = host.querySelector('svg.dga-av');
+      if (cur && cur.classList.contains('dga-react')) put(render(base.cfg, base.o), false); /* skip if the game re-rendered meanwhile */
+      host.__dgaBase = null;
+    }, ms == null ? 1600 : ms);
+    return true;
   }
   function dataURI(cfg, o) { return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(render(cfg, Object.assign({}, o, { animate: false }))); }
 
@@ -945,7 +1090,7 @@
       var s = root.localStorage.getItem(KEY); if (!s) return null; var o = JSON.parse(s); if (!o || typeof o !== 'object') return null;
       if (owned) return validate(o, owned);
       var c = norm(o);
-      if (COVER[c.hair] && !COVER_HATS[c.hat]) c.hat = 'none';
+      if (!HATS_OK_ON_SCARF && COVER[c.hair] && !COVER_HATS[c.hat]) c.hat = 'none';
       if (c.mask === 'patchR' && c.glasses === 'monocle') c.glasses = 'none';
       return c;
     } catch (e) { return null; }
@@ -966,10 +1111,23 @@
     hussain: { skin: 'deep', face: 'oval', nose: 'pointy', eyes: 'round', eyeColor: 'darkbrown', brows: 'soft', mouth: 'neutral', hair: 'sidepart', hairColor: 'black', glasses: 'round', glassesColor: 'black', outfit: 'shirt', outfitColor: 'maroon', bg: 'pink' }
   };
   Object.keys(PRESETS).forEach(function (n) { PRESETS[n] = norm(PRESETS[n]); });
+  /* "Pick a look": ready-made starters for new players (free items only, 4 female + 4 male) */
+  var LOOKS = [
+    { name: 'Aminath', cfg: { body: 'f', skin: 'golden', face: 'oval', nose: 'small', eyes: 'almond', eyeColor: 'darkbrown', lashes: 'subtle', brows: 'arched', mouth: 'smile', lips: 'rose', hair: 'fringelong', hairColor: 'black', earrings: 'studs', outfit: 'libaas', outfitColor: 'teal', bg: 'pink' } },
+    { name: 'Hawwa', cfg: { body: 'f', skin: 'tan', face: 'round', nose: 'button', eyes: 'round', eyeColor: 'brown', lashes: 'full', brows: 'soft', mouth: 'grin', hair: 'hijab', scarfColor: 'lilac', outfit: 'tee', outfitColor: 'violet', bg: 'sunshine' } },
+    { name: 'Zara', cfg: { body: 'f', skin: 'deep', face: 'heart', nose: 'small', eyes: 'wide', eyeColor: 'brown', lashes: 'subtle', brows: 'soft', mouth: 'open', lips: 'coral', hair: 'afro', hairColor: 'black', earrings: 'hoops', outfit: 'polo', outfitColor: 'emerald', bg: 'sky' } },
+    { name: 'Leena', cfg: { body: 'f', skin: 'light', face: 'round', nose: 'button', eyes: 'round', eyeColor: 'green', lashes: 'subtle', marks: 'freckles', brows: 'thin', mouth: 'smile', hair: 'highbun', hairColor: 'auburn', glasses: 'cateye', glassesColor: 'red', outfit: 'tee', outfitColor: 'sunshine', bg: 'lilac' } },
+    { name: 'Ahmed', cfg: { body: 'm', skin: 'brown', face: 'square', nose: 'round', eyes: 'round', eyeColor: 'darkbrown', brows: 'thick', mouth: 'smile', hair: 'short', hairColor: 'black', outfit: 'polo', outfitColor: 'ocean', bg: 'sky' } },
+    { name: 'Ismail', cfg: { body: 'm', skin: 'ebony', face: 'full', nose: 'wide', eyes: 'round', eyeColor: 'black', brows: 'straight', mouth: 'grin', hair: 'fade', hairColor: 'black', facial: 'shortbeard', outfit: 'hoodie', outfitColor: 'emerald', bg: 'sunshine' } },
+    { name: 'Nadeem', cfg: { body: 'm', skin: 'fair', face: 'oval', nose: 'pointy', eyes: 'almond', eyeColor: 'hazel', brows: 'soft', mouth: 'smirk', hair: 'sidepart', hairColor: 'darkbrown', facial: 'stubble', glasses: 'round', glassesColor: 'black', outfit: 'shirt', outfitColor: 'navy', bg: 'sand' } },
+    { name: 'Shifan', cfg: { body: 'm', skin: 'tan', face: 'round', nose: 'button', eyes: 'wide', eyeColor: 'darkbrown', brows: 'soft', mouth: 'grin', hair: 'curlytop', hairColor: 'black', outfit: 'mvjersey', bg: 'coral' } }
+  ];
+  LOOKS.forEach(function (l) { l.cfg = norm(l.cfg); });
 
   /* ================================================================ BUILDER ================================================================ */
   function ti(d) { return '<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">' + d + '</svg>'; }
   var TABS = [
+    { id: 'start', name: 'Start', icon: ti('<circle cx="12" cy="8" r="4"/><path d="M4.6 20.4c.8-4 3.8-6.4 7.4-6.4s6.6 2.4 7.4 6.4"/>'), secs: [] },
     { id: 'face', name: 'Face', icon: ti('<circle cx="12" cy="12" r="8.5"/><path d="M8.6 14.2q3.4 3 6.8 0"/><path d="M9 9.6h.01M15 9.6h.01" stroke-width="2.6"/>'),
       secs: [['skin', 'sw'], ['face', 'th', 'face'], ['nose', 'th', 'nose'], ['cheeks', 'th', 'cheeks'], ['marks', 'th', 'cheeks']] },
     { id: 'eyes', name: 'Eyes', icon: ti('<path d="M2.5 12S6 5.8 12 5.8 21.5 12 21.5 12 18 18.2 12 18.2 2.5 12 2.5 12z"/><circle cx="12" cy="12" r="3"/>'),
@@ -990,10 +1148,10 @@
       secs: [['neck', 'th', 'neck'], ['earrings', 'th', 'ear']] },
     { id: 'masks', name: 'Masks', icon: ti('<path d="M3 9.4q0-2.6 4-2.6 3 0 5 2 2-2 5-2 4 0 4 2.6 0 5.6-4.6 5.6-2.6 0-4.4-2.4-1.8 2.4-4.4 2.4Q3 15 3 9.4z"/><circle cx="7.6" cy="10.2" r="1.3"/><circle cx="16.4" cy="10.2" r="1.3"/>'),
       secs: [['mask', 'th', 'face'], ['paint', 'th', 'cheeks']] },
-    { id: 'bg', name: 'Backdrop', icon: ti('<rect x="3" y="4" width="18" height="16" rx="3"/><path d="M3 16.4l5-4.6 4.4 4 3-2.6L21 18"/><circle cx="15.6" cy="8.8" r="1.6"/>'),
+    { id: 'bg', name: 'Scene', icon: ti('<rect x="3" y="4" width="18" height="16" rx="3"/><path d="M3 16.4l5-4.6 4.4 4 3-2.6L21 18"/><circle cx="15.6" cy="8.8" r="1.6"/>'),
       secs: [['bg', 'sw']] }
   ];
-  var EXPRS = [['', 'Default'], ['happy', 'Happy'], ['shocked', 'Shocked'], ['smug', 'Smug'], ['sad', 'Sad'], ['angry', 'Angry']];
+  var EXPRS = [['', 'Default'], ['happy', 'Happy'], ['laugh', 'Laugh'], ['wink', 'Wink'], ['shocked', 'Shocked'], ['smug', 'Smug'], ['thinking', 'Thinking'], ['sad', 'Sad'], ['angry', 'Angry'], ['sleepy', 'Sleepy']];
   var ICO = {
     dice: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="3.5" width="17" height="17" rx="4" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="8.5" cy="8.5" r="1.5"/><circle cx="15.5" cy="15.5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="15.5" cy="8.5" r="1.5"/><circle cx="8.5" cy="15.5" r="1.5"/></svg>',
     undo: '<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></svg>',
@@ -1035,12 +1193,26 @@
     '.dga-tl{display:none}',
     '.dga-tool svg{width:18px;height:18px;fill:none}.dga-tool svg circle{fill:currentColor}.dga-tool[disabled]{opacity:.45;cursor:default}',
     '.dga-edit{min-width:0;display:flex;flex-direction:column}',
-    '.dga-tabs{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px;padding:6px 16px 12px}',
-    '.dga-tab{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-height:54px;padding:6px 2px;border-radius:14px;border:1px solid var(--_line);background:var(--_sf);font-weight:600;font-size:11.5px;line-height:1.1;color:var(--_mut);transition:background-color .15s,color .15s}',
-    '.dga-tab svg{width:22px;height:22px}.dga-tab:hover{color:var(--_ink)}',
+    '.dga-tabs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;padding:6px 16px 12px}',
+    '@container dga (min-width:480px){.dga-tabs{grid-template-columns:repeat(6,minmax(0,1fr))}}',
+    '.dga-tab{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-width:0;min-height:54px;padding:6px 3px;border-radius:14px;border:1px solid var(--_line);background:var(--_sf);font-weight:600;font-size:11.5px;line-height:1.1;color:var(--_mut);transition:background-color .15s,color .15s;overflow:hidden}',
+    '.dga-tab>span{display:block;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}',
+    '.dga-tab svg{width:22px;height:22px;flex:none}.dga-tab:hover{color:var(--_ink)}',
+    '.dga-seg{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px}',
+    '.dga-segb{min-height:52px;border-radius:16px;border:2px solid var(--_line);background:var(--_sf);font-weight:700;font-size:16px}',
+    '.dga-segb[aria-pressed="true"]{border-color:var(--_ac);background:color-mix(in srgb,var(--_ac) 12%,var(--_sf));color:var(--_ink)}',
+    '.dga-looks{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}',
+    '.dga-look{display:flex;flex-direction:column;align-items:center;gap:4px;min-width:0;padding:6px 2px 8px;border-radius:18px;border:2px solid transparent;background:var(--_sf);box-shadow:0 1px 0 var(--_line);font-size:11px;letter-spacing:-.2px;font-weight:600}',
+    '.dga-look svg{width:100%;max-width:72px;height:auto;border-radius:50%}.dga-look>span{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}',
+    '.dga-look:hover{transform:translateY(-1px)}.dga-look[aria-pressed="true"]{border-color:var(--_ac)}',
+    '.dga-big{width:100%;min-height:56px;margin:16px 0 6px;border-radius:18px;font-size:17px}.dga-big svg{width:24px;height:24px}.dga-big svg circle{fill:currentColor}',
+    '.dga-hint{margin:6px 0 0;color:var(--_mut);font-size:13px;text-align:center}',
+    '.dga-more{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;min-height:44px;border-radius:18px;border:2px dashed var(--_line);background:transparent;font-weight:700;font-size:12px;color:var(--_mut)}',
+    '.dga-more:hover{color:var(--_ink);border-color:var(--_ac)}.dga-more b{font-size:18px;line-height:1}',
+    '.dga-sws .dga-more{width:auto;min-width:44px;height:44px;flex-direction:row;padding:0 12px;border-radius:99px}',
     '.dga-tab[aria-selected="true"]{background:var(--_ac);color:var(--_on);border-color:var(--_ac);box-shadow:0 3px 10px color-mix(in srgb,var(--_ac) 35%,transparent)}',
     '.dga-panel{padding:4px 16px 16px;min-width:0}',
-    '.dga-sec{margin:0 0 18px}.dga-sec h3{margin:0 0 10px;font-size:12px;letter-spacing:.09em;text-transform:uppercase;color:var(--_mut);font-weight:700;display:flex;gap:8px;align-items:baseline}',
+    '.dga-sec{margin:0 0 18px;min-width:0}.dga-sec h3{margin:0 0 10px;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--_mut);font-weight:700;display:flex;flex-wrap:wrap;gap:4px 8px;align-items:baseline;overflow-wrap:anywhere}',
     '.dga-sec h3 small{font-size:11px;letter-spacing:0;text-transform:none;font-weight:500}',
     '.dga-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(70px,1fr));gap:8px}',
     '.dga-opt{position:relative;display:flex;flex-direction:column;align-items:center;gap:6px;padding:7px 2px 8px;min-height:44px;border-radius:18px;border:2px solid transparent;background:var(--_sf);box-shadow:0 1px 0 var(--_line);transition:transform .15s,border-color .15s}',
@@ -1087,14 +1259,19 @@
     if (!el) throw new Error('DGAvatar.openBuilder: container element required');
     opts = opts || {};
     injectCSS('dga-builder-css', BUILDER_CSS);
-    var owned = new Set(opts.owned ? Array.from(opts.owned) : []);
+    /* owned: Set / array / {id:true} map of bought item ids, or true = everything unlocked */
+    var allOwned = opts.owned === true || opts.owned === '*';
+    var owned = new Set(!allOwned && opts.owned ? (typeof opts.owned === 'object' && !Array.isArray(opts.owned) && typeof opts.owned.has !== 'function' ? Object.keys(opts.owned).filter(function (k) { return opts.owned[k]; }) : Array.from(opts.owned)) : []);
+    var ownArg = function () { return allOwned ? true : owned; };
     var boli = opts.boli | 0;
+    var saved = load();
     /* with an owned list, anything paid the player doesn't own is dropped up front so it can never get "stuck" on */
-    var src0 = opts.cfg || load() || random();
-    var init = opts.owned ? validate(src0, owned) : norm(src0);
-    var cfg = norm(init), hist = [], tab = 'face', expr = '', io = null, toastT = 0, destroyed = false;
+    var src0 = opts.cfg || saved || random();
+    var init = opts.owned ? validate(src0, ownArg()) : norm(src0);
+    var cfg = norm(init), hist = [], expr = '', io = null, toastT = 0, destroyed = false, more = {};
+    var tab = opts.tab || (saved ? 'face' : 'start'); /* new players (nothing saved yet) land on Start */
     var uid = 'dgab' + (++SEQ).toString(36);
-    var isOwned = function (it) { return it.free || owned.has(it.id); };
+    var isOwned = function (it) { return it.free || allOwned || owned.has(it.id); };
     /* Boli icon: pass opts.boliIcon (HTML, e.g. the site's shell image) so prices match the rest of the game */
     var SHELL = opts.boliIcon || (window.DGAvatar && window.DGAvatar.boliIcon) || ICO.shell;
     var boliLabel = function () { return 'Boli: ' + fmt(boli) + '. Open the store'; };
@@ -1110,32 +1287,38 @@
       '<div class="dga-main"><div class="dga-stage"><div class="dga-pv" aria-live="off"></div>' +
       '<div class="dga-chips" role="group" aria-label="Preview expression">' + EXPRS.map(function (x) { return '<button type="button" class="dga-chip" data-expr="' + x[0] + '" aria-pressed="' + (x[0] === '' ? 'true' : 'false') + '">' + x[1] + '</button>'; }).join('') + '</div>' +
       '<div class="dga-tools"><button type="button" class="dga-tool" data-act="random" aria-label="Randomize" title="Randomize">' + ICO.dice + '<span class="dga-tl">Randomize</span></button><button type="button" class="dga-tool" data-act="undo" aria-label="Undo" title="Undo" disabled>' + ICO.undo + '<span class="dga-tl">Undo</span></button><button type="button" class="dga-tool" data-act="reset" aria-label="Reset to start" title="Reset">' + ICO.reset + '<span class="dga-tl">Reset</span></button></div></div>' +
-      '<div class="dga-edit"><div class="dga-tabs" role="tablist" aria-label="Customize">' +
-      TABS.map(function (t, i) { return '<button type="button" role="tab" class="dga-tab" id="' + uid + '-tab-' + t.id + '" data-tab="' + t.id + '" aria-controls="' + uid + '-panel" aria-selected="' + (i ? 'false' : 'true') + '" tabindex="' + (i ? '-1' : '0') + '">' + t.icon + '<span>' + t.name + '</span></button>'; }).join('') +
-      '</div><div class="dga-panel" role="tabpanel" id="' + uid + '-panel" aria-labelledby="' + uid + '-tab-face"></div></div></div>' +
+      '<div class="dga-edit"><div class="dga-tabs" role="tablist" aria-label="Customize"></div><div class="dga-panel" role="tabpanel" id="' + uid + '-panel"></div></div></div>' +
       '<div class="dga-buy" hidden></div>' +
       '<div class="dga-foot">' + (opts.onClose ? '<button type="button" class="dga-btn" data-act="close">Cancel</button>' : '') + '<button type="button" class="dga-btn pri" data-act="save">Save character</button></div>' +
       '<div class="dga-toast" role="status" aria-live="polite"></div></div>';
 
     var R = el.querySelector('.dga-root'), pv = R.querySelector('.dga-pv'), panel = R.querySelector('.dga-panel'), buyEl = R.querySelector('.dga-buy');
-    var undoBtn = R.querySelector('[data-act="undo"]'), toastEl = R.querySelector('.dga-toast');
+    var undoBtn = R.querySelector('[data-act="undo"]'), toastEl = R.querySelector('.dga-toast'), tabsEl = R.querySelector('.dga-tabs'), saveBtn = R.querySelector('[data-act="save"]');
 
+    function tabsNow() { return TABS.filter(function (t) { return !(t.id === 'facial' && cfg.body === 'f'); }); }
+    function drawTabs() {
+      var T = tabsNow(); if (!T.some(function (t) { return t.id === tab; })) tab = 'face';
+      tabsEl.innerHTML = T.map(function (t) {
+        var on = t.id === tab;
+        return '<button type="button" role="tab" class="dga-tab" id="' + uid + '-tab-' + t.id + '" data-tab="' + t.id + '" aria-controls="' + uid + '-panel" aria-selected="' + on + '" tabindex="' + (on ? '0' : '-1') + '" title="' + t.name + '">' + t.icon + '<span>' + t.name + '</span></button>';
+      }).join('');
+    }
     function setBoliText() {
       R.querySelector('.dga-bn').textContent = fmt(boli);
       var bb = R.querySelector('button.dga-boli'); if (bb) bb.setAttribute('aria-label', boliLabel());
     }
-    function toast(m) { toastEl.textContent = m; toastEl.classList.add('on'); clearTimeout(toastT); toastT = setTimeout(function () { toastEl.classList.remove('on'); }, 2400); }
+    function toast(m) { toastEl.textContent = m; toastEl.classList.add('on'); clearTimeout(toastT); toastT = setTimeout(function () { toastEl.classList.remove('on'); }, 2600); }
     function drawPreview(pop) {
       pv.innerHTML = render(cfg, { size: 220, animate: true, expression: expr || null, title: 'Your character preview' });
       if (pop) { pv.classList.remove('dga-pop'); void pv.offsetWidth; pv.classList.add('dga-pop'); }
     }
     function thumbCfg(cat, key) {
       var c = Object.assign({}, cfg); c[cat] = key;
-      if ((cat === 'hat' || cat === 'hatColor') && COVER[c.hair] && !COVER_HATS[c.hat]) c.hair = 'short';
+      
       if (cat === 'hatColor' && (c.hat === 'none' || !HAT_TINTED[c.hat])) c.hat = 'cap';
       if (cat === 'hair') c.hat = 'none';
       if (cat === 'earrings' && COVER[c.hair]) c.hair = 'bun';
-      if (cat === 'earrings' && /^(long|wavy|bob|braids)$/.test(c.hair)) c.hair = 'ponytail';
+      if (cat === 'earrings' && /^(long|fringelong|curtain|sideswept|wavy|bob|sleekbob|braids|halfup)$/.test(c.hair)) c.hair = 'ponytail';
       if (cat === 'earrings' && c.hat === 'headphones') c.hat = 'none';
       if (cat === 'neck' && c.hair === 'hijab') c.hair = 'bun';
       if (cat === 'neck' && /^(beard|longbeard)$/.test(c.facial)) c.facial = 'none';
@@ -1144,6 +1327,7 @@
       if (cat === 'face' && COVER[c.hair]) { c.hair = 'bald'; c.hat = 'none'; }
       if (/^(eyes|eyeColor|lashes|brows|marks|paint|cheeks|nose)$/.test(cat)) c.glasses = 'none';
       if (cat === 'lashes' && c.eyes === 'dot') c.eyes = 'round';
+      if (cat === 'facial') c.body = 'm';
       return c;
     }
     function swStyle(it) {
@@ -1154,32 +1338,65 @@
       return '--sw:' + v;
     }
     function lockBadge(it) { return isOwned(it) ? '' : '<span class="dga-lk">' + ICO.lock + fmt(it.price) + '</span>'; }
+    function ordered(cat) {
+      if (cat !== 'hair') return PARTS[cat];
+      var first = cfg.body === 'f' ? FEM_HAIR : MALE_HAIR, map = {};
+      PARTS.hair.forEach(function (i) { map[i.key] = i; });
+      var out = first.map(function (k) { return map[k]; }).filter(Boolean);
+      PARTS.hair.forEach(function (i) { if (out.indexOf(i) < 0) out.push(i); });
+      return out;
+    }
+    var SHOW = 8;
+    function visible(cat) {
+      var list = ordered(cat);
+      if (more[cat] || list.length <= SHOW + 1) return { list: list, hidden: 0 };
+      var v = list.slice(0, SHOW), sel = list.filter(function (i) { return i.key === cfg[cat]; })[0];
+      if (sel && v.indexOf(sel) < 0) v[SHOW - 1] = sel;
+      return { list: v, hidden: list.length - v.length };
+    }
+    function moreBtn(cat, n, sw) {
+      if (!n && !more[cat]) return '';
+      var open = !!more[cat];
+      return '<button type="button" class="dga-more" data-more="' + cat + '" aria-expanded="' + open + '">' + (sw ? '' : '<b aria-hidden="true">' + (open ? '&minus;' : '+') + '</b>') + (open ? 'Fewer' : 'More (' + n + ')') + '</button>';
+    }
     function secHTML(sec) {
       var cat = sec[0], kind = sec[1], crop = sec[2];
       if ((cat === 'scarfColor' || cat === 'hatColor' || cat === 'glassesColor' || cat === 'lens') && !relevant(cfg, cat)) return '';
       var head = CAT_NAMES[cat], note = '', what = cfg.hair === 'hijab' ? 'hijab' : 'headscarf';
       if (cat === 'hairColor' && COVER[cfg.hair]) head = 'Hair colour <small>(fringe &amp; brows)</small>';
       if (cat === 'facial') note = '<p class="dga-note">Facial hair uses your hair colour.</p>';
-      if (cat === 'hat' && COVER[cfg.hair]) note = '<p class="dga-note">Most hats are off with a ' + what + '. The crown, headphones and hibiscus still fit.</p>';
+      if (cat === 'hat' && COVER[cfg.hair]) note = '<p class="dga-note">Hats sit on top of your ' + what + '.</p>';
       if (cat === 'earrings' && COVER[cfg.hair]) note = '<p class="dga-note">Earrings are hidden under a ' + what + '.</p>';
       if (cat === 'neck' && cfg.hair === 'hijab') note = '<p class="dga-note">Necklaces are hidden under a hijab.</p>';
-      var h = '<section class="dga-sec" aria-label="' + esc(CAT_NAMES[cat]) + '"><h3>' + head + '</h3>' + note;
+      var vis = visible(cat), h = '<section class="dga-sec" aria-label="' + esc(CAT_NAMES[cat]) + '"><h3>' + head + '</h3>' + note;
       if (kind === 'sw') {
-        h += '<div class="dga-sws">' + PARTS[cat].map(function (it) {
+        h += '<div class="dga-sws">' + vis.list.map(function (it) {
           var on = cfg[cat] === it.key, lk = !isOwned(it), none = it.key === 'none';
           return '<button type="button" class="dga-sw' + (none ? ' is-none' : '') + '" style="' + swStyle(it) + '" data-cat="' + cat + '" data-key="' + it.key + '" aria-pressed="' + on + '" aria-label="' + esc(it.name + (lk ? ', locked, ' + it.price + ' Boli, ' + it.rarity : '')) + '" title="' + esc(it.name) + '">' +
             (none ? ICO.none : '') + (on ? '<span class="dga-tick">' + ICO.check + '</span>' : '') + lockBadge(it) + '</button>';
-        }).join('') + '</div>';
+        }).join('') + moreBtn(cat, vis.hidden, true) + '</div>';
       } else {
-        h += '<div class="dga-grid">' + PARTS[cat].map(function (it) {
+        h += '<div class="dga-grid">' + vis.list.map(function (it) {
           var on = cfg[cat] === it.key, lk = !isOwned(it), off = conflict(cfg, cat, it.key), none = it.key === 'none';
           return '<button type="button" class="dga-opt' + (off ? ' is-off' : '') + (none ? ' is-none' : '') + '" data-cat="' + cat + '" data-key="' + it.key + '" aria-pressed="' + on + '"' + (off ? ' aria-disabled="true"' : '') +
             ' aria-label="' + esc(it.name + (lk ? ', locked, ' + it.price + ' Boli, ' + it.rarity : '') + (off ? ', unavailable' : '')) + '">' +
             (it.rarity !== 'common' ? '<i class="dga-rar" style="background:' + RARITY_COL[it.rarity] + '" aria-hidden="true"></i>' : '') +
             '<span class="dga-th" data-crop="' + crop + '">' + (none ? '<span class="dga-nobadge">' + ICO.none + '</span>' : '') + '</span><span class="dga-nm">' + esc(it.name) + '</span>' + lockBadge(it) + '</button>';
-        }).join('') + '</div>';
+        }).join('') + moreBtn(cat, vis.hidden) + '</div>';
       }
       return h + '</section>';
+    }
+    function startHTML() {
+      var f = cfg.body === 'f';
+      var looks = LOOKS.filter(function (l) { return l.cfg.body === cfg.body; }).concat(LOOKS.filter(function (l) { return l.cfg.body !== cfg.body; }));
+      return '<section class="dga-sec" aria-label="Body"><h3>I am</h3><div class="dga-seg" role="group" aria-label="Body">' +
+        '<button type="button" class="dga-segb" data-body="f" aria-pressed="' + f + '">Female</button><button type="button" class="dga-segb" data-body="m" aria-pressed="' + !f + '">Male</button></div></section>' +
+        '<section class="dga-sec" aria-label="Pick a look"><h3>Pick a look</h3><div class="dga-looks">' + looks.map(function (l) {
+          var on = JSON.stringify(l.cfg) === JSON.stringify(norm(cfg));
+          return '<button type="button" class="dga-look" data-look="' + LOOKS.indexOf(l) + '" aria-pressed="' + on + '" aria-label="Use ' + l.name + '">' + render(l.cfg, { size: 72 }) + '<span>' + l.name + '</span></button>';
+        }).join('') + '</div>' +
+        '<button type="button" class="dga-btn pri dga-big" data-act="random">' + ICO.dice + 'Surprise me</button>' +
+        '<p class="dga-hint">Then tap Face, Hair, Outfit and the rest to make it yours.</p></section>';
     }
     function fillThumb(th) {
       var b = th.parentNode, badge = th.querySelector('.dga-nobadge');
@@ -1190,7 +1407,7 @@
       var t = TABS.filter(function (x) { return x.id === tab; })[0];
       var ae = document.activeElement, fk = keepFocus && ae && panel.contains(ae) ? ae.getAttribute('data-cat') + ':' + ae.getAttribute('data-key') : null;
       var st = panel.scrollTop;
-      panel.innerHTML = t.secs.map(secHTML).join('');
+      panel.innerHTML = tab === 'start' ? startHTML() : t.secs.map(secHTML).join('');
       panel.setAttribute('aria-labelledby', uid + '-tab-' + tab);
       var ths = panel.querySelectorAll('.dga-th');
       if (io) io.disconnect();
@@ -1202,31 +1419,46 @@
       if (fk) { var n = panel.querySelector('[data-cat="' + fk.split(':')[0] + '"][data-key="' + fk.split(':')[1] + '"]'); if (n) n.focus({ preventScroll: true }); }
     }
     function drawBuy() {
-      var L = lockedIn(cfg, owned);
+      var L = lockedIn(cfg, ownArg());
+      saveBtn.textContent = L.length ? 'Save without locked items' : 'Save character';
       if (!L.length) { buyEl.hidden = true; buyEl.innerHTML = ''; return; }
       buyEl.hidden = false;
-      buyEl.innerHTML = '<p>Trying on. Unlock to keep ' + (L.length > 1 ? 'these' : 'this') + ' when you save.</p>' + L.map(function (it) {
+      buyEl.innerHTML = '<p>You are trying on ' + (L.length > 1 ? 'locked items' : 'a locked item') + '. Unlock ' + (L.length > 1 ? 'them' : 'it') + ' to keep ' + (L.length > 1 ? 'them' : 'it') + ', or Save puts back a free choice.</p>' + L.map(function (it) {
         return '<div class="dga-buyrow"><b>' + esc(it.name) + ' <small style="color:' + RARITY_COL[it.rarity] + ';font-weight:700;text-transform:capitalize">' + it.rarity + '</small></b>' +
           '<span class="dga-price">' + SHELL + fmt(it.price) + '</span><button type="button" class="dga-btn gold" data-act="buy" data-item="' + it.id + '" aria-label="Unlock ' + esc(it.name) + ' for ' + it.price + ' Boli">Unlock</button></div>';
       }).join('');
     }
     function syncUndo() { undoBtn.disabled = !hist.length; }
-    function refresh(pop) { drawPreview(pop); drawPanel(true); drawBuy(); syncUndo(); }
+    function refresh(pop) { drawPreview(pop); drawTabs(); drawPanel(true); drawBuy(); syncUndo(); }
     function setCfg(n, pop) { hist.push(cfg); if (hist.length > 60) hist.shift(); cfg = norm(n); refresh(pop !== false); }
     function choose(cat, key) {
       var it = item(cat, key); if (!it) return;
       var off = conflict(cfg, cat, key); if (off) { toast(off); return; }
       if (cfg[cat] === key) return;
       var n = Object.assign({}, cfg); n[cat] = key;
+      /* picking a hat that doesn't fit over a hijab / headscarf: nothing to do - it's disabled with a note */
       setCfg(n);
       if (!isOwned(it)) toast('Trying on ' + it.name + '. Unlock it to keep it.');
     }
+    function setBody(b) {
+      if (cfg.body === b) return;
+      var n = Object.assign({}, cfg); n.body = b;
+      if (b === 'f') {
+        n.facial = 'none';
+        if (FEM_HAIR.indexOf(n.hair) < 0 && MALE_HAIR.indexOf(n.hair) >= 0) n.hair = 'fringelong';
+        if (n.lashes === 'none') n.lashes = 'subtle';
+        if (/^(bushy|thick|unibrow)$/.test(n.brows)) n.brows = 'arched';
+        if (/^(wide|clown)$/.test(n.nose)) n.nose = 'small';
+      } else {
+        if (MALE_HAIR.indexOf(n.hair) < 0 && FEM_HAIR.indexOf(n.hair) >= 0) n.hair = 'short';
+        n.lashes = 'none'; n.lips = 'none';
+        if (n.outfit === 'libaas') n.outfit = 'tee';
+      }
+      setCfg(n);
+    }
     function selectTab(id, focus) {
-      tab = id;
-      Array.prototype.forEach.call(R.querySelectorAll('.dga-tab'), function (b) {
-        var on = b.getAttribute('data-tab') === id; b.setAttribute('aria-selected', on); b.tabIndex = on ? 0 : -1;
-        if (on && focus) b.focus();
-      });
+      tab = id; drawTabs();
+      if (focus) { var b = tabsEl.querySelector('[data-tab="' + id + '"]'); if (b) b.focus(); }
       panel.scrollTop = 0; drawPanel(false);
     }
     function buy(id) {
@@ -1239,9 +1471,9 @@
       }, function () { toast('Purchase failed. Try again.'); });
     }
     function doSave() {
-      var L = lockedIn(cfg, owned), v = validate(cfg, owned);
+      var L = lockedIn(cfg, ownArg()), v = validate(cfg, ownArg());
       cfg = v; save(v); refresh(false);
-      toast(L.length ? 'Saved. Locked try-ons were swapped for free items.' : 'Character saved!');
+      toast(L.length ? 'Saved. ' + L.map(function (i) { return i.name; }).join(', ') + (L.length > 1 ? ' are' : ' is') + ' locked, so a free choice was used.' : 'Character saved!');
       if (opts.onSave) opts.onSave(v);
     }
 
@@ -1249,13 +1481,16 @@
       var b = ev.target.closest('button'); if (!b || !R.contains(b)) return;
       if (b.hasAttribute('data-tab')) return selectTab(b.getAttribute('data-tab'));
       if (b.hasAttribute('data-cat')) return choose(b.getAttribute('data-cat'), b.getAttribute('data-key'));
+      if (b.hasAttribute('data-more')) { var mc = b.getAttribute('data-more'); more[mc] = !more[mc]; drawPanel(false); var nb = panel.querySelector('[data-more="' + mc + '"]'); if (nb) nb.focus({ preventScroll: true }); return; }
+      if (b.hasAttribute('data-body')) return setBody(b.getAttribute('data-body'));
+      if (b.hasAttribute('data-look')) { var l = LOOKS[+b.getAttribute('data-look')]; if (l) setCfg(l.cfg); return; }
       if (b.hasAttribute('data-expr')) {
         expr = b.getAttribute('data-expr');
         Array.prototype.forEach.call(R.querySelectorAll('[data-expr]'), function (x) { x.setAttribute('aria-pressed', x === b); });
         return drawPreview(true);
       }
       var a = b.getAttribute('data-act');
-      if (a === 'random') { setCfg(random()); }
+      if (a === 'random') { setCfg(random(null, { body: cfg.body })); }
       else if (a === 'undo') { if (hist.length) { cfg = hist.pop(); refresh(true); } }
       else if (a === 'reset') { if (JSON.stringify(cfg) !== JSON.stringify(init)) setCfg(init); }
       else if (a === 'save') doSave();
@@ -1263,12 +1498,13 @@
       else if (a === 'boli' && opts.onBoli) opts.onBoli();
       else if (a === 'close' && opts.onClose) opts.onClose();
     });
-    R.querySelector('.dga-tabs').addEventListener('keydown', function (ev) {
-      var n = TABS.length, i = TABS.findIndex(function (t) { return t.id === tab; }), j = i;
+    tabsEl.addEventListener('keydown', function (ev) {
+      var T = tabsNow(), n = T.length, i = T.findIndex(function (t) { return t.id === tab; }), j = i;
+      var cols = getComputedStyle(tabsEl).gridTemplateColumns.split(' ').length || 6;
       if (ev.key === 'ArrowRight') j = (i + 1) % n; else if (ev.key === 'ArrowLeft') j = (i - 1 + n) % n;
-      else if (ev.key === 'ArrowDown') j = Math.min(n - 1, i + 6); else if (ev.key === 'ArrowUp') j = Math.max(0, i - 6);
+      else if (ev.key === 'ArrowDown') j = Math.min(n - 1, i + cols); else if (ev.key === 'ArrowUp') j = Math.max(0, i - cols);
       else if (ev.key === 'Home') j = 0; else if (ev.key === 'End') j = n - 1; else return;
-      ev.preventDefault(); selectTab(TABS[j].id, true);
+      ev.preventDefault(); selectTab(T[j].id, true);
     });
     R.addEventListener('keydown', function (ev) { if (ev.key === 'Escape' && opts.onClose) opts.onClose(); if ((ev.ctrlKey || ev.metaKey) && ev.key === 'z' && hist.length) { ev.preventDefault(); cfg = hist.pop(); refresh(true); } });
 
@@ -1277,20 +1513,22 @@
       getConfig: function () { return norm(cfg); },
       setConfig: function (c) { setCfg(c); },
       setBoli: function (n) { boli = n | 0; setBoliText(); },
-      setOwned: function (s) { owned = new Set(Array.from(s || [])); refresh(false); },
+      setOwned: function (s) { allOwned = s === true || s === '*'; owned = new Set(allOwned ? [] : Array.from(s || [])); refresh(false); },
       destroy: function () { destroyed = true; if (io) io.disconnect(); clearTimeout(toastT); el.innerHTML = ''; }
     };
   }
 
   root.DGAvatar = {
-    version: 2,
+    version: 3,
     storageKey: KEY,
     catalog: catalog,
     parts: PARTS,
     categories: CAT_NAMES,
     defaults: norm(DEFAULTS),
     presets: PRESETS,
-    expressions: ['shocked', 'smug', 'happy', 'sad', 'angry', 'blink'],
+    looks: LOOKS,
+    expressions: ['happy', 'laugh', 'wink', 'shocked', 'smug', 'thinking', 'sad', 'angry', 'sleepy', 'blink'],
+    react: react,
     item: function (id) { return BYID[id] || (id === 'bg.night' ? BYID['bg.stars'] : null); },
     normalize: norm,
     render: render,

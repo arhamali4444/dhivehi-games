@@ -57,6 +57,9 @@ h1,h2,h3{font-family:Fredoka,Nunito,system-ui,sans-serif}
 .face{position:relative;display:block;flex:none;width:48px;height:48px;border-radius:50%;background:var(--c,#FFC93C);box-shadow:0 0 0 3px #fff,0 5px 0 2px rgba(0,0,0,.2);overflow:hidden;transition:box-shadow .2s}
 .face svg{position:absolute;inset:0;width:100%;height:100%;display:block}
 .face.big{width:50px;height:50px}
+.face.ch{background:transparent}
+.face.badge svg{inset:18%;width:64%;height:64%;fill:#fff}
+.me-pill .face{width:34px;height:34px;box-shadow:0 0 0 2px #fff}
 .face .mo,.face .sweat{display:none}.face .mn{display:inline}
 .face[data-mood="shock"] .mn,.face[data-mood="smug"] .mn{display:none}
 .face[data-mood="shock"] .mx,.face[data-mood="smug"] .ms,.face[data-mood="shock"] .sweat{display:inline}
@@ -294,6 +297,7 @@ h1,h2,h3{font-family:Fredoka,Nunito,system-ui,sans-serif}
 </head>
 <body>
 <div id="app"></div>
+<script src="../shared/avatar.js?v=4"></script>
 <script>
 (()=>{
 /* ================= shared with the rest of Dhivehi Games ================= */
@@ -317,8 +321,6 @@ const myName=()=>authName()||cleanName(ls.get(NMK))||(AS?'Tester '+AS:'');
 const shownName=()=>myName()||'You';
 const netName=()=>myName()||('Guest '+myId.slice(-3).toUpperCase());
 function avColor(){try{const a=JSON.parse(ls.get('dg-av')||'null');if(a&&/^#[0-9a-f]{6}$/i.test(a.c))return a.c;}catch(e){}return '#FF7FAE';}
-function myAv(){let c='#E5604D',s='';try{const a=JSON.parse(ls.get('dg-av')||'null');if(a&&a.s){c=a.c;s=a.s;}}catch(e){}
- if(!s)s=SUIT.S.replace('<path','<path transform="translate(3.2 3.2) scale(.176)"');return `<span class="av" style="--c:${c}"><svg viewBox="0 0 24 24">${s}</svg></span>`;}
 /* ================= cartoon suspects (inline SVG) ================= */
 const SKIN=['#FAD7B5','#EDB98A','#C98B5B','#8E5B3A'],HAIR=['#2B1B12','#6B3E1F','#1D1A33','#B5562B'];
 const LOOKS=['hair','beanie','bun','scarf','cap','specs'];
@@ -336,12 +338,30 @@ function faceSVG(o){const k=o.k||'hair',E='#231942';
  else if(k==='specs'){top=`<path d="M17 31c0-10 7-16 15-16 9 0 15 5 15 14-5-5-12-6-18-4-5 1-9 3-12 6z" fill="${hr}"/>`;extra=`<g fill="rgba(255,255,255,.28)" stroke="${E}" stroke-width="1.8"><circle cx="26" cy="33" r="4.7"/><circle cx="38" cy="33" r="4.7"/></g><path d="M30.7 33h2.6" stroke="${E}" stroke-width="1.8"/>`;}
  const st=o.st?`<path d="M25 39c3-2.2 5-1.4 7 .2 2-1.6 4-2.4 7-.2-2 3-5 2.4-7 .6-2 1.8-5 2.4-7-.6z" fill="${HAIR[0]}"/>`:'';
  return `<svg viewBox="0 0 64 64" aria-hidden="true">${back}<path d="M12 64c2-9 10-14 20-14s18 5 20 14z" fill="${sh}"/><rect x="28" y="44" width="8" height="8" rx="3" fill="${sk}"/><circle cx="17" cy="35" r="3.6" fill="${sk}"/><circle cx="47" cy="35" r="3.6" fill="${sk}"/><circle cx="32" cy="33" r="15.5" fill="${sk}"/><circle cx="23.5" cy="39" r="2.6" fill="#FF7F8E" opacity=".38"/><circle cx="40.5" cy="39" r="2.6" fill="#FF7F8E" opacity=".38"/><g class="eyes"><ellipse cx="26" cy="33" rx="2" ry="2.6" fill="${E}"/><ellipse cx="38" cy="33" rx="2" ry="2.6" fill="${E}"/></g><path d="M23 28.5q3-1.6 5.5-.2M35.5 28.3q2.5-1.4 5.5.2" stroke="${E}" stroke-width="1.6" fill="none" stroke-linecap="round"/><path class="mo mn" d="M27.5 41.5q4.5 3.6 9 0" stroke="${E}" stroke-width="2.2" fill="none" stroke-linecap="round"/><ellipse class="mo mx" cx="32" cy="42.5" rx="2.6" ry="3.2" fill="${E}"/><path class="mo ms" d="M27.5 42q5 2.2 9.5-2" stroke="${E}" stroke-width="2.2" fill="none" stroke-linecap="round"/>${st}${top}${extra}<path class="sweat" d="M46 21c2 3 3 4.6 3 6a3 3 0 0 1-6 0c0-1.4 1-3 3-6z" fill="#8FD8FF"/></svg>`;}
-const face=(o,cls='')=>`<span class="face${cls?' '+cls:''}" style="--c:${o.c||'#FFC93C'}">${faceSVG(o)}</span>`;
+/* Players use their shared Dhivehi Games character (window.DGAvatar, saved as 'dg-char' by the homepage builder).
+   Descriptor: {ch:cfg} character | {bd:{c,s}} Island Buddy badge | legacy {c,k,...} face (only if avatar.js failed to load). */
+const DGA=window.DGAvatar||null;const ALLIDS=DGA?new Set(DGA.catalog.map(i=>i.id)):null;
+const FMEMO=new Map();
+function face(a,cls='',expr=''){a=a||{};let inner,bg;cls=cls||'';
+ if(a.ch&&DGA){const key=cls+'|'+expr+'|'+JSON.stringify(a.ch);inner=FMEMO.get(key);
+  if(!inner){inner=DGA.render(a.ch,{size:64,expression:expr||undefined,animate:!expr});if(FMEMO.size>300)FMEMO.clear();FMEMO.set(key,inner);}bg='transparent';cls+=' ch';}
+ else if(a.bd){inner=`<svg viewBox="0 0 24 24" fill="#fff" aria-hidden="true">${a.bd.s}</svg>`;bg=a.bd.c;cls+=' badge';}
+ else{const o=a.f||a;inner=faceSVG(o);bg=o.c||'#FFC93C';}
+ return `<span class="face${cls.trim()?' '+cls.trim():''}" style="--c:${bg}">${inner}</span>`;}
 const ROBO={k:'bot',c:'#9AA8C7'};
-function vf(o){o=o&&typeof o==='object'?o:{};const hx=v=>/^#[0-9a-f]{6}$/i.test(v)?v:null;
- return{c:hx(o.c)||'#FFC93C',k:LOOKS.includes(o.k)?o.k:'hair',sk:Math.max(0,Math.min(3,o.sk|0)),h:Math.max(0,Math.min(3,o.h|0)),sh:hx(o.sh)||'#3E2A8E',a:hx(o.a)||'#FF5A6E',st:!!o.st};}
-function myFace(){let h=7;for(const ch of myId)h=(h*31+ch.charCodeAt(0))>>>0;const v=(h+(+(ls.get('dh-look')||0)))>>>0;
- return{c:avColor(),k:LOOKS[v%6],sk:(h>>>3)%4,h:(h>>>5)%4,sh:['#3E2A8E','#087A6B','#A8212F','#26336B'][(h>>>7)%4],a:['#FF5A6E','#3DDBB5','#56B6FF','#FFC93C'][(v>>>2)%4],st:false};}
+/* badge markup comes from other players online: rebuild it from a small whitelist of SVG shapes/attributes */
+function cleanBadge(s){if(typeof s!=='string'||!s||s.length>4000)return '';try{const d=new DOMParser().parseFromString('<svg xmlns="http://www.w3.org/2000/svg">'+s+'</svg>','image/svg+xml');const r=d.documentElement;if(!r||r.nodeName!=='svg')return '';
+ const OK=/^(path|circle|ellipse|rect|g|polygon|polyline|line)$/,AT=/^(d|cx|cy|r|rx|ry|x|y|x1|y1|x2|y2|width|height|transform|points|opacity|fill-opacity|stroke-opacity|fill-rule|stroke-width|stroke-linecap|stroke-linejoin)$/;
+ const walk=n=>[...n.children].map(el=>{if(!OK.test(el.nodeName))return '';let at='';for(const x of el.attributes){if(AT.test(x.name)&&/^[-\w\s.,()%]*$/.test(x.value))at+=` ${x.name}="${x.value}"`;else if((x.name==='fill'||x.name==='stroke')&&/^(#[0-9a-f]{3,8}|none|currentColor|white|black)$/i.test(x.value))at+=` ${x.name}="${x.value}"`;}return `<${el.nodeName}${at}>${walk(el)}</${el.nodeName}>`;}).join('');
+ return walk(r).slice(0,6000);}catch(e){return '';}}
+function vf(a,id){a=a&&typeof a==='object'?a:{};
+ if(a.ch&&typeof a.ch==='object'&&DGA){try{if(JSON.stringify(a.ch).length<=1500)return{ch:DGA.validate(a.ch,ALLIDS)};}catch(e){}}
+ if(a.bd&&typeof a.bd==='object'){const s=cleanBadge(a.bd.s);if(s)return{bd:{c:/^#[0-9a-f]{6}$/i.test(a.bd.c)?a.bd.c:'#FF7FAE',s}};}
+ return DGA?{ch:DGA.random(String(id||'guest'))}:{c:'#FFC93C',k:'hair'};}
+/* my character: saved character, else the Island Buddy badge (Digu badge mode), else the same seeded character the homepage shows. Dhogu never writes 'dg-char'. */
+function myFace(){const ch=DGA&&DGA.load();if(ch)return{ch};
+ if(ls.get('dg-char')==null){let old=null;try{old=JSON.parse(ls.get('dg-av')||'null');}catch(e){}if(old&&old.s){const s=cleanBadge(old.s);if(s)return{bd:{c:/^#[0-9a-f]{6}$/i.test(old.c)?old.c:'#FF7FAE',s}};}}
+ return DGA?{ch:DGA.random(myId)}:{c:avColor(),k:'hair'};}
 /* ================= cards ================= */
 const SUIT={S:'<path d="M50 6C32 30 8 42 8 62C8 78 26 84 42 72C40 80 36 88 30 94H70C64 88 60 80 58 72C74 84 92 78 92 62C92 42 68 30 50 6Z"/>',
  H:'<path d="M50 90C22 68 5 52 5 33C5 18 16 8 29 8C39 8 46 14 50 23C54 14 61 8 71 8C84 8 95 18 95 33C95 52 78 68 50 90Z"/>',
@@ -379,7 +399,8 @@ const SFX={
  pop:()=>snd(t=>sn(t,520,.09,.06,880,.004))};
 const buzz=ms=>{try{if(navigator.userActivation&&!navigator.userActivation.hasBeenActive)return;navigator.vibrate&&navigator.vibrate(ms)}catch(e){}};
 /* ================= setup ================= */
-const BOTS=[['Inspector Ali',{c:'#56B6FF',k:'deer',sk:1,sh:'#7A4E26',st:true}],['Madame Aisha',{c:'#B98CFF',k:'bun',sk:0,h:2,sh:'#7B3FA0'}],['Sgt. Ibrahim',{c:'#FFC93C',k:'cap',sk:2,sh:'#26336B',st:true}],['Mariyam',{c:'#3DDBB5',k:'scarf',sk:1,sh:'#087A6B',a:'#E8487A'}],['Hussain',{c:'#FF8FB5',k:'specs',sk:3,h:0,sh:'#8A2E5A'}]];
+const BOTS=[['Inspector Ali',{c:'#56B6FF',k:'deer',sk:1,sh:'#7A4E26',st:true},'ali'],['Madame Aisha',{c:'#B98CFF',k:'bun',sk:0,h:2,sh:'#7B3FA0'},'aisha'],['Sgt. Ibrahim',{c:'#FFC93C',k:'cap',sk:2,sh:'#26336B',st:true},'ibrahim'],['Mariyam',{c:'#3DDBB5',k:'scarf',sk:1,sh:'#087A6B',a:'#E8487A'},'mariyam'],['Hussain',{c:'#FF8FB5',k:'specs',sk:3,h:0,sh:'#8A2E5A'},'hussain']];
+const botFace=i=>{const b=BOTS[i];return DGA&&DGA.presets&&DGA.presets[b[2]]?{ch:DGA.presets[b[2]],f:b[1]}:b[1];};
 let cfg={opp:Math.min(5,Math.max(2,+(ls.get('dh-opp')||3))),mode:ls.get('dh-mode')==='lives'?'lives':'classic',rounds:[3,5,10].includes(+ls.get('dh-rounds'))?+ls.get('dh-rounds'):5,level:['easy','normal','sharp'].includes(ls.get('dh-level'))?ls.get('dh-level'):'normal'};
 let G=null,role=null,screen='home',timers=[],tab=ls.get('dh-tab')==='online'?'online':'cpu';const app=$('#app');
 const TURN_MS=15000;
@@ -403,12 +424,12 @@ function lampHTML(n){return `<div class="lampw" aria-hidden="true"><svg viewBox=
 <g class="sway"><path d="M80 0v26" stroke="#140C33" stroke-width="3"/><g class="lit"><g class="lit2"><path d="M54 62 L6 150 H154 L106 62Z" fill="url(#cone${n})"/><circle cx="80" cy="62" r="24" fill="#FFE7A3" opacity=".35"/><ellipse cx="80" cy="61" rx="17" ry="7" fill="url(#bulb${n})"/></g></g><path d="M50 60 Q52 30 80 26 Q108 30 110 60Z" fill="#FF5A6E"/><path d="M60 38 Q64 32 74 30" stroke="#fff" stroke-width="3" stroke-linecap="round" opacity=".45" fill="none"/><path d="M50 60h60" stroke="#A8212F" stroke-width="4.5" stroke-linecap="round"/><circle cx="80" cy="25" r="4.5" fill="#FFC93C"/></g></svg></div>`;}
 const glowHTML=()=>'<div class="glow" aria-hidden="true"><i></i></div>';
 /* ================= home ================= */
-function topBar(){return `<div class="top"><a class="ib" href="../" aria-label="Back to Dhivehi Games">${ICON.back}</a><span class="me-pill">${myAv()}<b>${esc(shownName())}</b></span>${sndBtn()}${boliPill()}</div>`;}
+function topBar(){return `<div class="top"><a class="ib" href="../" aria-label="Back to Dhivehi Games">${ICON.back}</a><span class="me-pill">${face(myFace(),'pill')}<b>${esc(shownName())}</b></span>${sndBtn()}${boliPill()}</div>`;}
 function renderHome(){clearAll();screen='home';if(!isOn()){G=null;role=null;}closeSheet();
  app.innerHTML=`${topBar()}
 <main class="home">${glowHTML()}
  <section class="hero">${lampHTML('h')}<h1 class="logo" aria-label="Dhogu">${'DHOGU'.split('').map((c,i)=>`<span style="--i:${i}" aria-hidden="true">${c}</span>`).join('')}</h1><p class="tag">Can you spot the lie?</p>
-  <div class="lineup" aria-hidden="true">${BOTS.map((b,i)=>`<span class="sus" style="--i:${i}">${face(b[1])}</span>`).join('')}</div></section>
+  <div class="lineup" aria-hidden="true">${BOTS.map((b,i)=>`<span class="sus" style="--i:${i}">${face(botFace(i),'lu')}</span>`).join('')}</div></section>
  <section class="panel rise" style="--d:150ms"><span class="ftab">CASE FILE · DHOGU</span>
   <div class="tabs" role="tablist" aria-label="How to play"><button role="tab" aria-selected="${tab==='cpu'}" data-a="tab" data-v="cpu">${ICON.cpu}vs Computer</button><button role="tab" aria-selected="${tab==='online'}" data-a="tab" data-v="online">${ICON.globe}Play Online</button></div>
   <div id="tabbody" role="tabpanel">${tab==='cpu'?cpuHTML():onlineHTML()}</div>
@@ -426,7 +447,8 @@ function cpuHTML(){const seg=(key,opts)=>opts.map(([v,t])=>`<button data-set="${
   <button class="btn coral w big go" data-a="start">Open the case</button>`;}
 function onlineHTML(){const au=!!authName();
  return `${srvHTML()}
-  <div class="lbl">Your detective</div><div class="idrow"><button class="lookbtn" data-a="look" aria-label="Change your look">${face(myFace())}</button><input id="nm" class="inp" maxlength="14" value="${esc(myName())}" placeholder="Your name" aria-label="Your name" autocomplete="nickname"${au?' disabled':''}></div>
+  <div class="lbl">Your detective</div><div class="idrow"><span class="lookbtn">${face(myFace(),'id')}</span><input id="nm" class="inp" maxlength="14" value="${esc(myName())}" placeholder="Your name" aria-label="Your name" autocomplete="nickname"${au?' disabled':''}></div>
+  <p class="hint" style="text-align:left;margin-top:8px">Your character comes from the Dhivehi Games home page.</p>
   <button class="btn coral w big go" data-a="quick">${ICON.bolt}Quick Play</button><p class="hint">Jump into an open table with other players.</p>
   <div class="lbl">Play with friends</div><div class="two"><button class="btn teal" data-a="create" data-v="1">Public table</button><button class="btn soft" data-a="create" data-v="0">Private table</button></div>
   <div class="lbl">Join with a code</div><div class="joinrow"><input id="code" class="inp code" maxlength="4" placeholder="ABCD" autocapitalize="characters" autocomplete="off" spellcheck="false" aria-label="Table code"><button class="btn" data-a="join">Join</button></div>
@@ -449,7 +471,7 @@ function renderWait(t){screen='wait';closeSheet();app.innerHTML=`<div class="top
 function setWait(t){const e=$('#waitt');if(e)e.textContent=t;}
 /* ================= game engine (runs on solo and on the online host) ================= */
 function newMatch(){role='solo';const players=[{id:myId,name:shownName(),me:true,face:myFace(),score:0}];
- BOTS.slice(0,cfg.opp).forEach(([n,f],i)=>players.push({id:'b'+i,name:n,face:f,bot:true,score:0}));
+ BOTS.slice(0,cfg.opp).forEach(([n],i)=>players.push({id:'b'+i,name:n,face:botFace(i),bot:true,score:0}));
  G={players,mode:cfg.mode,rounds:cfg.rounds,level:cfg.level,roundNo:0,status:'play',mid:rid(4),seq:0};newRound();}
 function newRound(){clearAll();closeSheet();G.roundNo++;G.status='play';G.final=false;const seats=G.players.filter(p=>!p.gone);G.decks=seats.length>=5?2:1;const d=deck(G.decks);
  G.players.forEach(p=>{p.hand=[];p.lives=3;p.out=!!p.gone;p.seen={};});
@@ -612,7 +634,12 @@ function flyToPile(p,k){const from=p.me?$('#hand'):app.querySelector(`.opp[data-
 function seatEl(p){return p?document.querySelector(`[data-pid="${cq(p.id)}"] .fw`):null;}
 function bubble(p,txt,cls=''){if(!p)return;const el=screen==='table'?seatEl(p):null;if(!el||sheetKind()){toast(`${nm(p)}: ${txt}`,2600);return;}
  const b=document.createElement('div');b.className='bubble'+(cls?' '+cls:'');b.textContent=txt;el.appendChild(b);setTimeout(()=>b.remove(),1900);}
-function mood(p,m){const el=seatEl(p);const f=el&&el.querySelector('.face');if(!f)return;f.dataset.mood=m;clearTimeout(f._mt);f._mt=setTimeout(()=>{delete f.dataset.mood;},2000);}
+function mood(p,m){const el=seatEl(p);const f=el&&el.querySelector('.face');if(!f||!p)return;
+ if(f.classList.contains('ch')&&!p.rookie&&DGA&&typeof DGA.react==='function'){const ex=m==='shock'?'shocked':'smug';
+  try{DGA.react(f,ex,2000);f.dataset.mood=m;clearTimeout(f._mt);f._mt=setTimeout(()=>{delete f.dataset.mood;},2000);return;}catch(e){}}
+ if(f.classList.contains('ch')&&!p.rookie){const mk=h=>{const t=document.createElement('span');t.innerHTML=h;return t.firstElementChild;};const big=f.classList.contains('big')?'big':'';
+  const x=mk(face(p.face,big,m==='shock'?'shocked':'smug'));x.dataset.mood=m;f.replaceWith(x);clearTimeout(el._mt);el._mt=setTimeout(()=>{const cur=el.querySelector('.face');if(cur&&cur.dataset.mood)cur.replaceWith(mk(face(p.face,big)));},2000);return;}
+f.dataset.mood=m;clearTimeout(f._mt);f._mt=setTimeout(()=>{delete f.dataset.mood;},2000);}
 /* local effects: sounds, animations, messages */
 function fxLocal(e){if(!G||!e)return;const P=i=>G.players[i];
  switch(e.t){
@@ -773,7 +800,7 @@ function onHostData(pl,topic,d){const n=net;if(!G||!d||typeof d!=='object')retur
   if(p){if(p.gone||p.rookie||p.bot){sendPlayer(topic,pl,{k:'err',m:gone});return;}mapPlayer(topic,pl,id);sendPlayer(topic,pl,{k:'state',s:pubState(id),fx:[]});return;}
   if(G.status!=='lobby'){sendPlayer(topic,pl,{k:'err',m:'That game has already started.'});return;}
   if(G.players.length>=6){sendPlayer(topic,pl,{k:'err',m:'That table is full.'});return;}
-  mapPlayer(topic,pl,id);G.players.push({id,name:cleanName(d.name)||'Player',face:vf(d.fc),score:0});SFX.pop();sync();return;}
+  mapPlayer(topic,pl,id);G.players.push({id,name:cleanName(d.name)||'Player',face:vf(d.fc,id),score:0});SFX.pop();sync();return;}
  if(!pl.pid){/* a ping from someone we don't know on this key: after a host change, or a dropped player */
   const id=String(d.id||'');if(!id)return;if(n.banned.has(id)){sendPlayer(topic,pl,{k:'err',m:gone});return;}
   const p=G.players.find(q=>q.id===id);if(!p||p.bot||p.gone)return;mapPlayer(topic,pl,id);}
@@ -848,7 +875,7 @@ async function onJoinMsg(o,topic,m,ret){const n=net;if(!n||n.role!=='join')retur
  if(d.k==='rtc'){vcOnSignal(String(d.f||''),d.d);return;}
  if(d.k==='bye'){if(d.mig&&G&&G.status!=='over')n.lostAt=Date.now();else endOnline('The host closed the table.');return;}
  if(d.k==='state'&&d.s){if(G&&G.view&&G.mid===d.s.mid&&(d.s.ep|0)===(G.ep|0)&&(d.s.rev|0)<=(G.rev|0))return;applyState(d.s,d.fx);}}
-function applyState(s,fx){const prev=G;const players=(s.players||[]).map(p=>({...p,face:p.rookie?p.face:vf(p.face),me:p.id===myId,hand:Array.isArray(p.hand)?p.hand:Array.from({length:p.n|0},(_,k)=>({id:'x'+k,r:0,s:'S'}))}));
+function applyState(s,fx){const prev=G;const players=(s.players||[]).map(p=>({...p,face:vf(p.face,p.id),me:p.id===myId,hand:Array.isArray(p.hand)?p.hand:Array.from({length:p.n|0},(_,k)=>({id:'x'+k,r:0,s:'S'}))}));
  const mine=players.find(p=>p.me);if(!mine){endOnline('You are no longer at this table.');return;}
  if(mine.rookie||mine.gone){endOnline('You lost connection, so an AI Rookie finished your round. You can’t rejoin this match.');return;}
  const sel=prev&&prev.view&&prev.mid===s.mid&&prev.roundNo===s.roundNo&&prev.sel?prev.sel:new Set();
@@ -903,6 +930,7 @@ addEventListener('pagehide',()=>{const n=net;if(!n)return;
   n.clients.forEach(o=>{try{o.c.publish(NS+n.code+'/i','',true);}catch(e){}});(n.lc||[]).forEach(o=>{try{o.c.publish(NS+'lobby/'+n.code,'',true);}catch(e){}});}
  else joinSend({k:'leave'});});
 addEventListener('pageshow',e=>{if(e.persisted&&net)endOnline('You left the table.');});
+addEventListener('storage',e=>{if((e.key==='dg-char'||e.key==='dg-av')&&screen==='home')renderHome();});
 document.addEventListener('visibilitychange',()=>{if(!document.hidden){netWake();if(screen==='home'&&tab==='online'&&!net)warmUp();}});
 /* ---------- lobby screen ---------- */
 const inviteLink=()=>location.origin+location.pathname+'?t='+(G?G.code:'');
@@ -1013,7 +1041,6 @@ document.addEventListener('click',e=>{const b=e.target.closest('[data-a],[data-s
   if(role==='join'){G.pend=true;joinSend({k:'act',t:'play',ids:cards.map(c=>c.id)});G.sel=new Set();update();setTimeout(()=>{if(G&&G.pend){G.pend=false;update();}},4000);}else doPlay(me,cards);break;}
  case 'dhogu':{if(!G||!G.last||+b.dataset.seq!==G.last.seq)break;if(role==='join'){G.pendCall=true;callButton();joinSend({k:'act',t:'call',seq:G.last.seq});setTimeout(()=>{if(G&&G.pendCall){G.pendCall=false;callButton();}},3000);}else call(ME());break;}
  case 'snd':sfxOn=!sfxOn;ls.set('dd-sfx',sfxOn?'1':'0');b.outerHTML=sndBtn();{const nb=$('[data-a="snd"]');if(nb)nb.focus({preventScroll:true});}if(sfxOn)SFX.pop();break;
- case 'look':ls.set('dh-look',String((+(ls.get('dh-look')||0)+1)%6));b.innerHTML=face(myFace());SFX.pop();break;
  case 'quick':quickMatch();break;
  case 'create':{if(!netOK())break;const run=++quickRun;renderWait('Creating your table…');netCreate({pub:v==='1'}).then(ok=>{if(!ok&&run===quickRun)renderHome();});break;}
  case 'join':{const c=(($('#code')||{}).value||'').trim().toUpperCase();if(!/^[A-Z]{4}$/.test(c)){toast('Table codes are 4 letters.');break;}startJoin(c);break;}
