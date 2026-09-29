@@ -1317,7 +1317,7 @@ function ticker(s){if(!BV)return;BV.ticker.innerHTML=`<span>${esc(human(s))}</sp
 const CAM={s:1,x:0,y:0};
 function S(){return parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--S'))||340;}
 function clampCam(){const s=S();CAM.s=Math.min(3.2,Math.max(1,CAM.s));CAM.x=Math.min(0,Math.max(s-s*CAM.s,CAM.x));CAM.y=Math.min(0,Math.max(s-s*CAM.s,CAM.y));}
-let FOLLOW=ls.get('bv-follow')!=='0';const FOLLOW_S=2.3;
+let FOLLOW=ls.get('bv-follow')==='1';const FOLLOW_S=2.3;
 function camBtn(){const b=$('#camBtn');if(!b)return;const whole=CAM.s>1.01;b.innerHTML=whole?ICON.whole:ICON.follow;b.setAttribute('aria-label',whole?'Show the whole board':'Follow the dice (zoom in)');b.title=b.getAttribute('aria-label');}
 function applyCam(ease){clampCam();const c=$('#bcam');c.classList.toggle('ease',!!ease);c.style.transform=`translate3d(${CAM.x}px,${CAM.y}px,0) scale(${CAM.s})`;camBtn();}
 function zoomAt(px,py,ns,ease){ns=Math.min(3.2,Math.max(1,ns));CAM.x=px-(px-CAM.x)*(ns/CAM.s);CAM.y=py-(py-CAM.y)*(ns/CAM.s);CAM.s=ns;applyCam(ease);}
