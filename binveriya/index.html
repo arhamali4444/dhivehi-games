@@ -465,6 +465,19 @@ button:disabled{cursor:default}
  *,*:before,*:after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
  .sun:before,.sun:after,.lagoon i{animation:none!important}
 }
+/* online (shared/net.js): lagoon night, gold buttons */
+:root{--dgn-bg:#08323D;--dgn-bg2:#0D4350;--dgn-fg:#FFF8EA;--dgn-muted:rgba(255,248,234,.7);--dgn-line:rgba(242,212,155,.22);--dgn-soft:rgba(255,255,255,.09);
+ --dgn-acc:#F0BE4E;--dgn-acc-fg:#3A2305;--dgn-good:#2FA66A;--dgn-font:'Sora',system-ui,sans-serif;--dgn-talk:rgba(255,224,138,.95);
+ --dgn-room-bg:linear-gradient(180deg,rgba(4,40,52,.55),#04283A 75%),url(ocean.webp) center/cover,#04283A;
+ --dgn-dock-size:44px;--dgn-inline-bg:rgba(255,255,255,.14);--dgn-inline-shadow:inset 0 0 0 1px rgba(255,255,255,.2);--dgn-dock-z:45;--dgn-bub-z:48}
+.status{align-items:center;gap:6px}
+.status .chip{min-width:0;flex:0 1 auto}
+.dgnslot{display:contents}
+.dgnslot .dgn-dock{--dgn-dock-size:36px}
+.dgnslot .dgn-dock .dgn-ib{border-radius:12px}
+.dgnslot .dgn-vw{background:rgba(0,0,0,.25);box-shadow:inset 0 0 0 1px rgba(242,212,155,.35)}
+#statusChip::after{content:attr(data-t);white-space:pre;font-variant-numeric:tabular-nums;font-weight:900;color:#FFE08A}
+#statusChip.hot::after{color:#FF9A7A}
 </style>
 </head>
 
@@ -489,7 +502,7 @@ button:disabled{cursor:default}
   <button class="btn em" id="resumeBtn" type="button" hidden><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg><span class="col">Resume game<small id="resumeSub"></small></span></button>
   <button class="btn" id="playBtn" type="button"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M13 2 4 14h7l-1 8 9-12h-7z"/></svg>Play vs Computer</button>
   <div class="row">
-   <button class="btn soft" type="button" disabled aria-disabled="true"><span class="col">Play online<span class="soon">Coming soon</span></span></button>
+   <button class="btn soft" id="onlineBtn" type="button"><span class="col">Play online<span class="soon">2 to 5 players</span></span></button>
    <button class="btn soft" id="howBtn" type="button">How to play</button>
   </div>
  </div>
@@ -512,7 +525,7 @@ button:disabled{cursor:default}
  <div class="side">
   <div class="pls" id="pls"></div>
   <div class="act" id="act">
-   <div class="status"><span class="chip" id="statusChip" aria-live="polite">Your turn</span></div>
+   <div class="status"><span class="chip" id="statusChip" aria-live="polite">Your turn</span><span id="dgnSlot" class="dgnslot"></span></div>
    <div class="dice" id="dice" title="Flick the dice to throw them"><span class="die"></span><span class="die"></span></div>
    <div class="abtns" id="abtns"></div>
    <div class="riskmini" id="riskMini" title="Your suspicion"></div>
@@ -528,6 +541,7 @@ button:disabled{cursor:default}
 <div id="toasts" aria-live="polite"></div>
 <script src="../shared/avatar.js?v=5"></script>
 <script src="../shared/sponsors.js?v=4"></script>
+<script src="../shared/net.js?v=1"></script>
 
 <script>
 'use strict';
@@ -775,7 +789,9 @@ const E=(()=>{
     most built-up space (auctioned to the others), suspicion and dodged reset to 0. */
  const ROUND_WARN=110,ROUND_CAP=120;
  const SUS_STEP=20,SUS_MAX=100,SUS_DECAY=5,REPORT_FEE=50,GUARD_BRIBE=20,JUDGE_BRIBE=40;
- const emit=e=>{EV.push(e);};
+ /* every event is also kept in a short numbered log, so online guests can replay what they missed */
+ let LOG=[],LID=0;
+ const emit=e=>{EV.push(e);LOG.push([++LID,e]);if(LOG.length>120)LOG.shift();};
  const r6=()=>1+((Math.random()*6)|0);
  const P=i=>G.players[i];
  const alive=()=>G.players.map((_,i)=>i).filter(i=>!G.players[i].out);
@@ -840,6 +856,8 @@ const E=(()=>{
   charge(pid,[{to:-1,amt:pay}],{k:'bust',p:pid});}
  /* next queued bust, else resume the interrupted pend (after a report), else finish the turn */
  function bustNext(){if(G.over)return;while(G.bq&&G.bq.length){const n=G.bq.shift();if(!P(n).out)return bust(n);}
+  /* islands of a player who left the table go to auction one by one */
+  while(G.aq&&G.aq.length){const sp=G.aq.shift();if(!G.own[sp])return startAuction(sp,[]);}
   if(G.resume){const r=G.resume;G.resume=null;if(!P(r.p).out){G.pend=r;return;}}return done();}
  function seize(pid){const list=propsOf(pid).sort((a,b)=>(G.own[b].h||0)-(G.own[a].h||0)||SP[b].price-SP[a].price);if(!list.length)return false;
   const sp=list[0];delete G.own[sp];if(G.sale&&G.sale.sp===sp)G.sale=null;G.offers.forEach(x=>{if(x.st==='open'&&chkTrade(x))x.st='void';});
@@ -852,7 +870,24 @@ const E=(()=>{
  function moveBack(pid,n){const p=P(pid),path=[];let pos=p.pos;for(let k=0;k<n;k++){pos=(pos+NSP-1)%NSP;path.push(pos);}p.pos=pos;emit({t:'move',p:pid,path,back:1});}
  function goJail(pid){const p=P(pid);p.pos=JAIL;p.jail=true;p.jt=0;G.dbl=0;emit({t:'jail',p:pid});log(`${p.name} is locked up in Maafushi Prison`);}
  /* ---------- turn flow ---------- */
- function startTurn(i){G.turn=i;G.dbl=0;G.tn=(G.tn||0)+1;const p=P(i);if(!p.bribed&&p.sus>0){p.sus=Math.max(0,p.sus-SUS_DECAY);emit({t:'sus',p:i});}p.bribed=false;G.pend={t:'turn',p:i};emit({t:'turn',p:i});}
+ function startTurn(i){G.turn=i;G.dbl=0;G.tn=(G.tn||0)+1;const p=P(i);
+  /* online leaver / AFK: the computer plays one more full round for them, then they leave the table */
+  if(p.leaving){if((p.aiTurns|0)>0)p.aiTurns--;else return retire(i);}
+  if(!p.bribed&&p.sus>0){p.sus=Math.max(0,p.sus-SUS_DECAY);emit({t:'sus',p:i});}p.bribed=false;G.pend={t:'turn',p:i};emit({t:'turn',p:i});}
+ /* the leaver's seat goes: buildings removed, loans cleared, cash to the bank, prison cards back to the deck,
+    and every island is auctioned to the players still at the table */
+ function retire(pid){const p=P(pid);if(p.out)return done();const props=propsOf(pid);
+  props.forEach(i=>{delete G.own[i];});
+  p.cards.forEach(d=>G.decks[d].push(CARDS[d].findIndex(c=>c.e==='goo')));p.cards=[];
+  if(p.cash)emit({t:'cash',p:pid,d:-p.cash});p.cash=0;p.out=true;p.left=1;p.jail=false;p.leaving=0;p.outAt=G.seq;
+  G.offers.forEach(o=>{if(o.st==='open'&&(o.from===pid||o.to===pid))o.st='void';});
+  if(G.sale){if(G.sale.seller===pid)G.sale=null;else delete G.sale.bids[pid];}
+  if(G.bq)G.bq=G.bq.filter(j=>j!==pid);
+  log(`${p.name} left the table. ${props.length?'Their buildings are removed, loans cleared and their islands go to auction.':'They owned no islands.'}`);emit({t:'retire',p:pid,n:props.length});
+  if(alive().length<=1)return gameOver('last');
+  G.aq=(G.aq||[]).concat(props);G.pend=null;return bustNext();}
+ /* hand a seat to the computer for one more full round (online: left, lost connection or away) */
+ function markLeaving(pid){const p=P(pid);if(!p||p.out||p.leaving)return;p.human=false;p.leaving=1;p.aiTurns=1;emit({t:'leaving',p:pid});log(`${p.name} is away. The computer plays one more round for them.`);}
  function done(){const i=G.turn,p=P(i);if(G.over)return;if(p.out){return nextTurn();}G.pend={t:'post',p:i,again:G.dbl>0&&!p.jail};}
  /* Classic win target: the first landowner whose net worth reaches G.target at the end of a turn wins.
     (G.target 0 = "Last one standing"; that option ends after ROUND_CAP rounds with the richest winning.) */
@@ -1032,6 +1067,13 @@ const E=(()=>{
    G.offers.forEach(o=>{if(o.st==='open'&&G.now-o.at>OFFER_TTL){o.st='void';ch=true;emit({t:'reject',id:o.id,from:o.from,to:o.to,expired:1});}});
    return ch;},
   drain(){const e=EV;EV=[];return e;},
+  /* online: guests replay the host's events; the log is numbered so nothing plays twice */
+  feed(evs){(evs||[]).forEach(e=>EV.push(e));},evlog:()=>LOG,get lid(){return LID;},seedLid(n){if(n>LID)LID=n|0;},markLeaving,
+  /* guests: take the host's state without dropping events still waiting to be played */
+  swap(g){G=g;return G;},
+  /* a state rebuilt from a guest's view has no card order: shuffle fresh decks (kept cards stay out) */
+  fixDecks(){if(!G)return;['c','n'].forEach(d=>{const a=G.decks&&G.decks[d];if(Array.isArray(a)&&a.length&&a.every(x=>x>=0&&x<CARDS[d].length))return;
+   const goo=CARDS[d].findIndex(c=>c.e==='goo'),held=G.players.some(p=>p.cards.includes(d));let s=shuf(CARDS[d].length);if(held)s=s.filter(x=>x!==goo);G.decks[d]=s;});},
   rentOf,netWorth,propsOf,ownsAll,tradable,groupBuilt,countOf,ownerOf,bldCount,hc,loanVal,repayCost,permitBribe,fmt,alive,
   chkBuild,chkBribeBuild,chkSellB,chkLoan,chkRepay,chkTrade,
   canReport(pid,to){const pe=G.pend,p=P(pid),t=P(to);return !!pe&&pe.p===pid&&(pe.t==='turn'||pe.t==='post')&&!!t&&to!==pid&&!t.out&&t.sus>0&&p.repAt!==G.tn&&p.cash>=REPORT_FEE;},
@@ -1272,9 +1314,13 @@ const macro=f=>{const c=new MessageChannel();c.port1.onmessage=()=>{c.port1.clos
 let G=null,ME=0,SCREEN='home',WATCH=false;
 let speedPref=ls.get('bv-speed')==='fast';
 function UI_SPEED(){return FAST?0.02:WATCH?0.35:speedPref?0.5:1;}
-const isBot=i=>!!G&&!!G.players[i]&&(!G.players[i].human||AUTO);
+/* online: NET (shared/net.js); ONLINE is true at an online table. A spectator has ME = -1. */
+let NET=null,ONLINE=false;
+const netHost=()=>ONLINE&&!!NET&&NET.isHost(),netGuest=()=>ONLINE&&!!NET&&!NET.isHost();
+const isBot=i=>!!G&&!!G.players[i]&&(!G.players[i].human||(AUTO&&(!ONLINE||i===ME)));
 const nameOf=i=>i===ME?'You':G.players[i].name;
-const meP=()=>G.players[ME];
+const SPECP={name:'',cash:0,cards:[],out:true,sus:0,mute:false,jail:false,human:true,col:'#888',pos:0,jt:0};
+const meP=()=>(G&&G.players[ME])||SPECP;
 
 /* ---------------------------------------------------------------- sound (soft WebAudio) */
 const SND=(()=>{let ctx=null,master=null,nbuf=null,on=ls.get('bv-sound')!=='0';
@@ -1438,8 +1484,8 @@ addEventListener('resize',()=>{clearTimeout(sizeBoard.t);sizeBoard.t=setTimeout(
 /* ---------------------------------------------------------------- players strip + actions */
 function buildPlayers(){$('#pls').innerHTML=G.players.map((p,i)=>`<button class="pl" type="button" data-pl="${i}" style="--c:${p.col}"><span class="pfw"><span class="pf">${avHTML(i,34,null,true)}</span><i class="sus" aria-hidden="true"><b></b></i></span><span class="tx"><b>${i===ME?'You':esc(p.name)}</b><small class="cs"></small>${G.target?'<i class="goal" aria-hidden="true"><b></b></i>':''}</span><span class="tk">${TOKENS[p.tok].s}</span><span class="st"></span></button>`).join('');}
 function renderPlayers(){$$('#pls .pl').forEach((el,i)=>{const p=G.players[i];el.classList.toggle('on',i===G.turn&&!G.over);el.classList.toggle('out',p.out);
- el.querySelector('.cs').textContent=p.out?'Bankrupt':fmt(VIEW.cash[i]);
- el.querySelector('.st').innerHTML=(p.jail?'<i>Prison</i>':'')+(p.cards.length?`<i class="card">${p.cards.length>1?p.cards.length+' ':''}Card</i>`:'');
+ el.querySelector('.cs').textContent=p.out?(p.left?'Left':'Bankrupt'):fmt(VIEW.cash[i]);
+ el.querySelector('.st').innerHTML=(p.leaving?'<i>Away</i>':'')+(p.jail?'<i>Prison</i>':'')+(p.cards.length?`<i class="card">${p.cards.length>1?p.cards.length+' ':''}Card</i>`:'');
  const sb=el.querySelector('.sus');sb.style.setProperty('--s',(p.out?0:p.sus)+'%');sb.classList.toggle('hot',p.sus>=60&&!p.out);sb.title=`Suspicion ${p.sus}%`;
  const gp=goalPct(i),gb=el.querySelector('.goal');if(gb){gb.style.setProperty('--g',gp+'%');gb.classList.toggle('near',gp>=80);}
  el.title=G.target&&!p.out?`Net worth ${fmt(E.netWorth(i))} · ${gp}% of the ${fmt(G.target)} goal`:'';
@@ -1452,7 +1498,9 @@ function react(i,expr,ms=1600){if(FAST||!G||!G.players[i]||!window.DGAvatar)retu
  const ex=(DGAvatar.expressions||[]).includes(expr)?expr:'smug';pf.innerHTML=avHTML(i,34,ex,true);clearTimeout(pf.__t);pf.__t=setTimeout(()=>{pf.innerHTML=avHTML(i,34,null,true);},ms);}
 function flyCash(i,d){const el=$$('#pls .pl')[i];if(!el||FAST)return;const f=document.createElement('span');f.className='fly '+(d>0?'p':'m');f.textContent=(d>0?'+':'−')+Math.abs(d);el.appendChild(f);setTimeout(()=>f.remove(),1500);}
 let ACTKEY='';
-function statusText(){const pe=G.pend,p=meP();if(G.over)return 'Game over';if(p.out)return WATCH?'You are bankrupt · watching':'You are bankrupt';
+function statusText(){const pe=G.pend,p=meP();if(G.over)return 'Game over';
+ if(ONLINE&&ME<0){if(!pe)return 'Watching';const w=pe.p!=null&&G.players[pe.p]?G.players[pe.p].name:'';return pe.t==='auction'?`Auction · ${SP[pe.sp].name}`:w?`${w}'s turn`:'Watching';}
+ if(p.out)return p.left?'You left this game':WATCH||ONLINE?'You are bankrupt · watching':'You are bankrupt';
  if(!pe)return '…';const who=pe.p!=null?G.players[pe.p]:null,mine=pe.p===ME&&!AUTO;
  switch(pe.t){case 'turn':return mine?(p.jail?`In Maafushi Prison · try ${p.jt+1} of 3`:'Your turn · roll the dice'):`${who.name}'s turn`+(who.jail?' · in prison':'');
   case 'post':return mine?(pe.again?'Doubles! Roll again':'Build, trade or end your turn'):`${who.name} is thinking…`;
@@ -1467,7 +1515,9 @@ function statusText(){const pe=G.pend,p=meP();if(G.over)return 'Game over';if(p.
 function renderActions(){const pe=G.pend,p=meP(),mine=pe&&pe.p===ME&&!AUTO;$('#statusChip').textContent=statusText();
  let key=[G.over?1:0,p.out,WATCH,pe&&pe.t,pe&&pe.p,pe&&pe.again,p.jail,p.cards.length,p.cash>=JAIL_FEE,p.cash>=E.C.GUARD_BRIBE,p.sus,pe&&pe.t==='auction'&&pe.out.includes(ME)].join('|');
  if(key!==ACTKEY){ACTKEY=key;let h='';
-  if(G.over)h=`<button class="btn" data-a="results">See results</button><div class="row"><button class="btn soft sm" data-a="again">Play again</button><button class="btn soft sm" data-a="home">Home</button></div>`;
+  if(G.over)h=`<button class="btn" data-a="results">See results</button><div class="row">${!ONLINE||netHost()?'<button class="btn soft sm" data-a="again">Play again</button>':''}<button class="btn soft sm" data-a="home">${ONLINE?'Leave table':'Home'}</button></div>`;
+  else if(ONLINE&&ME<0)h='';
+  else if(ONLINE&&p.out)h=`<div class="row"><button class="btn soft sm" data-a="home">Leave table</button></div>`;
   else if(p.out)h=`<div class="row"><button class="btn soft sm" data-a="watch">${WATCH?'Watching…':'Watch to the end'}</button><button class="btn soft sm" data-a="again">New game</button></div>`;
   else{if(mine&&pe.t==='turn'){h=`<button class="btn" data-a="roll">${ICON.dice}${p.jail?'Roll for doubles':'Roll'}</button><span class="flickhint">or flick the dice onto the board</span>`;
      if(p.jail)h+=`<div class="row"><button class="btn soft sm" data-a="jailpay" ${p.cash<JAIL_FEE?'disabled':''}>Pay ${fmt(JAIL_FEE)}</button>${p.cards.length?'<button class="btn soft sm" data-a="jailcard">Use card</button>':''}</div>`+
@@ -1653,7 +1703,14 @@ function openPlayer(i){const p=G.players[i];const props=E.propsOf(i);
  ${i!==ME&&!p.out&&!meP().out&&!G.over?`<div class="acts one"><button class="btn em sm" data-a="tradewith" data-p="${i}">${ICON.handshake}Propose a trade</button></div>`:''}
  ${i!==ME&&!p.out&&!meP().out&&!G.over&&!AUTO&&p.sus>0?`<h3>Report to the Anti-Corruption Commission</h3><p style="font-size:12px;color:var(--muted);margin:0">Pay ${fmt(E.C.REPORT_FEE)} on your turn for an audit: ${p.sus}% chance ${esc(p.name)} is busted (pays back double, goes to Maafushi, loses an island). One report per turn.</p>
   <div class="acts one"><button class="btn red sm" data-a="report" data-p="${i}" ${E.canReport(ME,i)?'':'disabled'}>Report ${esc(p.name)} · ${fmt(E.C.REPORT_FEE)}</button></div>`:''}`);}
-function openMenu(){const p=meP();openSheet('menu',shead('Menu','')+`<div class="menu">
+function openMenu(){const p=meP();if(ONLINE){const m=NET.meta()||{};openSheet('menu',shead('Menu',`Online table ${esc(m.code||'')}`)+`<div class="menu">
+ <button class="btn em sm" data-a="close">Back to the game</button>
+ <button class="switch" role="switch" aria-checked="${SND.on}" data-a="tsound">Sound<i></i></button>
+ ${ME>=0&&!p.out?`<button class="switch" role="switch" aria-checked="${!!p.mute}" data-a="tmute">Mute trade offers from computer players<i></i></button>`:''}
+ <button class="btn lite sm" data-a="log">Game log</button><button class="btn lite sm" data-a="rules">How to play</button>
+ <button class="btn lite sm" data-a="home">Leave table</button>
+ ${ME>=0&&!p.out&&!G.over?'<p style="font-size:12px;color:var(--muted);margin:2px 0 0">If you leave, the computer plays one more round for you. Then your buildings are removed, loans cleared and your islands are auctioned.</p>':''}</div>`);return;}
+ openSheet('menu',shead('Menu','')+`<div class="menu">
  <button class="btn em sm" data-a="close">Back to the game</button>
  <button class="switch" role="switch" aria-checked="${SND.on}" data-a="tsound">Sound<i></i></button>
  <button class="switch" role="switch" aria-checked="${speedPref}" data-a="tspeed">Fast computer turns<i></i></button>
@@ -1677,7 +1734,10 @@ const RULES=`<div class="rules"><p><b>Binveriya</b> (ބިންވެރިޔާ, "land
 function openRules(){openSheet('rules',shead('How to play','')+RULES);}
 
 /* ---------------------------------------------------------------- click handling */
-function doAct(a,quiet){const e=E.act(ME,a);if(e&&!quiet){toast(e);SND.err();}pump(true);return e;}
+function doAct(a,quiet){if(ONLINE&&ME<0)return 'You are watching';
+ /* online guest: the host plays the move and answers with the new state (or an error message) */
+ if(netGuest()){NET.send(a);return null;}
+ const e=E.act(ME,a);if(e&&!quiet){toast(e);SND.err();}if(!e&&netHost()){NET.clear(myId());DL=null;NET.sync();}pump(true);return e;}
 const H={
  drawcard(){const pe=G.pend;if(DRAW.busy||!pe||pe.t!=='draw'||pe.p!==ME)return;blankActs();SND.unlock();doAct({t:'draw'});},
  showcard(){const pe=G.pend;if(pe&&(pe.t==='draw'||pe.t==='card')&&!FAST)openDraw(pe);},
@@ -1715,11 +1775,11 @@ const H={
  rejectof(b){closeSheet();doAct({t:'reject',id:+b.dataset.id});},
  counterof(b){const o=G.offers.find(x=>x.id===+b.dataset.id);if(!o)return;tradeStart(o.from,{give:o.get.sp,giveCash:o.get.cash,giveCards:o.get.cards,get:o.give.sp,getCash:o.give.cash,getCards:o.give.cards,re:o.id});},
  tsound(b){SND.set(!SND.on);b.setAttribute('aria-checked',SND.on);soundBtn();},tspeed(b){speedPref=!speedPref;ls.set('bv-speed',speedPref?'fast':'');b.setAttribute('aria-checked',speedPref);},
- tmute(b){const on=!meP().mute;E.act(ME,{t:'mute',on});b.setAttribute('aria-checked',on);toast(on?'Trade offers from computer players are muted':'Trade offers are back on');pump(true);},
+ tmute(b){const on=!meP().mute;doAct({t:'mute',on},true);b.setAttribute('aria-checked',on);toast(on?'Trade offers from computer players are muted':'Trade offers are back on');pump(true);},
  log(){openLog();},rules(){openRules();},
- home(){closeSheet();saveGame();showHome();},
- newgame(b){if(!b.dataset.sure){b.dataset.sure=1;b.textContent='Tap again to abandon this game';return;}ls.del('bv-save');closeSheet();G=null;showHome();openSetup();},
- again(){closeSheet();ls.del('bv-save');showHome();openSetup();},
+ home(){closeSheet();if(ONLINE){NET.leave();return;}saveGame();showHome();},
+ newgame(b){if(ONLINE)return;if(!b.dataset.sure){b.dataset.sure=1;b.textContent='Tap again to abandon this game';return;}ls.del('bv-save');closeSheet();G=null;showHome();openSetup();},
+ again(){closeSheet();if(ONLINE){NET.again();return;}ls.del('bv-save');showHome();openSetup();},
  oldnew(){closeSheet();ls.del('bv-save');showHome();openSetup();},results(){openOver();},
  watch(){WATCH=true;ACTKEY='';render();schedule();}};
 function refreshSheet(){const k=SH.key||'';if(k==='manage')openManage();else if(k.startsWith('info:'))openInfo(+k.slice(5));else if(SH.debt!=null||k.startsWith('debt')){const pe=G.pend;if(pe&&pe.t==='debt')openDebt(pe,k);}}
@@ -1863,13 +1923,16 @@ async function play(ev){const slow=ev.p!=null&&isBot(ev.p)&&!WATCH?1:1;
   case 'turn':placeTokens();if(ev.p===ME&&!AUTO){SND.turn();if(!FAST)setDice(G.dice[0]?G.dice:[1,1]);}follow(ev.p);break;
   case 'final':toast("Time's up! Finishing this turn…",3500);break;
   case 'capwarn':toast(`Round ${E.C.ROUND_WARN}: the game ends after round ${E.C.ROUND_CAP}. Then the highest net worth wins.`,5000);break;
-  case 'risk':renderActions();break;}}
+  case 'risk':renderActions();break;
+  case 'leaving':renderPlayers();toast(`${nameOf(ev.p)==='You'?'You are':G.players[ev.p].name+' is'} away. The computer plays one more round.`,3500);break;
+  case 'retire':react(ev.p,'sad',2400);decorate();placeTokens();renderPlayers();toast(`${G.players[ev.p].name} left the table.${ev.n?' Their islands go to auction.':''}`,3500);await sleep(500);break;}}
 
 /* ---------------------------------------------------------------- scheduling (AI turns, decisions) */
 let aiTimer=null,aiSeq=-1;
 /* the safe default when a computer player makes no move */
 const FALLBACK=pe=>({turn:{t:'roll'},buy:{t:'decline'},rent:{t:'pay'},debt:{t:'bankrupt'},post:{t:pe.again?'roll':'end'},draw:{t:'draw'},card:{t:'cardok'},sandbank:{t:'sandbank',c:'relax'},court:{t:'court'}}[pe.t]||null);
 function schedule(){if(!G||G.over||SCREEN!=='game')return;const pe=G.pend;syncDecision();
+ if(netGuest()){guestAuto(pe);return;}   /* online guest: the host runs the computer players and the clock */
  /* fast test mode: draw and accept my own cards automatically */
  if(FAST&&pe&&pe.p===ME&&!isBot(ME)&&(pe.t==='draw'||pe.t==='card')){const key='me:'+G.seq+':'+pe.t;if(aiSeq===key)return;aiSeq=key;
   macro(()=>{if(G&&G.pend===pe)E.act(ME,pe.t==='draw'?{t:'draw'}:{t:'cardok',keep:true});aiSeq=-1;pump(true);});return;}
@@ -1881,31 +1944,34 @@ function schedule(){if(!G||G.over||SCREEN!=='game')return;const pe=G.pend;syncDe
  if(FAST)macro(run);else aiTimer=setTimeout(run,base);}
 let lastT=performance.now();
 function clock(){const now=performance.now();let dt=Math.min(1000,now-lastT);lastT=now;if(!G||G.over||SCREEN!=='game')return;
- if(FAST)dt*=12;E.tick(dt);AI.tick(isBot);pump();renderClock();updLive();
+ if(netGuest()){G.now+=dt;if(G.limit&&!G.final)G.elapsed=Math.min(G.limit,G.elapsed+dt);pump();renderClock();updLive();decisionClock();return;}
+ if(FAST)dt*=12;E.tick(dt);AI.tick(isBot);if(netHost())hostTimers();pump();renderClock();updLive();if(ONLINE)decisionClock();
  const o=G.offers.find(x=>x.st==='open'&&x.to===ME);if(!o&&BAN&&BAN.key.startsWith('offer:'))clearBanner();if(BAN&&BAN.key==='sale'&&(!G.sale||G.sale.seller===ME))clearBanner('sale');}
 setInterval(clock,FAST?60:250);
 
 /* ---------------------------------------------------------------- save / resume, rewards */
-function saveGame(){if(!G||AUTO||FAST&&!Q.has('save'))return;if(G.over){ls.del('bv-save');return;}ls.set('bv-save',JSON.stringify({v:1,G,ME,at:Date.now()}));}
+function saveGame(){if(!G||AUTO||ONLINE||FAST&&!Q.has('save'))return;if(G.over){ls.del('bv-save');return;}ls.set('bv-save',JSON.stringify({v:1,G,ME,at:Date.now()}));}
 function loadSave(){try{const d=JSON.parse(ls.get('bv-save')||'null');if(d&&d.v===1&&d.G&&d.G.players&&!d.G.over){if(!E.sameBoard(d.G))d.old=true;return d;}}catch(e){}return null;}
 /* a save from the old board cannot be mapped onto this one: say so and offer a new game */
 function openOldSave(){openSheet('oldsave',shead('A new board!','')+`<p>This game was saved on the old Binveriya board, so it can't be resumed. The new board has four transports and a Sandbank choice.</p>
  <div class="acts"><button class="btn em" data-a="oldnew" data-focus>Start a new game</button><button class="btn lite" data-a="close">Not now</button></div>`);}
-function awardBoli(){if(!G||!G.over||AUTO||FAST||G.round<8)return null;const win=G.over.winner===ME;const key='bv:'+G.id;let d=null;try{d=JSON.parse(ls.get('dd-inv')||'null');}catch(e){}
+function awardBoli(){if(!G||!G.over||AUTO||FAST||G.round<8||ONLINE&&(NET.test||ME<0||meP().left))return null;const win=G.over.winner===ME;const key='bv:'+G.id;let d=null;try{d=JSON.parse(ls.get('dd-inv')||'null');}catch(e){}
  if(!d||d.v!==1)d={v:1,shells:100,xp:0,owned:{},eq:{},hist:[{id:'welcome',t:Date.now(),how:'gift',shells:100}],stats:{},aw:[],day:'',dayEarned:0};
  d.aw=Array.isArray(d.aw)?d.aw:[];if(d.aw.includes(key))return null;d.aw.push(key);if(d.aw.length>80)d.aw.shift();
  let sh=10+(win?30:0);const want=sh,today=new Date().toISOString().slice(0,10);if(d.day!==today){d.day=today;d.dayEarned=0;}
  sh=Math.max(0,Math.min(sh,500-(d.dayEarned|0)));d.dayEarned=(d.dayEarned|0)+sh;d.shells=Math.max(0,d.shells|0)+sh;ls.set('dd-inv',JSON.stringify(d));return {sh,capped:sh<want};}
 function boliCount(){try{const d=JSON.parse(ls.get('dd-inv')||'null');return d&&d.v===1?d.shells|0:0;}catch(e){return 0;}}
 let REWARD=null,OVERSHOWN=null;
-function onOver(){if(OVERSHOWN===G.id)return;OVERSHOWN=G.id;ls.del('bv-save');REWARD=awardBoli();if(G.over.winner===ME)SND.win();else SND.gavel();setTimeout(openOver,FAST?0:900);}
-function openOver(){if(!G||!G.over)return;const o=G.over,w=o.winner,win=w===ME;
+function onOver(){if(OVERSHOWN===G.id)return;OVERSHOWN=G.id;if(!ONLINE)ls.del('bv-save');if(netHost())NET.matchOver();REWARD=awardBoli();if(G.over.winner===ME)SND.win();else SND.gavel();setTimeout(openOver,FAST?0:900);}
+function openOver(){if(!G||!G.over)return;const o=G.over,w=o.winner,win=w===ME&&ME>=0;
  openSheet('over',`<div class="grab" aria-hidden="true"></div><div class="win"><div class="crown">${avHTML(w,92,win?'happy':'smug')}</div><h2 id="sheetTitle">${win?'You win!':esc(G.players[w].name)+' wins!'}</h2>
  ${o.reason==='goal'?`<span class="goalwin">Reached ${fmt(G.target)}</span><p>${win?'You were':esc(G.players[w].name)+' was'} the first to reach the ${fmt(G.target)} net worth goal.</p>`:
   `<p>${o.reason==='time'?'Time is up. The richest landowner takes the islands.':o.reason==='rounds'?`Round ${E.C.ROUND_CAP} is over. The richest landowner takes the islands.`:'Last landowner standing.'}</p>`}
  ${REWARD&&REWARD.sh?`<span class="reward"><img src="${BOLI_IMG}" alt="">+${REWARD.sh} Boli${REWARD.capped?' (daily limit)':''}</span>`:REWARD&&REWARD.capped?'<span class="reward">Daily Boli limit reached</span>':''}</div>
  <div class="rank">${o.rank.map((r,k)=>{const p=G.players[r.i];return `<div class="row2"><b style="width:22px;text-align:center">${k+1}</b><span class="pf" style="width:36px;height:36px;border-radius:50%;overflow:hidden;flex:none">${avHTML(r.i,36)}</span><span class="tx"><b>${r.i===ME?'You':esc(p.name)}</b><small>${p.out?'Bankrupt':`Net worth ${fmt(r.nw)} · ${E.propsOf(r.i).length} propert${E.propsOf(r.i).length===1?'y':'ies'}`}</small></span></div>`;}).join('')}</div>
- <div class="acts"><button class="btn em" data-a="again">Play again</button><button class="btn lite" data-a="home">Home</button></div><div class="sp-box" id="spBox"></div>`);
+ ${!ONLINE?'<div class="acts"><button class="btn em" data-a="again">Play again</button><button class="btn lite" data-a="home">Home</button></div>'
+  :netHost()?'<div class="acts"><button class="btn em" data-a="again">Play again</button><button class="btn lite" data-a="home">Leave table</button></div>'
+  :'<p style="text-align:center;color:var(--muted);font-weight:700">Waiting for the host to start the next game…</p><div class="acts one"><button class="btn lite" data-a="home">Leave table</button></div>'}<div class="sp-box" id="spBox"></div>`);
  try{if(window.DGSponsors&&DGSponsors.list&&DGSponsors.list.length)DGSponsors.box($('#spBox'));}catch(e){}}
 
 /* ---------------------------------------------------------------- home + setup */
@@ -1950,12 +2016,95 @@ function newGame(opts={}){const n=opts.n||SETUP.n,mode=opts.mode||MODE;const tok
 function startWith(g,me){G=g;ME=me;WATCH=false;ACTKEY='';aiSeq=-1;DRAW.busy=false;closeDraw(true);for(const k in MIN)delete MIN[k];SCREEN='game';$('#home').hidden=true;$('#game').hidden=false;
  G.players.forEach((p,i)=>{VIEW.pos[i]=p.pos;VIEW.cash[i]=p.cash;});buildPlayers();buildBoard();setDice(G.dice[0]?G.dice:[3,4]);
  const last=G.log[G.log.length-1];if(last)ticker(last.s);E.drain();render();lastT=performance.now();
- if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>{if(BV)FIT(BV);});pump(true);}
+ if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>{if(BV)FIT(BV);});pump(true);if(ONLINE&&NET)NET.updDock();}
+
+/* ---------------------------------------------------------------- online (shared/net.js)
+   The host runs the engine, the computer players and the clock, and sends everyone the state plus the
+   numbered event log (guests replay the dice, moves and cards they have not seen yet). Every human
+   decision has 20 seconds; then the computer moves for them. Two timeouts in a row, leaving or losing
+   connection: the computer plays one more full round for that seat, then it leaves the table
+   (buildings removed, loans cleared, islands auctioned, cash to the bank, prison card back).
+   The first two successors get a full backup, so a new host carries on exactly where the game was. */
+const DECIDE_MS=20000,GRACE=800,DECIDE=['turn','post','buy','rent','debt','draw','card','sandbank','court'];
+let DL=null,GDL=null,SALEDL=null,LASTLID=0,SYNCSIG='',SYNCAT=0,GUESTKEY='';
+const MYID=window.DGNet?DGNet.pid('dd-pid'):'me';
+const myId=()=>MYID;
+function netName(){return (window.DGNet&&DGNet.testName())||myName()||(ls.get('lg-name')||'').trim().slice(0,14);}
+function lookOf(l){const o={av:null,tok:''};if(!l||typeof l!=='object')return o;try{if(window.DGAvatar&&l.av)o.av=DGAvatar.normalize(l.av);}catch(e){}if(typeof l.tok==='string'&&TOKENS[l.tok])o.tok=l.tok;return o;}
+function touch(i){if(DL&&DL.p===i)DL=null;}
+function hostTimers(){const pe=G.pend,now=Date.now();
+ if(pe&&pe.p!=null&&DECIDE.includes(pe.t)&&G.players[pe.p]&&G.players[pe.p].human&&!G.players[pe.p].out){
+  const k=[pe.t,pe.p,pe.sp,pe.id,pe.again?1:0,G.tn,G.round].join(':');
+  if(!DL||DL.k!==k){DL={k,at:now+DECIDE_MS,p:pe.p};NET.sync();}
+  else if(!PUMPING&&now>=DL.at+(G.players[pe.p].id===MYID?0:GRACE)){DL=null;decideFor(pe);}}
+ else if(DL){DL=null;NET.sync();}
+ /* a seller who never picks a buyer keeps the island */
+ const s=G.sale;if(s&&s.st==='pick'&&G.players[s.seller]&&G.players[s.seller].human){if(!SALEDL||SALEDL.id!==s.id)SALEDL={id:s.id,at:now+DECIDE_MS};else if(now>=SALEDL.at+GRACE){SALEDL=null;E.act(s.seller,{t:'scancel'});pump(true);}}
+ const sig=E.lid+':'+G.seq;if(sig!==SYNCSIG||now-SYNCAT>2500){SYNCSIG=sig;SYNCAT=now;NET.sync();}}
+/* time is up: the computer decides for that player (buy or raise money sensibly, otherwise the safe default) */
+function decideFor(pe){const i=pe.p,pl=G.players[i],s0=G.seq;if(!pl)return;
+ if(pe.t==='buy'||pe.t==='debt')AI.step(i);
+ if(G.pend===pe&&G.seq===s0){const fb=FALLBACK(pe);if(fb)E.act(i,fb);}
+ if(i===ME)toast('Time is up: the computer moved for you');
+ pump(true);NET.sync();
+ if(NET.strike(pl.id))seatLeaves(i,'afk');}
+function seatLeaves(i,why){if(!G||G.over||!G.players[i]||G.players[i].out)return;E.markLeaving(i);pump(true);NET.sync();
+ if(i===ME&&netHost())setTimeout(()=>{if(netHost())NET.retire();},2500);}
+function netAction(pid,a){if(!G||G.over&&a&&a.t!=='mute'||!a||typeof a!=='object'||typeof a.t!=='string')return;const i=G.players.findIndex(p=>p.id===pid);if(i<0)return;
+ const pl=G.players[i];if(pl.leaving||pl.out&&a.t!=='mute')return;
+ const e=E.act(i,a);if(e)NET.tell(pid,{err:String(e)});else touch(i);pump(true);NET.sync();}
+function netView(){if(!G)return null;const g=JSON.parse(JSON.stringify(G));g.decks={c:g.decks.c.map(()=>-1),n:g.decks.n.map(()=>-1)};g.log=g.log.slice(-40);
+ return{g,ev:E.evlog().slice(-60),lid:E.lid,dl:DL?{at:DL.at,p:DL.p}:null};}
+function netBackup(){return G?{g:JSON.parse(JSON.stringify(G)),lid:E.lid}:null;}
+function netStart(seats,opts){ONLINE=true;const used=new Set();
+ const players=seats.map((s,k)=>{const l=s.id===MYID?{av:myAvatar(),tok:SETUP.tok}:lookOf(s.look);const tok=TOKENS[l.tok]&&!used.has(l.tok)?l.tok:TOKEN_KEYS.find(t=>!used.has(t));used.add(tok);
+  return{id:s.id,name:s.name,human:true,av:l.av,tok,col:PCOL[k%PCOL.length]};});
+ const mode=opts.mode==='classic'?'classic':'quick';closeSheet(false);AI.reset();OVERSHOWN=null;REWARD=null;DL=null;
+ const g=E.create({mode,players,minutes:30,target:mode==='classic'?Math.max(0,+opts.target||0):0});
+ startWith(g,Math.max(0,players.findIndex(p=>p.id===MYID)));NET.sync();}
+function netState(v){if(!v||!v.g||!Array.isArray(v.g.players))return;ONLINE=true;const g=v.g,me=g.players.findIndex(p=>p.id===MYID);GDL=v.dl?{at:v.dl.at,p:v.dl.p}:null;
+ if(!G||SCREEN!=='game'||G.id!==g.id){closeSheet(false);E.load(g);AI.reset();OVERSHOWN=null;REWARD=null;LASTLID=v.lid|0;startWith(g,me);return;}
+ E.swap(g);G=g;if(ME!==me){ME=me;buildPlayers();}
+ const evs=(v.ev||[]).filter(x=>x[0]>LASTLID);if(evs.length&&evs[0][0]===LASTLID+1)E.feed(evs.map(x=>x[1]));   /* a gap: skip the animations */
+ LASTLID=Math.max(LASTLID,v.lid|0);ACTKEY='';pump(true);}
+function netMigrate(o){ONLINE=true;const b=o.backup&&o.backup.g?o.backup:null,v=o.view,src=b?b.g:v&&v.g;if(!src){NET.again();return;}
+ const g=E.load(JSON.parse(JSON.stringify(src)));if(!b)E.fixDecks();E.seedLid(Math.max(b?b.lid|0:0,v?v.lid|0:0,LASTLID)+1);
+ G=g;ME=g.players.findIndex(p=>p.id===MYID);DL=null;AI.reset();if(SCREEN!=='game')startWith(g,ME);else{ACTKEY='';buildPlayers();render();}
+ pump(true);NET.sync();}
+function netDrop(pid,why){if(!netHost()||!G)return;const i=G.players.findIndex(p=>p.id===pid);if(i>=0)seatLeaves(i,why);}
+/* test pilot (localhost ?auto): a guest answers its own decisions with the simple defaults */
+function guestAuto(pe){if(!AUTO||ME<0||!pe||pe.p!==ME||!DECIDE.includes(pe.t))return;const k=[pe.t,pe.id,pe.sp,G.tn,G.seq,pe.again?1:0].join(':');if(GUESTKEY===k)return;GUESTKEY=k;
+ const a=pe.t==='buy'?(meP().cash>=SP[pe.sp].price+60?{t:'buy'}:{t:'decline'}):pe.t==='debt'?{t:'bankrupt'}:FALLBACK(pe);
+ setTimeout(()=>{if(G&&G.pend&&G.pend.t===pe.t&&G.pend.p===ME)NET.send(a);},350);}
+/* the seconds left for whoever is deciding, next to the status */
+function decisionClock(){const c=$('#statusChip');if(!c||!G)return;const d=netHost()?DL:GDL;let t='';
+ if(d&&G.pend&&G.pend.p===d.p&&!G.over){const left=Math.ceil((d.at-(netHost()?Date.now():NET.hostNow()))/1000);if(left>=0&&left<=DECIDE_MS/1000)t=' · '+left+'s';c.classList.toggle('hot',left<=5&&d.p===ME);}
+ else c.classList.remove('hot');if(c.dataset.t!==t)c.dataset.t=t;}
+function netLobby(){ONLINE=true;DL=null;closeSheet(false);closeDraw(true);clearBanner();G=null;showHome();}
+function netEnd(){ONLINE=false;DL=null;GDL=null;closeSheet(false);closeDraw(true);clearBanner();G=null;ME=0;showHome();}
+function initNet(){if(!window.DGNet)return;NET=DGNet.create({game:'binveriya',title:'Binveriya',min:2,max:5,id:MYID,
+ me:()=>({name:netName(),look:{av:myAvatar(),tok:SETUP.tok}}),setName:v=>{ls.set('bv-name',v);},
+ avatar:seat=>{const l=lookOf(seat.look);try{if(window.DGAvatar&&l.av)return DGAvatar.render(l.av,{size:38});}catch(e){}return '';},
+ options:[{k:'mode',label:'Game length',def:'quick',choices:[['quick','Quick · 30 min'],['classic','Classic']]},
+  {k:'target',label:'Win target',def:7000,choices:[[3000,'3,000'],[5000,'5,000'],[7000,'7,000'],[10000,'10,000'],[0,'Last one standing']],when:o=>o.mode==='classic',
+   hint:o=>+o.target?`The first to reach MVR ${(+o.target).toLocaleString('en-US')} net worth at the end of a turn wins.`:'Play until one landowner is left (the richest wins after round 120).'}],
+ rulesNote:'2 to 5 players. 20 seconds per decision, then the computer moves for you. Miss 2 in a row, or leave, and the computer plays one more round for you; then your buildings are removed, loans cleared and your islands are auctioned.',
+ listInfo:m=>{if(m.status!=='lobby'&&G)return 'Round '+G.round+(G.limit?' · quick game':G.target?' · goal '+G.target.toLocaleString('en-US'):' · last one standing');return (m.opts&&m.opts.mode)==='classic'?'Classic':'Quick game · 30 min';},
+ dropText:(nm,why)=>nm+(why==='afk'?' is away':why==='left'?' left':' lost connection')+'. The computer plays one more round for them.',
+ afkText:'You missed 2 decisions in a row, so the computer took your seat for one more round. You can’t rejoin this game.',
+ hostAfkText:'You missed 2 decisions in a row, so the computer is playing your seat for one more round.',
+ onStart:netStart,view:()=>netView(),backup:netBackup,onAction:netAction,onDrop:netDrop,onState:netState,onLobby:netLobby,onMigrate:netMigrate,onEnd:netEnd,
+ onTell:d=>{if(d&&d.err){toast(String(d.err));SND.err();}},
+ toast:(t,ms)=>toast(t,ms||2600),
+ dockHost:()=>SCREEN==='game'?$('#dgnSlot'):null,
+ avatarEl:pid=>{if(!G||SCREEN!=='game')return null;const i=G.players.findIndex(p=>p.id===pid);const el=$$('#pls .pl')[i];return el?el.querySelector('.pf'):null;}});}
+$('#onlineBtn').addEventListener('click',()=>{SND.unlock();if(NET)NET.open();else toast('Online play needs a newer browser');});
 
 /* ---------------------------------------------------------------- boot + test hooks */
 showHome();if(document.fonts&&document.fonts.ready)document.fonts.ready.then(homeFit);
+initNet();if(NET)NET.boot();   /* invite links: ?t=CODE */
 if(LOCAL&&Q.has('autostart')){SETUP.n=+(Q.get('n')||4);newGame({n:SETUP.n,mode:Q.get('mode')||MODE,minutes:Q.has('min')?+Q.get('min'):undefined,target:Q.has('goal')?+Q.get('goal'):undefined});}
-window.BINVERIYA={E,AI,get G(){return G;},get ME(){return ME;},pump,newGame,LAYOUTS,
+window.BINVERIYA={E,AI,get G(){return G;},get ME(){return ME;},get ONLINE(){return ONLINE;},get NET(){return NET;},act:a=>doAct(a),pump,newGame,LAYOUTS,
  /* all-computer test games; target = Classic win target (0 = Last one standing) */
  sim(games=20,n=4,mode='classic',maxTurns=4000,target=0){const out=[];const save=[G,ME];for(let g=0;g<games;g++){AI.reset();const players=[...Array(n)].map((_,k)=>({name:'Bot'+k,human:false,av:null,tok:TOKEN_KEYS[k],col:PCOL[k]}));
    const gg=E.create({mode,players,minutes:mode==='quick'?30:0,target});let steps=0;const cnt={bribeOk:0,caughtBribe:0,busted:0,raid:0,report:0,seize:0,card:0,kept:0,rent:0,auction:0};
