@@ -1,6 +1,7 @@
 <!doctype html>
 <html lang="en">
 <head>
+<script>document.documentElement.classList.add('boot')</script>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
@@ -346,6 +347,9 @@ h1.word span{display:inline-block;background:linear-gradient(180deg,#155E43,#0B2
 .fc .live i{width:9px;height:9px;border-radius:0;background:url("data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%2721 23.5 58 58%27%3E%3Cpath d=%27M50,32.65 A14.5,14.5 0 1 0 26.01,48.85 Q39.27,63.45 50,80 Q60.73,63.45 73.99,48.85 A14.5,14.5 0 1 0 50,32.65Z%27 transform=%27rotate%28-8 50 52%29%27 fill=%27%23FFFFFF%27/%3E%3C/svg%3E") center/contain no-repeat;box-shadow:none;animation:beat 1.4s ease-in-out infinite}
 @keyframes beat{0%,60%,100%{transform:scale(1)}15%{transform:scale(1.35)}30%{transform:scale(1)}45%{transform:scale(1.2)}}
 
+/* logo idle: peek-a-boo (driven by the script at the end of the page) */
+.live-pure .pure-card{animation:none}
+
 /* ---- ocean background: D3 lagoon ---- */
 #ocean{position:fixed;left:0;top:0;width:100%;height:100vh;height:100lvh;z-index:0;display:block;pointer-events:none;opacity:0;transition:opacity .8s ease;background:linear-gradient(180deg,#9FE0DE 0,#5CC6CC 45%,#2BA7B8 100%)}
 #ocean.on{opacity:1}
@@ -390,6 +394,8 @@ html,body{background:#5CC6CC}
 .seasnd .x{opacity:.7}
 .seasnd[aria-pressed="true"]{background:rgba(255,255,255,.88);color:#D8324A}
 .ocean-static .seasnd{display:none}
+
+html.boot .intro :is(.ix,.ix *,.pcb,.intro-ico,.enter,.pp,.pure-card,.nlogo,.wl,.wl .ch,.wt-l svg,.wt-l [pathLength],.wt-l circle,.tg,.tf,.hp,.top,.cats,.flow,.glow,.nav,.dots,.adbox,.resume,.foot,.stage,main,.light),html.boot .intro :is(.ix,.ix *,.di,.pcb)::before,html.boot .intro :is(.ix,.ix *,.di,.pcb)::after{animation-play-state:paused!important}
 </style>
 </head>
 <body class="intro"><script>/* ---- intro sound: foley, synthesised with WebAudio (no files, no music, no tones). ----
@@ -416,7 +422,7 @@ window.DGAudio=window.DGAudio||(function(){
  ['pointerdown','touchstart','keydown'].forEach(function(n){addEventListener(n,gesture,{capture:true,passive:true});});
  return A;})();
 (function(){
- var T0=performance.now(),CUES=[[0.150,'lift',0.09],[0.330,'lift',0.09],[0.355,'chop',1.09],[0.505,'lift',0.09],[0.535,'chop',0.922],[0.710,'chop',1.051],[0.780,'fan',0.34],[1.230,'whoosh',0.26,2600,1100,0.14,0.4,-0.1],[1.270,'riffle',0.2,7,0.22],[1.475,'snap'],[1.935,'land'],[2.260,'whoosh',0.6,700,1500,0.07,0,0]],ctx=null,dry=null,wet=null,NB=null,MG=null,started=false;
+ var T0=performance.now(),CUES=[[0.355,'ochop',1.09],[0.535,'ochop',0.922],[0.710,'ochop',1.051],[0.780,'ofwip',1],[1.230,'oswish',0],[1.475,'osnap',0],[1.975,'othump',0],[2.180,'ochime',0]],ctx=null,dry=null,wet=null,NB=null,MG=null,started=false;
  function muted(){return window.DGAudio?DGAudio.muted():false;}
  var reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
  function R(a,b){return a+Math.random()*(b-a);}
@@ -436,7 +442,19 @@ window.DGAudio=window.DGAudio||(function(){
    o[i]=lp*Math.pow(1-u,2.6)*(i<sr*.004?i/(sr*.004):1);}
    [.011,.017,.023,.031].forEach(function(t,j){var p=Math.round(sr*(t+ch*.0023));if(p<L)o[p]+=(j%2?-.5:.6)*(1-j*.18);});}
   var cvn=ctx.createConvolver();cvn.buffer=ir;var rg=ctx.createGain();rg.gain.value=.34;
-  wet=ctx.createGain();wet.connect(cvn);cvn.connect(rg);rg.connect(sum);dry=sum;}
+  wet=ctx.createGain();wet.connect(cvn);cvn.connect(rg);rg.connect(sum);dry=sum;
+  /* the original synth intro sound (chosen by the owner for the live intro): its own simple chain, exactly as before */
+  OO=ctx.createGain();OO.gain.value=1.6;var ok=ctx.createDynamicsCompressor();ok.threshold.value=-20;ok.ratio.value=3;OO.connect(ok);
+  /* a soft ceiling so nothing is harsh (about -11 dBFS at most) */
+  var oc=ctx.createWaveShaper(),on=2048,ocv=new Float32Array(on);for(i=0;i<on;i++){var ox=i/(on-1)*2-1;ocv[i]=.28*Math.tanh(ox/.28);}oc.curve=ocv;ok.connect(oc);
+  oc.connect(window.DGAudio&&DGAudio.ctx===ctx&&DGAudio.bus?DGAudio.bus:ctx.destination);}
+ var OO=null;
+ function oenv(g,t,a,peak,dec){g.gain.setValueAtTime(0.0001,t);g.gain.exponentialRampToValueAtTime(peak,t+a);g.gain.exponentialRampToValueAtTime(0.0001,t+a+dec);}
+ function oburst(t,dur,type,f0,f1,q,peak,dec){var s=ctx.createBufferSource();s.buffer=NB;var f=ctx.createBiquadFilter();f.type=type;f.Q.value=q;
+  f.frequency.setValueAtTime(f0,t);if(f1)f.frequency.exponentialRampToValueAtTime(f1,t+dur);var g=ctx.createGain();oenv(g,t,.003,peak,dec);
+  s.connect(f);f.connect(g);g.connect(OO);s.start(t,Math.random()*.5,dur+dec+.05);}
+ function otone(t,type,f0,f1,a,peak,dec,det){var o=ctx.createOscillator();o.type=type;o.frequency.setValueAtTime(f0,t);if(f1)o.frequency.exponentialRampToValueAtTime(f1,t+a+dec*.6);
+  if(det)o.detune.value=det;var g=ctx.createGain();oenv(g,t,a,peak,dec);o.connect(g);g.connect(OO);o.start(t);o.stop(t+a+dec+.05);}
  function make(){if(ctx)return ctx;var c=window.DGAudio?DGAudio.get():null;if(!c){var AC=window.AudioContext||window.webkitAudioContext;if(!AC)return null;c=new AC();}attach(c);return ctx;}
  /* one voice: noise -> filter (optionally swept) [-> second filter] -> envelope -> pan -> dry + reverb send */
  function V(t,o){var s=ctx.createBufferSource();s.buffer=NB;if(o.r)s.playbackRate.value=o.r;
@@ -451,6 +469,14 @@ window.DGAudio=window.DGAudio||(function(){
   out.connect(dry);if(o.s){var sg=ctx.createGain();sg.gain.value=o.s;out.connect(sg);sg.connect(wet);}
   var end=a+h+dc+.04;s.start(t,R(0,1.4),end);}
  var S={
+  /* the original synth voices (o*) */
+  ochop:function(t,p){oburst(t,.05,'bandpass',1500*p,900*p,1.1,.22,.07);otone(t,'sine',150*p,90,.004,.07,.05);},
+  ofwip:function(t){for(var i=0;i<9;i++){var u=i/8,tt=t+.3*Math.pow(u,.8);oburst(tt,.012,'bandpass',1200+u*2400,0,2.2,.15+.09*Math.sin(u*Math.PI),.025);}
+   oburst(t,.34,'bandpass',900,3200,.9,.13,.26);},
+  oswish:function(t){oburst(t,.24,'bandpass',2600,900,.9,.045,.2);},
+  osnap:function(t){oburst(t,.02,'highpass',2400,0,.7,.28,.035);otone(t,'triangle',240,130,.003,.09,.05);},
+  othump:function(t){otone(t,'sine',68,44,.008,.42,.26);otone(t+.17,'sine',60,42,.008,.24,.22);oburst(t,.05,'lowpass',180,0,.7,.12,.12);},
+  ochime:function(t){otone(t,'sine',1568,0,.012,.032,1.3,-4);otone(t,'sine',1568,0,.012,.028,1.3,4);otone(t+.05,'sine',2093,0,.012,.022,1.2,0);otone(t+.1,'sine',3136,0,.01,.01,.9,0);},
   /* a single card edge flicking past the thumb */
   tick:function(t,g,p){V(t,{f:R(2600,5200),q:R(1,1.8),a:.0008,dc:R(.014,.022),g:(g||.3)*R(.65,1),p:p||0,s:.12});},
   /* lifting a packet off the deck: a short soft paper slide */
@@ -513,13 +539,18 @@ window.DGAudio=window.DGAudio||(function(){
   justUnlocked:function(){return performance.now()-unlockedAt<400;},gain:function(v){if(MG)MG.gain.value=v;},
   /* first gesture on the page: unlock sound; if the intro is still running, play the rest in sync and don't skip */
   unlock:function(){if(started||muted()||reduce)return false;if(!make())return false;if(window.DGAudio&&DGAudio.ctx===ctx)DGAudio.unlock();else ctx.resume().catch(function(){});
-   if(intro()){playFrom(elapsed(),false);unlockedAt=performance.now();return true;}return false;}};
+   if(intro()){if(booting){started=true;atStart(function(){started=false;playFrom(0,false);});}else playFrom(elapsed(),false);
+    unlockedAt=performance.now();return true;}return false;}};
  /* the first gesture anywhere (not only on the intro) also starts the rest of the intro sound */
  if(window.DGAudio)DGAudio.onGesture(function(){if(!started&&intro())window.DGSfx.unlock();});
+ /* the intro may wait for the page to finish booting (html.boot): the sound clock starts with it */
+ var booting=document.documentElement.classList.contains('boot');
+ function atStart(f){if(booting)addEventListener('dg-intro-start',f,{once:true});else f();}
+ atStart(function(){booting=false;T0=performance.now();});
  /* chooser "Replay with sound": the parent page passes its already-unlocked AudioContext */
- try{var P=window.parent;if(P!==window&&P.__dgSoundWant===location.pathname&&P.__dgSoundCtx){window.DGSfx.use(P.__dgSoundCtx);P.__dgSoundWant=null;playFrom(0,true);}}catch(e){}
+ try{var P=window.parent;if(P!==window&&P.__dgSoundWant===location.pathname&&P.__dgSoundCtx){window.DGSfx.use(P.__dgSoundCtx);P.__dgSoundWant=null;atStart(function(){playFrom(0,true);});}}catch(e){}
  /* native app wrapper: autoplay allowed, start from the first frame */
- if(!started&&(window.Capacitor||/DhivehiGamesApp/.test(navigator.userAgent))){playFrom(0,false);}
+ if(!started&&(window.Capacitor||/DhivehiGamesApp/.test(navigator.userAgent))){atStart(function(){playFrom(0,false);});}
 })();
 </script>
 
@@ -632,7 +663,7 @@ const ls={get(k){try{return localStorage.getItem(k);}catch(e){return null;}},set
 let myId=ls.get('lg-id');if(!myId){myId='u'+Math.random().toString(36).slice(2,11);ls.set('lg-id',myId);}
 const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let tt;function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('show');clearTimeout(tt);tt=setTimeout(()=>t.classList.remove('show'),2600);}
-setTimeout(()=>document.body.classList.remove('intro'),3450);
+(function(){var go=function(){setTimeout(()=>document.body.classList.remove('intro'),3450);};if(document.documentElement.classList.contains('boot'))addEventListener('dg-intro-start',go,{once:true});else go();})();
 
 /* ---------- profile pill ---------- */
 function paintMe(){
@@ -771,6 +802,8 @@ window.__toast=toast;window.__esc=esc;
 const CFG={apiKey:"AIzaSyCl9Xz5r80755hYX0ww2GRaB6TZTH6sayE",authDomain:"dhivehi-digu.firebaseapp.com",projectId:"dhivehi-digu",storageBucket:"dhivehi-digu.firebasestorage.app",messagingSenderId:"778464006205",appId:"1:778464006205:web:7dce5d63707c6b2d0eda54"};
 const esc=window.__esc||(s=>String(s));
 try{
+ /* not needed during the intro: load Firebase once it has finished, so the intro stays smooth */
+ if(document.body.classList.contains('intro'))await new Promise(r=>{const mo=new MutationObserver(()=>{if(!document.body.classList.contains('intro')){mo.disconnect();setTimeout(r,400);}});mo.observe(document.body,{attributes:true,attributeFilter:['class']});});
  const [A,F]=await Promise.all([import('https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js'),import('https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js')]);
  const db=F.getFirestore(A.initializeApp(CFG));let busy=false;
  async function refresh(){if(busy||document.visibilityState!=='visible')return;busy=true;
@@ -984,7 +1017,7 @@ function buildAtlas(){
 }
 function soon(p){return Promise.race([p,new Promise(function(r){setTimeout(r,1200);})]);}
 Promise.all([].slice.call(flow.querySelectorAll('img')).map(function(im){return soon(im.decode?im.decode().catch(function(){}):Promise.resolve());})
- .concat([soon(document.fonts&&document.fonts.ready?document.fonts.ready:Promise.resolve())])).then(function(){setTimeout(buildAtlas,50);});
+ .concat([soon(document.fonts&&document.fonts.ready?document.fonts.ready:Promise.resolve())])).then(function(){buildAtlas();window.__dAtlasDone=1;dispatchEvent(new Event('dg-atlas'));});
 
 /* ---- render ---- */
 var q=1,qMax=1,W=0,H=0;
@@ -1027,7 +1060,7 @@ gl.uniform4f(U.uAC,CELLW/AW,CELLH/AH,CELLW/AW,CELLH/AH);
 update(.016,now());draw();kick();
 addEventListener('resize',function(){size();measure();update(.016,now());draw();});
 addEventListener('scroll',function(){if(!running())requestDraw();},{passive:true});
-document.addEventListener('visibilitychange',function(){if(document.hidden){sound&&sound.pause();}else{kick();if(sound&&sound.on&&sound.ctx.resume)sound.ctx.resume();}});
+document.addEventListener('visibilitychange',function(){if(document.hidden){sound&&sound.pause();}else{kick();if(sound&&sound.on&&!DGAudio.muted()&&sound.ctx.resume){sound.ctx.resume();sound.fadeIn(1.5);}}});
 if('IntersectionObserver'in window){var stg=document.querySelector('.stage');if(stg)new IntersectionObserver(function(es){visible=es[0].isIntersecting;kick();},{rootMargin:'120px'}).observe(stg);}
 function remeasure(){measure();update(.016,now());draw();}
 [600,2600,3600].forEach(function(ms){setTimeout(remeasure,ms);});
@@ -1071,15 +1104,19 @@ function makeSound(ext){
  var AC=window.AudioContext||window.webkitAudioContext;if(!ext&&!AC)return null;
  var ctx=ext||new AC(),sr=ctx.sampleRate,i;
  function R(a,b){return a+Math.random()*(b-a);}
- /* master: level -> gentle compressor -> soft ceiling (never above about -7 dBFS) */
- var master=ctx.createGain();master.gain.value=1.35;
- var cp=ctx.createDynamicsCompressor();cp.threshold.value=-28;cp.knee.value=12;cp.ratio.value=2;cp.attack.value=.01;cp.release.value=.3;
- var sh=ctx.createWaveShaper(),cn=2048,cvv=new Float32Array(cn);for(i=0;i<cn;i++){var x=i/(cn-1)*2-1;cvv[i]=.45*Math.tanh(x/.45);}sh.curve=cvv;
- master.connect(cp);cp.connect(sh);sh.connect(window.DGAudio&&DGAudio.ctx===ctx&&DGAudio.bus?DGAudio.bus:ctx.destination);
+ /* master: fade (in over 3 s, out when hidden) -> warm lowpass (2.4 kHz) -> gentle compressor -> soft ceiling.
+    Soft and soothing: about -31 LUFS, peaks under -18 dBFS (measured by offline render). */
+ var LEVEL=.36;
+ var master=ctx.createGain();master.gain.value=0;
+ var warm=ctx.createBiquadFilter();warm.type='lowpass';warm.frequency.value=2400;warm.Q.value=.5;
+ var cp=ctx.createDynamicsCompressor();cp.threshold.value=-34;cp.knee.value=12;cp.ratio.value=2;cp.attack.value=.05;cp.release.value=.6;
+ var sh=ctx.createWaveShaper(),cn=2048,cvv=new Float32Array(cn);for(i=0;i<cn;i++){var x=i/(cn-1)*2-1;cvv[i]=.12*Math.tanh(x/.12);}sh.curve=cvv;
+ master.connect(warm);warm.connect(cp);cp.connect(sh);sh.connect(window.DGAudio&&DGAudio.ctx===ctx&&DGAudio.bus?DGAudio.bus:ctx.destination);
+ function fade(to,sec){var n=ctx.currentTime;master.gain.cancelScheduledValues(n);master.gain.setValueAtTime(master.gain.value,n);master.gain.linearRampToValueAtTime(to,n+sec);}
  /* open-air space: a short, soft, generated stereo impulse */
- var L=Math.round(sr*1.1),ir=ctx.createBuffer(2,L,sr);
- for(var ch=0;ch<2;ch++){var o=ir.getChannelData(ch),lp=0;for(i=0;i<L;i++){var u=i/L;lp+=(Math.random()*2-1-lp)*(.5-.35*u);o[i]=lp*Math.pow(1-u,3);}}
- var cvn=ctx.createConvolver();cvn.buffer=ir;var wet=ctx.createGain();wet.gain.value=.5;var rv=ctx.createGain();rv.gain.value=.3;
+ var L=Math.round(sr*1.4),ir=ctx.createBuffer(2,L,sr);
+ for(var ch=0;ch<2;ch++){var o=ir.getChannelData(ch),lp=0;for(i=0;i<L;i++){var u=i/L;lp+=(Math.random()*2-1-lp)*(.35-.25*u);o[i]=lp*Math.pow(1-u,3);}}
+ var cvn=ctx.createConvolver();cvn.buffer=ir;var wet=ctx.createGain();wet.gain.value=.6;var rv=ctx.createGain();rv.gain.value=.35;
  wet.connect(cvn);cvn.connect(rv);rv.connect(master);
  /* noise: 4 s white and brown, seam-faded so they loop cleanly */
  function buf(brown){var len=sr*4,b=ctx.createBuffer(1,len,sr),d=b.getChannelData(0),lv=0;
@@ -1088,42 +1125,43 @@ function makeSound(ext){
  var WN=buf(false),BN=buf(true);
  function loop(b,type,f,q){var s=ctx.createBufferSource();s.buffer=b;s.loop=true;var fl=ctx.createBiquadFilter();fl.type=type;fl.frequency.value=f;fl.Q.value=q;
   var g=ctx.createGain();g.gain.value=0;s.connect(fl);fl.connect(g);g.connect(master);s.start(0,R(0,3));return {f:fl,g:g};}
- var bed=loop(BN,'lowpass',340,.5),breeze=loop(WN,'bandpass',950,.45),hiss=loop(WN,'highpass',5200,.5);
- /* one noise event: filter (optionally swept) -> envelope -> pan -> dry + air */
- function V(t,o){var s=ctx.createBufferSource();s.buffer=o.b||WN;var f=ctx.createBiquadFilter();f.type=o.t||'bandpass';f.Q.value=o.q||1;
-  f.frequency.setValueAtTime(o.f,t);var a=o.a||.005,h=o.h||0,dc=o.dc||.1;if(o.f1)f.frequency.exponentialRampToValueAtTime(o.f1,t+(o.fd||a+h+dc));
+ /* the bed (low, warm water) and a warm low breeze */
+ var bed=loop(BN,'lowpass',300,.5),breeze=loop(WN,'lowpass',620,.4);
+ /* one noise event: filter (optionally swept) -> slow envelope -> pan -> dry + air */
+ function V(t,o){var s=ctx.createBufferSource();s.buffer=o.b||WN;var f=ctx.createBiquadFilter();f.type=o.t||'lowpass';f.Q.value=o.q||.6;
+  f.frequency.setValueAtTime(o.f,t);var a=o.a||.03,h=o.h||0,dc=o.dc||.3;if(o.f1)f.frequency.exponentialRampToValueAtTime(o.f1,t+(o.fd||a+h+dc));
   var g=ctx.createGain();g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(o.g,t+a);if(h)g.gain.setValueAtTime(o.g,t+a+h);g.gain.setTargetAtTime(0,t+a+h,dc/6.9);
   s.connect(f);f.connect(g);var out=g;if(ctx.createStereoPanner&&(o.p||o.p1)){var pn=ctx.createStereoPanner();pn.pan.setValueAtTime(o.p||0,t);
    if(o.p1!=null)pn.pan.linearRampToValueAtTime(o.p1,t+a+h+dc);g.connect(pn);out=pn;}
   out.connect(master);if(o.s){var sg=ctx.createGain();sg.gain.value=o.s;out.connect(sg);sg.connect(wet);}
   s.start(t,R(0,3),a+h+dc+.05);}
- /* a wave laps in, then the water runs back with a faint fizz */
- function lap(t,k){var p=R(-.6,.6),up=R(.9,1.6);
-  V(t,{b:BN,t:'lowpass',f:R(260,340),f1:R(600,760),fd:up,q:.5,a:up,h:.1,dc:R(1.1,1.8),g:.5*k,p:p,p1:p*.5,s:.3});
-  V(t+up*.8,{f:R(1700,2300),f1:R(900,1200),fd:1.4,q:.5,a:.35,dc:R(1.1,1.6),g:.05*k,p:p*.6,p1:-p*.3,s:.4});}
- function drip(t,g,p){var f=R(900,1700);V(t,{f:f,f1:f*1.6,fd:.03,q:7,a:.001,dc:.05,g:g,p:p,s:.6});V(t,{t:'lowpass',f:600,q:.5,a:.001,dc:.04,g:g*.4,p:p});}
- var next=0,gust=0,lastPl=0;
+ /* a slow wave laps in and runs back: long, soft envelopes, nothing sharp */
+ function lap(t,k){var p=R(-.5,.5),up=R(1.6,2.6);
+  V(t,{b:BN,f:R(240,300),f1:R(480,620),fd:up,a:up,h:.3,dc:R(2,3.2),g:.42*k,p:p,p1:p*.4,s:.35});
+  V(t+up*.85,{f:R(1100,1500),f1:R(600,800),fd:2,q:.5,a:.8,dc:R(1.8,2.6),g:.035*k,p:p*.5,p1:-p*.3,s:.45});}
+ /* a soft plip: a drop meeting the water, muffled (well under the bed) */
+ function plip(t,g,p){V(t,{f:R(700,1000),f1:R(420,560),fd:.12,q:1.2,a:.012,dc:.16,g:g,p:p,s:.6});}
+ var next=0,swell=0,up=true,lastPl=0;
  /* slow scheduling ahead of the clock (works with a paused context: the clock does not move) */
- function sch(until){var now=ctx.currentTime;if(!next)next=now+.4;
-  while(next<until){lap(next,R(.55,1));next+=R(2.8,5.6);}
-  if(gust<until){var t=Math.max(gust,now);for(;t<until+2;t+=R(2.5,4.5)){breeze.g.gain.setTargetAtTime(R(.012,.03),t,R(.8,1.6));breeze.f.frequency.setTargetAtTime(R(700,1200),t,1.5);
-    bed.g.gain.setTargetAtTime(R(.1,.14),t,1.2);}gust=t;}}
- hiss.g.gain.value=.006;
+ function sch(until){var now=ctx.currentTime;if(!next)next=now+.8;
+  while(next<until){lap(next,R(.6,1));next+=R(5,8.5);}
+  /* the whole bed breathes: a slow 8-12 s swell */
+  if(swell<until){var t=Math.max(swell,now);for(;t<until+2;){var half=R(4,6);up=!up;
+    bed.g.gain.setTargetAtTime(up?R(.13,.16):R(.07,.09),t,half/3);breeze.g.gain.setTargetAtTime(up?R(.03,.045):R(.015,.025),t,half/3);
+    breeze.f.frequency.setTargetAtTime(R(480,720),t,half/2);t+=half;}swell=t;}}
  var tm=0;
  return {on:false,ctx:ctx,sch:sch,
-  /* a card surfaces: water parting and a small splash, bigger with swipe speed; drops fall back */
-  bloop:function(s){var t=ctx.currentTime+.01;
-   V(t,{f:1500+900*s,f1:480,fd:.35,q:.7,a:.008,dc:.4+.2*s,g:.12+.16*s,p:R(-.2,.2),s:.5});
-   V(t,{b:BN,t:'lowpass',f:500,q:.6,a:.02,dc:.35,g:.35+.3*s,s:.3});
-   for(var k=0,n=2+Math.round(3*s);k<n;k++)drip(t+R(.18,.7),.05+.05*s*Math.random(),R(-.5,.5));},
-  /* a card slips under: a soft gulp of water */
-  sink:function(s){var t=ctx.currentTime+.01;V(t,{b:BN,t:'lowpass',f:900,f1:220,fd:.3,q:.8,a:.02,dc:.32,g:.3+.25*s,s:.4});},
-  slosh:function(s){var t=ctx.currentTime+.005;V(t,{f:700+700*s,f1:380,fd:.25,q:.8,a:.03,dc:.25+.1*s,g:.05+.07*s,p:R(-.3,.3),s:.4});},
-  /* a drop falls back into the lagoon */
-  plink:function(s){var t=ctx.currentTime;if(t-lastPl<.06)return;lastPl=t;drip(t,.02+.035*s,R(-.5,.5));},
+  /* a card surfaces: one soft muffled plip and a couple of tiny drops (about 12 dB under the bed) */
+  bloop:function(s){var t=ctx.currentTime+.02;plip(t,.05+.03*s,R(-.2,.2));
+   for(var k=0,n=1+Math.round(1.5*s);k<n;k++)plip(t+R(.3,.9),.018+.012*s,R(-.5,.5));},
+  sink:function(s){var t=ctx.currentTime+.02;V(t,{b:BN,f:520,f1:240,fd:.4,a:.06,dc:.45,g:.08+.05*s,s:.4});},
+  slosh:function(s){var t=ctx.currentTime+.02;V(t,{f:600,f1:360,fd:.4,a:.08,dc:.4,g:.015+.015*s,p:R(-.3,.3),s:.4});},
+  plink:function(s){var t=ctx.currentTime;if(t-lastPl<.12)return;lastPl=t;plip(t,.01+.012*s,R(-.5,.5));},
   tick:function(){},
-  start:function(){var me=this;sch(ctx.currentTime+2);clearInterval(tm);tm=setInterval(function(){if(me.on)sch(ctx.currentTime+2);},500);},
-  pause:function(){ctx.suspend&&ctx.suspend();}};
+  start:function(){var me=this;sch(ctx.currentTime+2);clearInterval(tm);tm=setInterval(function(){if(me.on)sch(ctx.currentTime+2);},500);fade(LEVEL,3);},
+  fadeIn:function(sec){fade(LEVEL,sec||1.5);},
+  /* tab hidden: fade out, then pause the audio */
+  pause:function(){fade(0,.6);setTimeout(function(){if(document.hidden&&ctx.suspend)ctx.suspend();},650);}};
 }
 window.__dMakeSound=makeSound;   /* for level checks (offline rendering) */
 function startSound(){var c=DGAudio.get();if(!c)return;if(!sound){sound=makeSound(c);if(!sound)return;window.__d3snd=sound;}sound.on=true;sound.start();}
@@ -1160,6 +1198,37 @@ if(btn)btn.addEventListener('click',function(){
 })();
 </script>
 <script>if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("/sw.js").catch(()=>{}));</script>
+<script>/* logo idle animation, "peek-a-boo": now and then the card ducks down into the tile, peeks back up, looks left
+   and right, and springs back into place. Web Animations on the card's transform only (nothing else repaints),
+   every 7-9 s with a little randomness, only after the intro, paused while the logo is off-screen or the tab is hidden,
+   and never with reduced motion. */
+(function(){
+ var card=document.querySelector('#emb .pure-card'),tile=document.getElementById('emb');
+ if(!card||!card.animate||!tile||matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+ var SPRING=(window.CSS&&CSS.supports&&CSS.supports('animation-timing-function','linear(0,1)'))?
+  'linear(0,.066,.24,.46,.67,.83,.95,1.02,1.055,1.06,1.05,1.03,1.012,1,.994,.993,.995,.998,1)':'cubic-bezier(.3,1.4,.5,1)';
+ var IO='cubic-bezier(.45,0,.3,1)',KF=[
+  {offset:0,transform:'translate(0px,0px) rotate(0deg)',easing:'cubic-bezier(.5,0,.75,.25)'},     /* duck down */
+  {offset:.17,transform:'translate(0px,82px) rotate(0deg)',easing:'linear'},                         /* hidden a moment */
+  {offset:.3,transform:'translate(0px,82px) rotate(0deg)',easing:'cubic-bezier(.2,.75,.3,1)'},      /* peek up */
+  {offset:.44,transform:'translate(0px,36px) rotate(0deg)',easing:IO},
+  {offset:.56,transform:'translate(0px,36px) rotate(6deg)',easing:IO},                             /* look one way */
+  {offset:.7,transform:'translate(0px,36px) rotate(-5deg)',easing:IO},                             /* and the other */
+  {offset:.79,transform:'translate(0px,36px) rotate(0deg)',easing:SPRING},                         /* spring back up */
+  {offset:1,transform:'translate(0px,0px) rotate(0deg)'}];
+ var tm=0,anim=null,onScreen=true,b=document.body;
+ function ok(){return onScreen&&!document.hidden&&!b.classList.contains('intro');}
+ function plan(ms){clearTimeout(tm);tm=setTimeout(go,ms!=null?ms:7000+Math.random()*2000);}
+ function go(){if(!ok()){plan(1500);return;}
+  anim=card.animate(KF,{duration:2800,fill:'none'});anim.onfinish=anim.oncancel=function(){anim=null;plan();};}
+ function sync(){if(!anim)return;if(ok())anim.play();else anim.pause();}
+ if('IntersectionObserver'in window)new IntersectionObserver(function(es){onScreen=es[0].isIntersecting;sync();}).observe(tile);
+ document.addEventListener('visibilitychange',sync);
+ /* the first peek comes a few seconds after the intro */
+ if(b.classList.contains('intro')){var mo=new MutationObserver(function(){if(b.classList.contains('intro'))return;mo.disconnect();plan(4500+Math.random()*1500);});
+  mo.observe(b,{attributes:true,attributeFilter:['class']});}else plan(4500);
+})();
+</script>
 <div id="skipper" aria-hidden="true"></div>
 <script>/* tap (or press a key) to skip the intro */
 (function(){var b=document.body,s=document.getElementById('skipper');
@@ -1173,5 +1242,17 @@ addEventListener('keydown',function(e){if(b.classList.contains('intro')){end();c
  function first(){var S=window.DGSfx;return S&&((S.justUnlocked&&S.justUnlocked())||(!S.started()&&S.unlock()));}
  s.addEventListener('pointerdown',function(e){if(first()){e.stopImmediatePropagation();}},true);
  addEventListener('keydown',function(e){if(first()){e.stopImmediatePropagation();}},true);})();</script>
+<script>/* start the intro once the page has finished booting (see BOOT in build_home.py) */
+(function(){var d=document.documentElement,go=false;
+ function start(){if(go)return;go=true;var ric=window.requestIdleCallback||function(f){setTimeout(f,60);};ric(function(){requestAnimationFrame(function(){requestAnimationFrame(function(){
+  d.classList.remove('boot');window.dispatchEvent(new Event('dg-intro-start'));});});},{timeout:350});}
+ function ready(){var f=document.fonts&&document.fonts.ready?Promise.race([document.fonts.ready,new Promise(function(r){setTimeout(r,450);})]):Promise.resolve();
+  /* decode the game pictures off the main thread now, so they never decode mid-animation */
+  [].forEach.call(document.querySelectorAll('#flow img,#fcbank img'),function(im){if(im.decode)im.decode().catch(function(){});});
+  var atlas=new Promise(function(r){if(window.__dAtlasDone||!document.querySelector('canvas#ocean'))r();else addEventListener('dg-atlas',r,{once:true});});
+  Promise.race([Promise.all([f,atlas]),new Promise(function(r){setTimeout(r,700);})]).then(start);}
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',ready);else ready();
+ setTimeout(start,1800);
+})();</script>
 </body>
 </html>
