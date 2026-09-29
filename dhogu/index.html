@@ -662,9 +662,12 @@ const backHTML=(st='')=>`<span class="card back pc" style="${st}"></span>`;
 function deck(n){const d=[];let id=0;for(let k=0;k<n;k++)for(const s of 'SHDC')for(let r=1;r<=13;r++)d.push({r,s,id:'c'+(id++)});for(let i=d.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[d[i],d[j]]=[d[j],d[i]];}return d;}
 /* ================= sound: soft, synthesized, no chiptune =================
    Filtered noise for paper and wood, sine partials for mallets. No square or sawtooth waves. */
-let AC=null,MG=null,NB=null,sfxOn=ls.get('dd-sfx')!=='0';
+/* site-wide mute (dd-sfx): missing = on; '0' or 'off' = off */
+let AC=null,MG=null,NB=null,sfxOn=(v=>v!=='0'&&v!=='off')(ls.get('dd-sfx'));
 function ac(){if(!AC){const A=window.AudioContext||window.webkitAudioContext;if(A)try{AC=new A();const c=AC.createDynamicsCompressor();c.threshold.value=-20;c.ratio.value=3;MG=AC.createGain();MG.gain.value=.8;MG.connect(c);c.connect(AC.destination);}catch(e){AC=null;}}
  if(AC&&AC.state==='suspended')AC.resume().catch(()=>{});return AC;}
+/* called inside every tap / key press: resume, and (iOS Safari) play a silent buffer to unlock the output */
+function unlockAC(){if(!sfxOn||document.hidden)return;const a=ac();if(!a||(a._primed&&a.state==='running'))return;a._primed=1;try{if(a.state!=='running')a.resume().catch(()=>{});}catch(e){}try{const b=a.createBuffer(1,1,22050),s=a.createBufferSource();s.buffer=b;s.connect(a.destination);s.start(0);}catch(e){}}
 function nbuf(){if(!NB){const n=AC.sampleRate|0;NB=AC.createBuffer(1,n,AC.sampleRate);const d=NB.getChannelData(0);for(let i=0;i<n;i++)d[i]=Math.random()*2-1;}return NB;}
 function envg(t,att,peak,dec){const g=AC.createGain();g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(peak,t+att);g.gain.exponentialRampToValueAtTime(.0001,t+att+dec);g.connect(MG);return g;}
 function nz(t,dec,type,f,q,peak,att=.004,f2=0){const s=AC.createBufferSource();s.buffer=nbuf();const fl=AC.createBiquadFilter();fl.type=type;fl.frequency.setValueAtTime(f,t);if(f2)fl.frequency.exponentialRampToValueAtTime(f2,t+att+dec);fl.Q.value=q;s.connect(fl);fl.connect(envg(t,att,peak,dec));s.start(t,Math.random()*.4);s.stop(t+att+dec+.05);}
@@ -1500,7 +1503,7 @@ document.addEventListener('click',e=>{const b=e.target.closest('[data-a],[data-s
 document.addEventListener('input',e=>{const t=e.target;if(t.id==='code')t.value=t.value.toUpperCase().replace(/[^A-Z]/g,'').slice(0,4);else if(t.id==='nm')ls.set(NMK,cleanName(t.value));});
 document.addEventListener('change',e=>{if(e.target.id==='nm'){const p=$('.me-pill b');if(p)p.textContent=shownName();const c=$('.eb-cap');if(c)c.textContent=shownName();if(screen==='home')fitHome();}});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){const o=$('#ov');if(o&&!o.dataset.lock)closeSheet();}if(e.key==='Enter'&&e.target.id==='code'){const b=$('[data-a="join"]');if(b)b.click();}});
-['pointerdown','keydown'].forEach(ev=>document.addEventListener(ev,()=>ac(),{capture:true,passive:true,once:true}));
+['pointerdown','touchstart','touchend','click','keydown'].forEach(ev=>document.addEventListener(ev,unlockAC,{capture:true,passive:true}));
 /* invite links: ?t=CODE */
 let pending=null;try{const t=Q.get('t');if(t&&/^[A-Za-z]{4}$/.test(t)){pending=t.toUpperCase();Q.delete('t');const qs=Q.toString();history.replaceState(null,'',location.pathname+(qs?'?'+qs:'')+location.hash);}}catch(e){}
 if(pending){tab='online';openF='online';ls.set('dh-tab','online');renderHome();startJoin(pending);}else renderHome();

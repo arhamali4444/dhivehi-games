@@ -546,10 +546,12 @@ sound:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="
 /* ---------- audio: soft WebAudio effects (shares the site-wide dd-sfx mute) ---------- */
 const AU=(()=>{let ctx=null,out=null;
 function get(){if(!ctx){const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return null;try{ctx=new AC({latencyHint:'interactive'});}catch(e){try{ctx=new AC();}catch(x){return null;}}out=ctx.createGain();out.gain.value=.8;out.connect(ctx.destination);}return ctx;}
-function unlock(){if(document.hidden)return;const c=get();if(!c)return;try{if(navigator.audioSession)navigator.audioSession.type='ambient';}catch(e){}if(c.state!=='running'){try{const p=c.resume();p&&p.catch&&p.catch(()=>{});}catch(e){}}}
+function unlock(){if(document.hidden)return;const c=get();if(!c)return;try{if(navigator.audioSession)navigator.audioSession.type='ambient';}catch(e){}if(c.state!=='running'){try{const p=c.resume();p&&p.catch&&p.catch(()=>{});}catch(e){}}
+/* iOS Safari: playing a silent buffer inside the gesture unlocks the output */
+if(!c._primed||c.state!=='running'){c._primed=1;try{const b=c.createBuffer(1,1,22050),s=c.createBufferSource();s.buffer=b;s.connect(c.destination);s.start(0);}catch(e){}}}
 function sleep(){if(ctx&&ctx.state==='running'){try{const p=ctx.suspend();p&&p.catch&&p.catch(()=>{});}catch(e){}}}
 return{get:get,unlock:unlock,sleep:sleep,get out(){get();return out;}};})();
-const sfxOn=()=>ls.get('dd-sfx')!=='0';
+const sfxOn=()=>{const v=ls.get('dd-sfx');return v!=='0'&&v!=='off';};
 const SFX=(()=>{let noise=null;
 function nb(c){if(!noise){noise=c.createBuffer(1,c.sampleRate,c.sampleRate);const d=noise.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;}return noise;}
 function burst(t,o){const c=AU.get();const f=o.f||2500,dur=o.dur||.09;const s=c.createBufferSource();s.buffer=nb(c);const fl=c.createBiquadFilter();fl.type=o.type||'bandpass';fl.frequency.setValueAtTime(f,t);if(o.sweep)fl.frequency.exponentialRampToValueAtTime(f*o.sweep,t+dur);fl.Q.value=o.q||.8;
@@ -1088,6 +1090,8 @@ function toggleSfx(){ls.set('dd-sfx',sfxOn()?'0':'1');document.querySelectorAll(
 function leave(){clearTimeout(botT);clearTimeout(turnT);clearTimeout(warnT);peekT.forEach(clearTimeout);if(mode==='online'&&NET&&NET.isOnline()){closeSheet();closeOv();NET.leave();return;}if(mode==='solo'&&S&&S.status!=='over'&&S.status!=='lobby')ls.set(SAVE_KEY,JSON.stringify(S));closeSheet();closeRules();closeOv();S=null;mode=null;renderHome();}
 
 /* ---------- one click handler for everything ---------- */
+/* audio may only start after a gesture: resume on the first tap / key press anywhere */
+['pointerdown','touchstart','touchend','keydown'].forEach(ev=>document.addEventListener(ev,()=>AU.unlock(),{capture:true,passive:true}));
 document.addEventListener('click',e=>{AU.unlock();const b=e.target.closest('[data-a]');if(!b)return;const a=b.dataset.a;
 switch(a){
 case 'goComputer':renderComputer();break;

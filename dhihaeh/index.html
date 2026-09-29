@@ -636,13 +636,15 @@ back:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2
 menu:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h10"/></svg>',
 sound:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9.5h3.5L12 5v14l-4.5-4.5H4z"/><g class="snd"><path d="M15.5 9a4 4 0 0 1 0 6"/><path d="M18 6.5a7.5 7.5 0 0 1 0 11"/></g><path class="mute" d="M16 9.5l5 5M21 9.5l-5 5"/></svg>'};
 
-/* ---------- audio: soft WebAudio, Bodu Beru drum on the big moments. Off until you switch it on (shared key dd-sfx) ---------- */
+/* ---------- audio: soft WebAudio, Bodu Beru drum on the big moments. On unless muted (shared key dd-sfx: '0'/'off' = muted) ---------- */
 const AU=(()=>{let ctx=null,out=null;
 function get(){if(!ctx){const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return null;try{ctx=new AC({latencyHint:'interactive'});}catch(e){try{ctx=new AC();}catch(x){return null;}}out=ctx.createGain();out.gain.value=.8;out.connect(ctx.destination);}return ctx;}
-function unlock(){if(document.hidden||!sfxOn())return;const c=get();if(!c)return;try{if(navigator.audioSession)navigator.audioSession.type='ambient';}catch(e){}if(c.state!=='running'){try{const p=c.resume();p&&p.catch&&p.catch(()=>{});}catch(e){}}}
+function unlock(){if(document.hidden||!sfxOn())return;const c=get();if(!c)return;try{if(navigator.audioSession)navigator.audioSession.type='ambient';}catch(e){}if(c.state!=='running'){try{const p=c.resume();p&&p.catch&&p.catch(()=>{});}catch(e){}}
+/* iOS Safari: playing a silent buffer inside the gesture unlocks the output */
+if(!c._primed||c.state!=='running'){c._primed=1;try{const b=c.createBuffer(1,1,22050),s=c.createBufferSource();s.buffer=b;s.connect(c.destination);s.start(0);}catch(e){}}}
 function sleep(){if(ctx&&ctx.state==='running'){try{const p=ctx.suspend();p&&p.catch&&p.catch(()=>{});}catch(e){}}}
 return{get:get,unlock:unlock,sleep:sleep,get out(){get();return out;}};})();
-function sfxOn(){return ls.get('dd-sfx')==='1';}
+function sfxOn(){const v=ls.get('dd-sfx');return v!=='0'&&v!=='off';}
 const SFX=(()=>{let noise=null;
 function nb(c){if(!noise){noise=c.createBuffer(1,c.sampleRate,c.sampleRate);const d=noise.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;}return noise;}
 function burst(t,o){const c=AU.get();const f=o.f||2500,dur=o.dur||.09;const s=c.createBufferSource();s.buffer=nb(c);const fl=c.createBiquadFilter();fl.type=o.type||'bandpass';fl.frequency.setValueAtTime(f,t);if(o.sweep)fl.frequency.exponentialRampToValueAtTime(f*o.sweep,t+dur);fl.Q.value=o.q||.8;
@@ -1158,6 +1160,8 @@ function toggleSfx(){ls.set('dd-sfx',sfxOn()?'0':'1');document.querySelectorAll(
 function leave(){clearTimeout(botT);clearTimeout(turnT);clearTimeout(warnT);if(mode==='online'&&NET&&NET.isOnline()){closeSheet();closeOv();NET.leave();return;}if(mode==='solo'&&S&&S.status!=='over'&&S.status!=='lobby')ls.set(saveKey(S.mode),JSON.stringify(S));closeSheet();closeRules();closeOv();if(S)setMode(S.mode);S=null;mode=null;renderHome();}
 
 /* ---------- one click handler ---------- */
+/* audio may only start after a gesture: resume on the first tap / key press anywhere */
+['pointerdown','touchstart','touchend','keydown'].forEach(ev=>document.addEventListener(ev,()=>AU.unlock(),{capture:true,passive:true}));
 document.addEventListener('click',e=>{AU.unlock();const b=e.target.closest('[data-a]');if(!b)return;const a=b.dataset.a;
 switch(a){
 case 'mode':setMode(b.dataset.v);renderHome();break;

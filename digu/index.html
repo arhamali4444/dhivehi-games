@@ -1026,19 +1026,23 @@ return a.img?`style="background-image:url('${a.img}')"`:'class="bdef"';}
 function shuffle(a){const r=new Uint32Array(a.length);try{crypto.getRandomValues(r);}catch(e){for(let i=0;i<r.length;i++)r[i]=Math.random()*4294967295;}for(let i=a.length-1;i>0;i--){const j=r[i]%(i+1);[a[i],a[j]]=[a[j],a[i]];}return a;}
 
 /* ---------- audio core + sound effects ---------- */
+/* site-wide mute (dd-sfx): missing = on; '0' or 'off' = off */
+function sfxOn(){const v=ls.get('dd-sfx');return v!=='0'&&v!=='off';}
 const AU=(()=>{let ctx=null,sfx=null;
 const quiet=p=>{if(p&&p.catch)p.catch(()=>{});};
 function get(){if(!ctx){const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return null;try{ctx=new AC({latencyHint:'interactive'});}catch(e){ctx=new AC();}sfx=ctx.createGain();sfx.gain.value=.8;sfx.connect(ctx.destination);}return ctx;}
 function unlock(){if(document.hidden)return;const c=get();if(!c)return;
 /* 'ambient' mixes with other apps and stops when the page is hidden (no background playback) */
 try{if(navigator.audioSession)navigator.audioSession.type=window.__vcRec?'play-and-record':'ambient';}catch(e){}
-if(c.state!=='running'){try{quiet(c.resume());}catch(e){}}}
+if(c.state!=='running'){try{quiet(c.resume());}catch(e){}}
+/* iOS Safari: playing a silent buffer inside the gesture unlocks the output */
+if(!c._primed||c.state!=='running'){c._primed=1;try{const b=c.createBuffer(1,1,22050),s=c.createBufferSource();s.buffer=b;s.connect(c.destination);s.start(0);}catch(e){}}}
 function sleep(){if(ctx&&ctx.state==='running'){try{quiet(ctx.suspend());}catch(e){}}}
 function wake(){if(ctx&&ctx.state!=='running'&&!document.hidden){try{quiet(ctx.resume());}catch(e){}}}
 return{get:get,unlock:unlock,sleep:sleep,wake:wake,get sfx(){get();return sfx;}};})();
 
 const SFX=(()=>{let noise=null;
-const on=()=>ls.get('dd-sfx')!=='0';
+const on=()=>sfxOn();
 function nb(c){if(!noise){noise=c.createBuffer(1,c.sampleRate,c.sampleRate);const d=noise.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;}return noise;}
 function burst(t,o){const c=AU.get();const f=o.f||2500,dur=o.dur||.09;const s=c.createBufferSource();s.buffer=nb(c);const fl=c.createBiquadFilter();fl.type=o.type||'bandpass';fl.frequency.setValueAtTime(f,t);if(o.sweep)fl.frequency.exponentialRampToValueAtTime(f*o.sweep,t+dur);fl.Q.value=o.q||.8;
 const g=c.createGain();g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(o.vol||.3,t+.005);g.gain.exponentialRampToValueAtTime(.0001,t+dur);s.connect(fl);fl.connect(g);g.connect(AU.sfx);s.start(t,Math.random()*.5);s.stop(t+dur+.03);}
@@ -2318,7 +2322,7 @@ sheet(`<div class="grab"></div><div class="row" style="justify-content:space-bet
 <label class="f" style="margin-top:2px">Your table</label>${tablePickHTML()}
 <div class="rules">${S.blitz?'<p><b>Digu Blitz</b>: 5 seconds a turn. If you draw face down, discard face down; if you draw face up, discard face up.</p>':''}<p>Gin: after your discard, all 10 cards are in melds. Big gin: all 11 meld right after you draw. Melds are 3 or more of a rank, or 3 or more in a row of one suit, aces low. You can’t discard the card you just took from the discard pile.</p><p>Scoring: melded cards count for you, cards left out count against you. Aces 15, J, Q and K 10, other cards their number. Gin adds ${GIN}, big gin ${BIG}. Play 3, 5 or 10 hands. Most points at the end wins; a tie plays one more hand.</p><p>Tap a card to lift it, then tap Discard or the discard pile. You can also drag it onto the pile. Cards with a gold edge and a tick are already a set or run. When you can go gin, a gold GIN button appears.</p></div>
 ${(mode==='online'||(mode==='p2p'&&isHost))&&S.hostId===myId&&S.status==='playing'&&S.turn!==meIdx()?`<div class="row"><button class="btn soft" data-a="skip">Play ${esc(cur.name)}’s turn for them</button></div>`:''}
-<div class="row"><button class="btn soft" data-a="music" aria-pressed="${Music.on}">Music: ${Music.on?'On':'Off'}</button><button class="btn soft" data-a="sfx" aria-pressed="${ls.get('dd-sfx')!=='0'}">Sound effects: ${ls.get('dd-sfx')!=='0'?'On':'Off'}</button></div>
+<div class="row"><button class="btn soft" data-a="music" aria-pressed="${Music.on}">Music: ${Music.on?'On':'Off'}</button><button class="btn soft" data-a="sfx" aria-pressed="${sfxOn()}">Sound effects: ${sfxOn()?'On':'Off'}</button></div>
 <div class="row"><button class="btn soft" data-a="smoothToggle" aria-pressed="${isSmooth()}">Smooth mode: ${isSmooth()?'On':'Off'}</button></div>
 <div class="row"><button class="btn soft" data-a="emute" aria-pressed="${!emotesMuted()}">Reactions: ${emotesMuted()?'Muted':'On'}</button>${mode==='p2p'?`<button class="btn soft" data-a="chatToggle" aria-pressed="${!chatOff()}">Chat: ${chatOff()?'Off':'On'}</button>`:''}</div>
 <div class="row"><button class="btn soft" data-a="leave">Leave table</button><button class="btn primary" data-a="close">Back to game</button></div>`);loadMenuLb();}
@@ -2728,10 +2732,10 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeSheet();closeC
 $('#sheet').addEventListener('click',e=>{if(e.target.id==='sheet')closeSheet();});
 /* background music plays only at the card table, never on the menus */
 const unlockAudio=()=>{AU.unlock();};
-['pointerdown','touchend','click','keydown'].forEach(ev=>document.addEventListener(ev,unlockAudio,{capture:true,passive:true}));
+['pointerdown','touchstart','touchend','click','keydown'].forEach(ev=>document.addEventListener(ev,unlockAudio,{capture:true,passive:true}));
 /* stop all sound when the tab is hidden or the phone locks; bring it back on return */
 function onHide(){Music.pause();AU.sleep();}
-function onShow(){if(document.hidden)return;if(Music.on||ls.get('dd-sfx')!=='0')AU.wake();Music.resume();netWake();if((screen==='home'||screen==='friends')&&!net)warmUp();if(screen==='table')layoutHand();}
+function onShow(){if(document.hidden)return;if(Music.on||sfxOn())AU.wake();Music.resume();netWake();if((screen==='home'||screen==='friends')&&!net)warmUp();if(screen==='table')layoutHand();}
 document.addEventListener('visibilitychange',()=>{if(document.hidden)onHide();else onShow();});
 window.addEventListener('pagehide',onHide);
 /* closing the page while hosting: take the table out of the open-tables list right away */
@@ -2801,7 +2805,7 @@ case 'delAcctGo':deleteAccount();break;
 case 'mutep':{const id=b.dataset.id;if(mutedP.has(id))mutedP.delete(id);else mutedP.add(id);const k=S?S.players.findIndex(q=>q.id===id):-1;if(k>=0)openPlayer(k);break;}
 case 'emute':ls.set('dd-emute',emotesMuted()?'0':'1');if(S)openMenu();break;
 case 'music':{AU.unlock();const want=ls.get('dd-music')==='0';ls.set('dd-music',want?'1':'0');const v=screen==='table'?Music.set(want):want;document.querySelectorAll('[data-a="music"]').forEach(x=>x.setAttribute('aria-pressed',String(v)));if($('#sheet').classList.contains('open')&&S)openMenu();break;}
-case 'sfx':{const v=ls.get('dd-sfx')==='0';ls.set('dd-sfx',v?'1':'0');if(v){AU.unlock();SFX.tick();}if(S)openMenu();break;}
+case 'sfx':{const v=!sfxOn();ls.set('dd-sfx',v?'1':'0');if(v){AU.unlock();SFX.tick();}if(S)openMenu();break;}
 case 'create':create(b);break;
 case 'bots':soloBots=+b.dataset.n;document.querySelectorAll('[data-a="bots"]').forEach(x=>x.setAttribute('aria-pressed',String(+x.dataset.n===soloBots)));{const bh=$('#blitzhint');if(bh)bh.innerHTML=blitzHint();}break;
 case 'rounds':{const n=+b.dataset.n;if(!ROUND_OPTS.includes(n))break;if(screen==='computer'){soloRounds=n;ls.set('dd-rounds',String(n));renderComputer();}else if(S&&S.status==='lobby'&&S.hostId===myId){const d=clone(S);d.rounds=n;d.rev=(S.rev||0)+1;d.by=myId;commit(d);}break;}
