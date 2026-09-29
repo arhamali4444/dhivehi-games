@@ -193,6 +193,21 @@ button:disabled{cursor:default}
 @keyframes hop{50%{transform:translateY(-55%) scale(1.12)}}
 .tok.on{z-index:2}.tok.on i{box-shadow:0 0 0 calc(var(--B)*0.0067) var(--c),0 0 0 calc(var(--B)*0.0146) rgba(255,211,110,.8),0 3px 5px rgba(0,0,0,.45)}
 .tok.jailed i{filter:grayscale(.4)}
+/* statue pieces (enamel & gold): the statue sits on the token spot, its shadow stays on the tile when it hops */
+.tok.pk{width:calc(var(--B)*.08);height:calc(var(--B)*.08);margin:calc(var(--B)*-.052) 0 0 calc(var(--B)*-.04)}
+.tok.pk::before{content:'';position:absolute;inset:0;background:var(--pks) center/contain no-repeat;pointer-events:none;transition:opacity .2s}
+.tok.pk i{background:var(--pkb) center/contain no-repeat;box-shadow:none;border-radius:0;transform-origin:50% 85%;will-change:auto}
+.tok.pk i svg{visibility:hidden}
+.tok.pk.on i{box-shadow:none;filter:drop-shadow(0 0 calc(var(--B)*.007) rgba(255,214,120,.95))}
+.tok.pk.jailed i{filter:grayscale(.45) brightness(.9)}
+.tok.pk.hop i{animation:pkhop .24s cubic-bezier(.3,.7,.4,1)}
+.tok.pk.hop::before{animation:pkshade .24s ease-out}
+@keyframes pkhop{0%{transform:none}45%{transform:translateY(-34%) scale(1.04)}78%{transform:translateY(0) scale(1.07,.9)}100%{transform:none}}
+@keyframes pkshade{45%{transform:scale(.8);opacity:.55}}
+@media (prefers-reduced-motion:reduce){.tok.pk.hop i,.tok.pk.hop::before{animation:none}}
+.bar .gh.pk,.bar .rs.pk{width:calc(var(--B)*.03);height:calc(var(--B)*.03);background:var(--pks) center/contain no-repeat;box-shadow:none;clip-path:none;border-radius:0;position:relative}
+.bar .gh.pk::after,.bar .rs.pk::after{content:'';position:absolute;inset:0;background:var(--pkb) center/contain no-repeat}
+.bar .rs.pk{width:calc(var(--B)*.04);height:calc(var(--B)*.04)}
 
 /* ---------- game ---------- */
 #game{display:grid;grid-template-rows:auto auto minmax(0,1fr);grid-template-columns:minmax(0,1fr);grid-template-areas:"bar" "stage" "side"}
@@ -795,9 +810,13 @@ const TOKENS={
  turtle:{n:'Turtle',s:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9 3 7M18 9l3-2M6 17l-3 2M18 17l3 2" stroke="#5BBF7A" stroke-width="2.4" stroke-linecap="round"/><circle cx="12" cy="4.5" r="2.4" fill="#5BBF7A"/><ellipse cx="12" cy="13" rx="6" ry="7" fill="#2E9E5B"/><path d="M12 7.5v11M8 10.5l8 5M16 10.5l-8 5" stroke="#1E6B3E" stroke-width="1"/></svg>'},
  manta:{n:'Manta',s:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 7C8 7 4 9 2 13c4-1 6 0 8 2l2 7 2-7c2-2 4-3 8-2-2-4-6-6-10-6z" fill="#1F4FA8"/><path d="M10 7.3 9 4.5M14 7.3l1-2.8" stroke="#1F4FA8" stroke-width="1.6" stroke-linecap="round"/></svg>'},
  seaplane:{n:'Seaplane',s:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 13h7l4-7h2l-2 7h5l2-3h1l-1 4 1 4h-1l-2-3h-5l2 7h-2l-4-7H3z" fill="#D9383A"/><path d="M5 19h8" stroke="#15241F" stroke-width="1.4" stroke-linecap="round"/></svg>'},
- whaleshark:{n:'Whale shark',s:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12c3-4 10-5 15-3l3-3v5l2 1-2 1v5l-3-3c-5 2-12 1-15-3z" fill="#3E5C76"/><g fill="#fff"><circle cx="7" cy="11" r=".8"/><circle cx="10" cy="10" r=".8"/><circle cx="12" cy="12.5" r=".8"/><circle cx="9" cy="13.3" r=".8"/><circle cx="14.5" cy="10.6" r=".8"/></g></svg>'},
- palm:{n:'Coconut palm',s:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22c0-6 1-10 3-14" stroke="#7A5230" stroke-width="2.2" fill="none" stroke-linecap="round"/><path d="M15 8c-3-3-8-3-11 0 4-1 7-1 11 0zm0 0c3-3 7-2 8 1-3-2-5-2-8-1zm0 0c-1-3-4-6-7-6 3 1 5 3 7 6zm0 0c1-3 4-5 7-4-3 0-5 2-7 4z" fill="#2E9E5B"/><circle cx="14" cy="9.5" r="1.3" fill="#8B5A2B"/><circle cx="16" cy="9.8" r="1.3" fill="#8B5A2B"/></svg>'}};
+ conch:{n:'Boli conch',s:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 16c1-6 6-11 13-12-1 3-1 5 1 7 2 3 1 8-4 9-4 1-9 0-10-4z" fill="#F3C9A8"/><path d="M17 4c-2 2-3 4-2 7M9 9l2 2M7 12l2 1.5M12 6.5l1.5 2" stroke="#C98B68" stroke-width="1.2" stroke-linecap="round" fill="none"/><path d="M8 18c2 1 5 1 7-1" stroke="#E7768A" stroke-width="1.6" stroke-linecap="round" fill="none"/></svg>'},
+ palm:{n:'Coconut palm',s:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22c0-6 1-10 3-14" stroke="#7A5230" stroke-width="2.2" fill="none" stroke-linecap="round"/><path d="M15 8c-3-3-8-3-11 0 4-1 7-1 11 0zm0 0c3-3 7-2 8 1-3-2-5-2-8-1zm0 0c-1-3-4-6-7-6 3 1 5 3 7 6zm0 0c1-3 4-5 7-4-3 0-5 2-7 4z" fill="#2E9E5B"/><circle cx="14" cy="9.5" r="1.3" fill="#8B5A2B"/><circle cx="16" cy="9.8" r="1.3" fill="#8B5A2B"/></svg>'},
+ crown:{n:'Crown',s:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 18 4.5 8l4.5 4 3-7 3 7 4.5-4L21 18z" fill="#E7B53C"/><path d="M3 18h18v2.5H3z" fill="#C8922A"/><circle cx="12" cy="11.5" r="1.4" fill="#D9383A"/><path d="M12 3.2a1.3 1.3 0 1 0 .01 0z" fill="#fff"/></svg>'},
+ drum:{n:'Bodu beru',s:'<svg viewBox="0 0 24 24" aria-hidden="true"><ellipse cx="12" cy="6.5" rx="8" ry="3" fill="#F4E9D2"/><path d="M4 6.5v10c0 1.7 3.6 3 8 3s8-1.3 8-3v-10c0 1.7-3.6 3-8 3s-8-1.3-8-3z" fill="#8B4A26"/><path d="M5 9l3 9M9 10l2 9M15 10l-2 9M19 9l-3 9" stroke="#E7C98A" stroke-width="1"/></svg>'}};
 const TOKEN_KEYS=Object.keys(TOKENS);
+/* old saves may still hold the retired whale-shark token: show it as the conch */
+TOKENS.whaleshark=TOKENS.conch;
 const PCOL=['#E0525A','#2D86C9','#F2C94C','#7F5AF0','#2BB673'];
 const BOTS=[['Ibrahim','ibrahim'],['Mariyam','mariyam'],['Hussain','hussain'],['Aisha','aisha'],['Ali','ali'],['Fathimath',null],['Ahmed',null],['Aminath',null],['Moosa',null],['Hawwa',null],['Shifa',null],['Naseem',null]];
 
@@ -1358,7 +1377,11 @@ LAYOUTS.square={
 LAYOUTS.square.deco=function(view,i,w,col,ini,tag){const c=view.cells[i];c.classList.toggle('own',!!w);c.classList.toggle('loan',!!(w&&w.m));
  if(w)c.style.setProperty('--oc',col);else c.style.removeProperty('--oc');
  let od=c.querySelector('.od');if(w&&!od){od=document.createElement('i');od.className='od';c.appendChild(od);}else if(!w&&od)od.remove();
- const bar=c.querySelector('.bar');if(bar){const bh=w&&w.h?(w.h===5?'<i class="rs"></i>':'<i class="gh"></i>'.repeat(w.h)):'';if(bar.innerHTML!==bh)bar.innerHTML=bh;}
+ const bar=c.querySelector('.bar');if(bar){
+  /* statue buildings (enamel in the owner's colour) once their sprite is ready; plain shapes until then */
+  const bi=(k,f)=>{if(typeof PK==='undefined')return `<i class="${k}"></i>`;const p=PK.attrs(f,col);return `<i class="${k}${p.cls}" ${p.data} style="${p.style}"></i>`;};
+  const sig=w&&w.h?(w.h===5?'r':'g'+w.h)+'|'+col+'|'+(typeof PK!=='undefined'&&PK.url(w.h===5?'resort':'guesthouse',col)?1:0):'';
+  if(bar.dataset.sig!==sig){bar.dataset.sig=sig;bar.innerHTML=w&&w.h?(w.h===5?bi('rs','resort'):bi('gh','guesthouse').repeat(w.h)):'';}}
  /* live rent tag in the owner's colour (replaces the price once someone owns the space) */
  let rt=c.querySelector('.rt');
  if(w&&tag){if(!rt){rt=document.createElement('span');rt.className='rt';rt.setAttribute('aria-hidden','true');const pr=c.querySelector('.pr');if(pr)pr.after(rt);else c.appendChild(rt);}
@@ -1572,7 +1595,32 @@ function canRoll(){const pe=G&&G.pend;return !!pe&&pe.p===ME&&!AUTO&&!meP().out&
 let BV=null;const VIEW={pos:[],cash:[]};
 /* ONE place that draws a player token on a board (game, home board, teaser). The token art itself is TOKENS
    (data section); buildings are drawn by the layout's deco(). Swap either and every board follows. */
-function tokHTML(k,col,attrs=''){const t=TOKENS[k]||TOKENS[TOKEN_KEYS[0]];return `<span class="tok" ${attrs} style="--c:${col}"><i>${t.s}</i></span>`;}
+/* Statue pieces (enamel & gold): pre-rendered sprites in pieces/ with three layers per figure: statue (_b),
+   a tint layer (_t: red = diffuse, green = gloss) that takes the player's colour, and a separate shadow (_s).
+   Tinted composites are made once per figure + colour and cached; until they are ready the SVG icon shows. */
+const PK=(()=>{const BASE='pieces/',S=92,ALIAS={whaleshark:'conch'},img={},cache={};
+ const s2l=v=>{v/=255;return v<=.04045?v/12.92:Math.pow((v+.055)/1.055,2.4)},l2s=v=>{v=Math.min(Math.max(v,0),1);return v<=.0031308?12.92*v:1.055*Math.pow(v,1/2.4)-.055};
+ const aces=x=>Math.min(Math.max((x*(2.51*x+.03))/(x*(2.43*x+.59)+.14),0),1),lin=h=>[1,3,5].map(i=>s2l(parseInt(String(h).slice(i,i+2),16)||136));
+ const load=k=>img[k]||(img[k]=new Promise(r=>{const im=new Image();im.onload=()=>r(im);im.onerror=()=>r(null);im.src=BASE+k+'.webp';}));
+ const fig=k=>ALIAS[k]||k;
+ function comp(f,col){const key=f+'|'+col;if(cache[key])return cache[key].p;const c={url:null,done:false};cache[key]=c;
+  c.p=Promise.all([load(`${f}_enamel_${S}_b`),load(`${f}_enamel_${S}_t`),load(`${f}_${S}_s`)]).then(([b,t,s])=>{
+   if(!b||!s){c.done=true;return null;}
+   const cv=document.createElement('canvas');cv.width=cv.height=S;const x=cv.getContext('2d');x.drawImage(b,0,0);
+   if(t){const tc=document.createElement('canvas');tc.width=tc.height=S;const tx=tc.getContext('2d',{willReadFrequently:true});tx.drawImage(t,0,0);
+    const id=tx.getImageData(0,0,S,S),d=id.data,L=lin(col);let any=false;
+    for(let i=0;i<d.length;i+=4){if(!d[i+3])continue;any=true;const D=Math.pow(d[i]/255,2)*2.5,G=Math.pow(d[i+1]/255,2)*2;
+     d[i]=l2s(aces(L[0]*D+G))*255;d[i+1]=l2s(aces(L[1]*D+G))*255;d[i+2]=l2s(aces(L[2]*D+G))*255;}
+    if(any){tx.putImageData(id,0,0);x.drawImage(tc,0,0);}}
+   try{c.url=cv.toDataURL('image/png');}catch(e){c.url=null;}c.done=true;return c.url;}).catch(()=>{c.done=true;return null;});return c.p;}
+ const url=(f,col)=>{const c=cache[f+'|'+col];return c&&c.url;};
+ const vars=(f,col)=>{const u=url(f,col);return u?`--pkb:url(${u});--pks:url(${BASE}${f}_${S}_s.webp)`:'';};
+ /* give every waiting element its statue once the composite exists */
+ function apply(){document.querySelectorAll('[data-pf]:not(.pk)').forEach(el=>{const f=el.dataset.pf,col=el.dataset.pc,u=url(f,col);
+   if(u){el.style.setProperty('--pkb',`url(${u})`);el.style.setProperty('--pks',`url(${BASE}${f}_${S}_s.webp)`);el.classList.add('pk');}
+   else{const c=cache[f+'|'+col];if(!c||!c.done)comp(f,col).then(v=>{if(v)apply();});}});}
+ return {fig,vars,url,comp,apply,attrs(f,col){const u=url(f,col);if(!u)setTimeout(()=>comp(f,col).then(v=>{if(v)apply();}),0);return {cls:u?' pk':'',data:`data-pf="${f}" data-pc="${col}"`,style:vars(f,col)};}};})();
+function tokHTML(k,col,attrs=''){const t=TOKENS[k]||TOKENS[TOKEN_KEYS[0]],p=PK.attrs(PK.fig(TOKENS[k]?k:TOKEN_KEYS[0]),col);return `<span class="tok${p.cls}" ${attrs} ${p.data} style="--c:${col};${p.style}"><i>${t.s}</i></span>`;}
 function buildBoard(){const cam=$('#bcam');cam.innerHTML='';BV=LAYOUT.build(cam);TAGK={};
  BV.tokens.innerHTML=G.players.map((p,i)=>tokHTML(p.tok,p.col,`data-p="${i}"`)).join('');
  BV.toks=$$('.tok',BV.tokens);sizeBoard();decorate();placeTokens();CAM.s=FOLLOW?FOLLOW_S:1;CAM.x=0;CAM.y=0;if(FOLLOW)follow(G.pend&&G.pend.p!=null?G.pend.p:G.turn);else applyCam();}
