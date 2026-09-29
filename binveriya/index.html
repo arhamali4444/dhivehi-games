@@ -84,6 +84,47 @@ button:disabled{cursor:default}
 .modes button{min-height:44px;font-size:12px;font-weight:800;padding:0 14px;border-radius:99px;border:0;background:rgba(8,70,88,.85);box-shadow:inset 0 0 0 1px rgba(255,255,255,.2);color:#fff}
 .modes button[aria-checked="true"]{background:#FFE3A8;color:#3A2305}
 .soon{font-size:10px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;opacity:.8}
+/* home teaser: a scripted loop on the home board (TZ). Transform/opacity only; overlays live in .tfx */
+.tilt.tz .board{animation:none;transition:transform var(--td,1.2s) cubic-bezier(.45,.05,.2,1),opacity .5s ease}
+.tilt.tz .clogo{visibility:hidden}/* the home title is right above: no second logo under it when zoomed in */
+.tscrim{position:absolute;inset:0;z-index:1;pointer-events:none;opacity:0;transition:opacity .8s ease;
+ background:linear-gradient(180deg,rgba(5,46,62,.86) 0,rgba(5,46,62,.5) var(--t0,30%),rgba(5,46,62,0) calc(var(--t0,30%) + 44px),rgba(5,46,62,0) calc(var(--t1,70%) - 44px),rgba(5,40,54,.6) var(--t1,70%),rgba(4,36,50,.92) 100%)}
+#home.tzon .tscrim{opacity:1}
+.tfx{position:absolute;inset:0;z-index:1;pointer-events:none;overflow:hidden;contain:layout paint;color:#fff}
+.tfx>*{position:absolute;left:0;top:0}
+.tfx .out{opacity:0!important;transition:opacity .35s ease!important}
+.tcap{left:50%;transform:translate(-50%,0);font:800 12px/1 Sora,sans-serif;letter-spacing:.02em;padding:7px 13px;border-radius:99px;background:rgba(4,38,52,.78);box-shadow:inset 0 0 0 1px rgba(242,212,155,.45),0 4px 14px rgba(0,0,0,.25);color:#FFE3A8;white-space:nowrap;text-align:center;transition:opacity .35s ease,transform .35s var(--out)}
+.tcap.hide{opacity:0;transform:translate(-50%,-6px)}
+.tstamp{transform:translate(-50%,-50%) rotate(-10deg);font:900 19px/1 Sora,sans-serif;letter-spacing:.08em;padding:6px 10px 5px;border-radius:8px;border:3px solid currentColor;background:rgba(255,248,234,.95);color:#155E43;box-shadow:0 6px 18px rgba(0,0,0,.35);white-space:nowrap;animation:tstamp .5s var(--spring) both}
+.tstamp.bust{color:#fff;background:#C0342B;border-color:#FFF3E0}
+.tstamp.seize{color:#8A5A0A}
+@keyframes tstamp{from{transform:translate(-50%,-50%) rotate(-24deg) scale(2.4);opacity:0}}
+.tav{display:flex;flex-direction:column;align-items:center;gap:4px;transform:translate(-50%,-50%);animation:tpop .45s var(--spring) both}
+@keyframes tpop{from{transform:translate(-50%,-50%) scale(.3);opacity:0}}
+.tav .pf{position:relative;display:block;width:var(--av,40px);height:var(--av,40px);border-radius:50%;overflow:hidden;background:#fff;box-shadow:0 0 0 2.5px var(--c),0 6px 14px rgba(0,0,0,.35)}
+.tav .pf svg{display:block;width:100%;height:100%}
+.tav.jd .pf{background:#FFF8EA;display:grid;place-items:center;box-shadow:0 0 0 2.5px #8A6414,0 6px 14px rgba(0,0,0,.35)}.tav.jd .pf svg{width:62%;height:62%}
+.tav .sus{width:calc(var(--av,40px)*1.4);height:5px;background:rgba(0,0,0,.35)}
+.tav .tl{font:800 10px/1.1 Sora,sans-serif;white-space:nowrap;background:rgba(4,38,52,.8);padding:3px 7px;border-radius:99px}
+.tav .tstamp{position:absolute;left:50%;top:38%;font-size:15px;padding:5px 8px 4px}
+.trow{display:flex;gap:30px;justify-content:center}
+.trow .tav{position:relative;transform:none;animation-name:tpop2}
+@keyframes tpop2{from{transform:scale(.3);opacity:0}}
+.tcoin{width:14px;height:14px;margin:-7px 0 0 -7px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#FFF4C4,#E7B53C 58%,#9A6B14);box-shadow:0 1px 3px rgba(0,0,0,.45)}
+.tnote{width:30px;height:20px;margin:-10px 0 0 -15px;border-radius:4px;background:#DFF3E4;display:grid;place-items:center;box-shadow:0 2px 6px rgba(0,0,0,.4)}.tnote svg{width:26px;height:26px}
+.tamt{transform:translate(-50%,-50%);font:900 13px/1 Sora,sans-serif;padding:5px 9px;border-radius:99px;background:#C0342B;color:#fff;white-space:nowrap;box-shadow:0 3px 10px rgba(0,0,0,.35)}
+.tamt.p{background:#1E8F5A}
+.tgav{width:46px;height:46px;margin:-40px 0 0 -8px;border-radius:50%;background:#FFF8EA;display:grid;place-items:center;box-shadow:0 0 0 2.5px #8A6414,0 6px 14px rgba(0,0,0,.35);transform-origin:30% 85%}.tgav svg{width:70%;height:70%}
+.traid{left:50%;top:50%;display:flex;flex-direction:column;align-items:center;gap:12px;transform:translate(-50%,-50%) scale(var(--k,1))}
+.tcard{width:196px;height:118px;perspective:700px}
+.tci{position:relative;width:100%;height:100%;transform-style:preserve-3d;transition:transform .7s var(--out)}
+.tcard.flip .tci{transform:rotateY(180deg)}
+.tcf{position:absolute;inset:0;border-radius:14px;backface-visibility:hidden;-webkit-backface-visibility:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;text-align:center;color:var(--ink);box-shadow:0 12px 26px rgba(0,0,0,.45)}
+.tcf.bk{background:linear-gradient(160deg,#FFF8EA,#EADFCB)}.tcf.bk svg{width:40px;height:40px}.tcf.bk b{font:800 13px/1 Sora,sans-serif}
+.tcf.fr{transform:rotateY(180deg);background:#FFF8EA;padding:10px 12px;box-shadow:inset 0 0 0 3px #C0342B,0 12px 26px rgba(0,0,0,.45)}
+.tcf.fr small{font:800 10px/1 Sora,sans-serif;letter-spacing:.08em;text-transform:uppercase;color:#1B7FA6}
+.tcf.fr b{font:900 17px/1.1 Fraunces,Georgia,serif;color:#C0342B}
+.tcf.fr p{margin:0;font:700 11px/1.3 Sora,sans-serif;color:#6B6354}
 
 /* ---------- board (square layout) ---------- */
 .board{position:relative;display:grid;grid-template-columns:1.55fr repeat(6,1fr) 1.55fr;grid-template-rows:1.55fr repeat(6,1fr) 1.55fr;gap:calc(var(--B)*.0034);padding:calc(var(--B)*.0034);width:var(--B);height:var(--B);border-radius:calc(var(--B)*.04);
@@ -386,6 +427,57 @@ button:disabled{cursor:default}
 .hbid .pf{width:40px;height:40px;border-radius:50%;overflow:hidden;flex:none}
 .hbid .pf svg{width:100%;height:100%;display:block}
 .hbid b{font:900 26px/1 Fraunces,serif;margin-left:auto}
+/* auction: list price, rent levels, bid vs price, who is bidding */
+.aworth{display:flex;align-items:baseline;justify-content:space-between;gap:10px;padding:10px 14px 4px}
+.aworth span{font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.aworth b{font:900 22px/1 Fraunces,serif;color:var(--ink);white-space:nowrap}
+.rmini{display:grid;grid-template-columns:repeat(auto-fill,minmax(88px,1fr));gap:4px;padding:4px 10px 10px}
+.rmini span{display:flex;flex-direction:column;align-items:center;padding:5px 4px;border-radius:10px;background:#F7F1E6;text-align:center}
+.rmini small{font-size:10px;font-weight:700;color:var(--muted);line-height:1.2}
+.rmini b{font-size:12.5px;font-weight:900;font-variant-numeric:tabular-nums;white-space:nowrap}
+.hbid .hbr{margin-left:auto;display:flex;flex-direction:column;align-items:flex-end;gap:3px}
+.hbid .hbr b{margin-left:0}
+.apct{font-size:11.5px;font-weight:800;color:var(--muted);white-space:nowrap}.apct.hi{color:#8A2B2B}
+.abds{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin:10px 0 4px}
+.abd{display:flex;align-items:center;gap:6px;padding:4px 10px 4px 4px;border-radius:99px;background:#fff;box-shadow:inset 0 0 0 1px var(--line)}
+.abd .pf{width:28px;height:28px;border-radius:50%;overflow:hidden;box-shadow:0 0 0 2px var(--c);flex:none}.abd .pf svg{display:block;width:100%;height:100%}
+.abd b{font-size:12px}.abd small{font-size:10.5px;font-weight:800;color:var(--muted)}
+.abd.top{box-shadow:inset 0 0 0 2px #2A9A6E}.abd.top small{color:var(--emerald)}.abd.out{opacity:.55}
+.sheet .ahint{margin:2px 0 8px;text-align:center;font-size:12.5px;color:#155E43;font-weight:700}
+/* title-deed card flying up from the board */
+.deedfly{position:fixed;z-index:60;pointer-events:none;perspective:1100px}
+.deedfly .dfi{position:relative;width:100%;height:100%;transform-style:preserve-3d;will-change:transform}
+.deedfly .dff,.deedfly .dfb{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden}
+.deedfly .dff>.pcard{height:100%;visibility:visible!important;color:var(--ink)}
+.deedfly .dfb{transform:rotateY(180deg);border-radius:20px;background:linear-gradient(160deg,#FFF8EA,#EADFCB);box-shadow:0 16px 34px rgba(0,0,0,.45),inset 0 0 0 7px var(--g);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;color:var(--ink);text-align:center;padding:16px}
+.deedfly .dfb span{font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.deedfly .dfb b{font:900 26px/1.05 Fraunces,Georgia,serif}
+/* rent: the deed with payer and owner, coins between them */
+.rentpop{position:fixed;inset:0;z-index:57;display:grid;place-items:center;padding:16px;background:rgba(3,28,38,.8)}
+.rentpop .rpc{display:block;width:min(320px,100%);border:0;padding:0;background:none;color:#fff;text-align:center}
+.rentpop .pcard{color:var(--ink);text-align:left}
+.rentpop .rtag{margin:0;padding:0 14px 12px;font-size:12px;font-weight:700;color:var(--muted)}
+.rpay{display:flex;align-items:center;justify-content:center;gap:14px;margin-top:14px}
+.rpay .pf{display:block;width:48px;height:48px;border-radius:50%;overflow:hidden;background:#fff;box-shadow:0 0 0 3px var(--c),0 6px 14px rgba(0,0,0,.35);flex:none}.rpay .pf svg{display:block;width:100%;height:100%}
+.rarr{display:flex;flex-direction:column;align-items:center;min-width:92px}
+.rarr small{font-size:11px;font-weight:800;opacity:.85;white-space:nowrap}
+.rarr b{font:900 22px/1.1 Fraunces,serif;color:#FFE08A;white-space:nowrap}
+.rarr:after{content:"";display:block;width:70px;height:2px;margin-top:4px;background:linear-gradient(90deg,rgba(255,224,138,0),#FFE08A)}
+.rentpop .rwho{margin:8px 0 0;font-size:13px;font-weight:700}
+.rentpop em{display:block;margin-top:6px;font-size:11.5px;font-style:normal;opacity:.7}
+.rcoin{position:fixed;z-index:1;width:16px;height:16px;border-radius:50%;pointer-events:none;background:radial-gradient(circle at 35% 30%,#FFF4C4,#E7B53C 58%,#9A6B14);box-shadow:0 1px 3px rgba(0,0,0,.45)}
+/* guided mode: coach marks and the help button */
+.coach{position:fixed;z-index:70;padding:12px 14px;border-radius:16px;background:#FFF8EA;color:var(--ink);box-shadow:0 14px 34px rgba(0,0,0,.4),0 0 0 2px #F0BE4E;animation:cpop .35s var(--spring) both}
+@keyframes cpop{from{opacity:0;transform:translateY(6px) scale(.96)}}
+.coach b{display:block;font:900 16px/1.2 Fraunces,Georgia,serif}
+.coach p{margin:4px 0 10px;font-size:13px;line-height:1.4;color:#3d3a33}
+.coach p b{display:inline;font:inherit;font-weight:800}
+.coach .cbtn{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.coach .car{position:absolute;top:100%;width:16px;height:16px;margin:-8px 0 0 -8px;background:#FFF8EA;transform:rotate(45deg);box-shadow:2px 2px 0 0 #F0BE4E}
+.coach.below .car{top:0;box-shadow:-2px -2px 0 0 #F0BE4E}
+.hlp{flex:none;width:36px;height:36px;margin-left:auto;border-radius:50%;border:0;background:rgba(255,255,255,.14);box-shadow:inset 0 0 0 1px rgba(255,255,255,.3);color:#fff;font:900 17px/1 Sora,sans-serif;display:grid;place-items:center;position:relative}
+.hlp:before{content:"";position:absolute;inset:-4px}
+.helpl{margin:4px 0 8px;padding-left:20px;font-size:14px;line-height:1.5;color:#3d3a33}.helpl li{margin:6px 0}
 .seg{display:flex;gap:6px;flex-wrap:wrap}
 .seg button{flex:1;min-height:48px;min-width:44px;border-radius:14px;border:0;background:#fff;box-shadow:inset 0 0 0 1.5px var(--line);font-weight:800;color:var(--ink);padding:0 8px}
 .seg button[aria-checked="true"]{box-shadow:inset 0 0 0 2.5px #155E43;background:#E4F4EA}
@@ -1319,7 +1411,7 @@ const sleep=ms=>(FAST||ms<=0)?Promise.resolve():new Promise(r=>setTimeout(r,ms))
 const macro=f=>{const c=new MessageChannel();c.port1.onmessage=()=>{c.port1.close();f();};c.port2.postMessage(0);};
 let G=null,ME=0,SCREEN='home',WATCH=false;
 let speedPref=ls.get('bv-speed')==='fast';
-function UI_SPEED(){return FAST?0.02:WATCH?0.35:speedPref?0.5:1;}
+function UI_SPEED(){return FAST?0.02:WATCH?0.35:speedPref?0.5:GUIDE.on?1.35:1;}
 /* online: NET (shared/net.js); ONLINE is true at an online table. A spectator has ME = -1. */
 let NET=null,ONLINE=false;
 const netHost=()=>ONLINE&&!!NET&&NET.isHost(),netGuest=()=>ONLINE&&!!NET&&!NET.isHost();
@@ -1328,34 +1420,76 @@ const nameOf=i=>i===ME?'You':G.players[i].name;
 const SPECP={name:'',cash:0,cards:[],out:true,sus:0,mute:false,jail:false,human:true,col:'#888',pos:0,jt:0};
 const meP=()=>(G&&G.players[ME])||SPECP;
 
-/* ---------------------------------------------------------------- sound (soft WebAudio) */
-const SND=(()=>{let ctx=null,master=null,nbuf=null,on=ls.get('bv-sound')!=='0';
- function ac(){if(!on)return null;try{if(!ctx){const C=window.AudioContext||window.webkitAudioContext;if(!C)return null;ctx=new C();master=ctx.createGain();master.gain.value=.55;master.connect(ctx.destination);}if(ctx.state==='suspended')ctx.resume();}catch(e){return null;}return ctx;}
- function tone(f,dt,dur,o={}){const c=ac();if(!c)return;const t=c.currentTime+dt,os=c.createOscillator(),g=c.createGain();os.type=o.type||'sine';os.frequency.setValueAtTime(f,t);if(o.to)os.frequency.exponentialRampToValueAtTime(o.to,t+dur);
-  g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(o.vol||.1,t+.012);g.gain.exponentialRampToValueAtTime(.0001,t+dur);os.connect(g);g.connect(master);os.start(t);os.stop(t+dur+.03);}
- function noise(dt,dur,o={}){const c=ac();if(!c)return;if(!nbuf){nbuf=c.createBuffer(1,c.sampleRate*.5|0,c.sampleRate);const d=nbuf.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;}
-  const t=c.currentTime+dt,s=c.createBufferSource();s.buffer=nbuf;const fl=c.createBiquadFilter();fl.type=o.type||'bandpass';fl.frequency.setValueAtTime(o.f||2000,t);if(o.to)fl.frequency.exponentialRampToValueAtTime(o.to,t+dur);fl.Q.value=o.q||1;
-  const g=c.createGain();g.gain.setValueAtTime(o.vol||.2,t);g.gain.exponentialRampToValueAtTime(.0001,t+dur);s.connect(fl);fl.connect(g);g.connect(master);s.start(t);s.stop(t+dur+.03);}
- return {get on(){return on;},set(v){on=!!v;ls.set('bv-sound',on?'1':'0');if(on)ac();},unlock(){ac();},
-  rattle(){for(let i=0;i<6;i++)noise(i*.045+Math.random()*.02,.035,{f:2200+Math.random()*1800,q:5,vol:.16});},
-  hit(t,s,k){const v=Math.max(.05,s);if(k==='t'){noise(t,.05,{f:1400+Math.random()*900,q:1.6,vol:.34*v});tone(150+Math.random()*30,t,.07,{type:'sine',vol:.14*v});}
-   else if(k==='w'){noise(t,.04,{f:900+Math.random()*400,q:2.2,vol:.3*v});tone(220,t,.05,{type:'triangle',vol:.08*v});}else noise(t,.03,{f:3200+Math.random()*1200,q:3,vol:.3*v});},
-  settle(t){noise(t,.03,{f:2600,q:4,vol:.08});tone(420,t+.01,.06,{type:'triangle',vol:.03});},
-  dice(){for(let i=0;i<8;i++)noise(i*.065+Math.random()*.03,.045,{f:1600+Math.random()*2200,q:4,vol:.22});noise(.6,.07,{f:800,q:2,vol:.2});},
-  hop(){tone(540+Math.random()*90,0,.07,{type:'triangle',vol:.035});},
-  coin(){tone(1320,0,.12,{vol:.06});tone(1760,.07,.28,{vol:.06});},
-  pay(){tone(620,0,.1,{type:'triangle',vol:.05});tone(415,.08,.2,{type:'triangle',vol:.05});},
-  buy(){[523,659,784,1046].forEach((f,i)=>tone(f,i*.07,.24,{type:'triangle',vol:.06}));},
-  card(){noise(0,.2,{f:500,to:4200,q:.7,vol:.16});tone(880,.13,.16,{vol:.035});},
-  slide(){noise(0,.16,{f:1400,to:500,q:.8,vol:.11});noise(.17,.05,{f:700,q:1.5,vol:.08});},
-  jail(){tone(220,0,.35,{type:'triangle',vol:.08,to:160});tone(165,.25,.55,{type:'triangle',vol:.08,to:110});},
-  alarm(){[0,.24,.48].forEach(d=>{tone(880,d,.15,{type:'square',vol:.03});tone(660,d+.12,.1,{type:'square',vol:.03});});},
-  gavel(){noise(0,.09,{f:380,q:1.2,vol:.35});tone(180,0,.12,{type:'triangle',vol:.1});},
-  tick(){tone(1250,0,.04,{type:'triangle',vol:.035});},
-  turn(){tone(784,0,.2,{vol:.05});tone(1175,.1,.32,{vol:.05});},
-  build(){noise(0,.05,{f:1500,q:4,vol:.18});noise(.09,.05,{f:1250,q:4,vol:.18});tone(988,.16,.22,{type:'triangle',vol:.05});},
-  win(){[523,659,784,1046,1318].forEach((f,i)=>tone(f,i*.11,.45,{type:'triangle',vol:.07}));},
-  err(){tone(210,0,.14,{type:'triangle',vol:.05});}};})();
+/* ---------------------------------------------------------------- sound: quiet, realistic foley (WebAudio)
+   Everything is synthesised: filtered-noise transients, short wood / metal resonances with fast envelopes, a little
+   per-hit randomness, a small room reverb and gentle compression; the output sits about 6 dB under full scale.
+   No beeps, boings or jingles. Mute: the site-wide dd-sfx key (this game's old bv-sound key is still read). */
+const SND=(()=>{let ctx=null,out=null,dry=null,wet=null,nbuf=null,lvl=.5;
+ const off=v=>v==='0'||v==='off';
+ let on=(()=>{const a=ls.get('dd-sfx');return a!=null?!off(a):ls.get('bv-sound')!=='0';})();
+ function ac(){if(!on)return null;try{if(!ctx){const C=window.AudioContext||window.webkitAudioContext;if(!C)return null;ctx=new C();
+   const comp=ctx.createDynamicsCompressor();comp.threshold.value=-20;comp.knee.value=12;comp.ratio.value=4;comp.attack.value=.003;comp.release.value=.15;
+   out=ctx.createGain();out.gain.value=lvl;comp.connect(out);out.connect(ctx.destination);dry=ctx.createGain();dry.connect(comp);
+   /* a small wooden room: 0.45 s of decaying stereo noise, darkened */
+   const sr=ctx.sampleRate,len=sr*.45|0,ir=ctx.createBuffer(2,len,sr);for(let ch=0;ch<2;ch++){const d=ir.getChannelData(ch);for(let i=0;i<len;i++)d[i]=i<sr*.006?0:(Math.random()*2-1)*Math.pow(1-i/len,3.4);}
+   const cv=ctx.createConvolver();cv.buffer=ir;const lp=ctx.createBiquadFilter();lp.type='lowpass';lp.frequency.value=3600;wet=ctx.createGain();wet.gain.value=.16;wet.connect(cv);cv.connect(lp);lp.connect(comp);}
+  if(ctx.state==='suspended')ctx.resume();}catch(e){return null;}return ctx;}
+ const R=(a,b)=>a+Math.random()*(b-a);
+ const bus=g=>{g.connect(dry);g.connect(wet);};
+ /* filtered noise burst: o = {f, to, q, type, vol, a (attack s), rate} */
+ function nz(dt,dur,o){const c=ac();if(!c)return;if(!nbuf){nbuf=c.createBuffer(1,c.sampleRate|0,c.sampleRate);const d=nbuf.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;}
+  const t=c.currentTime+Math.max(0,dt),s=c.createBufferSource();s.buffer=nbuf;if(o.rate)s.playbackRate.value=o.rate;
+  const fl=c.createBiquadFilter();fl.type=o.type||'bandpass';fl.frequency.setValueAtTime(o.f,t);if(o.to)fl.frequency.exponentialRampToValueAtTime(o.to,t+dur);fl.Q.value=o.q||1;
+  const g=c.createGain(),a=o.a||.0015;g.gain.setValueAtTime(.0001,t);g.gain.linearRampToValueAtTime(o.vol,t+a);g.gain.exponentialRampToValueAtTime(.0001,t+Math.max(a+.005,dur));
+  s.connect(fl);fl.connect(g);bus(g);s.start(t,Math.random()*.6);s.stop(t+dur+.05);}
+ /* one decaying partial: a wood body, a metal mode or a low thud */
+ function rs(dt,f,dur,vol,to){const c=ac();if(!c)return;const t=c.currentTime+Math.max(0,dt),os=c.createOscillator(),g=c.createGain();os.frequency.setValueAtTime(f,t);if(to)os.frequency.exponentialRampToValueAtTime(to,t+dur);
+  g.gain.setValueAtTime(.0001,t);g.gain.linearRampToValueAtTime(vol,t+.0015);g.gain.exponentialRampToValueAtTime(.0001,t+dur);os.connect(g);bus(g);os.start(t);os.stop(t+dur+.05);}
+ /* building blocks */
+ function knock(dt,v,f){nz(dt,.03,{f:f*R(.9,1.1),q:3.2,vol:.5*v});nz(dt,.012,{type:'highpass',f:4200,q:.7,vol:.2*v});rs(dt,R(170,230),.05,.1*v);}
+ function clack(dt,v){nz(dt,.02,{f:R(2800,3700),q:6,vol:.42*v});nz(dt,.01,{type:'highpass',f:5200,vol:.18*v});}
+ function clink(dt,v){const b=R(2750,3350);nz(dt,.012,{type:'highpass',f:6500,vol:.16*v});[[1,.34],[1.43,.22],[2.07,.16],[2.76,.1]].forEach(([k,d])=>rs(dt,b*k*R(.99,1.01),d*R(.8,1.2),.022*v));}
+ function thud(dt,v){rs(dt,R(88,104),.14,.2*v,70);nz(dt,.05,{type:'lowpass',f:650,vol:.3*v});}
+ function paper(dt,dur,v,f1,f2){nz(dt,dur,{f:f1,to:f2,q:.8,vol:.07*v,a:dur*.3});}
+ return {get on(){return on;},set(v){on=!!v;ls.set('bv-sound',on?'1':'0');ls.set('dd-sfx',on?'1':'0');if(on)ac();},unlock(){ac();},
+  /* master volume: the home teaser plays its few foley sounds quietly */
+  level(v){lvl=v;if(out)out.gain.value=v;},
+  /* two dice shaken in a cupped hand */
+  rattle(){nz(0,.26,{type:'lowpass',f:900,vol:.035,a:.06});let t=0;for(let i=0;i<6;i++){t+=R(.028,.05);nz(t,.018,{f:R(1900,2800),q:5,vol:R(.1,.18)});}},
+  /* one impact from the pre-simulated throw: t = time, s = impact speed 0..1, k = table / wall / other die */
+  hit(t,s,k){const v=.12+.88*s;if(k==='t'){knock(t,v*.9,R(1500,2300));rs(t,R(115,150),.07,.09*v);}else if(k==='w')knock(t,v*.7,R(950,1350));else clack(t,v);},
+  settle(t){knock(t,.12,2600);knock(t+.05,.06,2900);},
+  /* a throw without the animation (reduced motion): shake, a few decaying bounces, settle */
+  dice(){SND.rattle();[.3,.43,.53,.6].forEach((t,i)=>SND.hit(t,.8-i*.2,i===1?'d':'t'));SND.settle(.68);},
+  hop(){knock(0,.16,R(1700,2200));},
+  land(){knock(0,.3,R(1200,1400));rs(0,R(130,150),.09,.07);},
+  deed(){paper(0,.24,1,2600,1300);nz(.22,.03,{f:1800,q:1.2,vol:.04});},
+  coin(){clink(0,1);clink(R(.07,.1),.55);},
+  /* coins counted into a hand, more for bigger amounts */
+  coins(amt){const n=Math.max(2,Math.min(7,Math.round(2+(amt||0)/80)));nz(0,.12+n*.07,{type:'lowpass',f:1100,vol:.03,a:.04});let t=0;for(let i=0;i<n;i++){clink(t,.9-i*.08);t+=R(.06,.1);}},
+  pay(amt){SND.coins(amt);},
+  purse(){nz(0,.16,{type:'lowpass',f:1200,vol:.05,a:.03});[.04,.09,.13,.2].forEach((t,i)=>clink(t+R(0,.02),.7-i*.1));},
+  stamp(v=1){nz(0,.03,{f:1500,q:1,vol:.12*v});thud(0,v);},
+  /* pen signature, a soft stamp, a coin */
+  buy(){for(let i=0;i<5;i++)nz(i*.075,.065,{f:R(3600,5200),to:R(2400,3800),q:4,vol:.03,a:.02});SND.stamp(.7);clink(.62,.6);},
+  build(){[0,.12,.24].forEach(t=>knock(t,.32,R(900,1200)));rs(.4,105,.14,.06);nz(.4,.09,{type:'lowpass',f:500,vol:.07});},
+  gavel(){nz(0,.06,{f:900,q:1.5,vol:.42});rs(0,R(150,170),.12,.2);rs(0,R(420,470),.05,.05);},
+  tick(){knock(0,.09,2600);},
+  card(){paper(0,.14,1.2,1600,4200);nz(.13,.02,{type:'highpass',f:3000,vol:.07});},
+  slide(){paper(0,.18,1,2200,1100);nz(.18,.04,{type:'lowpass',f:900,vol:.05});},
+  bribe(){nz(0,.34,{type:'lowpass',f:1800,to:1000,vol:.055,a:.1});nz(.3,.02,{f:2200,q:1.5,vol:.03});},
+  /* raid / bust: a firm stamp over a low thud, no alarm */
+  bust(){rs(0,64,.35,.18,46);nz(0,.12,{type:'lowpass',f:320,vol:.18});SND.stamp(1);},
+  alarm(){SND.bust();},
+  /* prison: a metal gate closing, softly */
+  jail(){const g=(dt,v,b)=>{nz(dt,.02,{type:'highpass',f:3000,vol:.1*v});[[1,.7],[1.69,.5],[2.83,.4],[3.9,.3],[5.3,.22]].forEach(([k,d])=>rs(dt,b*k*R(.99,1.01),d,.02*v));rs(dt,R(85,95),.14,.07*v);};g(0,1,R(300,330));g(.22,.55,R(340,360));},
+  /* your turn: two soft knocks on the table */
+  turn(){knock(0,.2,1500);knock(.14,.14,1800);},
+  /* win: a warm swell of sea air and a few distant coins */
+  win(){nz(0,3,{type:'lowpass',f:450,to:1100,q:.5,vol:.08,a:1.2});nz(1.2,2.6,{type:'lowpass',f:600,to:380,q:.5,vol:.05,a:1});[.9,1.15,1.5].forEach((t,i)=>clink(t,.35-i*.08));},
+  err(){rs(0,150,.08,.06);nz(0,.04,{type:'lowpass',f:600,vol:.05});}};})();
+/* the dice foley for one pre-simulated throw: shake, then every bounce at its own time and strength, then settle */
+function diceFoley(sim){SND.rattle();let last=-1;sim.dies.flatMap(x=>x.hits).sort((a,b)=>a[0]-b[0]).forEach(h=>{if(h[0]-last>.035){SND.hit(h[0],h[1],h[2]);last=h[0];}});SND.settle(sim.T);}
 
 /* ---------------------------------------------------------------- toasts, banner */
 function toast(s,ms=2600){const t=document.createElement('div');t.className='toast';t.textContent=s;$('#toasts').appendChild(t);while($('#toasts').children.length>3)$('#toasts').firstChild.remove();setTimeout(()=>t.remove(),FAST?400:ms);}
@@ -1403,22 +1537,23 @@ function simThrow(W,H,D,vec){const R=D/2,sc=Math.max(.75,Math.min(1.5,Math.min(W
   if(t>.6&&dies.every(d=>d.z===0&&d.vz===0&&Math.hypot(d.vx,d.vy)<D*.25))break;}
  for(const d of dies){let L=0;d.Ls=[0];for(let j=1;j<d.frames.length;j++){const p=d.frames[j-1],q=d.frames[j];L+=Math.hypot(q[0]-p[0],q[1]-p[1],(q[2]-p[2])*1.6);d.Ls.push(L);}d.L=L||1;}
  return {dies,T:t};}
+/* one frame of a pre-simulated throw at time t (seconds): position, tumble and shadow of each die */
+function diceDraw(sim,rot,nodes,D){return function(t){const idx=Math.min(Math.round(t*120),1e9);sim.dies.forEach((dd,k)=>{const j=Math.max(0,Math.min(dd.frames.length-1,idx-1)),f=dd.frames[j],p=dd.Ls[j]/dd.L,q=1-p,r=rot[k],el=nodes[k];
+   el.style.transform=`translate3d(${(f[0]-D/2).toFixed(1)}px,${(f[1]-D/2).toFixed(1)}px,0)`;
+   el.children[1].style.transform=`translateZ(${(f[2]+D/2).toFixed(1)}px) rotateZ(${(r.yaw+r.ez*q).toFixed(1)}deg) rotateX(${(r.rx+r.ex*q).toFixed(1)}deg) rotateY(${(r.ry+r.ey*q).toFixed(1)}deg)`;
+   const z=f[2]/D;el.children[0].style.transform=`translate3d(${(z*D*.45).toFixed(1)}px,${(z*D*.6).toFixed(1)}px,0) scale(${(1+z*.3).toFixed(3)})`;el.children[0].style.opacity=Math.max(.15,.62-z*.18).toFixed(2);});};}
 function animDice(d){const els=$$('#dice .die');els.forEach(e=>e.classList.remove('dbl'));
  if(FAST){setDice(d);return Promise.resolve();}
  const tray=$('#dtray');DTIMERS.forEach(clearTimeout);DTIMERS=[];tray.classList.remove('on','fade');tray.innerHTML='';
  const W=tray.clientWidth,Hh=tray.clientHeight;
  if(RM.matches||document.hidden||!W){SND.dice();setDice(d);return sleep(RM.matches?350:150);}
  $('#dice').classList.add('thrown');
- const D=Math.round(Math.max(34,Math.min(66,Math.min(W,Hh)*.13)));tray.style.setProperty('--d',D+'px');
+ const D=Math.round(Math.max(28,Math.min(54,Math.min(W,Hh)*.10)));/* about a board tile across */tray.style.setProperty('--d',D+'px');
  tray.innerHTML=`<div class="d3">${cubeHTML()}</div><div class="d3">${cubeHTML()}</div>`;tray.classList.add('on');
  const sim=simThrow(W,Hh,D,FLICK);FLICK=null;
  const rot=d.map(n=>{const[rx,ry]=FACE_R[n],sg=()=>Math.random()<.5?-1:1;return {rx,ry,ex:(2+((Math.random()*2)|0))*360*sg(),ey:(1+((Math.random()*2)|0))*360*sg(),yaw:(Math.random()-.5)*44,ez:(Math.random()-.5)*600};});
- SND.rattle();let last=-1;sim.dies.flatMap(x=>x.hits).sort((a,b)=>a[0]-b[0]).forEach(h=>{if(h[0]-last>.035){SND.hit(h[0],h[1],h[2]);last=h[0];}});SND.settle(sim.T);
- const nodes=$$('.d3',tray);
- function draw(t){const idx=Math.min(Math.round(t*120),1e9);sim.dies.forEach((dd,k)=>{const j=Math.max(0,Math.min(dd.frames.length-1,idx-1)),f=dd.frames[j],p=dd.Ls[j]/dd.L,q=1-p,r=rot[k],el=nodes[k];
-   el.style.transform=`translate3d(${(f[0]-D/2).toFixed(1)}px,${(f[1]-D/2).toFixed(1)}px,0)`;
-   el.children[1].style.transform=`translateZ(${(f[2]+D/2).toFixed(1)}px) rotateZ(${(r.yaw+r.ez*q).toFixed(1)}deg) rotateX(${(r.rx+r.ex*q).toFixed(1)}deg) rotateY(${(r.ry+r.ey*q).toFixed(1)}deg)`;
-   const z=f[2]/D;el.children[0].style.transform=`translate3d(${(z*D*.45).toFixed(1)}px,${(z*D*.6).toFixed(1)}px,0) scale(${(1+z*.3).toFixed(3)})`;el.children[0].style.opacity=Math.max(.15,.62-z*.18).toFixed(2);});}
+ diceFoley(sim);
+ const draw=diceDraw(sim,rot,$$('.d3',tray),D);
  return new Promise(res=>{const t0=performance.now();let done=false;
   function fr(now){if(done)return;const t=(now-t0)/1000;draw(Math.min(t,sim.T));if(t<sim.T)requestAnimationFrame(fr);else fin();}
   function fin(){if(done)return;done=true;draw(sim.T);setDice(d);$('#dice').classList.remove('thrown');DTIMERS.push(setTimeout(res,200),setTimeout(()=>tray.classList.add('fade'),1100),setTimeout(()=>{tray.classList.remove('on','fade');tray.innerHTML='';},1600));}
@@ -1432,8 +1567,11 @@ function canRoll(){const pe=G&&G.pend;return !!pe&&pe.p===ME&&!AUTO&&!meP().out&
 
 /* ---------------------------------------------------------------- board view, tokens, camera */
 let BV=null;const VIEW={pos:[],cash:[]};
+/* ONE place that draws a player token on a board (game, home board, teaser). The token art itself is TOKENS
+   (data section); buildings are drawn by the layout's deco(). Swap either and every board follows. */
+function tokHTML(k,col,attrs=''){const t=TOKENS[k]||TOKENS[TOKEN_KEYS[0]];return `<span class="tok" ${attrs} style="--c:${col}"><i>${t.s}</i></span>`;}
 function buildBoard(){const cam=$('#bcam');cam.innerHTML='';BV=LAYOUT.build(cam);TAGK={};
- BV.tokens.innerHTML=G.players.map((p,i)=>`<span class="tok" data-p="${i}" style="--c:${p.col}"><i>${TOKENS[p.tok].s}</i></span>`).join('');
+ BV.tokens.innerHTML=G.players.map((p,i)=>tokHTML(p.tok,p.col,`data-p="${i}"`)).join('');
  BV.toks=$$('.tok',BV.tokens);sizeBoard();decorate();placeTokens();CAM.s=FOLLOW?FOLLOW_S:1;CAM.x=0;CAM.y=0;if(FOLLOW)follow(G.pend&&G.pend.p!=null?G.pend.p:G.turn);else applyCam();}
 function tokXY(i){const p=G.players[i],pos=VIEW.pos[i],jailed=pos===JAIL&&p.jail;const b=LAYOUT.pos(pos,{jailed});
  const same=G.players.map((_,j)=>j).filter(j=>!G.players[j].out&&VIEW.pos[j]===pos&&(pos!==JAIL||!!(G.players[j].jail)===!!jailed));
@@ -1488,11 +1626,11 @@ function sizeBoard(){const W=innerWidth,H=innerHeight,land=W>H&&W>=560,root=docu
 addEventListener('resize',()=>{clearTimeout(sizeBoard.t);sizeBoard.t=setTimeout(()=>{if(SCREEN==='game')sizeBoard();else homeFit();},80);});
 
 /* ---------------------------------------------------------------- players strip + actions */
-function buildPlayers(){$('#pls').innerHTML=G.players.map((p,i)=>`<button class="pl" type="button" data-pl="${i}" style="--c:${p.col}"><span class="pfw"><span class="pf">${avHTML(i,34,null,true)}</span><i class="sus" aria-hidden="true"><b></b></i></span><span class="tx"><b>${i===ME?'You':esc(p.name)}</b><small class="cs"></small>${G.target?'<i class="goal" aria-hidden="true"><b></b></i>':''}</span><span class="tk">${TOKENS[p.tok].s}</span><span class="st"></span></button>`).join('');}
+function buildPlayers(){$('#pls').innerHTML=G.players.map((p,i)=>`<button class="pl" type="button" data-pl="${i}" style="--c:${p.col}"><span class="pfw"><span class="pf">${avHTML(i,34,null,true)}</span><i class="sus" aria-hidden="true"><b></b></i></span><span class="tx"><b>${i===ME?'You':esc(p.name)}</b><small class="cs"></small>${G.target?'<i class="goal" aria-hidden="true"><b></b></i>':''}</span><span class="tk" title="${esc(TOKENS[p.tok].n)} token">${TOKENS[p.tok].s}</span><span class="st"></span></button>`).join('');}
 function renderPlayers(){$$('#pls .pl').forEach((el,i)=>{const p=G.players[i];el.classList.toggle('on',i===G.turn&&!G.over);el.classList.toggle('out',p.out);
  el.querySelector('.cs').textContent=p.out?(p.left?'Left':'Bankrupt'):fmt(VIEW.cash[i]);
- el.querySelector('.st').innerHTML=(p.leaving?'<i>Away</i>':'')+(p.jail?'<i>Prison</i>':'')+(p.cards.length?`<i class="card">${p.cards.length>1?p.cards.length+' ':''}Card</i>`:'');
- const sb=el.querySelector('.sus');sb.style.setProperty('--s',(p.out?0:p.sus)+'%');sb.classList.toggle('hot',p.sus>=60&&!p.out);sb.title=`Suspicion ${p.sus}%`;
+ el.querySelector('.st').innerHTML=(p.leaving?'<i title="The computer plays for this seat">Away</i>':'')+(p.jail?'<i title="In Maafushi Prison">Prison</i>':'')+(p.cards.length?`<i class="card" title="Get out of Maafushi card: leave prison free">${p.cards.length>1?p.cards.length+' ':''}Card</i>`:'');
+ const sb=el.querySelector('.sus');sb.style.setProperty('--s',(p.out?0:p.sus)+'%');sb.classList.toggle('hot',p.sus>=60&&!p.out);sb.title=`Suspicion ${p.sus}%: the chance of being caught after a bribe or in a raid`;
  const gp=goalPct(i),gb=el.querySelector('.goal');if(gb){gb.style.setProperty('--g',gp+'%');gb.classList.toggle('near',gp>=80);}
  el.title=G.target&&!p.out?`Net worth ${fmt(E.netWorth(i))} · ${gp}% of the ${fmt(G.target)} goal`:'';
  el.setAttribute('aria-label',`${nameOf(i)}: ${p.out?'bankrupt':fmt(p.cash)}${p.jail?', in prison':''}${!p.out?`, suspicion ${p.sus}%`:''}${G.target&&!p.out?`, ${gp}% of the goal`:''}${i===G.turn?', playing now':''}`);});}
@@ -1531,10 +1669,13 @@ function renderActions(){const pe=G.pend,p=meP(),mine=pe&&pe.p===ME&&!AUTO;$('#s
    else if(mine&&pe.t==='post')h=pe.again?`<button class="btn" data-a="roll">${ICON.dice}Roll again</button>`:`<button class="btn em" data-a="end">End turn${ICON.end}</button>`;
    else if(mine&&pe.t==='draw')h=`<button class="btn" data-a="drawcard">Draw a ${DECKN[pe.deck]} card</button>`;
    else if(mine&&pe.t==='card')h=`<button class="btn" data-a="showcard">Read your card</button>`;
-   else if(mine&&(pe.t==='buy'||pe.t==='rent'||pe.t==='debt'||pe.t==='sandbank'||pe.t==='court'))h=`<button class="btn" data-a="decision">${{buy:'Buy or auction',rent:'Pay rent',debt:'Raise money',sandbank:'Choose at the Sandbank',court:'Hear the verdict'}[pe.t]}</button>`;
+   else if(mine&&(pe.t==='buy'||pe.t==='rent'||pe.t==='debt'||pe.t==='sandbank'||pe.t==='court'))h=`<button class="btn" data-a="decision">${{buy:'Buy or auction',rent:'Pay rent',debt:'Raise money',sandbank:'Choose at the Sandbank',court:'See the verdict'}[pe.t]}</button>`;
    else if(pe&&pe.t==='auction'&&!pe.out.includes(ME))h=`<button class="btn" data-a="decision">Open auction</button>`;
    h+=`<div class="row"><button class="btn soft sm" data-a="manage">${ICON.island}My islands</button><button class="btn soft sm" data-a="trade">${ICON.handshake}Trade</button></div>`;}
-  $('#abtns').innerHTML=h;}
+  $('#abtns').innerHTML=h;
+  if(mine&&pe.t==='turn'&&!p.jail){GUIDE.hook('roll');GUIDE.hook('help');}
+  else if(mine&&pe.t==='turn'&&p.jail&&p.cash>=E.C.GUARD_BRIBE)GUIDE.hook('bribe');
+  else if(mine&&pe.t==='post'&&!pe.again){GUIDE.hook('post');if(E.propsOf(ME).some(sp=>SP[sp].k==='p'&&E.ownsAll(ME,SP[sp].g)))GUIDE.hook('build');}}
  const r=p.sus;$('#riskMini').innerHTML=p.out?'':`Suspicion<i style="--r:${r}%"></i>${r}%`;$('#riskMini').title=`Your suspicion: the chance you are caught on your next bribe, a raid or a report`;}
 /* one-line risk explanation shown next to every bribe button */
 function riskLine(sus){return sus>0?`${sus}% chance you're caught: pay back double, prison, lose an island`:`First bribe is safe, but suspicion rises to ${E.C.SUS_STEP}%`;}
@@ -1599,11 +1740,45 @@ function needsMe(){if(!G||G.over||AUTO||meP().out)return null;const pe=G.pend;
 function syncDecision(){if(PUMPING)return;const pe=needsMe();if(!pe)return;const k=pendKey(pe);if(MIN[k])return;if(SH.key===k)return;if(SH.key&&!SH.decision)return;openDecision(pe);}
 function openDecision(pe){const k=pendKey(pe);delete MIN[k];
  if(pe.t==='buy')return openBuy(pe,k);if(pe.t==='rent')return openRent(pe,k);if(pe.t==='sandbank')return openSandbank(pe,k);if(pe.t==='court')return openCourt(pe,k);if(pe.t==='debt')return openDebt(pe,k);if(pe.t==='auction')return openAuction(pe,k);if(pe.t==='salepick')return openSaleSeller();}
+/* ---- title-deed card: it lifts off its space on the board, flips over and lands on target (a .pcard) */
+function deedFlight(sp,target){if(!target)return Promise.resolve();
+ if(!MOT()||!BV||!BV.cells[sp]||SCREEN!=='game')return anim(target,[{opacity:0},{opacity:1}],{duration:160,fill:'none'});
+ const a=BV.cells[sp].getBoundingClientRect(),b=target.getBoundingClientRect();if(!a.width||!b.width)return Promise.resolve();
+ const s=SP[sp],col=s.k==='p'?GROUPS[s.g].c:'#15241F',fly=document.createElement('div');fly.className='deedfly';fly.setAttribute('aria-hidden','true');
+ fly.style.cssText=`left:${b.left}px;top:${b.top}px;width:${b.width}px;height:${b.height}px`;
+ fly.innerHTML=`<div class="dfi"><div class="dff"></div><div class="dfb" style="--g:${col}"><span>Title deed</span><b>${esc(s.name)}</b></div></div>`;
+ fly.querySelector('.dff').appendChild(target.cloneNode(true));document.body.appendChild(fly);target.style.visibility='hidden';
+ const dx=(a.left+a.width/2)-(b.left+b.width/2),dy=(a.top+a.height/2)-(b.top+b.height/2),k=Math.max(.06,a.width/b.width),sp2=Math.max(.6,Math.min(1.3,UI_SPEED()));SND.deed();
+ return anim(fly.firstChild,[{transform:`translate(${dx}px,${dy}px) scale(${k}) rotateY(180deg)`},{offset:.14,transform:`translate(${dx}px,${dy-14}px) scale(${k*1.3}) rotateY(180deg)`},
+  {offset:.58,transform:`translate(${dx*.28}px,${dy*.28-26}px) scale(.82) rotateY(90deg)`},{transform:'translate(0px,0px) scale(1) rotateY(0deg)'}],{duration:780*sp2,easing:'cubic-bezier(.3,.7,.2,1)'})
+  .then(()=>{target.style.visibility='';fly.remove();});}
+/* a buy decision opens with the deed flying up from the board; the price and the buttons follow */
+let DEEDK='';
+function deedIn(sp){const sh=$('#sheet'),card=sh.querySelector('.pcard');if(!card)return;
+ const rest=[...sh.children].filter(e=>e!==card&&!e.classList.contains('grab'));sh.style.animation='none';anim(sh,[{opacity:0},{opacity:1}],{duration:MOT()?220:150,fill:'none'});
+ rest.forEach(e=>{e.style.opacity='0';});
+ deedFlight(sp,card).then(()=>{rest.forEach(e=>{e.style.opacity='';if(MOT())anim(e,[{opacity:0,transform:'translateY(8px)'},{opacity:1,transform:'none'}],{duration:260,fill:'none'});});GUIDE.hook('buyopen');});}
+/* rent (paid automatically): the deed flies up with the owner's avatar, and the coins fly from the payer to the owner */
+function rentPop(ev){if(FAST||AUTO||SCREEN!=='game')return Promise.resolve();const s=SP[ev.sp],w=G.own[ev.sp];
+ const tag=w&&s.k==='p'?(w.h===5?'with a luxury resort':w.h?`with ${w.h} guesthouse${w.h>1?'s':''}`:E.ownsAll(ev.to,s.g)?'whole colour group: double rent':'no buildings'):s.k==='r'?`owner has ${E.countOf(ev.to,RAILS)} transport${E.countOf(ev.to,RAILS)>1?'s':''}`:'';
+ const wrap=document.createElement('div');wrap.className='rentpop';
+ wrap.innerHTML=`<button type="button" class="rpc" aria-live="assertive"><div class="pcard">${cardHead(ev.sp)}<div class="aworth"><span>Rent</span><b>${fmt(ev.amt)}</b></div><p class="rtag">${esc(tag)}</p></div>
+  <div class="rpay"><span class="pf" style="--c:${G.players[ev.p].col}">${avHTML(ev.p,48,'shocked')}</span><span class="rarr"><small>${ev.p===ME?'You pay':esc(G.players[ev.p].name)+' pays'}</small><b>${fmt(ev.amt)}</b></span><span class="pf" style="--c:${G.players[ev.to].col}">${avHTML(ev.to,48,'smug')}</span></div>
+  <p class="rwho">${ev.to===ME?'Your island':esc(G.players[ev.to].name)+' owns '+esc(s.name)}</p><em>Tap to continue</em></button>`;
+ document.body.appendChild(wrap);if(MOT())anim(wrap,[{opacity:0},{opacity:1}],{duration:200,fill:'none'});
+ return new Promise(res=>{let done=false;const fin=()=>{if(done)return;done=true;const f=()=>{wrap.remove();res();};if(MOT())anim(wrap,[{opacity:1},{opacity:0}],{duration:200}).then(f);else f();};
+  wrap.addEventListener('click',fin);const pay=wrap.querySelector('.rpay');pay.style.opacity='0';
+  deedFlight(ev.sp,wrap.querySelector('.pcard')).then(()=>{if(done)return;pay.style.opacity='';const pf=wrap.querySelectorAll('.rpay .pf');
+   if(MOT()){const A=pf[0].getBoundingClientRect(),B=pf[1].getBoundingClientRect(),n=Math.max(3,Math.min(7,Math.round(2+ev.amt/80)));
+    for(let j=0;j<n;j++){const c=document.createElement('i');c.className='rcoin';c.style.left=(A.left+A.width/2)+'px';c.style.top=(A.top+A.height/2)+'px';wrap.appendChild(c);
+     anim(c,[{transform:'translate(-50%,-50%) scale(.5)',opacity:0},{offset:.5,transform:`translate(calc(-50% + ${(B.left-A.left)/2}px),calc(-50% + ${(B.top-A.top)/2-28}px)) scale(1.1)`,opacity:1},{transform:`translate(calc(-50% + ${B.left-A.left}px),calc(-50% + ${B.top-A.top}px)) scale(.8)`,opacity:0}],{duration:720,delay:j*95,easing:'cubic-bezier(.45,0,.35,1)'});}}
+   SND.coins(ev.amt);setTimeout(fin,(ev.p===ME?2100:1600)*Math.max(.6,Math.min(1.3,UI_SPEED())));});
+  setTimeout(fin,6000);});}
 function openBuy(pe,k){const s=SP[pe.sp],p=meP(),can=p.cash>=s.price;
  openSheet(k,`<div class="grab" aria-hidden="true"></div><h2 id="sheetTitle" class="sr">Buy ${esc(s.name)}?</h2>${spaceCard(pe.sp)}<div class="price">You rolled ${G.dice[0]} + ${G.dice[1]} and landed here<span><b>${fmt(s.price)}</b></span></div>
  ${can?'':`<p style="color:#8A2B2B;font-weight:700">You have ${fmt(p.cash)}. Take a loan or sell buildings in My islands, or send it to auction.</p>`}
  <div class="acts"><button class="btn em" data-a="buy" ${can?'data-focus':'disabled'}>Buy island</button><button class="btn lite" data-a="decline">Auction</button></div>
- ${can?'':'<div class="acts one"><button class="btn soft sm" style="color:var(--ink);background:#EDE3D0" data-a="manage">My islands</button></div>'}`,{decision:1});}
+ ${can?'':'<div class="acts one"><button class="btn soft sm" style="color:var(--ink);background:#EDE3D0" data-a="manage">My islands</button></div>'}`,{decision:1});if(DEEDK!==k){DEEDK=k;deedIn(pe.sp);}else GUIDE.hook('buyopen');}
 /* legacy saves only: rent is now paid automatically */
 function openRent(pe,k){const s=SP[pe.sp];
  openSheet(k,`<div class="grab" aria-hidden="true"></div><h2 id="sheetTitle" class="sr">Rent due</h2><div class="pcard">${cardHead(pe.sp)}${ART.draw(s.art,pe.sp)}</div>${ownerRow(pe.sp,pe.amt)}
@@ -1618,20 +1793,33 @@ function openSandbank(pe,k){const s=meP().sus;
   <button class="choice mn" data-a="sbpick" data-c="n" data-focus><span class="ci">${ICON.monsoon}</span><span class="ct"><b>Draw a Monsoon card</b><small>The weather decides: a big catch, a free trip, or a storm bill.</small></span></button>
   <button class="choice cc" data-a="sbpick" data-c="c"><span class="ci">${ICON.majlis}</span><span class="ct"><b>Draw a City Council card</b><small>Grants, fees, an amnesty, or a raid.</small></span></button>
   <button class="choice rx" data-a="sbpick" data-c="relax"><span class="ci">${ICON.relax}</span><span class="ct"><b>Relax</b><small>Safe. Nothing happens and your turn ends.</small></span></button>
- </div>${s>0?`<p style="font-size:12px;color:#8A2B2B;font-weight:700;margin-top:10px">Your suspicion is ${s}%. Both decks hold an Anti-Corruption Raid.</p>`:''}`,{decision:1});}
+ </div>${s>0?`<p style="font-size:12px;color:#8A2B2B;font-weight:700;margin-top:10px">Your suspicion is ${s}%. Both decks hold an Anti-Corruption Raid.</p>`:''}`,{decision:1});GUIDE.hook('sandbank');}
 function openCourt(pe,k){const p=meP();
  openSheet(k,`<div class="grab" aria-hidden="true"></div><h2 id="sheetTitle" class="sr">Supreme Court Verdict</h2>${spaceCard(GOJAIL)}
  ${bribeBox(`Or pay the judge ${fmt(pe.bribe)}`,'The case is dismissed and you stay free. Your suspicion goes up '+E.C.SUS_STEP+'%.')}
- <div class="acts"><button class="btn red" data-a="court" data-focus>Go to Maafushi</button><button class="btn bribeb" data-a="bribejudge" ${p.cash<pe.bribe?'disabled':''}>Bribe ${fmt(pe.bribe)}</button></div>`,{decision:1});}
+ <div class="acts"><button class="btn red" data-a="court" data-focus>Go to Maafushi</button><button class="btn bribeb" data-a="bribejudge" ${p.cash<pe.bribe?'disabled':''}>Bribe ${fmt(pe.bribe)}</button></div>`,{decision:1});if(p.cash>=pe.bribe)GUIDE.hook('bribe');}
 function openDebt(pe,k){const p=meP(),can=p.cash>=pe.total;const to=pe.items.map(x=>x.to<0?'the bank':x.to===ME?'you':G.players[x.to].name);
  openSheet(k,shead(`You owe ${fmt(pe.total)}`,`To ${esc([...new Set(to)].join(', '))}. You have ${fmt(p.cash)}. Sell buildings or take loans on your islands to raise the money.`)+
   manageList()+`<div class="acts"><button class="btn em" data-a="paydebt" ${can?'data-focus':'disabled'}>Pay ${fmt(pe.total)}</button><button class="btn red" data-a="bankruptask">Declare bankruptcy</button></div>`,{decision:1});}
+/* the rent levels of a space in one compact grid (auction sheet, deed card) */
+function rentMini(sp){const s=SP[sp];let c=[];
+ if(s.k==='p')c=[['Rent',s.rent[0]],['Whole group',s.rent[0]*2],['1 guesthouse',s.rent[1]],['2 guesthouses',s.rent[2]],['3 guesthouses',s.rent[3]],['4 guesthouses',s.rent[4]],['Resort',s.rent[5]]];
+ else if(s.k==='r')c=RAILS.map((_,j)=>[`${j+1} transport${j?'s':''}`,TRANSPORT_RENT[j+1]]);
+ return c.length?`<div class="rmini">${c.map(([l,v])=>`<span><small>${l}</small><b>${fmt(v)}</b></span>`).join('')}</div>`:'';}
+/* islands the government seized in this session: space -> the busted player (for the auction title) */
+const SEIZED={};
 function auctionHTML(pe){const s=SP[pe.sp],p=meP(),by=pe.by>=0?G.players[pe.by]:null,left=Math.max(0,pe.ends-G.now),out=pe.out.includes(ME);
- const inc=[10,50,100].map(d=>pe.high+d);const top=pe.by===ME;
- return `<div class="grab" aria-hidden="true"></div><div class="shead"><h2 id="sheetTitle">Auction</h2>${X}</div><div class="pcard">${cardHead(pe.sp)}</div>
- <div class="hbid" style="margin-top:10px">${by?`<span class="pf">${avHTML(pe.by,40)}</span><span><small style="display:block;color:var(--muted);font-size:11.5px">Highest bid</small><strong>${pe.by===ME?'You':esc(by.name)}</strong></span>`:'<span style="color:var(--muted);font-weight:700">No bids yet · bank price '+fmt(s.price)+'</span>'}<b data-live="high">${fmt(pe.high)}</b></div>
+ const inc=[10,50,100].map(d=>pe.high+d);const top=pe.by===ME,pct=Math.round(pe.high/s.price*100),sz=SEIZED[pe.sp];
+ const seat=G.players.map((q,i)=>i).filter(i=>!G.players[i].out&&!(sz!=null&&i===sz&&pe.out.includes(i)));
+ const who=seat.map(i=>{const st=pe.by===i?'top':pe.out.includes(i)?'out':'in';return `<span class="abd ${st}" style="--c:${G.players[i].col}"><span class="pf">${avHTML(i,28)}</span><b>${i===ME?'You':esc(G.players[i].name)}</b><small>${st==='top'?'Top bid':st==='out'?'Passed':'Bidding'}</small></span>`;}).join('');
+ return `<div class="grab" aria-hidden="true"></div><div class="shead"><h2 id="sheetTitle">${sz!=null?'Government auction':'Auction'}</h2>${X}</div>
+ ${sz!=null&&G.players[sz]?`<p style="margin-top:-4px">Seized from ${sz===ME?'you':esc(G.players[sz].name)} after a bust. Everyone else can bid.</p>`:''}
+ <div class="pcard">${cardHead(pe.sp)}<div class="aworth"><span>Worth</span><b>${fmt(s.price)}</b></div>${rentMini(pe.sp)}</div>
+ <div class="hbid" style="margin-top:10px">${by?`<span class="pf">${avHTML(pe.by,40)}</span><span><small style="display:block;color:var(--muted);font-size:11.5px">Top bid</small><strong>${pe.by===ME?'You':esc(by.name)}</strong></span>`:'<span style="color:var(--muted);font-weight:700">No bids yet</span>'}<span class="hbr"><b data-live="high">${fmt(pe.high)}</b><small class="apct${pct>=100?' hi':''}">${pe.high?`${pct}% of the price`:`Price ${fmt(s.price)}`}</small></span></div>
  <div class="bidbar" aria-hidden="true"><i data-live="bar" style="transform:scaleX(${Math.min(1,left/pe.dur)})"></i></div>
  <p data-live="left" style="text-align:center;font-weight:800;font-size:12px;color:var(--muted);margin:0">${Math.ceil(left/1000)} s left · each bid adds time</p>
+ <div class="abds">${who}</div>
+ ${GUIDE.on&&!out&&!top?`<p class="ahint">Tap a price to bid it, or <b>Pass</b>. The top bid when the timer runs out wins the island.</p>`:''}
  ${out?`<p style="text-align:center;font-weight:700">You passed. Watching the bidding…</p>`:top?`<p style="text-align:center;font-weight:800;color:var(--emerald)">You are the top bidder!</p>`:
  `<div class="acts three">${inc.map(v=>`<button class="btn em sm" data-a="bid" data-v="${v}" ${v>p.cash?'disabled':''}>${fmt(v)}</button>`).join('')}</div><div class="acts one"><button class="btn lite sm" data-a="pass">Pass</button></div>`}
  <p style="font-size:11.5px;color:var(--muted);text-align:center">You have ${fmt(p.cash)}</p>`;}
@@ -1739,6 +1927,75 @@ const RULES=`<div class="rules"><p><b>Binveriya</b> (ބިންވެރިޔާ, "land
 <p style="font-size:12px;color:var(--muted)">All cards and events are fictional and just for fun.</p></div>`;
 function openRules(){openSheet('rules',shead('How to play','')+RULES);}
 
+/* ---------------------------------------------------------------- guided mode (new players)
+   On by default for a player's first game (and switchable in the setup sheet): short coach-mark tips at key
+   moments, each shown once, with "Got it" and "Skip tips"; a slower computer pace. Experienced players never see
+   it: after the first game it is off unless switched on again. Offline games only (online play is unchanged). */
+const GUIDE=(()=>{let on=false,cur=null,q=[],tm=0;
+ const seen=(()=>{try{return JSON.parse(ls.get('bv-tips')||'{}')||{};}catch(e){return {};}})();
+ const TIPS={
+  roll:['Your turn','Tap <b>Roll</b>, or flick the dice onto the board. Your token hops that many spaces.',()=>$('#abtns [data-a="roll"]')],
+  help:['Stuck?','Tap <b>?</b> any time to see what you can do right now.',()=>$('#helpBtn')],
+  buyopen:['You can buy this island','Pay the price and it is yours: everyone who lands here pays you rent. Too pricey? <b>Auction</b> lets everyone bid.',()=>$('#sheet [data-a="buy"]:not([disabled])')||$('#sheet [data-a="decline"]')],
+  bought:['Collect a colour','Own <b>both</b> (or all 3) islands of a colour and their rent doubles. Then you can build.',()=>null,1],
+  post:['Your move is done','Tap <b>End turn</b> when you are ready. You can trade or look at your islands first.',()=>$('#abtns [data-a="end"]')],
+  build:['Build guesthouses','You own a whole colour group! Open <b>My islands</b> to build guesthouses: rent goes up a lot.',()=>$('#abtns [data-a="manage"]')],
+  bribe:['Bribes save money…','…but each one raises your <b>suspicion</b>. Get caught and you pay back double, go to prison and lose an island.',()=>$('#sheet [data-a="bribejudge"]')||$('#abtns [data-a="bribeguard"]')],
+  sandbank:['The Sandbank','Each card deck is a gamble. <b>Relax</b> is always safe.',()=>$('#sheet [data-a="sbpick"][data-c="relax"]')],
+  draw:['Draw a card','Tap the deck (or the button) to draw the top card, then do what it says.',()=>$('#dacts [data-a="drawcard"]')],
+  rent:['You paid rent','That island belongs to another player. Buy islands of your own to collect rent too.',()=>null,1]};
+ function save(){ls.set('bv-tips',JSON.stringify(seen));}
+ function hide(){clearInterval(tm);tm=0;if(cur){cur.el.remove();cur=null;}}
+ /* a tip waits while a sheet, the card table or a popup covers its button */
+ function covered(at){const sh=$('#sheet');if(!sh.hidden&&!(at&&sh.contains(at)))return true;const dw=$('#drawWrap');if(dw.classList.contains('on')&&!(at&&dw.contains(at)))return true;
+  return !!document.querySelector('.rentpop,#cardpopWrap>*,.deedfly');}
+ function next(){hide();while(q.length){const [id,el,f]=q.shift();const r=show(id,el,f);if(r==='wait'){q.unshift([id,el,1]);retry();return;}if(r)return;}}
+ function retry(){clearTimeout(retry.t);retry.t=setTimeout(()=>{if(!cur&&q.length)next();},600);}
+ function show(id,anchorEl,force){if(!on||SCREEN!=='game'||(seen[id]&&!force))return false;const T=TIPS[id];if(!T)return false;const at=anchorEl||T[2]();
+  if(anchorEl&&!anchorEl.isConnected||!at&&!T[3])return false;if(covered(at))return 'wait';
+  seen[id]=1;save();const el=document.createElement('div');el.className='coach';el.setAttribute('role','dialog');el.setAttribute('aria-label',T[0]);
+  el.innerHTML=`<b>${T[0]}</b><p>${T[1]}</p><div class="cbtn"><button type="button" class="btn sm em" data-g="ok">Got it</button><button type="button" class="btn sm lite" data-g="skip">Skip tips</button></div><i class="car" aria-hidden="true"></i>`;
+  document.body.appendChild(el);cur={id,el,at,ae:anchorEl};place();
+  el.addEventListener('click',e=>{const b=e.target.closest('[data-g]');if(!b)return;if(b.dataset.g==='skip')skip();else next();});
+  tm=setInterval(()=>{if(!cur)return;if(cur.at&&!cur.at.isConnected){next();return;}if(covered(cur.at)){const c=cur;hide();q.unshift([c.id,c.ae,1]);retry();return;}place();},400);return true;}
+ function place(){if(!cur)return;const el=cur.el,at=cur.at,W=innerWidth,H=innerHeight,w=Math.min(300,W-24);el.style.width=w+'px';const h=el.offsetHeight;
+  let x=(W-w)/2,y=Math.max(12,H*.3-h/2),ax=null,below=false;
+  if(at&&at.getClientRects().length){const r=at.getBoundingClientRect();x=Math.max(12,Math.min(W-w-12,r.left+r.width/2-w/2));ax=r.left+r.width/2-x;
+   if(r.top-h-14>8){y=r.top-h-12;}else{y=Math.min(H-h-8,r.bottom+12);below=true;}}
+  el.style.left=x+'px';el.style.top=y+'px';el.classList.toggle('below',below);const car=el.querySelector('.car');car.hidden=ax==null;if(ax!=null)car.style.left=Math.max(18,Math.min(w-18,ax))+'px';}
+ function hook(id,el){if(!on||seen[id]||FAST||AUTO||ONLINE||q.some(x=>x[0]===id)||(cur&&cur.id===id))return;q.push([id,el]);if(!cur)setTimeout(()=>{if(!cur)next();},350);}
+ function skip(){on=false;ls.set('bv-guide','0');q=[];hide();toast('Tips are off. Tap ? if you need help.');}
+ /* the setup switch: on for a first game, then off unless switched on again */
+ const pref=()=>{const v=ls.get('bv-guide');return v!=null?v==='1':ls.get('bv-played')!=='1';};
+ function begin(g){hide();q=[];on=!ONLINE&&!AUTO&&pref();ls.set('bv-played','1');if(on)ls.set('bv-guide-g',String(g.id));}
+ function resume(g){hide();q=[];on=!ONLINE&&!AUTO&&ls.get('bv-guide')!=='0'&&ls.get('bv-guide-g')===String(g.id);}
+ function reset(){for(const k in seen)delete seen[k];save();on=true;ls.set('bv-guide','1');if(G)ls.set('bv-guide-g',String(G.id));}
+ addEventListener('resize',()=>{if(cur)place();});
+ return {hook,hide,begin,resume,reset,pref,setPref(v){ls.set('bv-guide',v?'1':'0');},get on(){return on&&!ONLINE;},stop(){on=false;q=[];hide();}};})();
+/* "What can I do now?": the current options in plain words */
+function helpLines(){const pe=G.pend,p=meP(),L=[];
+ if(G.over)return ['The game is over. See the results, or start a new game.'];
+ if(ME<0)return ['You are watching this table.'];
+ if(p.out)return ['You are out of this game. You can watch to the end or start a new one.'];
+ if(pe&&pe.t==='auction'&&!pe.out.includes(ME))L.push(`An auction is running for <b>${esc(SP[pe.sp].name)}</b> (price ${fmt(SP[pe.sp].price)}). Bid with the buttons or tap <b>Pass</b>. The top bid when time runs out wins.`);
+ else if(!pe||pe.p!==ME)L.push(`It is ${pe&&pe.p!=null&&G.players[pe.p]?esc(G.players[pe.p].name)+'’s':'another player’s'} turn. Wait for yours. Meanwhile you can offer a <b>Trade</b>, open <b>My islands</b>, or tap any space to see its price and rent.`);
+ else switch(pe.t){
+  case 'turn':if(p.jail)L.push(`You are in Maafushi Prison. Roll for doubles to walk out free, pay ${fmt(JAIL_FEE)}${p.cards.length?', use your Get out of Maafushi card':''}, or bribe the guard (it raises your suspicion).`);
+   else L.push('Roll the dice: tap <b>Roll</b> or flick the dice onto the board. Your token hops that many spaces.','Before you roll you can build in <b>My islands</b> or offer a <b>Trade</b>.');break;
+  case 'post':L.push(pe.again?'You rolled a double: tap <b>Roll again</b>.':'Your move is done. Build guesthouses in <b>My islands</b>, offer a <b>Trade</b>, or tap <b>End turn</b>.');break;
+  case 'buy':L.push(`Buy <b>${esc(SP[pe.sp].name)}</b> for ${fmt(SP[pe.sp].price)} (you have ${fmt(p.cash)}). Other players who land here will pay you rent.`,'Or tap <b>Auction</b>: everyone bids, and it can go cheaply.');break;
+  case 'sandbank':L.push('Pick one: draw a Monsoon card, draw a City Council card, or <b>Relax</b> (always safe).');break;
+  case 'court':L.push(`Go to Maafushi Prison, or bribe the judge ${fmt(pe.bribe)} to stay free. A bribe raises your suspicion.`);break;
+  case 'debt':L.push(`You owe ${fmt(pe.total)} but have ${fmt(p.cash)}. Sell buildings or take loans on your islands, then pay. If you cannot, you are bankrupt.`);break;
+  case 'draw':L.push('Tap the deck to draw the top card.');break;
+  case 'card':L.push('Read the card, then tap <b>OK</b>.');break;
+  default:L.push('Follow the button at the bottom of the screen.');}
+ L.push('Good to know: owning a whole colour group doubles its rent, and lets you build. The red bar under a player is their <b>suspicion</b> from bribes.');return L;}
+function openHelp(){if(!G)return;openSheet('help',shead('What can I do now?','')+`<ul class="helpl">${helpLines().map(x=>`<li>${x}</li>`).join('')}</ul>
+ <div class="acts">${!ONLINE?`<button class="btn lite sm" data-a="tipsagain">${GUIDE.on?'Tips are on':'Show tips again'}</button>`:''}<button class="btn em sm" data-a="close" data-focus>Got it</button></div>`);}
+(function helpBtn(){const st=$('#act .status');if(!st)return;const b=document.createElement('button');b.type='button';b.className='hlp';b.id='helpBtn';b.setAttribute('aria-label','What can I do now?');b.title='What can I do now?';b.textContent='?';
+ b.addEventListener('click',()=>{SND.unlock();openHelp();});st.appendChild(b);})();
+
 /* ---------------------------------------------------------------- click handling */
 function doAct(a,quiet){if(ONLINE&&ME<0)return 'You are watching';
  /* online guest: the host plays the move and answers with the new state (or an error message) */
@@ -1783,6 +2040,7 @@ const H={
  tsound(b){SND.set(!SND.on);b.setAttribute('aria-checked',SND.on);soundBtn();},tspeed(b){speedPref=!speedPref;ls.set('bv-speed',speedPref?'fast':'');b.setAttribute('aria-checked',speedPref);},
  tmute(b){const on=!meP().mute;doAct({t:'mute',on},true);b.setAttribute('aria-checked',on);toast(on?'Trade offers from computer players are muted':'Trade offers are back on');pump(true);},
  log(){openLog();},rules(){openRules();},
+ tipsagain(b){GUIDE.reset();b.textContent='Tips are on';toast('Tips are back on');},
  home(){closeSheet();if(ONLINE){NET.leave();return;}saveGame();showHome();},
  newgame(b){if(ONLINE)return;if(!b.dataset.sure){b.dataset.sure=1;b.textContent='Tap again to abandon this game';return;}ls.del('bv-save');closeSheet();G=null;showHome();openSetup();},
  again(){closeSheet();if(ONLINE){NET.again();return;}ls.del('bv-save');showHome();openSetup();},
@@ -1830,7 +2088,7 @@ function openDraw(pe){const w=$('#drawWrap'),deck=pe.deck,p=G.players[pe.p],z=dr
 function drawActs(pe){const mine=pe.p===ME&&!isBot(ME),who=esc(G.players[pe.p].name),s=$('#dovS'),a=$('#dacts'),pile=$('#drawWrap .dpile');if(!a)return;
  const live=!!G.pend&&G.pend.t===pe.t&&G.pend.p===pe.p,ak=[drawKey(pe),mine,live].join('|');if(DRAW.ak===ak)return;DRAW.ak=ak;let h='';
  if(pe.t==='draw'){s.textContent=mine?'Draw the top card':`${G.players[pe.p].name} draws a card`;
-  if(mine&&live)h=`<button class="btn" type="button" data-a="drawcard" data-focus>Draw a card</button>`;}
+  if(mine&&live){h=`<button class="btn" type="button" data-a="drawcard" data-focus>Draw a card</button>`;GUIDE.hook('draw');}}
  else{const goo=CARDS[pe.deck][pe.i].e==='goo';s.textContent=mine?(goo?'Keep it for later, or put it back':'Read it, then tap OK'):`${G.players[pe.p].name} drew this card`;
   if(mine&&live)h=goo?`<button class="btn em" type="button" data-a="cardkeep" data-focus>Keep card</button><button class="btn lite" type="button" data-a="carddisc">Discard</button>`:`<button class="btn em" type="button" data-a="cardok" data-focus>OK, discard</button>`;}
  a.innerHTML=h||`<p class="dwho">${pe.t==='draw'?who+' is drawing…':'&nbsp;'}</p>`;a.classList.toggle('two',(h.match(/<button/g)||[]).length>1);
@@ -1870,7 +2128,7 @@ async function drawDone(ev){if(FAST||!DRAW.open){if(DRAW.open)closeDraw(true);re
 const OFFICIAL={guard:'prison guard',judge:'judge',permit:'permit office'};
 let LASTAUDIT=null;
 function showAudit(ev){const who=nameOf(ev.p);if(ev.caught){LASTAUDIT=ev;SND.alarm();return Promise.resolve();}
- SND.coin();const sus=G.players[ev.p].sus;
+ SND.bribe();const sus=G.players[ev.p].sus;
  return popCard(`<div class="ic">${ICON.bribe.replace('#6B4A14','#155E43')}</div><small style="color:#155E43">Bribe accepted</small><p>${ev.p===ME?'You':esc(who)} slipped the ${OFFICIAL[ev.kind]} ${fmt(ev.cost)} and dodged ${fmt(ev.dodge)}.</p><em style="color:#8A2B2B">${ev.p===ME?'Your':esc(who)+"'s"} suspicion is now ${sus}%</em>`,'',ev.p===ME?2600:1700);}
 function showBusted(ev){const me=ev.p===ME,who=me?'You':esc(nameOf(ev.p)),a=LASTAUDIT&&LASTAUDIT.p===ev.p?LASTAUDIT:null;LASTAUDIT=null;SND.jail();
  return popCard(`<div class="ic">${ICON.gojail}</div><small style="color:#C0342B;font-size:13px">Busted!</small>${a?`<p style="font-size:13px;margin-top:2px">Caught bribing the ${OFFICIAL[a.kind]} (${a.chance}% chance)</p>`:''}<p>${[ev.amt>0?`${who} ${me?'pay':'pays'} back ${fmt(ev.amt)} (double what ${me?'you':'they'} dodged)`:'',`${ev.amt>0?'':who+' '}${me?'go':'goes'} to Maafushi Prison`,ev.props?`${me?'lose':'loses'} ${me?'your':'their'} most built-up island to a government auction`:''].filter(Boolean).join(', ').replace(/, ([^,]*)$/,' and $1')}.</p>`,'bust',me?4200:2600);}
@@ -1883,13 +2141,13 @@ function showChecks(title,sub,res){if(FAST)return Promise.resolve();return new P
  const el=$('.raid',w),dim=$('.rdim',w),rows=$$('.rrow',el),go=$('.rgo',el);let skip=false,done=false,k=0;const sp=Math.max(.5,UI_SPEED());
  const fin=()=>{if(done)return;done=true;el.remove();dim.remove();res0();};dim.addEventListener('click',()=>{skip=true;});
  const reveal=i=>{const r=res[i],c=rows[i].querySelector('.rres');rows[i].classList.add(r.caught?'bust':'clean');
-  c.innerHTML=r.caught?'<i class="bad">BUSTED!</i>':`<i class="good">${ok}Clean</i>`;if(r.caught){SND.alarm();react(r.p,'shocked',2400);}else{SND.coin();react(r.p,'happy',1800);}};
+  c.innerHTML=r.caught?'<i class="bad">BUSTED!</i>':`<i class="good">${ok}Clean</i>`;if(r.caught){SND.bust();react(r.p,'shocked',2400);}else{SND.tick();react(r.p,'happy',1800);}};
  el.addEventListener('click',e=>{if(e.target.closest('.rgo')){fin();return;}skip=true;});
  (async()=>{for(k=0;k<res.length;k++){rows[k].classList.add('now');if(!skip)await new Promise(r=>setTimeout(r,(RM.matches?450:900)*sp));reveal(k);rows[k].classList.remove('now');if(!skip)await new Promise(r=>setTimeout(r,350*sp));}
   go.hidden=false;setTimeout(fin,(res.some(r=>r.caught)?2600:1800)*(skip?.5:1)*sp);})();});}
 
 /* ---------------------------------------------------------------- event playback */
-let PUMPING=false,DIRTY=false;
+let PUMPING=false,DIRTY=false,PASSED=false;
 async function pump(force){if(!G)return;if(PUMPING){DIRTY=true;return;}PUMPING=true;let any=false;
  try{for(let guard=0;guard<50;guard++){const evs=E.drain();if(!evs.length)break;any=true;document.body.classList.add('pumping');for(const ev of evs){try{await play(ev);}catch(err){console.error(err);}}}}
  finally{PUMPING=false;document.body.classList.remove('pumping');}
@@ -1898,26 +2156,27 @@ async function play(ev){const slow=ev.p!=null&&isBot(ev.p)&&!WATCH?1:1;
  switch(ev.t){
   case 'dice':await animDice(ev.d);break;
   case 'move':{if(BV&&BV.path)BV.path(ev.path);const n=ev.path.length,step=FAST?0:RM.matches?40:(n>12?80:165)*(isBot(ev.p)?Math.max(.6,UI_SPEED()):1);
-   for(const pos of ev.path){VIEW.pos[ev.p]=pos;placeTokens(ev.p);if(n<=12||pos%4===0)SND.hop();follow(ev.p);await sleep(step);}if(BV&&BV.path)DTIMERS.push(setTimeout(()=>BV&&BV.path([]),900));break;}
+   if(ev.p===ME&&ev.path.includes(0))PASSED=true;
+   for(const pos of ev.path){VIEW.pos[ev.p]=pos;placeTokens(ev.p);if(n<=12||pos%4===0)SND.hop();follow(ev.p);await sleep(step);}if(n)SND.land();if(BV&&BV.path)DTIMERS.push(setTimeout(()=>BV&&BV.path([]),900));break;}
   case 'jail':react(ev.p,'sad',2200);VIEW.pos[ev.p]=JAIL;placeTokens(ev.p);SND.jail();if(ev.p===ME)toast('Locked up in Maafushi Prison');await sleep(450);break;
   case 'free':placeTokens();break;
   case 'land':flashCell(ev.sp);break;
-  case 'cash':VIEW.cash[ev.p]+=ev.d;renderPlayers();flyCash(ev.p,ev.d);if(ev.d<=-150)react(ev.p,'shocked');else if(ev.d>=40&&ev.d!==200)react(ev.p,'smug');if(ev.p===ME)(ev.d>0?SND.coin:SND.pay)();break;
+  case 'cash':VIEW.cash[ev.p]+=ev.d;renderPlayers();flyCash(ev.p,ev.d);if(ev.d<=-150)react(ev.p,'shocked');else if(ev.d>=40&&ev.d!==200)react(ev.p,'smug');if(ev.p===ME){if(ev.d===SALARY&&PASSED){PASSED=false;SND.purse();}else if(ev.d>0)SND.coins(ev.d);else SND.pay(-ev.d);}break;
   case 'drawask':if(!FAST){if(!DRAW.open||DRAW.key!==drawKey({t:'draw',p:ev.p,deck:ev.deck}))openDraw({t:'draw',p:ev.p,deck:ev.deck});await sleep(250);}break;
   case 'card':await drawReveal(ev);break;
   case 'carddone':await drawDone(ev);renderPlayers();break;
-  case 'buy':SND.buy();react(ev.p,'happy');decorate();flashCell(ev.sp);await sleep(300);break;
-  case 'won':decorate();SND.gavel();if(ev.p>=0)react(ev.p,'happy');if(ev.p>=0)toast(`${nameOf(ev.p)} won ${SP[ev.sp].name} for ${fmt(ev.amt)}`);break;
+  case 'buy':SND.buy();react(ev.p,'happy');decorate();flashCell(ev.sp);if(ev.p===ME&&SP[ev.sp].k==='p')GUIDE.hook('bought',BV&&BV.cells[ev.sp]);await sleep(300);break;
+  case 'won':delete SEIZED[ev.sp];decorate();SND.gavel();if(ev.p>=0)react(ev.p,'happy');if(ev.p>=0)toast(`${nameOf(ev.p)} won ${SP[ev.sp].name} for ${fmt(ev.amt)} (price ${fmt(SP[ev.sp].price)})`);break;
   case 'build':case 'loan':decorate();if(ev.t==='build'&&ev.p!==ME){SND.build();flashCell(ev.sp);}break;
   case 'audit':react(ev.p,ev.caught?'shocked':'wink',2000);renderPlayers();await showAudit(ev);break;
   case 'busted':react(ev.p,'sad',3000);renderPlayers();await showBusted(ev);break;
-  case 'seize':decorate();flashCell(ev.sp);toast(`The government seizes ${SP[ev.sp].name} from ${nameOf(ev.p)}`,3200);break;
+  case 'seize':SEIZED[ev.sp]=ev.p;decorate();flashCell(ev.sp);toast(`The government seizes ${SP[ev.sp].name} from ${nameOf(ev.p)}`,3200);break;
   case 'raid':renderPlayers();await showChecks('Anti-Corruption Raid!','Everyone with suspicion is audited. Clean players are safe.',ev.res);break;
   case 'report':SND.gavel();react(ev.to,'shocked',1800);await showChecks('Report filed',`${nameOf(ev.p)} paid ${fmt(E.C.REPORT_FEE)} to report ${nameOf(ev.to)}`,[{p:ev.to,chance:ev.chance,caught:ev.caught}]);break;
-  case 'rent':flashCell(ev.sp);if(ev.p===ME)toast(`You paid ${fmt(ev.amt)} rent to ${nameOf(ev.to)} for ${SP[ev.sp].name}`,3000);else if(ev.to===ME)toast(`${nameOf(ev.p)} paid you ${fmt(ev.amt)} rent`,3000);react(ev.to,'smug');if(ev.amt>=150)react(ev.p,'shocked');break;
+  case 'rent':flashCell(ev.sp);react(ev.to,'smug');if(ev.amt>=150)react(ev.p,'shocked');if((ev.p===ME||ev.to===ME)&&ME>=0){await rentPop(ev);if(ev.p===ME)GUIDE.hook('rent');}break;
   case 'sus':renderPlayers();renderActions();break;
   case 'log':ticker(ev.s);break;
-  case 'bankrupt':react(ev.p,'sad',3000);decorate();SND.jail();toast(`${nameOf(ev.p)} ${ev.p===ME?'are':'is'} bankrupt!`,3500);placeTokens();await sleep(700);if(ev.p===ME){ACTKEY='';}break;
+  case 'bankrupt':react(ev.p,'sad',3000);decorate();SND.bust();toast(`${nameOf(ev.p)} ${ev.p===ME?'are':'is'} bankrupt!`,3500);placeTokens();await sleep(700);if(ev.p===ME){ACTKEY='';}break;
   case 'offer':if(ev.from===ME||isBot(ev.to))react(ev.to,'thinking',2600);if(ev.to===ME&&!AUTO){const o=G.offers.find(x=>x.id===ev.id);if(o)banner('offer:'+ev.id,ev.from,`<b>${esc(G.players[ev.from].name)}</b> ${o.re?'counters your offer':'wants to trade'}`,'View',()=>openOffer(ev.id));SND.turn();}break;
   case 'reject':if(ev.from===ME&&!ev.cancel)toast(ev.expired?'Your offer expired':`${G.players[ev.to].name} declined your offer`);if(ev.to===ME)clearBanner('offer:'+ev.id);break;
   case 'trade':react(ev.from,'happy');react(ev.to,'happy');decorate();if(ev.from===ME||ev.to===ME){SND.buy();toast(`Deal done with ${G.players[ev.from===ME?ev.to:ev.from].name}!`);clearBanner('offer:'+ev.id);}else toast(`${G.players[ev.from].name} and ${G.players[ev.to].name} made a deal`);break;
@@ -1982,18 +2241,155 @@ function openOver(){if(!G||!G.over)return;const o=G.over,w=o.winner,win=w===ME&&
 
 /* ---------------------------------------------------------------- home + setup */
 let MODE=ls.get('bv-mode')==='classic'?'classic':'quick',HOMEBV=null;
-function showHome(){SCREEN='home';clearBanner();closeDraw(true);$('#game').hidden=true;$('#home').hidden=false;$('#boliN').textContent=boliCount().toLocaleString('en-US');
+function showHome(){SCREEN='home';GUIDE.hide();clearBanner();closeDraw(true);$('#game').hidden=true;$('#home').hidden=false;$('#boliN').textContent=boliCount().toLocaleString('en-US');
  const s=loadSave();$('#resumeBtn').hidden=!s;if(s)$('#resumeSub').textContent=s.old?'Saved on the old board':`${s.G.mode==='quick'?'Quick game':s.G.target?'Goal '+fmt(s.G.target):'Classic'} · round ${s.G.round} · ${s.G.players.length} players`;
  $$('.modes button').forEach(b=>b.setAttribute('aria-checked',b.dataset.mode===MODE));
  if(!HOMEBV){HOMEBV=LAYOUT.build($('#tilt'));const demo={27:[0,5],26:[0,2],12:[1,0],13:[1,1],5:[2,3],6:[2,0],17:[3,0]};
   Object.entries(demo).forEach(([i,[o,h]])=>deco(HOMEBV,+i,{o,h,m:false},PCOL[o],'YIMH'[o]));
-  HOMEBV.tokens.innerHTML=[['dhoni',13,0],['turtle',17,1],['manta',27,2],['seaplane',7,3]].map(([t,i,k])=>{const p=LAYOUT.pos(i);return `<span class="tok" style="--c:${PCOL[k]};left:${p.x}%;top:${p.y}%"><i>${TOKENS[t].s}</i></span>`;}).join('');}
- homeFit();}
-function homeFit(){const t=$('#tilt');if(!t||SCREEN!=='home')return;const hb=Math.max(150,Math.min(innerWidth*0.8,t.clientHeight*(innerHeight<640?1.05:1.2),460));t.style.setProperty('--hb',hb+'px');if(HOMEBV)FIT(HOMEBV);}
+  HOMEBV.tokens.innerHTML=[['dhoni',13,0],['turtle',17,1],['manta',27,2],['seaplane',7,3]].map(([t,i,k])=>tokHTML(t,PCOL[k])).join('');$$('.tok',HOMEBV.tokens).forEach((e,j)=>{const p=LAYOUT.pos([13,17,27,7][j]);e.style.left=p.x+'%';e.style.top=p.y+'%';});}
+ homeFit();TZ.start();}
+function homeFit(){const t=$('#tilt');if(!t||SCREEN!=='home')return;const hb=Math.max(150,Math.min(innerWidth*0.8,t.clientHeight*(innerHeight<640?1.05:1.2),460));t.style.setProperty('--hb',hb+'px');if(HOMEBV)FIT(HOMEBV);TZ.refit();}
+
+/* ---------------------------------------------------------------- home teaser
+   A short scripted trailer on the home board (HOMEBV), looping every ~30 s: dice and a hop around a side, an island
+   bought (SOLD, rent tag, guesthouse), rent paid (coins between the avatars), a bribe to the judge caught by an
+   Anti-Corruption Raid (BUSTED, the island seized and auctioned), passing Start, then the camera pulls back.
+   It runs on its own throwaway demo state: it never reads or writes G, saves, stats or Boli, and never calls the engine.
+   Time is a virtual clock on requestAnimationFrame, so it pauses while the tab is hidden or a sheet is open, and it
+   stops when a game starts. Reduced motion: one still frame. Sound: silent unless sound was switched on and the
+   player has tapped; then only soft foley (dice, coins, stamp). */
+const TZ=(()=>{
+ const CAST=[{n:'Mariyam',pre:'mariyam',tok:'dhoni'},{n:'Ibrahim',pre:'ibrahim',tok:'turtle'},{n:'Aisha',pre:'aisha',tok:'manta'},{n:'Hussain',pre:'hussain',tok:'seaplane'}];
+ CAST.forEach((c,k)=>c.c=PCOL[k]);
+ /* demo state at the start of every loop: space -> [owner, buildings]; token spaces */
+ const BASE={own:{8:[0,0],12:[1,0],13:[1,1],20:[2,2],24:[3,1],26:[3,0]},pos:[0,2,18,25]};
+ /* the still frame (reduced motion): the board as the loop leaves it */
+ const STILL={own:{...BASE.own,5:[0,1],20:[1,0]},pos:[5,5,7,1],jail:[0,0,1,0]};
+ const WIDE={x:50,y:50,s:1,rx:50,rz:-8},MID={x:50,y:56,s:1.3,rx:40,rz:-6};
+ let run=false,gen=0,vt=0,last=0,waits=[],frames=new Set(),raf=0,poll=0,fx=null,scrim=null,cap=null,camNow=null,tapped=false,toks=[];
+ const S={pos:[],jail:[]};
+ const home=()=>$('#home');
+ /* ---- virtual clock */
+ function W(ms){const g=gen;return new Promise(r=>waits.push({t:vt+ms,g,r}));}
+ const later=(ms,f)=>{W(ms).then(f);};
+ const paused=()=>document.hidden||SCREEN!=='home'||!$('#sheet').hidden;
+ function loop(now){raf=0;if(!run)return;
+  if(paused()){poll=setTimeout(()=>{poll=0;if(run&&!raf){last=performance.now();raf=requestAnimationFrame(loop);}},300);return;}
+  vt+=Math.min(64,Math.max(0,now-last));last=now;frames.forEach(f=>f(vt));
+  if(waits.some(w=>w.t<=vt)){const due=waits.filter(w=>w.t<=vt);waits=waits.filter(w=>w.t>vt);due.forEach(w=>{if(w.g===gen)w.r();});}
+  raf=requestAnimationFrame(loop);}
+ /* ---- sound: off unless sound was switched on (dd-sfx or this game's own toggle) and the player has tapped */
+ function sndOK(){if(!tapped||document.hidden)return false;const a=ls.get('dd-sfx'),b=ls.get('bv-sound');
+  return !(a==='0'||a==='off'||b==='0')&&(a==='1'||a==='on'||b==='1');}
+ function snd(n,x){if(!sndOK())return;try{SND.level(.2);SND[n](x);}catch(e){}}
+ /* ---- seeded random: the same dice throw every loop */
+ function RNG(s){return ()=>{s|=0;s=s+0x6D2B79F5|0;let t=Math.imul(s^s>>>15,1|s);t=t+Math.imul(t^t>>>7,61|t)^t;return ((t^t>>>14)>>>0)/4294967296;};}
+ /* ---- geometry: points in the overlay (.tfx) */
+ const fxR=()=>fx.getBoundingClientRect();
+ function tr(){const a=$('#tilt').getBoundingClientRect(),f=fxR();return {x:a.left-f.left,y:a.top-f.top,w:a.width,h:a.height};}
+ function ctr(el){const a=el.getBoundingClientRect(),f=fxR();return {x:a.left+a.width/2-f.left,y:a.top+a.height/2-f.top};}
+ const AV=()=>tr().h<230?32:40;
+ function clampPt(p,m=24){const r=tr();return {x:Math.max(r.x+m,Math.min(r.x+r.w-m,p.x)),y:Math.max(r.y+m+22,Math.min(r.y+r.h-m,p.y))};}
+ const cellPt=i=>ctr(HOMEBV.cells[i]),tokPt=k=>ctr(toks[k]);
+ /* ---- camera: the tilted board is turned, scaled and moved so the target point sits in the middle of the view */
+ function cam(c,dur=1200){camNow=c;const b=HOMEBV.el,B=HOMEBV.B();b.style.setProperty('--td',dur+'ms');
+  b.style.transform=`rotateX(${c.rx}deg) rotateZ(${c.rz}deg) scale(${c.s}) translate(${((50-c.x)/100*B).toFixed(1)}px,${((50-c.y)/100*B).toFixed(1)}px)`;}
+ /* aim a little inside the space, so an edge space is framed with board around it rather than open sea */
+ const at=(i,s=2.2)=>{const p=LAYOUT.pos(i);return {x:p.x+(50-p.x)*.22,y:p.y+(50-p.y)*.22,s,rx:30,rz:-4};};
+ /* ---- overlay elements */
+ function mk(cls,html,p){const e=document.createElement('div');e.className=cls;if(html)e.innerHTML=html;if(p){e.style.left=p.x.toFixed(1)+'px';e.style.top=p.y.toFixed(1)+'px';}fx.appendChild(e);return e;}
+ function clear(){$$('.tt',fx).forEach(e=>{e.classList.add('out');later(400,()=>e.remove());});}
+ function caption(s){if(!cap)return;if(!s){cap.classList.add('hide');return;}cap.classList.add('hide');later(cap.textContent?260:0,()=>{cap.textContent=s;cap.style.top=(tr().y+8).toFixed(0)+'px';cap.classList.remove('hide');});}
+ function avatar(k,expr){const c=CAST[k];if(window.DGAvatar){try{const cfg=DGAvatar.presets&&DGAvatar.presets[c.pre]||DGAvatar.random(c.n+'bv');return DGAvatar.render(cfg,{size:44,expression:expr});}catch(e){}}
+  return `<svg viewBox="0 0 10 10"><circle cx="5" cy="5" r="5" fill="${c.c}"/><text x="5" y="6.6" font-size="4.5" text-anchor="middle" fill="#fff" font-family="Sora">${esc(c.n[0])}</text></svg>`;}
+ function bub(k,p,expr,sus,parent){const e=document.createElement('div');e.className='tav tt';e.style.setProperty('--c',CAST[k].c);e.style.setProperty('--av',AV()+'px');
+  e.innerHTML=`<span class="pf">${avatar(k,expr)}</span>`+(sus!=null?`<i class="sus${sus>=60?' hot':''}" style="--s:${sus}%"><b></b></i>`:'');
+  if(parent)parent.appendChild(e);else{p=clampPt(p);e.style.left=p.x.toFixed(1)+'px';e.style.top=p.y.toFixed(1)+'px';fx.appendChild(e);}return e;}
+ function react2(e,expr,ms){if(!e||!window.DGAvatar||!DGAvatar.react)return;try{DGAvatar.react(e.querySelector('.pf'),expr,ms);}catch(x){}}
+ function stamp(txt,cls,p){return mk('tstamp tt '+cls,esc(txt),p);}
+ function flash(i){const c=HOMEBV.cells[i];c.classList.remove('hit');void c.offsetWidth;c.classList.add('hit');}
+ function rise(txt,cls,p){const e=mk('tamt tt '+cls,esc(txt),p);e.animate([{transform:'translate(-50%,-10%) scale(.6)',opacity:0},{transform:'translate(-50%,-50%) scale(1)',opacity:1,offset:.25},{transform:'translate(-50%,-150%) scale(1)',opacity:1}],{duration:1500,easing:'cubic-bezier(.2,.7,.3,1)',fill:'forwards'});return e;}
+ function fly(cls,html,a,b,n,dur){const A=ctr(a),B=ctr(b);for(let j=0;j<n;j++){const e=mk(cls+' tt',html,A),dx=B.x-A.x,dy=B.y-A.y,lift=-30-j%2*10;
+  e.animate([{transform:'translate(0,0) scale(.5)',opacity:0},{transform:`translate(${dx*.5}px,${dy*.5+lift}px) scale(1.1)`,opacity:1,offset:.5},{transform:`translate(${dx}px,${dy}px) scale(.8)`,opacity:0}],{duration:dur,delay:j*110,easing:'cubic-bezier(.45,0,.35,1)',fill:'both'});}}
+ /* ---- demo board state */
+ function own(i,o,h,pulse){const w=o==null?null:{o,h,m:false},col=o==null?null:CAST[o].c;
+  deco(HOMEBV,i,w,col,'',w?{t:String(SP[i].rent[h]),mvr:1,c:'',fg:onCol(col),pulse:pulse?1:0}:null);}
+ function placeToks(hop){const by={};S.pos.forEach((p,k)=>{const key=p+(S.jail[k]?'j':'');(by[key]=by[key]||[]).push(k);});
+  toks.forEach((t,k)=>{const b=LAYOUT.pos(S.pos[k],{jailed:!!S.jail[k]}),g=by[S.pos[k]+(S.jail[k]?'j':'')],n=g.length,j=g.indexOf(k);let x=b.x,y=b.y;
+   if(n>1){const a=Math.PI*2*j/n-Math.PI/2,r=n<=2?1.7:2.1;x+=Math.cos(a)*r;y+=Math.sin(a)*r;}
+   t.style.left=x+'%';t.style.top=y+'%';t.classList.toggle('jailed',!!S.jail[k]);if(k===hop){t.classList.remove('hop');void t.offsetWidth;t.classList.add('hop');}});}
+ function setState(st){OWNABLE.forEach(i=>deco(HOMEBV,i,null));Object.entries(st.own).forEach(([i,[o,h]])=>own(+i,o,h));
+  HOMEBV.tokens.innerHTML=CAST.map(c=>tokHTML(c.tok,c.c)).join('');toks=$$('.tok',HOMEBV.tokens);
+  S.pos=st.pos.slice();S.jail=(st.jail||[0,0,0,0]).slice();placeToks();FIT(HOMEBV);}
+ /* ---- the 3D dice, thrown over the board (same physics as the game, seeded) */
+ async function throwDice(d){const r=tr(),w=Math.round(r.w),h=Math.round(r.h);if(w<80||h<80)return;
+  const tray=mk('dtray on',`<div class="d3">${cubeHTML()}</div><div class="d3">${cubeHTML()}</div>`,{x:r.x,y:r.y});tray.style.width=w+'px';tray.style.height=h+'px';tray.style.right=tray.style.bottom='auto';
+  const D=Math.round(Math.max(26,Math.min(46,Math.min(w,h)*.14)));tray.style.setProperty('--d',D+'px');
+  const rnd=RNG(11),r0=Math.random;let sim;Math.random=rnd;try{sim=simThrow(w,h,D,null);}finally{Math.random=r0;}
+  const rot=d.map(n=>{const[rx,ry]=FACE_R[n],sg=()=>rnd()<.5?-1:1;return {rx,ry,ex:(2+((rnd()*2)|0))*360*sg(),ey:(1+((rnd()*2)|0))*360*sg(),yaw:(rnd()-.5)*44,ez:(rnd()-.5)*600};});
+  const draw=diceDraw(sim,rot,$$('.d3',tray),D),t0=vt;draw(0);if(sndOK()){SND.level(.2);diceFoley(sim);}
+  await new Promise(res=>{const f=v=>{const t=(v-t0)/1000;draw(Math.min(t,sim.T));if(t>=sim.T){frames.delete(f);res();}};frames.add(f);});
+  later(700,()=>tray.classList.add('fade'));later(1200,()=>tray.remove());}
+ /* ---- a token hops space by space; the camera follows */
+ async function walk(k,to,s=2.2,onPass){let p=S.pos[k];while(p!==to){p=(p+1)%NSP;S.pos[k]=p;placeToks(k);cam(at(p,s),450);if(p===0&&onPass)onPass();await W(270);}await W(320);}
+ /* ---- the script */
+ async function script(){
+  const b=HOMEBV.el;setState(BASE);cam(WIDE,0);if(b.style.opacity==='0'){await W(50);b.style.opacity='1';}caption('');await W(600);
+  /* 1 · dice, then a hop along the bottom side */
+  caption('Roll the dice');cam(at(0,2),1300);await W(1300);
+  await throwDice([2,3]);await walk(0,5);
+  /* 2 · bought: SOLD, the rent tag, a guesthouse */
+  caption('Buy islands');flash(5);const sold=stamp('SOLD','',cellPt(5));snd('stamp',.6);const pA=tokPt(0);bub(0,{x:pA.x,y:pA.y-AV()*1.2},'happy');
+  await W(750);sold.classList.add('out');own(5,0,0,1);await W(900);own(5,0,1,1);snd('coin');await W(800);clear();
+  /* 3 · rent: coins fly from the visitor to the owner */
+  caption('Collect rent');await walk(1,5);flash(5);
+  const c5=cellPt(5),av=AV(),owner=bub(0,{x:c5.x+av*.95,y:c5.y-av*1.3},'smug'),payer=bub(1,{x:c5.x-av*.95,y:c5.y-av*1.3},'shocked');
+  await W(350);fly('tcoin','',payer,owner,5,760);rise('−MVR 30','',{x:ctr(payer).x,y:ctr(payer).y-av*.9});snd('coins',30);await W(1500);clear();
+  /* 4 · a bribe to the judge ... */
+  caption('Bribe the officials');cam({...at(19),s:1.6},1100);await W(1000);await walk(2,21);flash(21);
+  const c21=cellPt(21),judge=mk('tav jd tt',`<span class="pf">${ICON.gojail}</span>`,clampPt({x:c21.x+av*1.1,y:c21.y-av*1.3}));judge.style.setProperty('--av',av+'px');
+  const crook=bub(2,{x:c21.x-av*1.1,y:c21.y-av*1.3},'wink',30);
+  await W(500);fly('tnote',ICON.bribe.replace('#6B4A14','#155E43'),crook,judge,1,700);await W(650);snd('coin');
+  const sb=crook.querySelector('.sus');sb.style.setProperty('--s','70%');sb.classList.add('hot');crook.insertAdjacentHTML('beforeend','<span class="tl">Suspicion 70%</span>');react2(crook,'smug',1400);await W(1200);clear();
+  /* ... caught by an Anti-Corruption Raid */
+  caption('…but watch for raids');cam(MID,1100);await W(1000);
+  const r=tr(),raid=mk('traid tt',`<div class="tcard"><div class="tci"><div class="tcf bk">${ICON.monsoon}<b>Monsoon</b></div><div class="tcf fr"><small>Monsoon</small><b>Anti-Corruption Raid!</b><p>Everyone with suspicion is audited.</p></div></div></div><div class="trow"></div>`,{x:r.x+r.w/2,y:r.y+r.h/2});
+  raid.style.left=(r.x+r.w/2)+'px';raid.style.top=(r.y+r.h/2+10)+'px';raid.style.setProperty('--k',Math.min(1,(r.h-40)/(118+12+AV()+12)).toFixed(3));
+  const card=$('.tcard',raid),deck=HOMEBV.el.querySelector('.deck.dn');
+  if(deck){const d0=ctr(deck),c0=ctr(card);card.animate([{transform:`translate(${d0.x-c0.x}px,${d0.y-c0.y}px) scale(.3) rotate(10deg)`,opacity:0},{transform:'none',opacity:1}],{duration:650,easing:'cubic-bezier(.2,.8,.3,1)',fill:'backwards'});}
+  await W(800);card.classList.add('flip');await W(1100);
+  const row=$('.trow',raid),bust=bub(2,null,null,70,row),laugh=bub(0,null,null,null,row);await W(550);
+  bust.insertAdjacentHTML('beforeend','<span class="tstamp bust">BUSTED!</span>');snd('stamp');react2(bust,'shocked',2400);react2(laugh,'laugh',2400);await W(1600);clear();
+  /* the island is seized and auctioned */
+  cam(at(20,2.3),1000);await W(1000);S.pos[2]=JAIL;S.jail[2]=1;placeToks();
+  const c20=cellPt(20),gav=mk('tgav tt',ICON.gojail,{x:c20.x+av*.5,y:c20.y-av*.3});
+  gav.animate([{transform:'rotate(0)'},{transform:'rotate(-38deg)',offset:.3},{transform:'rotate(8deg)',offset:.45},{transform:'rotate(-30deg)',offset:.7},{transform:'rotate(8deg)',offset:.85},{transform:'rotate(0)'}],{duration:1100,easing:'ease-in-out'});
+  await W(480);snd('gavel');own(20,null);flash(20);stamp('SEIZED','seize',{x:c20.x,y:c20.y+av*.2});snd('stamp',.7);await W(460);snd('gavel');
+  await W(700);caption('Islands go to auction');own(20,1,0,1);flash(20);rise('Sold to Ibrahim','p',{x:c20.x,y:c20.y-av*.9});await W(1200);clear();
+  /* 5 · passing Start pays MVR 200 */
+  caption('Pass Start: +MVR 200');cam({...at(26),s:1.9},1100);await W(1100);
+  await walk(3,1,1.9,()=>{const p=cellPt(0);rise('+MVR 200','p',{x:p.x,y:p.y-av*.6});snd('purse');flash(0);});await W(900);clear();
+  /* pull back to the whole board, hold, fade, loop */
+  caption('');cam(WIDE,1800);await W(2300);b.style.opacity='0';await W(550);}
+ async function main(){const g=gen;try{while(run&&g===gen)await script();}catch(e){if(g===gen)stop();}}
+ function start(){if(SCREEN!=='home'||!HOMEBV)return;if(RM.matches){still();return;}if(run)return;
+  const h=home();if(!h._tzTap){h._tzTap=1;h.addEventListener('pointerdown',()=>{tapped=true;},{passive:true});}
+  fx=document.createElement('div');fx.className='tfx';fx.setAttribute('aria-hidden','true');scrim=document.createElement('div');scrim.className='tscrim';
+  const t=$('#tilt');t.after(scrim,fx);cap=mk('tcap hide','');t.classList.add('tz');h.classList.add('tzon');
+  run=true;gen++;vt=0;waits=[];frames.clear();refit();last=performance.now();raf=requestAnimationFrame(loop);main();}
+ function stop(){gen++;run=false;waits=[];frames.clear();if(raf)cancelAnimationFrame(raf);raf=0;clearTimeout(poll);poll=0;
+  if(fx){fx.remove();fx=null;}if(scrim){scrim.remove();scrim=null;}cap=null;camNow=null;
+  const h=home();if(h)h.classList.remove('tzon');const t=$('#tilt');if(t)t.classList.remove('tz');
+  if(HOMEBV){HOMEBV.el.style.transform='';HOMEBV.el.style.opacity='';}SND.level(.55);}
+ function still(){stop();if(HOMEBV)setState(STILL);}
+ function refit(){const h=home();if(scrim&&h){const a=$('#tilt').getBoundingClientRect(),b=h.getBoundingClientRect();scrim.style.setProperty('--t0',(a.top-b.top).toFixed(0)+'px');scrim.style.setProperty('--t1',(a.bottom-b.top).toFixed(0)+'px');}
+  if(run&&camNow&&HOMEBV)cam(camNow,0);}
+ if(RM.addEventListener)RM.addEventListener('change',()=>{if(SCREEN==='home'){stop();start();}});
+ return {start,stop,refit,get running(){return run;},get t(){return vt;}};})();
 $$('.modes button').forEach(b=>b.addEventListener('click',()=>{MODE=b.dataset.mode;ls.set('bv-mode',MODE);$$('.modes button').forEach(x=>x.setAttribute('aria-checked',x===b));}));
 $('#playBtn').addEventListener('click',()=>{SND.unlock();openSetup();});
 $('#howBtn').addEventListener('click',openRules);
-$('#resumeBtn').addEventListener('click',()=>{const s=loadSave();if(!s)return;SND.unlock();if(s.old)return openOldSave();startWith(E.load(s.G),s.ME);toast('Welcome back!');});
+$('#resumeBtn').addEventListener('click',()=>{const s=loadSave();if(!s)return;SND.unlock();if(s.old)return openOldSave();const g=E.load(s.G);GUIDE.resume(g);startWith(g,s.ME);toast('Welcome back!');});
 let SETUP={n:4,tok:ls.get('bv-tok')||'dhoni'};
 /* Classic win target (net worth); 0 = Last one standing */
 const GOALS=[3000,5000,7000,10000,0],GOAL_DEFAULT=7000;/* ~40 rounds with 4 players: about 30-40 minutes with a human */
@@ -2009,17 +2405,19 @@ function openSetup(){const nm=myName();if(!TOKENS[SETUP.tok])SETUP.tok='dhoni';
  <h3>Game length</h3><div class="seg" role="radiogroup">${[['quick','Quick · 30 min'],['classic','Classic']].map(([k,l])=>`<button role="radio" aria-checked="${MODE===k}" data-s="mode" data-v="${k}">${l}</button>`).join('')}</div>
  ${MODE==='classic'?`<h3>Win target</h3><div class="seg goalseg" role="radiogroup" aria-label="Win target">${GOALS.map(v=>`<button role="radio" aria-checked="${TARGET===v}" data-s="goal" data-v="${v}"${v?` aria-label="${fmt(v)}"`:''}>${v?v.toLocaleString('en-US'):'Last one standing'}</button>`).join('')}</div>`:''}
  <p style="font-size:12px;color:var(--muted)">${MODE==='quick'?'After 30 minutes the richest net worth wins.':TARGET?`The first to reach ${fmt(TARGET)} net worth (cash + islands + buildings) wins.`:`Play until only one landowner is left. After round ${E.C.ROUND_CAP} the richest wins.`}</p>
+ <button class="switch" role="switch" aria-checked="${GUIDE.pref()}" data-s="guide" style="margin-top:10px">Guided tips for new players<i></i></button>
  <div class="acts one"><button class="btn" data-s="start" data-focus>${ICON.dice}Start game</button></div>`;
  openSheet('setup',html);}
 $('#sheet').addEventListener('click',e=>{const b=e.target.closest('[data-s]');if(!b)return;const s=b.dataset.s,nmv=($('#nmIn')||{}).value;if(nmv!=null)ls.set('bv-name',nmv.trim().slice(0,14));
  if(s==='n'){SETUP.n=+b.dataset.v;openSetup();}else if(s==='tok'){SETUP.tok=b.dataset.v;ls.set('bv-tok',SETUP.tok);openSetup();}else if(s==='mode'){MODE=b.dataset.v;ls.set('bv-mode',MODE);showHome();openSetup();}
  else if(s==='goal'){TARGET=+b.dataset.v;ls.set('bv-goal',String(TARGET));openSetup();}
+ else if(s==='guide'){GUIDE.setPref(!GUIDE.pref());openSetup();}
  else if(s==='shuffle'){ROSTER=botRoster(4);openSetup();}else if(s==='start')newGame();});
 function newGame(opts={}){const n=opts.n||SETUP.n,mode=opts.mode||MODE;const toks=TOKEN_KEYS.filter(k=>k!==SETUP.tok).sort(()=>Math.random()-.5);
  const players=[{name:myName()||'You',human:true,av:myAvatar(),tok:SETUP.tok,col:PCOL[0]}];
  ROSTER.slice(0,n-1).forEach((b,k)=>players.push({name:b[0],human:false,av:window.DGAvatar?(b[1]?DGAvatar.presets[b[1]]:DGAvatar.random(b[0]+'bv')):null,tok:toks[k],col:PCOL[k+1]}));
- closeSheet();AI.reset();OVERSHOWN=null;REWARD=null;const g=E.create({mode,players,minutes:opts.minutes,target:opts.target!=null?opts.target:TARGET});startWith(g,0);}
-function startWith(g,me){G=g;ME=me;WATCH=false;ACTKEY='';aiSeq=-1;DRAW.busy=false;closeDraw(true);for(const k in MIN)delete MIN[k];SCREEN='game';$('#home').hidden=true;$('#game').hidden=false;
+ closeSheet();AI.reset();OVERSHOWN=null;REWARD=null;const g=E.create({mode,players,minutes:opts.minutes,target:opts.target!=null?opts.target:TARGET});GUIDE.begin(g);startWith(g,0);}
+function startWith(g,me){TZ.stop();if(ONLINE)GUIDE.stop();G=g;ME=me;WATCH=false;ACTKEY='';aiSeq=-1;DRAW.busy=false;closeDraw(true);for(const k in MIN)delete MIN[k];SCREEN='game';$('#home').hidden=true;$('#game').hidden=false;
  G.players.forEach((p,i)=>{VIEW.pos[i]=p.pos;VIEW.cash[i]=p.cash;});buildPlayers();buildBoard();setDice(G.dice[0]?G.dice:[3,4]);
  const last=G.log[G.log.length-1];if(last)ticker(last.s);E.drain();render();lastT=performance.now();
  if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>{if(BV)FIT(BV);});pump(true);if(ONLINE&&NET)NET.updDock();}
