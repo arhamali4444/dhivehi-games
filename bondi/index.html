@@ -323,8 +323,10 @@ html[data-ranga="1"] .schip.H[aria-pressed="true"] svg,html[data-ranga="1"] .sch
 .order>span .mini{width:24px;height:24px}
 .order>span.lose{background:rgba(216,36,58,.18);box-shadow:inset 0 0 0 1px rgba(255,90,110,.5);color:#FFB3BE}
 .order i{font-style:normal;font-weight:800;color:var(--muted)}
+.order i.pp{color:#E8ECF2;font-variant-numeric:tabular-nums}.order>span.lose i.pp{color:#FF8FA0}
 .scores{margin:16px 0;text-align:left}
-.totlbl{font:600 10.5px/1 var(--cond);letter-spacing:.16em;text-transform:uppercase;text-align:left;margin-top:18px;color:var(--muted);display:flex;justify-content:space-between}
+.totlbl{font:600 10.5px/1 var(--cond);letter-spacing:.16em;text-transform:uppercase;text-align:left;margin-top:18px;color:var(--muted);display:flex;justify-content:space-between;gap:12px;line-height:1.3}
+.totlbl span:last-child{white-space:nowrap}
 .srow{display:grid;grid-template-columns:30px 1fr auto;gap:10px;align-items:center;padding:7px 0}
 .srow .mini{width:30px;height:30px}
 .srow .n{font-size:13px;font-weight:700;display:flex;flex-direction:column;gap:5px;min-width:0}
@@ -383,7 +385,9 @@ const reduce=!!(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)'
 const ls={get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}},del(k){try{localStorage.removeItem(k)}catch(e){}}};
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const buzz=ms=>{try{if(navigator.userActivation&&!navigator.userActivation.hasBeenActive)return;navigator.vibrate&&navigator.vibrate(ms)}catch(e){}};
-const TURN_MS=15000,ROUND_OPTS=[3,5,10],DAILY_CAP=500,SAVE_KEY='bondi-solo';
+const TURN_MS=15000,ROUND_OPTS=[3,5,10],DAILY_CAP=500,SAVE_KEY='bondi-solo',SCORE_V=2;
+/* scores can go below zero: show a proper minus sign; sg() always shows the sign (round points) */
+const fmt=n=>n<0?'−'+(-n):String(n),sg=n=>n>0?'+'+n:fmt(n);
 const BOT_MS=FAST?40:900,RES_MS=FAST?60:1250;
 const SPRING=(()=>{try{if(CSS.supports('animation-timing-function','linear(0,1)'))return 'linear(0,.009,.035 2.1%,.141 4.4%,.723 12.9%,.938 16.7%,1.017 19.4%,1.067,1.089 25.4%,1.084 28.1%,1.029 35.3%,1.003 41.2%,.994 47.9%,1 60.1%,1)';}catch(e){}return 'cubic-bezier(.34,1.4,.5,1)';})();
 const myId=(()=>{let v=ls.get('dd-pid');if(!v){v='p'+Math.random().toString(36).slice(2,10);ls.set('dd-pid',v);}return v;})();
@@ -511,7 +515,7 @@ const meIdx=()=>S?S.players.findIndex(p=>p.id===myId):-1;
 const handOf=(N,k)=>N.hands[N.players[k].id]||[];
 /* players still holding cards, clockwise from k (inclusive) */
 function activeFrom(N,k){const n=N.players.length,o=[];for(let i=0;i<n;i++){const j=(k+i)%n;if(handOf(N,j).length)o.push(j);}return o;}
-function newGame(players,ranga,rounds){return{v:1,game:'bondi',ranga:!!ranga,rounds:rounds,handNo:0,status:'lobby',hostId:players[0].id,players:players,hands:{},trick:[],aside:[],safe:[],voids:{},seq:0,gid:Math.random().toString(36).slice(2,10)};}
+function newGame(players,ranga,rounds){return{v:1,sv:SCORE_V,game:'bondi',ranga:!!ranga,rounds:rounds,handNo:0,status:'lobby',hostId:players[0].id,players:players,hands:{},trick:[],aside:[],safe:[],voids:{},seq:0,gid:Math.random().toString(36).slice(2,10)};}
 function deal(N){const n=N.players.length;N.handNo=(N.handNo||0)+1;N.dealer=N.handNo===1?Math.floor(Math.random()*n):((N.dealer|0)+1)%n;
 const d=[];SUITS.forEach(s=>{for(let r=2;r<=14;r++)d.push(r+'-'+s);});shuffle(d);
 N.hands={};N.players.forEach(p=>{N.hands[p.id]=[];});d.forEach((c,i)=>N.hands[N.players[(N.dealer+1+i)%n].id].push(c));
@@ -529,10 +533,15 @@ if(has){if(cards.length!==1||P(cards[0]).s!==N.led)return 'You must follow suit.
 if(cards.length===1)return '';
 if(!N.ranga)return 'Play one card.';
 const s=P(cards[0]).s;if(cards.some(c=>P(c).s!==s))return 'Throw cards from one suit only.';return '';}
-function endRound(N){const act=activeFrom(N,0);const L=act.length===1?act[0]:-1;const left=L>=0?sortHand(handOf(N,L)):[];const pts=left.reduce((t,c)=>t+val(c),0);
-if(L>=0)N.players[L].score+=pts;
-N.result={loser:L,pts:pts,left:left,order:N.safe.slice()};N.turn=-1;N.phase='play';
-const R=N.rounds;if(N.handNo>=R){N.status='over';const lo=Math.min(...N.players.map(p=>p.score));N.result.champs=N.players.map((p,k)=>k).filter(k=>N.players[k].score===lo);}else N.status='handover';
+/* scoring (owner, Sept 2026, both modes): with n players the 1st out scores n-1, 2nd n-2 ... (last safe player 1);
+   the bondibui scores 0 minus the value of the cards left. N.safe is already in finishing order: players who go out
+   on the same trick are added in the order their cards were played, so placements never tie. */
+const placePts=(n,i)=>Math.max(0,n-1-i);
+function endRound(N){const n=N.players.length,act=activeFrom(N,0);const L=act.length===1?act[0]:-1;const left=L>=0?sortHand(handOf(N,L)):[];const pts=left.reduce((t,c)=>t+val(c),0);
+const gain=N.players.map(()=>0);N.safe.forEach((k,i)=>{gain[k]=placePts(n,i);});if(L>=0)gain[L]=-pts;
+N.players.forEach((p,k)=>{p.score+=gain[k];});
+N.result={loser:L,pts:pts,left:left,order:N.safe.slice(),gain:gain};N.turn=-1;N.phase='play';
+const R=N.rounds;if(N.handNo>=R){N.status='over';const hi=Math.max(...N.players.map(p=>p.score));N.result.champs=N.players.map((p,k)=>k).filter(k=>N.players[k].score===hi);}else N.status='handover';
 mv(N,'end',L,left);}
 /* the one entry point for every change: host-authoritative */
 function step(N,type,arg,who){
@@ -557,6 +566,8 @@ return false;}
 
 /* =====================================================================
    COMPUTER PLAYERS (smart-ish: count cards, remember who is void, dump high cards when safe)
+   Scoring rewards going out early AND punishes high cards left, so the computer both avoids pickups
+   (they cost tempo) and works towards voids it can break on to shed cards fast.
    ===================================================================== */
 function unseenFor(N,k){const mine=new Set(handOf(N,k)),gone=new Set(N.aside);N.trick.forEach(e=>e.c.forEach(c=>gone.add(c)));const u=[];SUITS.forEach(s=>{for(let r=2;r<=14;r++){const c=r+'-'+s;if(!mine.has(c)&&!gone.has(c))u.push(c);}});return u;}
 /* chance that opponent o still holds at least one card of suit s */
@@ -570,7 +581,10 @@ if(!N.trick.length){if(N.first&&h.includes(ACE_S))return [ACE_S];
  SUITS.forEach(s=>{const mine=h.filter(c=>P(c).s===s);if(!mine.length)return;const pA=opp.reduce((t,o)=>t*pHas(N,o,s,U),1),pN=opp.length?pHas(N,opp[0],s,U):1;
   const us=U.filter(c=>P(c).s===s);
   [mine[0],mine[mine.length-1]].forEach(c=>{const r=P(c).r,lower=us.filter(x=>P(x).r<r).length,danger=(lower+1)/(us.length+1);
-   const cost=(1-pN)*1.2+(1-pA)*danger*0.9-pA*val(c)/15*0.5+mine.length*0.01+Math.random()*0.04;if(cost<bs){bs=cost;best=c;}});});
+   /* tempo: leading from a short suit empties it sooner (a void lets you break and shed); a likely pickup
+      of a big trick costs more now that finishing early scores */
+   const tempo=(1-pA)*danger*opp.length*0.12+(mine.length===1?-0.08:mine.length*0.03);
+   const cost=(1-pN)*1.2+(1-pA)*danger*0.9-pA*val(c)/15*0.5+tempo+Math.random()*0.04;if(cost<bs){bs=cost;best=c;}});});
  return [best||h[0]];}
 const led=N.led,follow=h.filter(c=>P(c).s===led);
 if(follow.length){const top=N.trick.reduce((m,e)=>Math.max(m,...e.c.filter(c=>P(c).s===led).map(c=>P(c).r)),0);
@@ -579,10 +593,10 @@ if(follow.length){const top=N.trick.reduce((m,e)=>Math.max(m,...e.c.filter(c=>P(
  if(pR>0.85)return [follow[follow.length-1]];
  if(under.length)return [under[under.length-1]];
  return [pR>0.45?follow[follow.length-1]:follow[0]];}
-/* cannot follow: shed the most dangerous cards */
+/* cannot follow: shed the most dangerous cards, preferring moves that empty a suit (or the whole hand) */
 const bySuit={};h.forEach(c=>{(bySuit[P(c).s]=bySuit[P(c).s]||[]).push(c);});
 if(N.ranga){let bs=null,sc=-1;for(const s in bySuit){const v=bySuit[s].length*12+bySuit[s].reduce((t,c)=>t+val(c),0);if(v>sc){sc=v;bs=s;}}return bySuit[bs].slice();}
-let best=h[0],sc=-1;h.forEach(c=>{const v=val(c)+(bySuit[P(c).s].length===1?4:0);if(v>sc){sc=v;best=c;}});return [best];}
+let best=h[0],sc=-1;h.forEach(c=>{const v=val(c)+(bySuit[P(c).s].length===1?6:0);if(v>sc){sc=v;best=c;}});return [best];}
 
 /* =====================================================================
    HOST LOOP: act() -> commit() -> render; bots and the turn timer run here
@@ -615,9 +629,11 @@ const modeName=r=>r?'Ranga Bondi':'Bondi';
 function setMode(r){ranga=!!r;ls.set('bondi-mode',ranga?'ranga':'bondi');document.documentElement.dataset.ranga=ranga?'1':'0';try{const u=new URL(location.href);u.searchParams.set('mode',ranga?'ranga':'bondi');history.replaceState(null,'',u.pathname+u.search);}catch(e){}}
 function meP(){return{id:myId,name:myName()||'You',ch:myChar(),ring:myRing(),col:'#E5604D',score:0};}
 function heroFan(){const cs=ranga?['9-H','12-D','14-S']:['13-S','12-S','14-S'];return `<div class="dhero${ranga?' ranga':''}" aria-hidden="true">${cs.map(c=>`<div class="card${c===ACE_S?' glint':''}">${faceHTML(c)}</div>`).join('')}</div>`;}
-function savedGame(){try{const d=JSON.parse(ls.get(SAVE_KEY)||'null');if(d&&d.game==='bondi'&&d.players&&d.status!=='over')return d;}catch(e){}return null;}
+function savedGame(){try{const d=JSON.parse(ls.get(SAVE_KEY)||'null');if(d&&d.game==='bondi'&&d.players&&d.status!=='over'&&d.sv===SCORE_V)return d;}catch(e){}return null;}
+/* saves from before placement scoring hold penalty-only totals that can't be converted: clear them once, gently */
+function oldSave(){try{const d=JSON.parse(ls.get(SAVE_KEY)||'null');if(d&&d.game==='bondi'&&d.sv!==SCORE_V){ls.del(SAVE_KEY);return d.status!=='over';}}catch(e){ls.del(SAVE_KEY);}return false;}
 function resumeHTML(){const d=savedGame();if(!d)return '';const me=d.players.find(q=>q.id===myId);
-return `<button class="resume" data-a="resume"><span>Unfinished ${modeName(d.ranga)}: <b>Round ${Math.min(d.handNo||1,d.rounds)} of ${d.rounds}</b>${me?`, ${me.score} penalty points`:''}</span><span class="go">Resume</span></button>`;}
+return `<button class="resume" data-a="resume"><span>Unfinished ${modeName(d.ranga)}: <b>Round ${Math.min(d.handNo||1,d.rounds)} of ${d.rounds}</b>${me?`, ${fmt(me.score)} point${me.score===1?'':'s'}`:''}</span><span class="go">Resume</span></button>`;}
 let spCtl=null;
 function offTable(){document.documentElement.dataset.scr=screen;if(spCtl){try{spCtl.destroy();}catch(e){}spCtl=null;}}
 function renderHome(){screen='home';offTable();closeOv();closeRules();document.documentElement.dataset.ranga=ranga?'1':'0';
@@ -651,7 +667,7 @@ ${resumeHTML()}
 <p class="hint">You and ${nBots} computer player${nBots>1?'s':''}. All 52 cards are dealt${52%(nBots+1)?`, so some get one more`:''}: <b>${Math.floor(52/(nBots+1))}${52%(nBots+1)?'–'+Math.ceil(52/(nBots+1)):''} cards</b> each.</p>
 <div style="height:16px"></div>
 <label class="f">Match length</label><div class="pick">${ROUND_OPTS.map(n=>`<button class="btn sm soft" data-a="rounds" data-n="${n}" aria-pressed="${n===nRounds}">${n} rounds</button>`).join('')}</div>
-<p class="hint">Lowest total penalty after the last round wins.</p>
+<p class="hint">Go out early to score: <b>1st out gets the most points</b>, the bondibui loses the value of their cards. Highest total after the last round wins.</p>
 <div style="height:18px"></div>
 <button class="btn primary wide" data-a="solo">Start new game</button></section>
 </main>`;}
@@ -659,7 +675,8 @@ function howHTML(r){return `<div class="rules">
 <p><b>Bondi</b> is played with one 52-card deck, 2 to 5 players. All the cards are dealt out. Aces are high.</p>
 <p>Whoever holds the <b>A♠</b> leads it to the first trick. Everyone must <b>follow suit</b>. If everyone follows, the trick is set aside and whoever played the highest card leads next.</p>
 <p>If you <b>can’t follow suit</b>, play any card: the trick stops at once, and the player with the highest card of the led suit <b>picks up the whole trick</b> into their hand and leads next.</p>
-<p>Empty your hand and you are <b>safe</b>. The last player still holding cards is the <b>bondibui</b> and scores their cards as penalty points: 2 to 10 face value, J 11, Q 12, K 13, A 15. Play 3, 5 or 10 rounds; the lowest total wins.</p>
+<p>Empty your hand and you are <b>safe</b>. The order you go out scores points: with 4 players, <b>1st out gets 3</b>, 2nd gets 2 and 3rd gets 1 (always one less than the number of players for 1st, down to 1). If several players go out on the same trick, they place in the order they played.</p>
+<p>The last player still holding cards is the <b>bondibui</b> and <b>loses</b> the value of those cards: 2 to 10 face value, J 11, Q 12, K 13, A 15. Play 3, 5 or 10 rounds; the <b>highest total wins</b>, and a tie is a shared win.</p>
 <h3 class="${r?'red':''}">Ranga Bondi</h3>
 <p>The same, except when you can’t follow suit you may <b>throw several cards of one other suit</b> (as many as you like, even all of them). They all go to the player who picks up.</p>
 <h3>On your phone</h3>
@@ -670,9 +687,9 @@ const per=Math.floor(52/n),x=52%n;
 const items=[li('A♠','The <b>A♠</b> leads the first trick. Everyone must follow suit.'),
 li('↺','Everyone followed? The trick is set aside and the <b>highest card leads</b> next.'),
 r?li('⇶','Can’t follow? The trick stops. Throw <b>one card or several of one suit</b>; the highest card of the led suit <b>picks them all up</b>.',1):li('✕','Can’t follow? Play any card: the trick stops and the highest card of the led suit <b>picks it all up</b>.',1),
-li('✓','Empty your hand to be <b>safe</b>. The last player holding cards is the <b>bondibui</b>.'),
-li('±','Bondibui scores the cards left: 2–10 face value, J 11, Q 12, K 13, A 15.'),
-li(String(N.rounds),N.rounds+' rounds. Lowest total wins. 15 seconds a turn.')];
+li('✓','Empty your hand to be <b>safe</b>. Going out scores: '+Array.from({length:n-1},(_,i)=>`${i?'':'<b>'}${ord(i+1)} +${n-1-i}${i?'':'</b>'}`).join(', ')+'.'),
+li('−','The last player holding cards is the <b>bondibui</b> and loses their cards: 2–10 face value, J 11, Q 12, K 13, A 15.'),
+li(String(N.rounds),N.rounds+' rounds. <b>Highest total wins.</b> 15 seconds a turn.')];
 return `<div class="rcard${r?' ranga':''}"><div class="rtop"><span class="rbadge">${HI.fan}</span><div><h2>${modeName(r)}</h2><div class="rsub">${n} players · ${per}${x?'–'+(per+1):''} cards each · ${N.rounds} rounds</div></div></div><ul class="rlist">${items.join('')}</ul></div>`;}
 function openRules(){const o=$('#rov');o.innerHTML=`<div class="ovc">${rulesCardHTML(S)}<div class="rfoot"><button class="btn primary wide" data-a="rulesDeal">Deal the cards</button><button class="btn ghost wide" style="margin-top:8px" data-a="leave">Not now</button></div></div>`;o.classList.add('show');setTimeout(()=>{const b=o.querySelector('.btn.primary');b&&b.focus({preventScroll:true});},60);}
 function closeRules(){const o=$('#rov');o.classList.remove('show');o.innerHTML='';}
@@ -744,7 +761,7 @@ const ord=n=>n+(n%10===1&&n%100!==11?'st':n%10===2&&n%100!==12?'nd':n%10===3&&n%
 function renderTable(){const me=meIdx(),playing=S.status==='playing',R=S.rounds;
 {const g=$('#goalt'),gt=S.status==='over'?'Final scores':S.status==='lobby'?`${S.ranga?'<span class="rg">Ranga</span> Bondi':'Bondi'} · ${R} rounds`:`${S.ranga?'<span class="rg">Ranga</span> · ':''}Round <b>${S.handNo}</b> of ${R}`;if(g&&g._t!==gt){g.innerHTML=gt;g._t=gt;}}
 const oe=$('#opps'),so=seatOrder();oe.className='seats n'+so.length;oe._cnt=oe._cnt||{};let moved=false;
-const lo=Math.min(...S.players.map(p=>p.score)),leadK=S.handNo>1||S.status!=='playing'?(S.players.filter(p=>p.score===lo).length===1?S.players.findIndex(p=>p.score===lo):-1):-1;
+const top=Math.max(...S.players.map(p=>p.score)),leadK=S.handNo>1||S.status!=='playing'?(S.players.filter(p=>p.score===top).length===1?S.players.findIndex(p=>p.score===top):-1):-1;
 so.forEach(k=>{const p=S.players[k];let el=oe.querySelector(`.seat[data-k="${k}"]`);
  if(!el){el=document.createElement('div');el.className='seat';el.dataset.k=k;el.innerHTML='<div class="av"><span class="avc"></span><span class="sbd"></span><span class="hfan" aria-hidden="true"></span></div><div class="nm"></div><div class="cnt"></div>';oe.appendChild(el);moved=true;}
  const cnt=handOf(S,k).length,prev=oe._cnt[k];oe._cnt[k]=cnt;const on=playing&&S.turn===k&&S.phase==='play';
@@ -754,10 +771,10 @@ so.forEach(k=>{const p=S.players[k];let el=oe.querySelector(`.seat[data-k="${k}"
  if(prev!=null&&cnt>prev){fan.classList.remove('bump');void fan.offsetWidth;fan.classList.add('bump');}
  const nm=esc(p.name);const ne=el.querySelector('.nm');if(ne.innerHTML!==nm)ne.innerHTML=nm;
  const si=S.safe.indexOf(k),lost=S.result&&S.result.loser===k&&S.status!=='playing';
- const ct=lost?'<span class="stag lose">Bondibui</span>':si>=0?`<span class="stag">Safe · ${ord(si+1)}</span>`:`${cnt} card${cnt===1?'':'s'} · ${p.score}`;
+ const ct=lost?'<span class="stag lose">Bondibui</span>':si>=0?`<span class="stag">Safe · ${ord(si+1)}</span>`:`${cnt} card${cnt===1?'':'s'} · ${fmt(p.score)}`;
  const ce=el.querySelector('.cnt');if(ce._k!==ct){ce._k=ct;ce.innerHTML=ct;}
  el.classList.toggle('safe',si>=0);const av=el.querySelector('.av');av.classList.toggle('on',on);syncTimer(av,on);
- el.setAttribute('aria-label',`${p.name}, ${si>=0?'safe, '+ord(si+1):cnt+' cards'}, ${p.score} penalty points${on?', playing now':''}`);el.setAttribute('role','img');});
+ el.setAttribute('aria-label',`${p.name}, ${si>=0?'safe, '+ord(si+1):cnt+' cards'}, ${fmt(p.score)} point${p.score===1?'':'s'}${on?', playing now':''}`);el.setAttribute('role','img');});
 oe.querySelectorAll('.seat').forEach(el=>{if(+el.dataset.k>=S.players.length||+el.dataset.k===me){el.remove();moved=true;}});
 if(moved||oe._n!==so.length){oe._n=so.length;layoutArena();}
 renderTrick();
@@ -767,7 +784,7 @@ tableAd();renderStatus();
 const mi=$('#meinfo');if(me>=0){const p=S.players[me],myTurn=playing&&S.turn===me&&S.phase==='play',cnt=handOf(S,me).length,si=S.safe.indexOf(me);
  if(!mi._built){mi._built=1;mi.innerHTML=`<span class="meav" id="meav">${avatarHTML(p,me,46)}<span class="sbd"></span></span><div></div>`;}
  const bk=me===leadK?CROWN:'';const bd=mi.querySelector('.sbd');if(bd._k!==bk){bd._k=bk;bd.innerHTML=bk;}
- const h=`<b>${esc(p.name)}</b><span class="s">${p.score} penalty pts${playing?(si>=0?` · safe, ${ord(si+1)}`:` · ${cnt} card${cnt===1?'':'s'}`):''}</span>`;const tx=mi.lastElementChild;if(tx._h!==h){tx._h=h;tx.innerHTML=h;}
+ const h=`<b>${esc(p.name)}</b><span class="s">${fmt(p.score)} pt${p.score===1||p.score===-1?'':'s'}${playing?(si>=0?` · safe, ${ord(si+1)}`:` · ${cnt} card${cnt===1?'':'s'}`):''}</span>`;const tx=mi.lastElementChild;if(tx._h!==h){tx._h=h;tx.innerHTML=h;}
  const mav=$('#meav');mav.classList.toggle('on',myTurn);syncTimer(mav,myTurn);}
 renderHand();renderActs();renderOv();}
 function renderStatus(){const st=$('#status');const me=meIdx(),playing=S.status==='playing';let t='';
@@ -885,23 +902,27 @@ function roundAward(){if(!S||!S.result||meIdx()<0)return null;const me=meIdx(),r
 if(S.status==='over'){n+=5;if(r.champs.includes(me))n+=25;}return award('bondi:'+S.gid+':'+S.handNo,n);}
 /* ---------- round and match results ---------- */
 function closeOv(){const o=$('#ov');o.classList.remove('show');o.innerHTML='';o._k=null;}
-function scoresHTML(){const lo=Math.min(...S.players.map(p=>p.score)),hi=Math.max(1,...S.players.map(p=>p.score));const last=S.result&&S.status!=='playing'?S.result:null;
-const rows=S.players.map((p,k)=>({p:p,k:k})).sort((a,b)=>a.p.score-b.p.score);
-return `<div class="scores">${rows.map(({p,k})=>`<div class="srow">${avatarHTML(p,k,30)}<div class="n"><span>${esc(p.name)}${p.id===myId&&p.name!=='You'?' (you)':''}${last&&last.loser===k&&last.pts?`<small>+${last.pts}</small>`:''}${p.score===lo&&hi>lo?'<small class="best">best</small>':''}</span><div class="bar"><i style="--c:${p.col||PC[k%PC.length]};width:${Math.max(3,Math.min(100,p.score/hi*100))}%"></i></div></div><b>${p.score}</b></div>`).join('')}</div>`;}
+/* totals, highest first; the bar runs from the lowest score (or 0) to the highest, so negatives still draw */
+function scoresHTML(){const sc=S.players.map(p=>p.score),hi=Math.max(...sc),lo=Math.min(...sc),base=Math.min(0,lo),span=Math.max(1,hi-base);const last=S.result&&S.status!=='playing'?S.result:null;
+const rows=S.players.map((p,k)=>({p:p,k:k})).sort((a,b)=>b.p.score-a.p.score);
+const dl=k=>{if(!last||!last.gain)return '';const g=last.gain[k];return g>0?`<small class="best">${sg(g)}</small>`:g<0?`<small>${sg(g)}</small>`:'';};
+return `<div class="scores">${rows.map(({p,k})=>`<div class="srow">${avatarHTML(p,k,30)}<div class="n"><span>${esc(p.name)}${p.id===myId&&p.name!=='You'?' (you)':''}${dl(k)}${p.score===hi&&hi>lo?'<small class="best">best</small>':''}</span><div class="bar"><i style="--c:${p.col||PC[k%PC.length]};width:${Math.max(3,Math.min(100,(p.score-base)/span*100))}%"></i></div></div><b>${fmt(p.score)}</b></div>`).join('')}</div>`;}
 function renderOv(){const o=$('#ov');if(S.status!=='handover'&&S.status!=='over'){if(o._k)closeOv();return;}
 const k=S.status+S.handNo+S.gid;if(o._k===k)return;o._k=k;const aw=roundAward();const r=S.result,me=meIdx(),over=S.status==='over';
 const L=r.loser,lp=L>=0?S.players[L]:null;
 let head,sub,av;
 if(over){const ch=r.champs,won=ch.includes(me);av=avatarHTML(S.players[ch[0]],ch[0],72);head=won?(ch.length>1?'You share the win!':'You win the match!'):(ch.length>1?ch.map(i=>esc(S.players[i].name)).join(' & ')+' share the win':esc(S.players[ch[0]].name)+' wins the match');
- sub=`<div class="pts ok">Lowest total: ${S.players[ch[0]].score} penalty point${S.players[ch[0]].score===1?'':'s'}</div>`;setTimeout(()=>won?SFX.win():SFX.lose(),600);}
+ const hs=S.players[ch[0]].score;sub=`<div class="pts ok">Highest total: ${fmt(hs)} point${hs===1||hs===-1?'':'s'}</div>`;setTimeout(()=>won?SFX.win():SFX.lose(),600);}
 else{av=lp?avatarHTML(lp,L,72):'';head=lp?(L===me?'You’re the bondibui':esc(lp.name)+' is the bondibui'):'Everyone got out together';
- sub=lp?`<div class="pts">+${r.pts} penalty point${r.pts===1?'':'s'}</div>`:'<div class="pts ok">No penalty this round</div>';setTimeout(()=>L===me?SFX.lose():SFX.safe(true),600);}
+ const mi=r.order.indexOf(me),mine=mi>=0&&r.gain?`<div><span class="pts ok">You went out ${ord(mi+1)}: ${sg(r.gain[me])}</span></div>`:'';
+ sub=(lp?`<div><span class="pts">${sg(-r.pts)} point${r.pts===1?'':'s'}</span></div>`:'<div><span class="pts ok">No bondibui this round</span></div>')+mine;setTimeout(()=>L===me?SFX.lose():SFX.safe(true),600);}
 const left=lp&&r.left.length?`<div class="left" aria-label="${esc(lp.name)} was left holding ${r.left.length} cards">${r.left.map((c,i)=>`<div class="card" style="--i:${i}">${faceHTML(c)}</div>`).join('')}</div>`:'';
-const orderH=`<div class="order">${r.order.map((k2,i)=>`<span>${avatarHTML(S.players[k2],k2,24)}<i>${ord(i+1)}</i>${esc(S.players[k2].name)}</span>`).join('')}${lp?`<span class="lose">${avatarHTML(lp,L,24)}${esc(lp.name)}</span>`:''}</div>`;
+const gp=k2=>r.gain?`<i class="pp">${sg(r.gain[k2])}</i>`:'';
+const orderH=`<div class="order" aria-label="Order out this round">${r.order.map((k2,i)=>`<span>${avatarHTML(S.players[k2],k2,24)}<i>${ord(i+1)}</i>${esc(S.players[k2].name)}${gp(k2)}</span>`).join('')}${lp?`<span class="lose">${avatarHTML(lp,L,24)}${esc(lp.name)}${gp(L)}</span>`:''}</div>`;
 o.innerHTML=`<div class="ovc">${av}<h2>${head}</h2>${sub}${aw&&aw.sh>0?`<div class="earn">+${aw.sh} ${HI.shell} Boli${aw.capped?' (daily limit reached)':''}</div>`:aw&&aw.capped?'<div class="earn muted">Daily Boli limit reached</div>':''}
-${over&&lp?`<div class="muted" style="font-size:12.5px;margin-top:8px">Last round: ${esc(lp.name)} was the bondibui, +${r.pts}</div>`:''}
+${over&&lp?`<div class="muted" style="font-size:12.5px;margin-top:8px">Last round: ${esc(lp.name)} was the bondibui, ${sg(-r.pts)}</div>`:''}
 ${left}${orderH}
-<div class="muted totlbl"><span>${over?'Final totals':'Totals after round '+S.handNo+' of '+S.rounds}</span><span>lower is better</span></div>
+<div class="muted totlbl"><span>${over?'Final totals':'Totals after round '+S.handNo+' of '+S.rounds}</span><span>higher is better</span></div>
 ${scoresHTML()}
 <button class="btn primary wide" data-a="${over?'again':'next'}">${over?'Play again':'Deal round '+(S.handNo+1)}</button>
 <button class="btn ghost wide" style="margin-top:8px" data-a="leave">Back to home</button></div>`;
@@ -911,7 +932,7 @@ o.classList.add('show');if(AUTO)setTimeout(()=>{if(S&&S.status==='handover')act(
 function sheet(h){$('#sheetB').innerHTML=h;$('#sheet').classList.add('open');}
 function closeSheet(){$('#sheet').classList.remove('open');}
 let toastT=0;function toast(t,ms){const e=$('#toast');e.textContent=t;e.classList.remove('show');void e.offsetWidth;e.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>e.classList.remove('show'),ms||2600);}
-function openMenu(){if(!S)return;sheet(`<div class="grab"></div><h2>${modeName(S.ranga)}</h2><p class="muted" style="margin:4px 0 0">${S.status==='lobby'?S.rounds+' rounds':'Round '+S.handNo+' of '+S.rounds} · lowest total wins</p>
+function openMenu(){if(!S)return;sheet(`<div class="grab"></div><h2>${modeName(S.ranga)}</h2><p class="muted" style="margin:4px 0 0">${S.status==='lobby'?S.rounds+' rounds':'Round '+S.handNo+' of '+S.rounds} · highest total wins</p>
 ${S.handNo?scoresHTML():''}
 <div class="mlist"><button class="btn soft wide" data-a="menuRules">Rules</button><button class="btn soft wide" data-a="sfx" aria-pressed="${sfxOn()}">Sound: ${sfxOn()?'On':'Off'}</button><button class="btn ghost wide" data-a="leave">${S.status==='playing'?'Leave (your game is saved)':'Back to home'}</button></div>`);}
 function toggleSfx(){ls.set('dd-sfx',sfxOn()?'0':'1');document.querySelectorAll('[data-a="sfx"]').forEach(b=>{b.setAttribute('aria-pressed',String(sfxOn()));if(b.classList.contains('btn'))b.textContent='Sound: '+(sfxOn()?'On':'Off');});if(sfxOn()){AU.unlock();SFX.turn();}}
@@ -963,8 +984,9 @@ window.__bondi={get S(){return S;},
  start(o){o=o||{};if(o.ranga!=null)setMode(o.ranga);if(o.bots)nBots=o.bots;if(o.rounds)nRounds=o.rounds;startSolo();closeRules();act('start');}};
 
 /* ---------- boot ---------- */
+const hadOld=oldSave();
 if(LOCAL&&Q.get('play')==='1'){if(Q.get('bots'))nBots=Math.max(1,Math.min(4,+Q.get('bots')||3));if(Q.get('rounds'))nRounds=ROUND_OPTS.includes(+Q.get('rounds'))?+Q.get('rounds'):nRounds;startSolo();}
-else renderHome();
+else{renderHome();if(hadOld)setTimeout(()=>toast('New scoring: going out early now earns points. Your unfinished game was cleared, so start a fresh one.',6000),500);}
 })();
 </script>
 </body>
