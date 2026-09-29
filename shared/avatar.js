@@ -1218,7 +1218,7 @@
     '.dga-opt{position:relative;display:flex;flex-direction:column;align-items:center;gap:6px;padding:7px 2px 8px;min-height:44px;border-radius:18px;border:2px solid transparent;background:var(--_sf);box-shadow:0 1px 0 var(--_line);transition:transform .15s,border-color .15s}',
     '.dga-opt:hover{transform:translateY(-1px)}.dga-opt:active{transform:scale(.97)}',
     '.dga-opt[aria-pressed="true"]{border-color:var(--_ac);box-shadow:0 0 0 3px color-mix(in srgb,var(--_ac) 22%,transparent)}',
-    '.dga-th{position:relative;display:block;width:100%;max-width:64px;aspect-ratio:1/1;height:auto;border-radius:14px;overflow:hidden;background:var(--_sf2)}.dga-th svg{width:100%;height:100%}',
+    '.dga-th{position:relative;display:block;width:100%;max-width:64px;aspect-ratio:1/1;height:auto;border-radius:14px;overflow:hidden;background:var(--_sf2)}.dga-th svg{width:100%;height:100%}@supports not (aspect-ratio:1/1){.dga-th{height:64px}}',
     '.dga-opt.is-none .dga-th::after{content:"";position:absolute;inset:0;background:color-mix(in srgb,var(--_sf) 45%,transparent)}',
     '.dga-nobadge{position:absolute;z-index:1;top:50%;left:50%;width:34px;height:34px;margin:-17px 0 0 -17px;border-radius:50%;display:grid;place-items:center;background:var(--_sf);color:var(--_mut);box-shadow:0 1px 4px rgba(0,0,0,.18)}.dga-nobadge svg{width:24px;height:24px}',
     '.dga-opt.is-none .dga-nm{font-weight:800;color:var(--_ink)}',
@@ -1403,20 +1403,68 @@
       th.innerHTML = render(thumbCfg(b.getAttribute('data-cat'), b.getAttribute('data-key')), { size: 64, crop: th.getAttribute('data-crop') }) + (badge ? badge.outerHTML : '');
       th.setAttribute('data-done', '1');
     }
+    /* The builder never scrolls itself: the page / sheet that hosts it does. So every scrollable
+       ancestor's position is kept across a redraw (picking an item must never jump the list). */
+    function scrollSnap() {
+      var out = [], n = el;
+      while (n && n.nodeType === 1) { if (n.scrollHeight > n.clientHeight) out.push([n, n.scrollTop]); n = n.parentElement; }
+      var se = document.scrollingElement || document.documentElement;
+      if (se) out.push([se, se.scrollTop]);
+      return out;
+    }
+    function scrollBack(s) { s.forEach(function (p) { if (Math.abs(p[0].scrollTop - p[1]) > 0.5) p[0].scrollTop = p[1]; }); }
+    function bkey(b) { return ['data-tab', 'data-cat', 'data-key', 'data-look', 'data-body', 'data-more', 'data-act'].map(function (a) { return b.getAttribute(a) || ''; }).join('|'); }
+    function skel(node) {
+      var c = node.cloneNode(true);
+      Array.prototype.forEach.call(c.querySelectorAll('button'), function (b) { var k = document.createElement('i'); k.textContent = bkey(b); b.parentNode.replaceChild(k, b); });
+      return c.innerHTML;
+    }
+    function syncAttrs(a, b) {
+      var i;
+      for (i = a.attributes.length - 1; i >= 0; i--) { var nm = a.attributes[i].name; if (!b.hasAttribute(nm)) a.removeAttribute(nm); }
+      for (i = 0; i < b.attributes.length; i++) { var at = b.attributes[i]; if (a.getAttribute(at.name) !== at.value) a.setAttribute(at.name, at.value); }
+    }
+    /* same buttons in the same places: update them in place (selected state, locks, thumbnails)
+       instead of rebuilding the panel, so focus, scroll and the thumbnails already drawn all stay */
+    function morph(tmp) {
+      if (!panel.firstChild || skel(panel) !== skel(tmp)) return false;
+      var ob = panel.querySelectorAll('button'), nb = tmp.querySelectorAll('button');
+      if (ob.length !== nb.length) return false;
+      for (var i = 0; i < ob.length; i++) {
+        var a = ob[i], b = nb[i], th = a.querySelector('.dga-th'), nth = b.querySelector('.dga-th');
+        syncAttrs(a, b);
+        if (th && nth) {
+          var kids = Array.prototype.slice.call(b.childNodes);
+          kids[kids.indexOf(nth)] = th;
+          while (a.firstChild) a.removeChild(a.firstChild);
+          kids.forEach(function (k) { a.appendChild(k); });
+          if (th.getAttribute('data-done')) fillThumb(th); /* thumbnails show your current look, so redraw the ones on screen */
+        } else if (a.innerHTML !== b.innerHTML) a.innerHTML = b.innerHTML;
+      }
+      return true;
+    }
     function drawPanel(keepFocus) {
       var t = TABS.filter(function (x) { return x.id === tab; })[0];
       var ae = document.activeElement, fk = keepFocus && ae && panel.contains(ae) ? ae.getAttribute('data-cat') + ':' + ae.getAttribute('data-key') : null;
-      var st = panel.scrollTop;
-      panel.innerHTML = tab === 'start' ? startHTML() : t.secs.map(secHTML).join('');
+      var snap = scrollSnap(), tmp = document.createElement('div');
+      tmp.innerHTML = tab === 'start' ? startHTML() : t.secs.map(secHTML).join('');
       panel.setAttribute('aria-labelledby', uid + '-tab-' + tab);
+      if (morph(tmp)) { scrollBack(snap); return; }
+      /* full redraw (new tab, More / Fewer, a section appearing): hold the height until it is refilled */
+      var h = panel.offsetHeight;
+      if (h) panel.style.minHeight = h + 'px';
+      while (panel.firstChild) panel.removeChild(panel.firstChild);
+      while (tmp.firstChild) panel.appendChild(tmp.firstChild);
       var ths = panel.querySelectorAll('.dga-th');
       if (io) io.disconnect();
       if ('IntersectionObserver' in root) {
         io = new IntersectionObserver(function (ents) { ents.forEach(function (en) { if (en.isIntersecting) { io.unobserve(en.target); fillThumb(en.target); } }); }, { rootMargin: '120px' });
         Array.prototype.forEach.call(ths, function (th) { io.observe(th); });
       } else Array.prototype.forEach.call(ths, fillThumb);
-      panel.scrollTop = st;
       if (fk) { var n = panel.querySelector('[data-cat="' + fk.split(':')[0] + '"][data-key="' + fk.split(':')[1] + '"]'); if (n) n.focus({ preventScroll: true }); }
+      scrollBack(snap);
+      var rel = function () { if (!destroyed) panel.style.minHeight = ''; };
+      if (root.requestAnimationFrame) requestAnimationFrame(function () { requestAnimationFrame(rel); }); else setTimeout(rel, 32);
     }
     function drawBuy() {
       var L = lockedIn(cfg, ownArg());

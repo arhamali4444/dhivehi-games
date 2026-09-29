@@ -423,7 +423,7 @@ main.table>*{width:100%;max-width:640px;margin-left:auto;margin-right:auto}
 .ov.show{display:flex;animation:fade .35s ease .45s both}
 #rov.show{z-index:45;animation-delay:0s}
 @keyframes fade{from{opacity:0}}
-.ovc{background:var(--panel);color:var(--ink);border-radius:28px;padding:22px 18px 18px;width:100%;max-width:440px;max-height:92dvh;overflow:auto;-webkit-overflow-scrolling:touch;text-align:center;box-shadow:0 30px 60px -20px rgba(0,0,0,.6),inset 0 0 0 1px var(--edge);animation:rise .7s var(--spring) .5s both}
+.ovc{background:var(--panel);color:var(--ink);border-radius:28px;padding:22px 18px 18px;width:100%;max-width:440px;max-height:100%;max-height:min(92dvh,100%);overflow:auto;-webkit-overflow-scrolling:touch;text-align:center;box-shadow:0 30px 60px -20px rgba(0,0,0,.6),inset 0 0 0 1px var(--edge);animation:rise .7s var(--spring) .5s both}
 #rov .ovc{animation-delay:.05s}
 @keyframes rise{from{transform:translateY(40px) scale(.94);opacity:0}}
 .ovc>.mini{width:64px;height:64px;margin:0 auto 12px}
@@ -466,8 +466,8 @@ main.table>*{width:100%;max-width:640px;margin-left:auto;margin-right:auto}
 .totlbl+.scores{margin-top:4px}
 .sheet{position:fixed;inset:0;background:rgba(2,18,26,.55);display:none;align-items:flex-end;justify-content:center;z-index:70}
 .sheet.open{display:flex}
-.sheet-b{background:var(--panel);color:var(--ink);width:100%;max-width:540px;border-radius:26px 26px 0 0;padding:14px 18px calc(22px + env(safe-area-inset-bottom));max-height:88dvh;overflow:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;animation:up .5s var(--spring)}
-.sheet-b.tall{padding:0;max-height:94dvh;height:94dvh;overflow:hidden;display:flex;flex-direction:column}
+.sheet-b{background:var(--panel);color:var(--ink);width:100%;max-width:540px;border-radius:26px 26px 0 0;padding:14px 18px calc(22px + env(safe-area-inset-bottom));max-height:88%;max-height:min(88%,calc(100% - 12px - env(safe-area-inset-top,0px)));overflow:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;animation:up .5s var(--spring)}
+.sheet-b.tall{padding:0;height:94%;max-height:calc(100% - 8px - env(safe-area-inset-top,0px));overflow:hidden;display:flex;flex-direction:column}
 .sheet-b.tall>.dgbw{flex:1;min-height:0;overflow:auto;-webkit-overflow-scrolling:touch}
 .sheet-b h2{font:900 24px/1.15 Fraunces,Georgia,serif}
 @keyframes up{from{transform:translateY(100%)}}
@@ -763,7 +763,7 @@ main.table{background:var(--tbg,#040504)}
 <div class="ov" id="rov" role="dialog" aria-modal="true" aria-label="Table rules"></div>
 <div class="caus" aria-hidden="true"></div><div class="caus c2" aria-hidden="true"></div>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs><linearGradient id="dgGold" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F7DE92"/><stop offset=".55" stop-color="#D9A94A"/><stop offset="1" stop-color="#A97A26"/></linearGradient></defs></svg>
-<script src="../shared/avatar.js?v=5"></script>
+<script src="../shared/avatar.js?v=6"></script>
 <script src="../shared/cosmetics.js?v=2"></script>
 <script src="../shared/sponsors.js?v=5"></script>
 <script>
