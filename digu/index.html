@@ -764,7 +764,7 @@ main.table{background:var(--tbg,#040504)}
 <div class="ov" id="rov" role="dialog" aria-modal="true" aria-label="Table rules"></div>
 <div class="caus" aria-hidden="true"></div><div class="caus c2" aria-hidden="true"></div>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs><linearGradient id="dgGold" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F7DE92"/><stop offset=".55" stop-color="#D9A94A"/><stop offset="1" stop-color="#A97A26"/></linearGradient></defs></svg>
-<script src="../shared/avatar.js?v=8"></script>
+<script src="../shared/avatar.js?v=9"></script>
 <script src="../shared/cosmetics.js?v=2"></script>
 <script src="../shared/sponsors.js?v=6"></script>
 <script>
@@ -854,8 +854,10 @@ function applyAdminTestAccount(){
 }
 
 let fbSaveTimer=null;
-function publicPlayerData(){return{
-  name:isAdminUser()?ADMIN_NAME:(myName()||'Digu Player'), xp:INV.xp|0, shells:INV.shells|0,
+/* the ranked (public) name is locked to the account's username: the player's own capitalisation is kept, never other letters */
+function lockedDisplay(un){if(!un)return '';const n=myName();return n&&n.toLowerCase()===String(un).toLowerCase()?n:un;}
+function publicPlayerData(un){return{
+  name:isAdminUser()?ADMIN_NAME:(lockedDisplay(un||lockedUn())||'Digu Player'), xp:INV.xp|0, shells:INV.shells|0,
   games:INV.stats.games|0,wins:INV.stats.wins|0,hands:INV.stats.hands|0,
   gins:INV.stats.gins|0,big:INV.stats.big|0,online:INV.stats.online|0,
   best:INV.stats.best==null?null:INV.stats.best,
@@ -863,8 +865,26 @@ function publicPlayerData(){return{
 };}
 /* localhost test tables (?ns=) never write to the live leaderboard or the live player count */
 const testNs=()=>{try{return NS.indexOf('/test-')>0;}catch(e){return false;}};
-async function fbSaveNow(){if(!FB.ready||!FB.user||testNs())return;try{
-  await FB.setDoc(FB.doc(FB.db,'players',FB.user.uid),publicPlayerData(),{merge:true});
+/* only registered accounts with a username are ranked: guests keep their stats on this phone (they carry over when they register),
+   and an account without a username yet (e.g. Google, skipped) writes nothing until it picks one */
+let acctUnCache={uid:'',un:''};
+function lockedUn(){const u=FB.user;if(!u||u.isAnonymous)return '';if(isAdminUser())return ADMIN_NAME;
+ return (acctUnCache.uid===u.uid&&acctUnCache.un)||acctUsernameOf(u)||'';}
+async function acctUsername(){const u=FB.user;if(!u||u.isAnonymous)return '';if(isAdminUser())return ADMIN_NAME;
+ if(acctUnCache.uid===u.uid&&acctUnCache.un)return acctUnCache.un;
+ let un=acctUsernameOf(u);
+ /* keep usernames/{name} reserved: the players rule checks it (a no-op when it is already ours) */
+ if(un)await reserveUsername(un);
+ else{un=await usernameByUid(u.uid);
+  /* before the usernames rule is live, an older email-login account keeps the name saved on this phone */
+  if(!un&&!(await unameDocsOK()))un=authUsername();}
+ if(un&&FB.user===u){acctUnCache={uid:u.uid,un:un};if(!authUsername())ls.set('dd-auth-username',un);
+  if(myName().toLowerCase()!==un.toLowerCase())ls.set('lg-name',un);}
+ return un||'';}
+async function fbSaveNow(){if(!FB.ready||!FB.user||testNs())return;
+ if(FB.user.isAnonymous)return;
+ try{const un=await acctUsername();if(!un)return;
+  await FB.setDoc(FB.doc(FB.db,'players',FB.user.uid),publicPlayerData(un),{merge:true});
 }catch(e){console.warn('Firebase save failed',e);}}
 function fbQueueSave(){clearTimeout(fbSaveTimer);fbSaveTimer=setTimeout(fbSaveNow,350);}
 async function fbLoadAndMerge(){if(!FB.ready||!FB.user||FB.user.isAnonymous)return;try{
@@ -899,6 +919,12 @@ async function initFirebase(){try{
   if(!FB.user.isAnonymous) syncAcctName();
   if(redir&&SSO[redir.k]){if(redir.none)toast(SSO[redir.k].name+' sign-in didn’t finish. Please try again, and allow pop-ups if asked.',5500);
     else if(redir.err)await ssoError(redir.k,redir.err,redir.guest);else await ssoAfter(redir.k,redir.res,redir.guest);}
+  /* a Google/Apple account that skipped choosing a username isn't ranked yet: offer the username sheet again (once per visit) */
+  else if(!FB.user.isAnonymous&&!isAdminUser()&&oauthOf(FB.user)&&!provIds(FB.user).includes('password')&&!(await acctUsername()))
+    setTimeout(()=>{const s=$('#sheet');if(s&&!s.classList.contains('open')&&screen!=='table')openClaimUsername('');},1200);
+  /* a guest still using a registered username as a nickname (saved before names were locked) picks a new one next time */
+  if(FB.user.isAnonymous&&myName()){const k=myName().toLowerCase();
+    if(/^[a-z0-9_.-]+$/.test(k)&&(k===ADMIN_NAME||await unameOwner(k))){ls.del('lg-name');if(screen==='home')renderHome();}}
 }catch(e){console.warn('Firebase unavailable; local save still works',e);}}
 
 /* live player count for the Dhivehi Games home page: a tiny anonymous check-in once a minute while Digu is on screen */
@@ -935,7 +961,7 @@ async function loadWinsLeaderboard(){
         return compact
           ? `<div class="eqrow"><span><small>${medal}</small>${esc(x.name||'Digu Player')}</span><b>${wins} wins</b></div>`
           : `<div class="eqrow"><span><small>${medal} · ${games} games · ${rate}% win rate</small>${esc(x.name||'Digu Player')}</span><b>${wins} wins</b></div>`;
-      }).join('');
+      }).join('')+(!compact&&authIsGuest()?'<p class="muted" style="margin:10px 0 0;font-size:12px">Only registered players are ranked. Register to get ranked; your wins so far come with you.</p>':'');
     });
   }catch(e){
     boxes.forEach(box=>box.innerHTML='<p class="muted">Leaderboard unavailable right now.</p>');
@@ -962,10 +988,13 @@ async function openTop10(){sheet(`<div class="grab"></div><h2>Top 10 players</h2
     if(!rows.length){box.innerHTML='<p class="muted lbmsg">No wins recorded yet. Be the first!</p>';return;}
     const inTop=rows.some(lbMe);
     box.innerHTML=`<div class="lblist">${rows.map((x,i)=>`<div class="lbrow${lbMe(x)?' lbme':''}"><span class="lbn">${i+1}</span><span class="lbf">${lbFace(x,36)}</span><span class="lbt"><b>${esc(x.name||'Digu Player')}${lbMe(x)?' (you)':''}</b><small>${esc(lbTitle(x))}</small></span><span class="lbs"><b>${winsTxt(x.wins)}</b><small>${compactNum(x.xp|0)} XP</small></span></div>`).join('')}</div><div id="lbmine"></div>`;
+    /* only registered players are ranked: a guest (or an account without a username yet) gets a nudge instead of a rank */
+    if(!inTop&&(authIsGuest()||!lockedUn())){const m=$('#lbmine'),g=authIsGuest();
+      if(m)m.innerHTML=`<div class="lbrow lbme mine"><span class="lbn">–</span><span class="lbf">${avatarHTML(meP(),0,'',36)}</span><span class="lbt"><b>${myName()?esc(myName())+' (you)':'You'}</b><small>${g?'Guests aren’t ranked':'Choose a username to get ranked'}</small></span><span class="lbs"><button class="btn primary sm" data-a="${g?'acctNew':'claimOpen'}">${g?'Register':'Choose'}</button></span></div><p class="muted" style="margin:8px 0 0;font-size:12px;text-align:center">${g?'Register to get ranked. Your wins so far come with you.':'Your wins count once you pick a username.'}</p>`;}
     /* your own rank when you're outside the top 10: one count query, only for a signed-in account with a win */
-    if(!inTop&&FB.user&&!FB.user.isAnonymous&&FB.getCountFromServer&&(INV.stats.wins|0)>0){
+    else if(!inTop&&FB.user&&!FB.user.isAnonymous&&FB.getCountFromServer&&(INV.stats.wins|0)>0){
       try{const r=await FB.getCountFromServer(FB.query(FB.collection(FB.db,'players'),FB.where('wins','>',INV.stats.wins|0)));const m=$('#lbmine');
-        if(m)m.innerHTML=`<div class="lbrow lbme mine"><span class="lbn">${(r.data().count|0)+1}</span><span class="lbf">${avatarHTML(meP(),0,'',36)}</span><span class="lbt"><b>${esc(myName()||'You')} (you)</b><small>${esc(LEVELS[levelIdx(INV.xp)][1])}</small></span><span class="lbs"><b>${winsTxt(INV.stats.wins)}</b><small>${compactNum(INV.xp|0)} XP</small></span></div>`;}catch(e){}}
+        if(m)m.innerHTML=`<div class="lbrow lbme mine"><span class="lbn">${(r.data().count|0)+1}</span><span class="lbf">${avatarHTML(meP(),0,'',36)}</span><span class="lbt"><b>${esc(lockedDisplay(lockedUn())||myName()||'You')} (you)</b><small>${esc(LEVELS[levelIdx(INV.xp)][1])}</small></span><span class="lbs"><b>${winsTxt(INV.stats.wins)}</b><small>${compactNum(INV.xp|0)} XP</small></span></div>`;}catch(e){}}
   }catch(e){const box=$('#lbfull');if(box)box.innerHTML='<p class="muted lbmsg">Leaderboard unavailable right now.</p>';}}
 
 const buzz=ms=>{try{if(navigator.userActivation&&!navigator.userActivation.hasBeenActive)return;navigator.vibrate&&navigator.vibrate(ms)}catch(e){}};
@@ -1292,18 +1321,30 @@ let profileAfter=null,profPick='manta',profColor='',profMode='char',profMsg='';
 /* name + look: the cartoon character or a sea-creature badge */
 function openProfile(after,msg){profileAfter=after||null;profMsg=msg||'';profPick=myPiece();profColor=myColor()||PC[0];profMode=avMode();drawProfileSheet(myName());
 if(!myName())setTimeout(()=>{const i=$('#pnm');i&&i.focus();},350);}
-function drawProfileSheet(nm){const ch=DGA()?myChar():null;
+function drawProfileSheet(nm){const ch=DGA()?myChar():null,lun=lockedUn();
+if(lun&&String(nm||'').toLowerCase()!==lun.toLowerCase())nm=lockedDisplay(lun);
 sheet(`<div class="grab"></div><h2>Your profile</h2>${profMsg?`<p class="muted" style="margin:4px 0 0">${esc(profMsg)}</p>`:''}
-<label class="f" for="pnm" style="margin-top:14px">Your name</label><input class="in" id="pnm" maxlength="14" value="${esc(nm)}" placeholder="Your name" autocomplete="nickname" enterkeyhint="done">
+<label class="f" for="pnm" style="margin-top:14px">Your name</label><input class="in" id="pnm" maxlength="14" value="${esc(nm)}" placeholder="Your name" autocomplete="nickname" enterkeyhint="done"${lun?' aria-describedby="pnmlock" autocapitalize="none" spellcheck="false"':''}>
+${lun?`<p class="muted" id="pnmlock" style="margin:6px 0 0;font-size:12px">🔒 Your name is your username. You can only change its capital letters.</p>`:''}
 <label class="f" style="margin-top:16px">Your look</label>
 ${DGA()?`<div class="seg" role="group" aria-label="Your look"><button data-a="profMode" data-v="char" aria-pressed="${profMode==='char'}">Character</button><button data-a="profMode" data-v="sea" aria-pressed="${profMode==='sea'}">Island Buddy</button></div>`:''}
 <div class="look" style="margin-top:12px">${profMode==='char'&&ch?`<div class="lookprev"><span class="mini"><span class="pz chr">${DGA().render(ch,{size:64})}</span></span><span class="muted" style="font-size:12.5px;line-height:1.35">Your cartoon character. Everyone at the table sees it.</span><button class="btn soft sm" data-a="charEditSheet">Edit</button></div>`:
 `<div class="pgrid">${PK.map(id=>`<button class="popt${id===profPick?' sel':''}" data-a="profPiece" data-p="${id}">${pieceHTML(id,profColor)}<span>${PIECES[id].n}</span></button>`).join('')}</div>
 <div><label class="f">Colour</label><div class="cgrid">${AVC.map(c=>`<button class="copt${c===profColor?' sel':''}" data-a="profColor" data-c="${c}" style="--sw:${c}" aria-label="Badge colour"></button>`).join('')}</div></div>`}</div>
 <div class="row"><button class="btn ghost" data-a="close">Cancel</button><button class="btn primary" data-a="saveProfile">Save</button></div>`);}
-function saveProfile(){const raw=(($('#pnm')||{}).value||'').trim();if(!raw){toast('Enter your name first.');const i=$('#pnm');i&&i.focus();return;}
+let profSaving=false;
+async function saveProfile(){const raw=(($('#pnm')||{}).value||'').trim();if(!raw){toast('Enter your name first.');const i=$('#pnm');i&&i.focus();return;}
 const nm=cleanName(raw);if(nm==='Player'&&raw.toLowerCase()!=='player'){toast('Please choose a different name.');return;}
-ls.set('lg-name',nm);ls.set('dd-piece',profPick);if(profColor)ls.set('dd-color',profColor);setAvMode(profMode);cacheAvatar();closeSheet();lookChanged();
+const lun=lockedUn();
+/* a registered account's name is its username: only its capital letters may change */
+if(lun&&nm.toLowerCase()!==lun.toLowerCase()){toast('Your name is your username.');const i=$('#pnm');if(i)i.value=lockedDisplay(lun);return;}
+/* a guest can't borrow a registered username as a nickname */
+if(!lun){const key=nm.toLowerCase();
+ if(key===ADMIN_NAME){toast('That name is registered. Log in or pick another.',4500);return;}
+ if(/^[a-z0-9_.-]+$/.test(key)){if(profSaving)return;profSaving=true;
+  try{if(await unameOwner(key)){toast('That name is registered. Log in or pick another.',4500);return;}}finally{profSaving=false;}
+  if(!$('#pnm'))return;}}
+ls.set('lg-name',nm);if(lun)fbQueueSave();ls.set('dd-piece',profPick);if(profColor)ls.set('dd-color',profColor);setAvMode(profMode);cacheAvatar();closeSheet();lookChanged();
 const f=profileAfter;profileAfter=null;if(f)f();else rerenderMenu();}
 function cacheAvatar(){try{ls.set('dg-av',JSON.stringify({c:myColor()||PC[0],s:(PIECES[myPiece()]||PIECES.manta).s}));}catch(e){}}
 function needName(then){if(myName())return true;openProfile(then,'Choose a name so other players know who you are.');return false;}
@@ -1432,7 +1473,7 @@ async function claimUsername(){const u=FB.auth&&FB.auth.currentUser;if(!u||u.isA
  try{const o=await unameOwner(name);if(o&&o!==u.uid){toast('That username is already taken.');return;}
   await FB.U.linkWithCredential(u,FB.EmailAuthProvider.credential(usernameEmail(name),randomPass()));
   FB.user=FB.auth.currentUser;await reserveUsername(name);
-  ls.set('dd-auth-username',name);ls.set('lg-name',name);await fbSaveNow();
+  ls.set('dd-auth-username',name);ls.set('lg-name',cleanName(raw).toLowerCase()===name?cleanName(raw):name);await fbSaveNow();
   closeSheet();toast('Username saved ✓');if(screen==='profile')renderProfile();else renderHome();
  }catch(e){const c=(e&&e.code)||'';
   toast(c==='auth/email-already-in-use'||c==='auth/credential-already-in-use'?'That username is already taken.'
@@ -1521,7 +1562,11 @@ async function authDo(kind){
    if(kind==='register'){
      /* a name kept by an account that switched to a recovery email is still taken */
      if(await unameOwner(user)){toast('That username is already taken.',5000);return;}
-     cred=await FB.createUserWithEmailAndPassword(FB.auth,email,pass);
+     /* a guest LINKS the new username to the account it is already using: same uid, so its stats simply carry over and nothing is left behind */
+     const cur=FB.auth.currentUser;
+     cred=cur&&cur.isAnonymous&&FB.U&&FB.U.linkWithCredential
+       ?await FB.U.linkWithCredential(cur,FB.EmailAuthProvider.credential(email,pass))
+       :await FB.createUserWithEmailAndPassword(FB.auth,email,pass);
    }else{
      try{cred=await FB.signInWithEmailAndPassword(FB.auth,email,pass);}
      catch(firstErr){
@@ -1532,17 +1577,21 @@ async function authDo(kind){
        }else throw firstErr;
      }
    }
-   FB.user=cred.user; reloadBlk();
-   if(isEmail)user=FB.user.uid===ADMIN_UID?ADMIN_NAME:(normalUsername(raw.split('@')[0])||'player');
+   FB.user=cred.user; reloadBlk(); lbCache=null;
+   /* the name is the account's username: from its sign-in email, else its usernames/ reservation (recovery-email logins) */
+   if(isEmail)user=FB.user.uid===ADMIN_UID?ADMIN_NAME:(acctUsernameOf(FB.user)||(await usernameByUid(FB.user.uid))||normalUsername(raw.split('@')[0])||'player');
    ls.set('dd-auth-username',user);
-   ls.set('lg-name',user);
+   /* keep the capital letters the player typed (Strudel for strudel), never other letters */
+   const typed=cleanName(raw);
+   ls.set('lg-name',!isEmail&&typed.toLowerCase()===user?typed:user);
    await fbLoadAndMerge();
    applyAdminTestAccount();
    syncAcctName();
    closeSheet(); toast(kind==='register'?'Account created ✓':'Logged in ✓'); renderHome();
  }catch(e){
    const c=(e&&e.code)||'';
-   const msg=c==='auth/email-already-in-use'?'That username is already taken.'
+   const msg=c==='auth/email-already-in-use'||c==='auth/credential-already-in-use'?'That username is already taken. If it’s yours, tap Log in.'
+     :c==='auth/provider-already-linked'?'This account already has a username.'
      :/invalid-credential|user-not-found|wrong-password|invalid-email/.test(c)?(isEmail?'Email or password is incorrect.':'Username or password is incorrect.')+' If you added a recovery email, you can log in with it.'
      :c==='auth/too-many-requests'?'Too many attempts. Try again in a few minutes.'
      :c==='auth/operation-not-allowed'?'Password sign-in is turned off in Firebase.'
@@ -1553,7 +1602,9 @@ async function authDo(kind){
 }
 async function authLogout(){try{
   await FB.signOut(FB.auth);
-  const U=await import('https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js');
+  /* the next guest on this phone must not inherit the registered (locked) name */
+  ['lg-name','dd-auth-username'].forEach(k=>ls.del(k));acctUnCache={uid:'',un:''};lbCache=null;
+  const U=FB.U||await import('https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js');
   const cred=await U.signInAnonymously(FB.auth); FB.user=cred.user; reloadBlk();
   INV.shells=WELCOME; INV.xp=0; INV.owned={}; INV.eq={}; INV.hist=[{id:'welcome',t:Date.now(),how:'gift',shells:WELCOME}];
   INV.stats={hands:0,gins:0,big:0,games:0,wins:0,online:0,best:null}; INV.aw=[]; INV.day=''; INV.dayEarned=0;
@@ -2891,5 +2942,6 @@ idle(()=>warmUp(),{timeout:2500});
 })();
 </script>
 <script>if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("/sw.js").catch(()=>{}));</script>
+<script src="../shared/stats.js" defer></script>
 </body>
 </html>

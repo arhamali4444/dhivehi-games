@@ -163,6 +163,19 @@ function fb(){if(fbP)return fbP;
 let fbaP=null;
 function fbAuth(){if(fbaP)return fbaP;fbaP=Promise.all([fb(),import(FBV+'firebase-auth.js')]).then(([f,U])=>({f,U,auth:U.getAuth(f.app)})).catch(e=>{fbaP=null;throw e;});return fbaP;}
 
+/* ---------- locked names (same rule as Digu) ----------
+   A registered player (Digu keeps their username in dd-auth-username) always plays as that username, their own capital
+   letters kept. A guest can't take a registered username (usernames/{name}, read-only check, cached per name). */
+const regName=()=>(ls.get('dd-auth-username')||'').trim().toLowerCase();
+const unameKey=n=>{const k=String(n||'').trim().toLowerCase();return /^[a-z0-9_.-]{1,14}$/.test(k)?k:'';};
+const unameSeen=new Map();
+async function unameTaken(n){const k=unameKey(n);if(!k)return false;if(k==='dangerous')return true;if(unameSeen.has(k))return unameSeen.get(k);
+ try{const f=await fb();const s=await f.F.getDoc(f.F.doc(f.db,'usernames',k));unameSeen.set(k,s.exists());return s.exists();}catch(e){return false;}}
+function lockedName(n){const un=regName();if(!un||testName())return n;return String(n||'').toLowerCase()===un?n:un;}
+/* a guest's name that is known to be registered (false while the first check is still running) */
+function guestTaken(n){if(regName()||testName())return false;const k=unameKey(n);if(!k)return false;if(k==='dangerous')return true;
+ if(!unameSeen.has(k)){unameTaken(k);return false;}return unameSeen.get(k);}
+
 /* ---------- icons ---------- */
 const SV=(p,extra)=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"${extra||''}>${p}</svg>`;
 const IC={
@@ -326,7 +339,16 @@ function create(cfg){
  const R={};
 
  /* ---------------- helpers ---------------- */
- const meInfo=()=>{let m={};try{m=cfg.me?cfg.me()||{}:{};}catch(e){}return{name:cleanName(m.name),look:validLook(m.look)};};
+ const meInfo=()=>{let m={};try{m=cfg.me?cfg.me()||{}:{};}catch(e){}return{name:cleanName(lockedName(cleanName(m.name))),look:validLook(m.look)};};
+ /* the hub's name field: registered players keep their username; a guest can't take a registered one */
+ function setNameSafe(raw){let v=cleanName(raw);if(!v||!cfg.setName)return;
+  if(regName()&&!testName()&&v.toLowerCase()!==regName()){v=lockedName(v);toast('Your name is your username.');const e=$i('dgnName');if(e)e.value=v;}
+  else if(!regName()&&!testName()&&unameKey(v)){if(guestTaken(v)){toast('That name is registered. Log in or pick another.',4500);return;}
+   /* not checked yet: keep it for now, and put the old name back if it turns out to be registered */
+   const prev=meInfo().name;
+   unameTaken(v).then(t=>{if(!t||regName())return;if(meInfo().name===v){try{cfg.setName(prev);}catch(x){}}
+    toast('That name is registered. Log in or pick another.',4500);const e=$i('dgnName');if(e&&cleanName(e.value)===v){e.value=prev;e.focus();}});}
+  try{cfg.setName(v);}catch(x){}}
  function validLook(l){if(!l||typeof l!=='object')return null;try{const s=JSON.stringify(l);return s.length<=3000?JSON.parse(s):null;}catch(e){return null;}}
  const seatOf=id=>T&&T.players?T.players.find(p=>p.id===id):null;
  const seated=id=>{const s=seatOf(id);return !!s&&!s.gone;};
@@ -619,7 +641,7 @@ function create(cfg){
  function lobbySend(obj){if(!role||!T||T.status!=='lobby'||!seated(myId))return;if(role==='host')lobbyMsg(myId,obj);else joinSend({k:'lob',d:obj});}
 
  /* ---------------- Quick Match ---------------- */
- async function quickMatch(){if(!netOK()||!needName()||!localGuard({quick:true}))return;const r=++run;vcStop();closeNet();role=null;T=null;closeHub();showQuick('Connecting…');warm();
+ async function quickMatch(){if(!netOK()||!(await needNameOK())||!localGuard({quick:true}))return;const r=++run;vcStop();closeNet();role=null;T=null;closeHub();showQuick('Connecting…');warm();
   const up=pool?await anyUp(pool,10000):false;if(r!==run)return;
   if(!up){srvSet('fail');hideQuick();toast(NET_ERR,5000);return;}
   srvSet('ok');setQuick('Looking for an open table…');
@@ -635,10 +657,14 @@ function create(cfg){
   const other=openTables().filter(x=>x.q&&x.code!==n.code&&(x.c<n.created||(x.c===n.created&&x.code<n.code)))[0];if(!other)return;
   n.merging=true;const r=++run;vcStop();closeNet();role=null;T=null;hideRoom();showQuick('Joining '+other.name+'’s table…');
   setTimeout(()=>{if(r!==run)return;netJoin(other.code,{timeout:6500,onFail:()=>{if(r===run){warm();tryQuick(r,new Set([other.code]));}}});},200);}
- function joinCode(code,o){o=o||{};code=String(code||'').toUpperCase().replace(/[^A-Z]/g,'');if(!/^[A-Z]{4}$/.test(code)){toast('Table codes are 4 letters.');return;}
-  if(!o.spec&&!needName())return;const r=++run;role=null;T=null;closeHub();showQuick((o.spec?'Opening table ':'Joining table ')+code+'…');
+ async function joinCode(code,o){o=o||{};code=String(code||'').toUpperCase().replace(/[^A-Z]/g,'');if(!/^[A-Z]{4}$/.test(code)){toast('Table codes are 4 letters.');return;}
+  if(!o.spec&&!(await needNameOK()))return;const r=++run;role=null;T=null;closeHub();showQuick((o.spec?'Opening table ':'Joining table ')+code+'…');
   netJoin(code,{spec:!!o.spec,timeout:15000,onFail:m=>{if(r!==run)return;hideQuick();toast(m||'Couldn’t join that table.',5000);}});}
- function needName(){const e=document.getElementById('dgnName');if(e){const v=cleanName(e.value);if(v&&cfg.setName)try{cfg.setName(v);}catch(x){}}
+ /* needName, then (for a guest) wait for the registered-name check before sitting down */
+ async function needNameOK(){if(!needName())return false;const n=meInfo().name;
+  if(!regName()&&!testName()&&unameKey(n)&&(await unameTaken(n))){if(!UI.hubOn)openHub();toast('That name is registered. Log in or pick another.',4500);return false;}return true;}
+ function needName(){const e=document.getElementById('dgnName');if(e){const v=cleanName(e.value);if(v)setNameSafe(v);}
+  if(meInfo().name&&guestTaken(meInfo().name)){openHub();setTimeout(()=>{const i=document.getElementById('dgnName');if(i){i.focus();}},120);toast('That name is registered. Log in or pick another.',4500);return false;}
   if(meInfo().name)return true;openHub();setTimeout(()=>{const i=document.getElementById('dgnName');if(i){i.focus();}},120);toast('Choose a name first, so the others know who you are.');return false;}
 
  /* ================= VOICE (WebRTC, signalled through the table) ================= */
@@ -735,7 +761,7 @@ function create(cfg){
   r.addEventListener('click',onUIClick);
   r.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.id==='dgnCode'){e.preventDefault();joinCode(e.target.value);}if(e.key==='Enter'&&e.target.id==='dgnName'){e.preventDefault();e.target.blur();}});
   r.addEventListener('input',e=>{if(e.target.id==='dgnCode')e.target.value=e.target.value.toUpperCase().replace(/[^A-Z]/g,'').slice(0,4);});
-  r.addEventListener('change',e=>{if(e.target.id==='dgnName'){const v=cleanName(e.target.value);if(v&&cfg.setName){try{cfg.setName(v);}catch(x){}}}});
+  r.addEventListener('change',e=>{if(e.target.id==='dgnName'){const v=cleanName(e.target.value);if(v)setNameSafe(v);}});
   document.addEventListener('keydown',e=>{if(e.key==='Escape'){if(!document.getElementById('dgnNote').hidden)closeNote();else if(!document.getElementById('dgnTray').hidden)closeTray();else if(UI.hubOn)closeHub();}});
   document.addEventListener('click',e=>{const tr=document.getElementById('dgnTray');if(tr&&!tr.hidden&&!e.target.closest('#dgnTray,[data-dgn="chat"],[data-dgn="voice"]'))closeTray();},true);
   return r;}
@@ -749,7 +775,7 @@ function create(cfg){
 
  /* ---------- hub ---------- */
  function openHub(){ensureUI();if(role){if(T&&T.status==='lobby')enterLobby();else toast('You are already at a table.');return;}
-  UI.hubOn=true;warm();presenceCount();renderHub();}
+  UI.hubOn=true;warm();presenceCount();guestTaken(meInfo().name);renderHub();}
  function closeHub(){UI.hubOn=false;const h=$i('dgnHub');if(h){h.hidden=true;h.innerHTML='';}}
  function renderHub(pre){const h=$i('dgnHub');const me=meInfo();h.hidden=false;
   h.innerHTML=`<div class="dgn-scrim" data-dgn="hubClose"></div><section class="dgn-sheet" role="dialog" aria-modal="true" aria-labelledby="dgnHt">
@@ -861,7 +887,7 @@ ${cfg.rulesNote?`<p class="dgn-fine">${esc(cfg.rulesNote)}</p>`:''}
    case 'quick':quickMatch();break;
    case 'pubPick':UI.pubPick=b.dataset.v==='1';ls.set('dgn-pub',UI.pubPick?'1':'0');b.parentNode.querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));
     {const h=$i('dgnPubHint');if(h)h.textContent=UI.pubPick?'Anyone can join from the list below, and watch once it starts.':'Only people with your code or invite link can join.';}break;
-   case 'create':if(needName())hostCreate({pub:UI.pubPick});break;
+   case 'create':needNameOK().then(ok=>{if(ok)hostCreate({pub:UI.pubPick});});break;
    case 'join':joinCode(($i('dgnCode')||{}).value);break;
    case 'joinOpen':case 'joinLive':joinCode(b.dataset.code);break;
    case 'watch':joinCode(b.dataset.code,{spec:true});break;
