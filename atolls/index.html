@@ -81,6 +81,28 @@ button:disabled{cursor:default}
 .btn .col{display:flex;flex-direction:column;align-items:center;gap:2px}
 .btn small{font:600 11px/1 Inter;opacity:.75}
 .row2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+/* home menu, same order in every game: Quick Match (big), Play with Friends, vs Computer (small), How to play */
+#home .menu .qm,#home .menu .fr{justify-content:flex-start;gap:12px;text-align:left}
+#home .menu .qm{min-height:76px;padding:10px 14px 10px 12px;border-radius:20px}
+#home .menu .fr{min-height:56px;padding:6px 14px 6px 12px;background:rgba(13,27,36,.1)}
+.qm .gi,.fr .gi{flex:none;display:grid;place-items:center}
+.qm .gi{width:42px;height:42px;border-radius:13px;background:rgba(255,255,255,.12)}
+.fr .gi{width:34px;height:34px;border-radius:11px;background:rgba(13,27,36,.08)}
+.qm .gi svg{width:21px;height:21px}.fr .gi svg{width:19px;height:19px}
+.qm .qt,.fr .qt{display:flex;flex-direction:column;align-items:flex-start;gap:3px;min-width:0}
+.qm b{font:700 17px/1.1 Unbounded,Inter,sans-serif;letter-spacing:.01em}
+.qm small,.fr small{font:500 12px/1.2 Inter;opacity:.78}
+.fr b{font:700 15px/1.15 Inter;letter-spacing:-.01em}
+.qm .lv{display:inline-flex;align-items:center;gap:6px;margin-top:2px;font:700 11px/1.2 Inter;color:#fff}
+.qm .lv i{width:7px;height:7px;border-radius:50%;background:#ff4b4b;box-shadow:0 0 0 3px rgba(255,75,75,.25);flex:none}
+.qm .lv .first{font-weight:600;opacity:.82}
+.vc{display:flex;gap:8px}.vc .btn{flex:1;min-width:0}#playBtn{white-space:nowrap}.vc.two .btn{padding:0 8px}.vc.two #playBtn svg{display:none}
+.btn.ghost{background:transparent;color:#3a4852;box-shadow:inset 0 0 0 1px rgba(13,27,36,.16);min-height:46px;font-size:14.5px;border-radius:15px}
+.btn.ghost svg{width:18px;height:18px}
+.lnk{display:block;justify-self:center;min-height:40px;padding:0 16px;font:600 13px/40px Inter;color:var(--muted);text-decoration:underline;text-decoration-color:rgba(13,27,36,.25);text-underline-offset:3px}
+@media (max-height:620px){#home .menu .qm{min-height:66px}#home .menu .fr{min-height:50px}.btn.ghost{min-height:42px}.lnk{min-height:34px;line-height:34px}}
+/* the game-mode picker lives in the vs Computer sheet */
+#sheet .modes{margin-top:4px}
 /* ---------------- game HUD ---------------- */
 #ov{position:absolute;inset:0;width:100%;height:100%;z-index:1;touch-action:none;display:block;overflow:visible}
 #ov text{font-family:Inter,system-ui,sans-serif}
@@ -360,6 +382,15 @@ button:disabled{cursor:default}
 .dgnslot .dgn-dock .dgn-ib{border-radius:14px;color:var(--ink);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
 .dgnslot .dgn-vw{background:var(--glass);color:var(--ink);box-shadow:0 0 0 .5px rgba(0,0,0,.08)}
 @media (max-width:360px){.dgnslot .dgn-vw{display:none!important}}
+/* Quick Match computer seats: a small robot tag on the avatar's top-left corner */
+.cpt{position:absolute;z-index:2;width:15px;height:15px;border-radius:50%;background:#fff;color:var(--ink);display:grid;place-items:center;box-shadow:0 1px 3px rgba(0,30,50,.35);pointer-events:none}
+.cpt svg{width:10px;height:10px}
+.pc .cpt{left:3px;top:2px}
+.seat .cpt{left:calc(50% - 24px);top:0}
+/* voice: the crossed-out mic sits top-left of a player card's avatar, clear of the card count and the name */
+#pls .pc .dgn-moff{right:auto;bottom:auto;left:-7px;top:-4px;width:15px;height:15px}
+/* at 320 px the voice dock shares the top bar: the turn line drops its small avatar to keep room for the words */
+@media (max-width:340px){.htop:has(#dgnSlot .dgn-dock:not([hidden])) .turn .dot{display:none}.htop:has(#dgnSlot .dgn-dock:not([hidden])) .turn{padding:4px 8px;font-size:12px}}
 </style>
 </head>
 
@@ -378,13 +409,13 @@ button:disabled{cursor:default}
  <div class="logo"><div class="coords">4.17° N · 73.51° E</div><h1>ATOLLS</h1><span class="rrow" aria-hidden="true"><svg viewBox="0 0 20 22"><polygon points="10.00,1.00 18.66,6.00 18.66,16.00 10.00,21.00 1.34,16.00 1.34,6.00" fill="#2F7D4A"/></svg><svg viewBox="0 0 20 22"><polygon points="10.00,1.00 18.66,6.00 18.66,16.00 10.00,21.00 1.34,16.00 1.34,6.00" fill="#C8553D"/></svg><svg viewBox="0 0 20 22"><polygon points="10.00,1.00 18.66,6.00 18.66,16.00 10.00,21.00 1.34,16.00 1.34,6.00" fill="#9BCB5A"/></svg><svg viewBox="0 0 20 22"><polygon points="10.00,1.00 18.66,6.00 18.66,16.00 10.00,21.00 1.34,16.00 1.34,6.00" fill="#E9B949"/></svg><svg viewBox="0 0 20 22"><polygon points="10.00,1.00 18.66,6.00 18.66,16.00 10.00,21.00 1.34,16.00 1.34,6.00" fill="#8C9AA8"/></svg></span><span class="dv" lang="dv" dir="rtl">އަތޮޅު</span><p>Settle · Build · Trade</p></div>
  <div class="hstack">
  <div class="menu wg">
-  <div class="modes" role="radiogroup" aria-label="Game mode" id="modes"></div>
-  <button class="btn" id="resumeBtn" type="button" hidden><span class="col">Resume game<small id="resumeSub"></small></span></button>
-  <button class="btn" id="playBtn" type="button"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>Play vs computer</button>
-  <div class="row2">
-   <button class="btn alt sm" id="onlineBtn" type="button"><span class="col">Play online<small>2 to 8 players</small></span></button>
-   <button class="btn alt sm" id="howBtn" type="button">How to play</button>
+  <button class="btn qm" id="quickBtn" type="button"><span class="gi"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M13 2L4.5 13.5H11L10 22l8.5-11.5H12z"/></svg></span><span class="qt"><b>Quick Match</b><small>Play real people now</small><span class="lv" id="qmLive"><span class="first">Be the first to play</span></span></span></button>
+  <button class="btn alt fr" id="onlineBtn" type="button"><span class="gi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.2"/><path d="M3 19c.6-3.2 3-5 6-5s5.4 1.8 6 5"/><path d="M15.5 5.2a3 3 0 010 5.6M17.5 14.3c1.8.6 3 2.3 3.4 4.7"/></svg></span><span class="qt"><b>Play with Friends</b><small>Create a table, or use a code</small></span></button>
+  <div class="vc">
+   <button class="btn ghost" id="playBtn" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="8" width="14" height="11" rx="3"/><path d="M12 4v4M9.5 13h.01M14.5 13h.01"/></svg>vs Computer</button>
+   <button class="btn ghost" id="resumeBtn" type="button" hidden><span class="col">Resume game<small id="resumeSub"></small></span></button>
   </div>
+  <button class="lnk" id="howBtn" type="button">How to play</button>
  </div>
  <div class="spbox" id="spbox"></div>
  </div>
@@ -416,7 +447,7 @@ button:disabled{cursor:default}
 <div id="fx" aria-hidden="true"></div>
 <script src="../shared/avatar.js?v=10"></script>
 <script src="../shared/sponsors.js?v=6"></script>
-<script src="../shared/net.js?v=4"></script>
+<script src="../shared/net.js?v=5"></script>
 
 <script>
 'use strict';
@@ -1429,10 +1460,12 @@ const DH=(()=>{let boats=[];let last=0,raf=0,wake=0,sleepT=0;
 function renderPlayers(){const n=G.players.length,el=$('#pls');const cur=G.phase==='setup'?E.cur():G.step==='sbp'?E.sbpP():G.turn;
  const order=[...Array(n).keys()];
  const aw=i=>(G.longest.p===i?IC.route:'')+(G.army.p===i?IC.shield:'')+(G.hm.p===i?IC.anchor:'');
+ /* Quick Match computer seats carry a small "Computer" tag */
+ const cpt=i=>G.players[i].cpu?'<span class="cpt" title="Computer" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="8" width="14" height="11" rx="3"/><path d="M12 4v4M9.5 13h.01M14.5 13h.01"/></svg></span>':'',cpl=i=>G.players[i].cpu?', computer player':'';
  if(n<=4){el.className='';el.style.gridTemplateColumns=`repeat(${n},1fr)`;
-  el.innerHTML=order.map(i=>{const p=G.players[i];return `<button class="pc wg${i===cur?' on':''}" type="button" data-pl="${i}" style="--c:${p.col}" aria-label="${esc(nameOf(i))}: ${E.pubPts(i)} points, ${cnt(p.hand)} cards"><span class="av">${avHTML(i,26,null,true)}</span><span class="nc">${cnt(p.hand)}</span><i>${E.pubPts(i)+(i===ME&&!AUTO?E.vpCards(i):0)}</i><span class="awd">${aw(i)}</span><b>${esc(nameOf(i))}</b></button>`;}).join('');fitNames();}
+  el.innerHTML=order.map(i=>{const p=G.players[i];return `<button class="pc wg${i===cur?' on':''}" type="button" data-pl="${i}" style="--c:${p.col}" aria-label="${esc(nameOf(i))}${cpl(i)}: ${E.pubPts(i)} points, ${cnt(p.hand)} cards"><span class="av">${avHTML(i,26,null,true)}</span>${cpt(i)}<span class="nc">${cnt(p.hand)}</span><i>${E.pubPts(i)+(i===ME&&!AUTO?E.vpCards(i):0)}</i><span class="awd">${aw(i)}</span><b>${esc(nameOf(i))}</b></button>`;}).join('');fitNames();}
  else{el.className='wg cmp';el.style.gridTemplateColumns='';
-  el.innerHTML=order.map(i=>{const p=G.players[i];return `<button class="seat${i===cur?' on':''}" type="button" data-pl="${i}" style="--c:${p.col}" aria-label="${esc(nameOf(i))}: ${E.pubPts(i)} points, ${cnt(p.hand)} cards"><span class="av">${avHTML(i,34,null,true)}</span><span class="nc">${cnt(p.hand)}</span><i>${E.pubPts(i)+(i===ME&&!AUTO?E.vpCards(i):0)}</i></button>`;}).join('');}}
+  el.innerHTML=order.map(i=>{const p=G.players[i];return `<button class="seat${i===cur?' on':''}" type="button" data-pl="${i}" style="--c:${p.col}" aria-label="${esc(nameOf(i))}${cpl(i)}: ${E.pubPts(i)} points, ${cnt(p.hand)} cards"><span class="av">${avHTML(i,34,null,true)}</span>${cpt(i)}<span class="nc">${cnt(p.hand)}</span><i>${E.pubPts(i)+(i===ME&&!AUTO?E.vpCards(i):0)}</i></button>`;}).join('');}}
 /* player names are never cut off: shrink a long name a little, then let it wrap onto a second line */
 function fitNames(){$$('#pls .pc b').forEach(b=>{let f=12;b.style.fontSize='';b.classList.remove('wrap');while(b.scrollWidth>b.clientWidth+.5&&f>9){f-=.5;b.style.fontSize=f+'px';}if(b.scrollWidth>b.clientWidth+.5)b.classList.add('wrap');});}
 const setupNth=()=>['first','second','third'][Math.min(2,Math.floor(G.setup.i/G.players.length))];
@@ -1514,7 +1547,9 @@ async function pump(){if(!G||SCREEN!=='game')return;if(BUSY){kick(120);return;}
  OFFER_T0=0;const who=E.actors();if(!who.length)return;
  if(G.step==='discard'){const b=who.find(isBot);if(b!=null){await sleep(260);if(G!==g||G.seq!==seq){kick();return;}await run(b,AI.next(b));return;}humanTurn();return;}
  const p=who[0];
- if(isBot(p)){await sleep(botDelay());if(G!==g||G.seq!==seq||BUSY){kick();return;}let a=AI.next(p);
+ /* Quick Match: someone waiting takes this computer seat now, at the start of its turn (checked again after the pause) */
+ if(isBot(p)&&cpuTurnBreak(p)){humanTurn();return;}
+ if(isBot(p)){await sleep(botDelay());if(G!==g||G.seq!==seq||BUSY||!isBot(p)){kick();return;}if(cpuTurnBreak(p)){kick();return;}let a=AI.next(p);
   if(!a)a=G.step==='main'?{t:'end'}:G.step==='sbp'?{t:'done'}:null;if(!a){console.warn('AI has no move',G.step);return;}
   const err=await run(p,a);if(err){const fb=G.offer&&G.offer.from===p?{t:'cancel'}:G.step==='main'?{t:'end'}:G.step==='sbp'?{t:'done'}:null;if(fb)await run(p,fb);else console.warn('AI error',err,a);}return;}
  humanTurn();}
@@ -1676,7 +1711,13 @@ function openMenu(){openSheet('menu',`<div class="grab"></div><div class="sh"><h
  <button class="tg" type="button" role="switch" aria-checked="${SND.on}" data-m="sound"><span class="tt"><b>Sound</b><small>Soft effects for dice, building and trades</small></span><span class="sw2"></span></button>
  <button class="tg" type="button" role="switch" aria-checked="${SPEEDF<1}" data-m="speed"><span class="tt"><b>Fast computer players</b><small>Shorter pauses between their moves</small></span><span class="sw2"></span></button>
  <div style="display:grid;gap:8px;margin-top:12px"><button class="btn alt" type="button" data-m="score">Scoreboard</button><button class="btn alt" type="button" data-m="rules">How to play</button>
- <button class="btn alt" type="button" data-m="legend">Resources key</button>${ONLINE?`<button class="btn red" type="button" data-m="home">Leave table</button>${ME>=0&&G&&G.phase!=='over'?'<p style="font:500 12px/1.4 Inter;color:var(--muted);margin:2px 2px 0">If you leave, the computer plays your seat to the end of the game.</p>':''}`:'<button class="btn alt" type="button" data-m="home">Save and exit</button><button class="btn red" type="button" data-m="new">Quit and start a new game</button>'}</div>`);}
+ <button class="btn alt" type="button" data-m="legend">Resources key</button>${ONLINE?`<button class="btn red" type="button" data-m="leave">Leave table</button>${ME>=0&&G&&G.phase!=='over'?'<p style="font:500 12px/1.4 Inter;color:var(--muted);margin:2px 2px 0">If you leave, the computer plays your seat to the end of the game.</p>':''}`:'<button class="btn alt" type="button" data-m="home">Save &amp; quit</button><button class="btn red" type="button" data-m="quit">Quit to lobby</button>'}</div>`);}
+/* vs Computer: quit without saving, after a confirm (the themed sheet from net.js, or a second tap without it) */
+async function quitAsk(t){let ok=false;if(NET&&NET.ask){closeSheet(true);ok=await NET.ask({title:'Quit this game?',text:'This game ends and is not saved. You go back to the lobby.',ok:'Quit to lobby',cancel:'Keep playing'});}
+ else if(t&&t.dataset.sure)ok=true;else{if(t){t.dataset.sure='1';t.textContent='Tap again to quit';}return;}
+ if(!ok||ONLINE)return;ls.del(SAVE_KEY);G=null;showHome();}
+/* online: leave the table after a confirm; the computer plays a seated player's seat on */
+function leaveAsk(){closeSheet(true);if(NET&&NET.leaveAsk)NET.leaveAsk();else if(NET)NET.leave();}
 /* ---------- reveal a new Raajje card ---------- */
 function revealCard(k,nm){return new Promise(res=>{if(FAST){res();return;}const d=document.createElement('div');d.className='reveal';d.setAttribute('role','dialog');d.setAttribute('aria-label','New Raajje card');
  d.innerHTML=`<div class="rays"></div><div class="rcard"><div class="art">${cardArt(k)}</div><div class="kind">Raajje card</div><h3>${k==='vp'?esc(nm||'Victory point'):CARD[k].n}</h3><p>${k==='vp'?'Worth 1 point. Kept hidden until it wins you the game.':CARD[k].d}</p></div>
@@ -1713,9 +1754,9 @@ $('#sheet').addEventListener('click',async e=>{if(e.target.closest('[data-lr]'))
   const i=+t.dataset.d,need=G.discard[ME];if(DSC.includes(i))DSC=DSC.filter(x=>x!==i);else if(DSC.length<need)DSC.push(i);SND.tick();renderDiscard();return;}
  if(t.dataset.v!=null&&SHEET==='steal'){closeSheet(true);await run(ME,{t:'steal',from:+t.dataset.v});return;}
  if(t.dataset.m){const m=t.dataset.m;if(m==='sound'){SND.set(!SND.on);openMenu();if(SND.on)SND.tick();}else if(m==='speed'){SPEEDF=SPEEDF<1?1:.5;ls.set('atolls-speed',SPEEDF<1?'fast':'normal');openMenu();}
-  else if(m==='score')openScore();else if(m==='rules')openRules();else if(m==='legend'){closeSheet();LEGEND.show();}else if(m==='home'){if(ONLINE){closeSheet(true);NET.leave();return;}save();showHome();}else if(m==='new'){if(ONLINE)return;if(t.dataset.sure){ls.del(SAVE_KEY);G=null;showHome();openSetup();}else{t.dataset.sure='1';t.textContent='Tap again to quit this game';}}return;}
+  else if(m==='score')openScore();else if(m==='rules')openRules();else if(m==='legend'){closeSheet();LEGEND.show();}else if(m==='home'){if(ONLINE){leaveAsk();return;}save();showHome();}else if(m==='leave'){leaveAsk();}else if(m==='quit'){if(ONLINE)return;quitAsk(t);}return;}
  if(t.dataset.s)setupClick(t);
- if(t.dataset.a){if(t.dataset.a==='again'){closeSheet(true);if(ONLINE)NET.again();else newGame(LASTSETUP);}else if(t.dataset.a==='home'){closeSheet(true);if(ONLINE)NET.leave();else showHome();}else if(t.dataset.a==='score')openScore();}});
+ if(t.dataset.a){if(t.dataset.a==='again'){closeSheet(true);if(ONLINE)NET.again();else newGame(LASTSETUP);}else if(t.dataset.a==='home'){if(ONLINE)leaveAsk();else{closeSheet(true);showHome();}}else if(t.dataset.a==='score')openScore();}});
 
 /* ---------- HUD clicks ---------- */
 $('#acts').addEventListener('click',async e=>{const b=e.target.closest('button');if(!b||b.disabled||BUSY||!G)return;SND.unlock();
@@ -1787,11 +1828,14 @@ function modeIcon(k){const rows={duel:[3,4,5,4,3],standard:[3,4,5,4,3],big:[3,4,
  if(k==='hop'){s=`<circle cx="15" cy="12" r="5.5" fill="currentColor"/>${[[4,4],[26,5],[5,20],[25,20],[15,1]].map(p=>`<circle cx="${p[0]}" cy="${p[1]}" r="2.2" fill="currentColor" opacity=".7"/>`).join('')}`;return `<svg viewBox="0 0 30 24" aria-hidden="true">${s}</svg>`;}
  const R=2.2,mx=Math.max(...rows),h=rows.length;rows.forEach((n,i)=>{for(let j=0;j<n;j++){const x=15+(j-(n-1)/2)*R*1.8,y=12+(i-(h-1)/2)*R*1.55;s+=`<circle cx="${f1(x)}" cy="${f1(y)}" r="${R*.85}" fill="currentColor"/>`;}});
  return `<svg viewBox="0 0 30 24" aria-hidden="true">${s}</svg>`;}
-function renderModes(){$('#modes').innerHTML=['duel','standard','big','grand','hop'].map(k=>`<button class="mode" type="button" role="radio" aria-checked="${HMODE===k}" data-mode="${k}">${modeIcon(k)}<span><b>${MODES[k].name}</b><small>${MODES[k].sub}</small></span></button>`).join('');}
-$('#modes').addEventListener('click',e=>{const b=e.target.closest('[data-mode]');if(!b)return;HMODE=b.dataset.mode;ls.set('atolls-mode',HMODE);SND.tick();renderModes();});
+/* the game-mode picker sits at the top of the vs Computer sheet (the home menu keeps the same order as every game) */
+function modesHTML(){return `<div class="modes" role="radiogroup" aria-label="Game mode">${['duel','standard','big','grand','hop'].map(k=>`<button class="mode" type="button" role="radio" aria-checked="${HMODE===k}" data-s="mode" data-v="${k}">${modeIcon(k)}<span><b>${MODES[k].name}</b><small>${MODES[k].sub}</small></span></button>`).join('')}</div>`;}
+/* "N playing now" on the Quick Match button (0: "Be the first to play") */
+function paintLive(n){const e=$('#qmLive');if(!e)return;n=n|0;e.innerHTML=n>0?`<i></i>${n.toLocaleString('en-US')} playing now`:'<span class="first">Be the first to play</span>';}
 function showHome(){SCREEN='home';LEGEND.hide();TMR.stop();clearTimeout(PUMPT);endSel();closeSheet(true);clearBanner();$('#game').hidden=true;$('#home').hidden=false;$('#loading').hidden=true;$('#storm').classList.remove('on');GLR.setDim(0);
- GLR.setMode('home');$('#boliN').textContent=boliCount().toLocaleString('en-US');renderModes();const s=loadSave();$('#resumeBtn').hidden=!s;$('#playBtn').classList.toggle('alt',!!s);
- if(s)$('#resumeSub').textContent=`${MODES[s.G.mode].name} · round ${Math.max(1,s.G.round)} · ${s.G.players.length} players`;
+ GLR.setMode('home');$('#boliN').textContent=boliCount().toLocaleString('en-US');const s=loadSave();$('#resumeBtn').hidden=!s;$('#home .vc').classList.toggle('two',!!s);
+ if(NET)NET.playing(paintLive);
+ if(s)$('#resumeSub').textContent=`${MODES[s.G.mode].name} · round ${Math.max(1,s.G.round)}`;
  if(!SPC&&window.DGSponsors&&DGSponsors.box){try{SPC=DGSponsors.box($('#spbox'));}catch(e){SPC=null;}}
  homeFrame();}
 function homeFrame(){$('#home .brk').style.bottom='calc(var(--sab) + '+($('#home .hstack').offsetHeight+26)+'px)';}   /* the drone frame ends above the menu */
@@ -1811,7 +1855,8 @@ function openSetup(){const M=MODES[HMODE];if(!ROSTER)ROSTER=roster();SETUP.n=Mat
  const seg=(key,list)=>`<div class="seg" role="radiogroup">${list.map(([v,l])=>`<button type="button" role="radio" aria-checked="${String(SETUP[key])===String(v)}" data-s="${key}" data-v="${v}">${l}</button>`).join('')}</div>`;
  const tog=(key,title,sub,forced)=>`<button class="tg" type="button" role="switch" aria-checked="${forced?true:!!SETUP[key]}" data-s="tog" data-v="${key}" ${forced?'disabled':''}><span class="tt"><b>${title}</b><small>${sub}</small></span><span class="sw2"></span></button>`;
  const ns=[];for(let n=M.min;n<=M.max;n++)ns.push([n,n+' players']);
- const html=`<div class="grab"></div><div class="sh"><h2 id="sheetTitle">${M.name}</h2>${X}</div>
+ const html=`<div class="grab"></div><div class="sh"><h2 id="sheetTitle">vs Computer</h2>${X}</div>
+ ${modesHTML()}
  ${ns.length>1?`<h3>Players</h3>${seg('n',ns)}`:''}
  <h3>Opponents</h3><div class="bots">${ROSTER.slice(0,SETUP.n-1).map((b,k)=>`<span style="--c:${PCOL[k+1]}"><span class="av">${(()=>{const c=botAv(b);try{return c&&window.DGAvatar?DGAvatar.render(c,{size:40}):'';}catch(e){return '';}})()}</span>${esc(b[0])}</span>`).join('')}<span><button class="mini ghost" type="button" data-s="shuffle">Shuffle</button></span></div>
  <h3>Points to win</h3>${seg('target',targets.map(v=>[v,v+' points']))}
@@ -1826,7 +1871,8 @@ function openSetup(){const M=MODES[HMODE];if(!ROSTER)ROSTER=roster();SETUP.n=Mat
  <div style="margin-top:14px"><button class="btn" type="button" data-s="start" data-focus>Start game</button></div>`;
  openSheet('setup',html);}
 function setupClick(t){const s=t.dataset.s,v=t.dataset.v;
- if(s==='n')SETUP.n=+v;else if(s==='target'){SETUP.target=+v;SETUP.tg[tgKey()]=+v;}else if(s==='map')SETUP.map=v;else if(s==='tog')SETUP[v]=!SETUP[v];else if(s==='shuffle')ROSTER=roster();
+ if(s==='mode'){if(!MODES[v])return;HMODE=v;ls.set('atolls-mode',HMODE);}
+ else if(s==='n')SETUP.n=+v;else if(s==='target'){SETUP.target=+v;SETUP.tg[tgKey()]=+v;}else if(s==='map')SETUP.map=v;else if(s==='tog')SETUP[v]=!SETUP[v];else if(s==='shuffle')ROSTER=roster();
  else if(s==='start'){ls.set('atolls-setup',JSON.stringify(SETUP));closeSheet(true);newGame();return;}
  SND.tick();ls.set('atolls-setup',JSON.stringify(SETUP));const y=$('#sheet').scrollTop;openSetup();$('#sheet').scrollTop=y;}
 let LASTSETUP=null;
@@ -1882,11 +1928,12 @@ function netView(pid){if(!G)return null;const me=G.players.findIndex(p=>p.id===p
 function netBackup(){return G?{g:JSON.parse(JSON.stringify(G)),lid:E.lid}:null;}
 function netStart(seats,opts){ONLINE=true;const n=seats.length;
  const mode=opts.board==='hop'&&n<=4?'hop':n<=2?'duel':n<=4?'standard':n<=6?'big':'grand';
- const players=seats.map((s,k)=>({name:s.name,human:true,av:s.id===MYID?myAvatar():lookOf(s.look),col:PCOL[k%PCOL.length]}));
+ /* Quick Match computer seats (s.cpu) are the game's own computer players for good: never "away", never removed */
+ const players=seats.map((s,k)=>({name:s.name,human:!s.cpu,av:s.id===MYID?myAvatar():lookOf(s.look),col:PCOL[k%PCOL.length]}));
  const t=[8,10,12].includes(+opts.target)?+opts.target:10;
  const o={target:mode==='hop'&&n>2?t+2:t,fair:opts.map!=='random',beginner:false,hm:opts.hm==='on',friendly:!!MODES[mode].friendly,fairDice:false,timer:true};
  OVERSHOWN=null;REWARD=null;for(const k in RT)delete RT[k];
- const g=E.create({mode,players,opts:o,stamp:Date.now().toString(36)});g.players.forEach((p,i)=>{p.id=seats[i].id;});E.drain();
+ const g=E.create({mode,players,opts:o,stamp:Date.now().toString(36)});g.players.forEach((p,i)=>{p.id=seats[i].id;if(seats[i].cpu)p.cpu=1;});E.drain();
  startWith(g,Math.max(0,seats.findIndex(s=>s.id===MYID)));NET.sync();}
 function netState(v){if(!v||!v.g||!Array.isArray(v.g.players))return;ONLINE=true;const g=v.g,me=g.players.findIndex(p=>p.id===MYID);
  if(!G||SCREEN!=='game'||G.id!==g.id){closeSheet(true);OVERSHOWN=null;REWARD=null;LASTLID=v.lid|0;GQ=[];startWith(g,me);return;}
@@ -1895,7 +1942,7 @@ function netState(v){if(!v||!v.g||!Array.isArray(v.g.players))return;ONLINE=true
  E.use(g);G=g;ME=me;
  const evs=(v.ev||[]).filter(x=>x[0]>LASTLID);if(evs.length&&evs[0][0]===LASTLID+1)GQ.push(...evs.map(x=>x[1]));LASTLID=Math.max(LASTLID,v.lid|0);
  guestDrain();}
-async function guestDrain(){if(GRUN)return;GRUN=true;try{while(GQ.length){const evs=GQ.splice(0);BUSY=true;renderActs();try{await animate(evs);}catch(e){console.error(e);}BUSY=false;}}finally{GRUN=false;BUSY=false;}
+async function guestDrain(){if(GRUN)return;GRUN=true;try{while(GQ.length){const evs=GQ.splice(0);if(!G)break;BUSY=true;renderActs();try{await animate(evs);}catch(e){if(G)console.error(e);}BUSY=false;}}finally{GRUN=false;BUSY=false;}
  if(!G||SCREEN!=='game')return;drawPieces();drawPirate();renderAll();if(G.phase==='over'){onOver();return;}humanTurn();}
 function netMigrate(o){ONLINE=true;const b=o.backup&&o.backup.g?o.backup:null,v=o.view,src=b?b.g:v&&v.g;if(!src){NET.again();return;}
  const g=JSON.parse(JSON.stringify(src));
@@ -1905,9 +1952,21 @@ function netMigrate(o){ONLINE=true;const b=o.backup&&o.backup.g?o.backup:null,v=
  kick();NET.sync();}
 function netDrop(pid,why){if(!netHost()||!G)return;const i=G.players.findIndex(p=>p.id===pid);if(i<0||G.players[i].afk||G.phase==='over')return;
  E.replaceWithAI(G,i);const evs=E.drain();NET.sync();animate(evs).then(()=>{renderAll();kick();});}
+/* host, Quick Match: there are no hands in Atolls, so a newcomer who is watching takes over a computer seat at the START of
+   that seat's turn (its first setup placement, or before it rolls). NET.handBreak(cpuId) calls netSeatSwap for it. */
+function cpuTurnBreak(p){if(!netHost()||!G||!NET.handBreak)return false;const pl=G.players[p];if(!pl||!pl.cpu||pl.afk||pl.human||G.offer)return false;
+ const start=G.phase==='setup'?G.setup.need==='v':G.phase==='play'&&G.turn===p&&G.step==='roll'&&!G.devPlayed;
+ return start?NET.handBreak(pl.id)>0:false;}
+/* the newcomer keeps everything the computer built and holds: only who plays the seat changes */
+function netSeatSwap(cpuId,who){if(!G||G.phase==='over'||!who||!who.id)return false;const i=G.players.findIndex(p=>p.id===cpuId);if(i<0)return false;
+ const p=G.players[i];p.id=who.id;p.name=String(who.name||'Player').slice(0,14);p.av=lookOf(who.look);p.human=true;delete p.cpu;p.afk=false;p.strikes=0;
+ for(const k in RT)delete RT[k];if(SCREEN==='game'){renderAll();kick();}NET.sync();return true;}
+/* names and looks for Quick Match computer seats: the game's own computer players */
+function netCpuSeat(i,taken){const t=new Set((taken||[]).map(x=>String(x).toLowerCase()));const b=roster().find(b=>!t.has(b[0].toLowerCase()));return b?{name:b[0],look:botAv(b)}:null;}
 function netLobby(){ONLINE=true;for(const k in RT)delete RT[k];closeSheet(true);clearBanner();G=null;showHome();}
 function netEnd(){ONLINE=false;for(const k in RT)delete RT[k];closeSheet(true);clearBanner();G=null;ME=0;showHome();}
 function initNet(){if(!window.DGNet)return;NET=DGNet.create({game:'atolls',title:'Atolls',min:2,max:8,id:MYID,
+ cpu:true,quickSize:4,cpuSeat:netCpuSeat,onSeatSwap:netSeatSwap,
  me:()=>({name:netName(),look:myAvatar()}),setName:v=>{ls.set('lg-name',v);},
  avatar:seat=>{const l=lookOf(seat.look);try{if(window.DGAvatar&&l)return DGAvatar.render(l,{size:38});}catch(e){}return '';},
  options:[{k:'board',label:'Board',def:'classic',choices:[['classic','Classic'],['hop','Island Hopping']],hint:o=>o.board==='hop'?'Home atoll plus islands to discover by sea (2 to 4 players; more players get the classic board).':'The board size follows the players: Duel for 2, Standard 3 to 4, Big Atoll 5 to 6, Grand Atoll 7 to 8.'},
@@ -1924,11 +1983,12 @@ function initNet(){if(!window.DGNet)return;NET=DGNet.create({game:'atolls',title
  toast:(t,ms)=>toast(esc(t),true),
  dockHost:()=>SCREEN==='game'?$('#dgnSlot'):null,
  avatarEl:pid=>{if(!G||SCREEN!=='game')return null;const i=G.players.findIndex(p=>p.id===pid);return i<0?null:document.querySelector(`#pls [data-pl="${i}"] .av`);}});}
-$('#onlineBtn').addEventListener('click',()=>{SND.unlock();if(NET)NET.open();else toast('Online play needs a newer browser',true);});
+$('#quickBtn').addEventListener('click',()=>{SND.unlock();if(NET)NET.quick();else toast('Online play needs a newer browser',true);});
+$('#onlineBtn').addEventListener('click',()=>{SND.unlock();if(NET)(NET.friends||NET.open)();else toast('Online play needs a newer browser',true);});
 
 /* ================================================================ BOOT + TEST HOOKS (localhost only) */
 initSwatches();showHome();
-initNet();if(NET)NET.boot();   /* invite links: ?t=CODE */
+initNet();if(NET){NET.boot();if(SCREEN==='home')NET.playing(paintLive);}   /* invite links: ?t=CODE */
 if(LOCAL&&Q.has('autostart')){const m=Q.get('mode');if(MODES[m])HMODE=m;SETUP.n=+(Q.get('n')||SETUP.n);newGame({mode:HMODE,n:Math.max(MODES[HMODE].min,Math.min(MODES[HMODE].max,SETUP.n)),opts:{target:MODES[HMODE].target,fair:true,hm:Q.has('hm'),fairDice:Q.has('fairdice'),friendly:Q.has('friendly'),timer:Q.has('timer'),beginner:Q.has('beginner')},seed:+(Q.get('seed')||0)||undefined});}
 if(LOCAL)window.ATOLLS={E,AI,MODES,simGame,checkInv,get G(){return G;},get ME(){return ME;},get ONLINE(){return ONLINE;},get NET(){return NET;},run,pump,newGame,CAM,camTo,
  sim(o){o=o||{};const cfg=o.cfg||[['duel',2],['standard',3],['standard',4],['big',5],['big',6],['grand',7],['grand',8],['hop',2],['hop',3],['hop',4]];const optsets=[{},{fair:false},{hm:true},{friendly:true},{fairDice:true},{target:8},{target:12},{beginner:true,hm:true,fairDice:true}];

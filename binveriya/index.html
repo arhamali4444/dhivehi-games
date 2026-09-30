@@ -73,7 +73,7 @@ button:disabled{cursor:default}
 #home{display:flex;flex-direction:column}
 .hhero{position:relative;z-index:2;text-align:center;padding:4px 16px 0}
 .hhero .hemb{display:block;width:clamp(48px,14vw,60px);height:auto;margin:0 auto 4px;filter:drop-shadow(0 8px 12px rgba(0,25,35,.45))}
-.hhero .thaana{font-size:clamp(16px,4.8vw,22px)}
+.hhero .thaana{font-size:clamp(16px,4.8vw,22px);margin-top:6px}
 .hhero .bw{font-size:clamp(40px,13.5vw,64px)}
 .hhero .tg{font-size:clamp(13px,3.8vw,16px);margin-top:6px}
 .tilt{position:relative;flex:1;min-height:120px;display:grid;place-items:center;perspective:900px;z-index:1}
@@ -85,6 +85,28 @@ button:disabled{cursor:default}
 .modes button{min-height:44px;font-size:12px;font-weight:800;padding:0 14px;border-radius:99px;border:0;background:rgba(8,70,88,.85);box-shadow:inset 0 0 0 1px rgba(255,255,255,.2);color:#fff}
 .modes button[aria-checked="true"]{background:#FFE3A8;color:#3A2305}
 .soon{font-size:10px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;opacity:.8}
+/* home menu: Quick Match (big, gold), Play with Friends (lagoon), vs Computer (small, outlined) */
+.btn.qmb,.btn.frb{justify-content:flex-start;gap:12px;text-align:left;padding:10px 14px}
+.btn.qmb{min-height:74px;border-radius:18px}
+.btn .gi{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;flex:none;background:rgba(255,255,255,.55);color:#3A2305}
+.btn .gi svg{width:20px;height:20px}
+.btn .qt{display:flex;flex-direction:column;min-width:0}
+.btn .qt b{font:900 20px/1.05 Fraunces,Georgia,serif}
+.btn .qt small{font-size:11.5px;margin-top:3px;opacity:.85}
+.btn .lv{display:inline-flex;align-items:center;gap:6px;font:800 11px/1 Sora,sans-serif;margin-top:6px;font-variant-numeric:tabular-nums}
+.btn .lv i{width:7px;height:7px;border-radius:50%;background:#1F7A4D;box-shadow:0 0 0 3px rgba(31,122,77,.2);animation:lvp 2s ease-in-out infinite}
+@keyframes lvp{50%{box-shadow:0 0 0 5px rgba(31,122,77,0)}}
+.btn .lv .first{opacity:.9}
+.btn.frb{min-height:58px;background:#174B5C;color:#fff;box-shadow:inset 0 0 0 1px rgba(255,255,255,.2),0 4px 0 #0B2F3B}
+.btn.frb:active:not(:disabled){box-shadow:inset 0 0 0 1px rgba(255,255,255,.2),0 1px 0 #0B2F3B}
+.btn.frb .gi{background:rgba(255,255,255,.14);color:#FFE3A8}
+.btn.frb .qt b{font-size:16px}
+.btn.cpub{min-height:44px;font-size:14px;font-weight:800;border-radius:14px;white-space:nowrap;padding:0 10px;gap:6px;background:transparent;color:#DDF1F4;box-shadow:inset 0 0 0 1px rgba(255,255,255,.24)}
+.btn.cpub:active:not(:disabled){box-shadow:inset 0 0 0 1px rgba(255,255,255,.24);transform:translateY(1px)}
+.btn.cpub svg{width:18px;height:18px}
+.menu .btn.quitb{background:transparent;color:#C0342B;box-shadow:inset 0 0 0 1.5px rgba(192,52,43,.55)}
+.menu .btn.quitb:active:not(:disabled){box-shadow:inset 0 0 0 1.5px rgba(192,52,43,.55)}
+@media (max-height:600px) and (orientation:portrait){.btn.qmb{min-height:64px;padding:8px 12px}.btn.frb{min-height:50px;padding:6px 12px}.btn .gi{width:34px;height:34px}.btn .lv{margin-top:4px}.hbtns{gap:8px}}
 /* home teaser: a scripted loop on the home board (TZ). Transform/opacity only; overlays live in .tfx */
 .tilt.tz .board{animation:none;transition:transform var(--td,1.2s) cubic-bezier(.45,.05,.2,1),opacity .5s ease}
 .tilt.tz .clogo{visibility:hidden}/* the home title is right above: no second logo under it when zoomed in */
@@ -590,6 +612,7 @@ button:disabled{cursor:default}
 .status{align-items:center;gap:6px}
 .status .chip{min-width:0;flex:0 1 auto}
 .dgnslot{display:contents}
+.pl .pfr{position:relative;display:block;flex:none;border-radius:50%}/* speaking ring + mic badge anchor (net.js avatarEl) */
 .dgnslot .dgn-dock{--dgn-dock-size:36px}
 .dgnslot .dgn-dock .dgn-ib{border-radius:12px}
 .dgnslot .dgn-vw{background:rgba(0,0,0,.25);box-shadow:inset 0 0 0 1px rgba(242,212,155,.35)}
@@ -607,21 +630,18 @@ button:disabled{cursor:default}
  </header>
  <div class="hhero">
   <svg class="hemb" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg"><defs><radialGradient id="bvhg3b" cx=".5" cy=".3" r=".85"><stop offset="0" stop-color="#2A9A6E"/><stop offset=".6" stop-color="#155E43"/><stop offset="1" stop-color="#0B3B2B"/></radialGradient><radialGradient id="bvhg3l" cx=".5" cy=".45" r=".7"><stop offset="0" stop-color="#9FF0F0"/><stop offset=".6" stop-color="#2BB7C9"/><stop offset="1" stop-color="#0E6E84"/></radialGradient><linearGradient id="bvhg3e" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFFDF7"/><stop offset="1" stop-color="#FFD2BF"/></linearGradient><linearGradient id="bvhg3g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFF1B8"/><stop offset=".45" stop-color="#F2C94C"/><stop offset="1" stop-color="#B8862B"/></linearGradient><linearGradient id="bvhg4" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".22"/><stop offset=".45" stop-color="#fff" stop-opacity="0"/></linearGradient></defs><rect x="8" y="10" width="112.0" height="112.0" rx="9" fill="#3B2412" opacity=".35"/><rect x="8" y="8" width="112.0" height="112.0" rx="9" fill="#6B4A2A"/><rect x="12" y="12" width="104.0" height="104.0" rx="4" fill="#FFF8EA"/><rect x="29.333333333333332" y="29.333333333333332" width="69.33333333333334" height="69.33333333333334" fill="url(#bvhg3l)"/><path d="M29.3 12 V29.3 M29.3 98.7 V116.0 M12 29.3 H29.3 M98.7 29.3 H116.0 M46.7 12 V29.3 M46.7 98.7 V116.0 M12 46.7 H29.3 M98.7 46.7 H116.0 M64.0 12 V29.3 M64.0 98.7 V116.0 M12 64.0 H29.3 M98.7 64.0 H116.0 M81.3 12 V29.3 M81.3 98.7 V116.0 M12 81.3 H29.3 M98.7 81.3 H116.0 M98.7 12 V29.3 M98.7 98.7 V116.0 M12 98.7 H29.3 M98.7 98.7 H116.0 " stroke="#CDBB97" stroke-width="1.2"/><rect x="29.9" y="23.3" width="16.1" height="6.0" fill="#8E5B3F"/><rect x="47.3" y="23.3" width="16.1" height="6.0" fill="#8E5B3F"/><rect x="64.6" y="23.3" width="16.1" height="6.0" fill="#62C1E5"/><rect x="81.9" y="23.3" width="16.1" height="6.0" fill="#62C1E5"/><rect x="98.7" y="29.9" width="6.0" height="16.1" fill="#E0529C"/><rect x="98.7" y="47.3" width="6.0" height="16.1" fill="#E0529C"/><rect x="98.7" y="64.6" width="6.0" height="16.1" fill="#F2994A"/><rect x="98.7" y="81.9" width="6.0" height="16.1" fill="#F2994A"/><rect x="29.9" y="98.7" width="16.1" height="6.0" fill="#E23B3B"/><rect x="47.3" y="98.7" width="16.1" height="6.0" fill="#E23B3B"/><rect x="64.6" y="98.7" width="16.1" height="6.0" fill="#F2C94C"/><rect x="81.9" y="98.7" width="16.1" height="6.0" fill="#F2C94C"/><rect x="23.3" y="29.9" width="6.0" height="16.1" fill="#2F9A5C"/><rect x="23.3" y="47.3" width="6.0" height="16.1" fill="#2F9A5C"/><rect x="23.3" y="64.6" width="6.0" height="16.1" fill="#2B59C3"/><rect x="23.3" y="81.9" width="6.0" height="16.1" fill="#2B59C3"/><ellipse cx="64" cy="66" rx="22" ry="9" fill="#CFF6F2" opacity=".7"/><ellipse cx="64" cy="65" rx="17" ry="6.5" fill="#F7E7C4"/><ellipse cx="64" cy="64" rx="10" ry="4" fill="#3F9A5A"/><rect x="80.3" y="97.7" width="19.3" height="19.3" rx="2" fill="none" stroke="#FFD24A" stroke-width="3"/><g transform="translate(90.0 98.3) scale(.34) translate(-64 -64)"><ellipse cx="64" cy="98" rx="30" ry="8" fill="#3B2412" opacity=".35"/><g stroke="#6B4A12" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"><path d="M38 90 C33 72 42 55 57 47 L90 28 L82 52 C90 66 85 84 70 92 C58 98 42 98 38 90 Z" fill="url(#bvhg3e)"/><path d="M42 88 C44 75 54 66 68 65 C62 74 59 84 52 94 C47 94 43 92 42 88 Z" fill="#F23A56"/><path d="M64 44 L74 55 M72 39 L81 49 M79 35 L86 42" fill="none"/><path d="M84 55 C86 64 84 72 78 80" fill="none" stroke-opacity=".6"/></g><circle cx="55" cy="54" r="3" fill="#fff" opacity=".85"/></g></svg>
-  <div class="thaana" dir="rtl" lang="dv">ބިންވެރިޔާ</div>
   <h1 class="bw" style="margin:0">Binveriya</h1>
+  <div class="thaana" dir="rtl" lang="dv">ބިންވެރިޔާ</div>
   <div class="tg">Own the islands. Bend the rules.</div>
  </div>
  <div class="tilt" id="tilt" aria-hidden="true"></div>
  <div class="hbtns">
-  <div class="modes" role="radiogroup" aria-label="Game length">
-   <button type="button" role="radio" aria-checked="true" data-mode="quick">Quick game · 30 min</button>
-   <button type="button" role="radio" aria-checked="false" data-mode="classic">Classic</button>
-  </div>
+  <button class="btn qmb" id="quickBtn" type="button"><span class="gi" aria-hidden="true"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M13 2 4 14h7l-1 8 9-12h-7z"/></svg></span><span class="qt"><b>Quick Match</b><small>Play real people now</small><span class="lv" id="qLive"><span class="first">Be the first to play</span></span></span></button>
+  <button class="btn frb" id="friendsBtn" type="button"><span class="gi" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.2"/><path d="M3.5 19c.6-3.2 2.8-5 5.5-5s4.9 1.8 5.5 5"/><circle cx="16.5" cy="9" r="2.6"/><path d="M15.5 14.2c2.6-.3 4.6 1.3 5 4.8"/></svg></span><span class="qt"><b>Play with Friends</b><small>Create a table, or use a code</small></span></button>
   <button class="btn em" id="resumeBtn" type="button" hidden><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg><span class="col">Resume game<small id="resumeSub"></small></span></button>
-  <button class="btn" id="playBtn" type="button"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M13 2 4 14h7l-1 8 9-12h-7z"/></svg>Play vs Computer</button>
   <div class="row">
-   <button class="btn soft" id="onlineBtn" type="button"><span class="col">Play online<span class="soon">2 to 5 players</span></span></button>
-   <button class="btn soft" id="howBtn" type="button">How to play</button>
+   <button class="btn cpub" id="playBtn" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"><rect x="5" y="7" width="14" height="12" rx="3"/><path d="M12 3v4M9.5 12h.01M14.5 12h.01M9.5 16h5" stroke-linecap="round"/></svg>vs Computer</button>
+   <button class="btn cpub" id="howBtn" type="button">How to play</button>
   </div>
  </div>
 </section>
@@ -659,7 +679,7 @@ button:disabled{cursor:default}
 <div id="toasts" aria-live="polite"></div>
 <script src="../shared/avatar.js?v=10"></script>
 <script src="../shared/sponsors.js?v=6"></script>
-<script src="../shared/net.js?v=4"></script>
+<script src="../shared/net.js?v=5"></script>
 
 <script>
 'use strict';
@@ -694,27 +714,27 @@ const SP=[
  ISL('Thilafushi','br',60,'Kaafu Atoll','thilafushi'),
  ISL('Gulhifalhu','br',80,'Kaafu Atoll','gulhifalhu'),
  TRN('Malé Ferry Terminal','Malé Ferry\nTerminal','ferry','ferry'),
- ISL('Dhiffushi','lb',100,'Kaafu Atoll','dhiffushi'),
- ISL('Hinnavaru','lb',100,'Lhaviyani Atoll','hinnavaru'),
- ISL('Thulusdhoo','lb',120,'Kaafu Atoll','thulusdhoo'),
+ ISL('Fulidhoo','lb',100,'Vaavu Atoll','fulidhoo'),
+ ISL('Thoddoo','lb',100,'Alif Alif Atoll','thoddoo'),
+ ISL('Dhiffushi','lb',120,'Kaafu Atoll','dhiffushi'),
  {k:'jail',name:'Maafushi Prison',lab:'Maafushi\nPrison'},
- ISL('Thoddoo','pk',140,'Alif Alif Atoll','thoddoo'),
- ISL('Fulidhoo','pk',160,'Vaavu Atoll','fulidhoo'),
+ ISL('Dhuvaafaru','pk',140,'Raa Atoll','dhuvaafaru'),
+ ISL('Guraidhoo','pk',160,'Kaafu Atoll','guraidhoo'),
  TRN('Hulhumalé Bus Stop','Hulhumalé\nBus Stop','bus','bus'),
  ISL('Ukulhas','or',180,'Alif Alif Atoll','ukulhas'),
  ISL('Rasdhoo','or',180,'Alif Alif Atoll','rasdhoo'),
- ISL('Guraidhoo','or',200,'Kaafu Atoll','guraidhoo'),
+ ISL('Dhigurah','or',200,'Alif Dhaal Atoll','dhigurah'),
  {k:'free',name:'Sandbank',lab:'Sandbank',sub:'Your choice'},
- ISL('Dhigurah','rd',220,'Alif Dhaal Atoll','dhigurah'),
- ISL('Eydhafushi','rd',240,'Baa Atoll','eydhafushi'),
+ ISL('Hinnavaru','rd',220,'Lhaviyani Atoll','hinnavaru'),
+ ISL('Thulusdhoo','rd',240,'Kaafu Atoll','thulusdhoo'),
  TRN('Seaplane Dock','Seaplane\nDock','seaplane','seaplane'),
- ISL('Fuvahmulah','ye',260,'Gnaviyani Atoll','fuvahmulah'),
- ISL('Hithadhoo (Addu City)','ye',260,'Addu City','hithadhoo','Hithadhoo'),
- ISL('Kulhudhuffushi','ye',280,'Haa Dhaalu Atoll','kulhudhuffushi'),
+ ISL('Hoarafushi','ye',260,'Haa Alif Atoll','hoarafushi'),
+ ISL('Eydhafushi','ye',260,'Baa Atoll','eydhafushi'),
+ ISL('Fuvahmulah','ye',280,'Gnaviyani Atoll','fuvahmulah'),
  {k:'gojail',name:'Supreme Court Verdict',lab:'Supreme Court\nVerdict'},
- ISL('Villimalé','gr',300,'Malé City','villimale'),
- ISL('Himmafushi','gr',300,'Kaafu Atoll','himmafushi'),
- ISL('Dhangethi','gr',320,'Alif Dhaal Atoll','dhangethi'),
+ ISL('Kulhudhuffushi','gr',300,'Haa Dhaalu Atoll','kulhudhuffushi'),
+ ISL('Hithadhoo (Addu City)','gr',300,'Addu City','hithadhoo','Hithadhoo'),
+ ISL('Villimalé','gr',320,'Malé City','villimale'),
  TRN('Velana Airport','Velana\nAirport','air','airport'),
  ISL('Hulhumalé','db',350,'Malé City','hulhumale'),
  ISL('Malé','db',400,'Malé City','male')];
@@ -736,12 +756,13 @@ const BLURB={
  eydhafushi:'Capital of Baa, next door to the manta bay.',
  fuvahmulah:'One big island in its own atoll: lakes, tiger sharks and no lagoon.',
  hithadhoo:'Addu City: islands joined by a causeway around the atoll ring.',
- himmafushi:'Surf breaks, souvenir shops and a view of the city.',villimalé:'The green, quiet corner of the capital.',villimale:'The green, quiet corner of the capital.',
+ villimalé:'The green, quiet corner of the capital.',villimale:'The green, quiet corner of the capital.',
  hulhumale:'The city of hope: new towers, wide roads and a city beach.',male:'The capital. Towers wall to wall, the busiest square mile around.',
  thulusdhoo:'A famous surf break, a busy harbour and a fizzy-drinks bottling plant.',
  guraidhoo:'Guesthouses, a surf point and a lagoon full of turtles.',
  kulhudhuffushi:'The big northern town, built around a mangrove lake.',
- dhangethi:'Whale shark country: boats head out every morning.',
+ dhuvaafaru:'A planned town built after the 2004 tsunami: neat streets and new homes in Raa.',
+ hoarafushi:'A big, busy island in Haa Alif, up in the far north.',
  airport:'Every holiday starts and ends here.',ferry:'Slow, cheap and always full of gossip.',
  seaplane:'Floatplanes line up at the dock, bound for the far atolls.',bus:'The city bus: air-conditioned, on time, and packed at rush hour.'};
 
@@ -768,7 +789,7 @@ const CARDS={
  n:[ // Monsoon
   {t:'Calm seas all the way. Advance to Malé.',e:'move',to:'Malé'},
   {t:'Fair winds! Advance to Start: Malé Jetty. Collect MVR 200.',e:'move',v:0},
-  {t:'The swell is up. Surf trip: advance to Himmafushi. Collect MVR 200 if you pass Start.',e:'move',to:'Himmafushi'},
+  {t:'The swell is up. Surf trip: advance to Thulusdhoo. Collect MVR 200 if you pass Start.',e:'move',to:'Thulusdhoo'},
   {t:'Sunny break. Take a day trip to Rasdhoo. Collect MVR 200 if you pass Start.',e:'move',to:'Rasdhoo'},
   {t:'Flights diverted. Go to the nearest transport. If it is owned, pay the owner twice the fare.',e:'nearR'},
   {t:'Anti-Corruption Raid! The coastguard boards every boat in the harbour. Every player with suspicion is audited.',e:'raid'},
@@ -873,7 +894,6 @@ const ART=(()=>{
   eydhafushi:(r,id)=>isle(id,160,80,95,24)+town(r,160,72,68,10,18)+mosque(190,76)+manta(70,120,1.1)+manta(110,132,.7)+manta(40,105,.6)+waves(r,2),
   fuvahmulah:(r,id)=>`<rect width="300" height="150" fill="#1C5E86" opacity=".35"/>`+`<ellipse cx="150" cy="80" rx="98" ry="52" fill="#F7E7C4"/><ellipse cx="150" cy="76" rx="90" ry="44" fill="#3F9A5A"/>`+trees(r,150,76,80,38,16)+lake(120,72,20,10)+lake(185,88,14,7)+town(r,165,56,36,8,8)+shark(50,128,1,'#5A6B78',0)+`<g stroke="#fff" stroke-width="2" fill="none" opacity=".6"><path d="M40 30q10-6 20 0t20 0"/><path d="M230 126q10-6 20 0t20 0"/></g>`,
   hithadhoo:(r,id)=>`<path d="M20 120q40-80 130-90q100 0 130 70" stroke="#BFF3F0" stroke-width="18" fill="none" opacity=".5"/><path d="M28 118q40-72 122-84q96 0 124 64" stroke="#F7E7C4" stroke-width="7" fill="none" stroke-linecap="round"/><path d="M28 118q40-72 122-84q96 0 124 64" stroke="#3F9A5A" stroke-width="3" fill="none" stroke-dasharray="40 10"/><path d="M28 118q40-72 122-84q96 0 124 64" stroke="#8E8A80" stroke-width="1.2" fill="none"/>`+isle(id,100,86,50,18)+town(r,100,80,34,8,10)+mosque(118,82)+palms(r,[[60,96],[140,96]])+dhoni(200,110,1,'#fff')+waves(r,2),
-  himmafushi:(r,id)=>isle(id,150,90,92,24)+trees(r,150,84,60,12,7)+town(r,150,82,50,8,10)+`<g fill="#F2C94C"><rect x="210" y="92" width="12" height="7"/><rect x="224" y="92" width="12" height="7" fill="#E86FA8"/></g>`+surf(30,110)+surf(220,36)+`<g opacity=".5">${tower(250,40,8,26,'#fff')}${tower(260,40,7,32,'#fff')}${tower(270,40,9,22,'#fff')}</g>`+palms(r,[[70,100],[225,100]])+waves(r,1),
   villimale:(r,id)=>isle(id,150,90,80,30)+trees(r,150,86,62,20,18,'#2E8B4F')+houses(r,100,200,86,6,['#D9383A','#8B5A2B'])+`<path d="M60 120h-40" stroke="#CFC5B0" stroke-width="3.5"/>`+`<path d="M40 132h36l-4 6h-28z" fill="#FFFDF7"/><rect x="46" y="126" width="24" height="6" fill="#1F4FA8"/>`+palms(r,[[80,104],[225,100]])+waves(r,3),
   hulhumale:(r,id)=>{let s=rect(id,20,64,260,50,'#EFE7D2')+`<path d="M20 110h260" stroke="#F7E7C4" stroke-width="10"/>`;const cs=['#FFFFFF','#E9F3F7','#CDE6F2','#F4F1EA','#DDEFE9'];for(let i=0;i<14;i++)s+=tower(30+i*17,96,12,R(r,26,48)|0,cs[(r()*cs.length)|0]);for(let i=0;i<9;i++)s+=tower(40+i*26,106,15,R(r,16,26)|0,cs[(r()*cs.length)|0]);s+=`<path d="M20 106h260" stroke="#8E8A80" stroke-width="2"/>`+palms(r,[[40,118],[90,118],[150,118],[210,118],[262,118]])+umbrellas(r,60,250,124,5)+plane(250,24,.8,'#fff',-12)+waves(r,2);return s;},
   male:(r,id)=>{let s=reef(id,150,94,125,28)+`<ellipse cx="150" cy="100" rx="128" ry="24" fill="#DAD2BE"/><path d="M22 100a128 24 0 0 0 256 0" stroke="#B9AE92" stroke-width="3" fill="none"/>`;const cs=['#F4F1EA','#F2C94C','#9FD3E6','#F7B7A3','#CDE9C9','#E6D3F7','#FFFFFF','#F9D9A8','#B8D8C8'];
@@ -886,7 +906,8 @@ const ART=(()=>{
   thulusdhoo:(r,id)=>isle(id,140,90,100,24)+trees(r,140,84,70,12,8)+houses(r,90,170,82,5)+`<rect x="190" y="76" width="34" height="18" fill="#F4F1EA"/><rect x="190" y="76" width="34" height="5" fill="#D9383A"/><rect x="214" y="62" width="6" height="16" fill="#8E8A80"/>`+harbour(60,108,50)+dhoni(80,126,.8)+surf(230,40)+surf(250,120)+palms(r,[[55,98],[228,100]])+waves(r,2),
   guraidhoo:(r,id)=>isle(id,150,88,96,26)+trees(r,150,82,68,12,8)+houses(r,100,200,80,6)+umbrellas(r,190,240,112,3)+surf(30,44)+`<g fill="#2E7D4F" opacity=".75"><ellipse cx="70" cy="126" rx="7" ry="5"/><ellipse cx="96" cy="132" rx="5" ry="4"/></g>`+dhoni(250,128,.8,'#F2C94C')+palms(r,[[64,100],[236,98]])+waves(r,2),
   kulhudhuffushi:(r,id)=>isle(id,150,86,118,32)+`<ellipse cx="190" cy="84" rx="30" ry="12" fill="#5FB7C9"/><g fill="#2E6B3E">${Array.from({length:9},(_,k)=>`<circle cx="${162+k*7}" cy="${k%2?74:95}" r="4"/>`).join('')}</g>`+town(r,110,80,52,14,20)+mosque(96,86)+harbour(40,112,60)+dhoni(70,128,.9)+waves(r,3),
-  dhangethi:(r,id)=>isle(id,160,80,84,22)+trees(r,160,75,60,10,7)+houses(r,120,200,72,6)+umbrellas(r,200,240,100,3)+shark(80,122,1.4)+speed(215,132,.8)+palms(r,[[96,90],[238,86]])+waves(r,2),
+  dhuvaafaru:(r,id)=>{let s=isle(id,150,86,112,32,0)+`<ellipse cx="150" cy="83" rx="96" ry="24" fill="#8CC56B"/><g stroke="#E9DDC0" stroke-width="3"><path d="M78 76h144M72 90h156M88 104h124"/><path d="M110 60v52M150 58v56M190 60v52"/></g>`;const roofs=['#D9383A','#1F4FA8','#2E9E5B','#F29A3A'];[[66,92,215],[80,78,229],[94,94,207]].forEach(([y,x0,x1],j)=>{for(let x=x0;x<=x1;x+=15)if(Math.abs(x-110)>4&&Math.abs(x-150)>4&&Math.abs(x-190)>4)s+=house(x|0,y,11,8,roofs[(j+((x/15)|0))%roofs.length]);});return s+mosque(150,74)+palms(r,[[46,96],[252,94],[62,110]])+harbour(214,108,44)+dhoni(244,124,.85)+waves(r,3);},
+  hoarafushi:(r,id)=>isle(id,150,82,124,30)+trees(r,150,76,96,15,12)+town(r,140,76,74,13,26)+mosque(170,80)+`<rect x="208" y="70" width="24" height="13" fill="#F4F1EA"/><rect x="208" y="70" width="24" height="4" fill="#1F4FA8"/>`+harbour(36,108,54)+dhoni(62,124,.9)+dhoni(96,127,.8,'#F2C94C')+speed(160,128,.6)+palms(r,[[36,100],[264,98],[250,106]])+waves(r,3),
   seaplane:(r,id)=>`<path d="M40 104h220v8H40z" fill="#B9A57B"/><g fill="#8E7A55">${Array.from({length:9},(_,k)=>`<rect x="${46+k*26}" y="112" width="4" height="14"/>`).join('')}</g><rect x="210" y="84" width="40" height="20" fill="#FFFDF7"/><path d="M206 86l24-10 24 10z" fill="#1F4FA8"/>`+float(90,94,1.3)+float(160,96,1.1)+float(70,40,.9)+waves(r,3),
   bus:(r,id)=>{let s=rect(id,10,58,280,58,'#EFE7D2')+`<rect x="10" y="96" width="280" height="16" fill="#6B6E70"/><path d="M16 104h268" stroke="#fff" stroke-width="1.5" stroke-dasharray="10 8"/>`;const cs=['#FFFFFF','#E9F3F7','#CDE6F2','#F4F1EA'];for(let i=0;i<10;i++)s+=tower(20+i*27,94,18,R(r,20,34)|0,cs[(r()*cs.length)|0]);
    s+=`<rect x="92" y="82" width="70" height="22" rx="4" fill="#2E9E5B"/><rect x="96" y="86" width="56" height="8" fill="#CDE6F2"/><circle cx="104" cy="105" r="3.5" fill="#15241F"/><circle cx="150" cy="105" r="3.5" fill="#15241F"/><rect x="190" y="72" width="3" height="24" fill="#5E6A70"/><rect x="184" y="68" width="15" height="8" rx="2" fill="#1F4FA8"/>`+palms(r,[[40,112],[260,112]])+waves(r,2);return s;}};
@@ -1678,7 +1699,7 @@ function buildBoard(){const cam=$('#bcam');cam.innerHTML='';BV=LAYOUT.build(cam)
 function tokXY(i){const p=G.players[i],pos=VIEW.pos[i],jailed=pos===JAIL&&p.jail;const b=LAYOUT.pos(pos,{jailed});
  const same=G.players.map((_,j)=>j).filter(j=>!G.players[j].out&&VIEW.pos[j]===pos&&(pos!==JAIL||!!(G.players[j].jail)===!!jailed));
  const n=same.length,k=same.indexOf(i);if(n<=1)return b;const a=Math.PI*2*k/n-Math.PI/2,r=n<=2?1.7:n===3?2.1:2.7;return {x:b.x+Math.cos(a)*r,y:b.y+Math.sin(a)*r};}
-function placeTokens(hopP){if(!BV)return;BV.toks.forEach((t,i)=>{const p=G.players[i];t.hidden=p.out;const xy=tokXY(i);tokAt(t,xy.x,xy.y);
+function placeTokens(hopP){if(!BV||!G)return;BV.toks.forEach((t,i)=>{const p=G.players[i];t.hidden=p.out;const xy=tokXY(i);tokAt(t,xy.x,xy.y);
  t.classList.toggle('on',i===G.turn&&!G.over);t.classList.toggle('jailed',!!p.jail&&VIEW.pos[i]===JAIL);
  if(i===hopP)hopTok(t);});}
 function deco(view,i,w,col,ini,tag){if(view.deco)view.deco(i,w,col,ini,tag);else if(view.layout.deco)view.layout.deco(view,i,w,col,ini,tag);}
@@ -1728,7 +1749,7 @@ function sizeBoard(){const W=innerWidth,H=innerHeight,land=W>H&&W>=560,root=docu
 addEventListener('resize',()=>{clearTimeout(sizeBoard.t);sizeBoard.t=setTimeout(()=>{if(SCREEN==='game')sizeBoard();else homeFit();},80);});
 
 /* ---------------------------------------------------------------- players strip + actions */
-function buildPlayers(){$('#pls').innerHTML=G.players.map((p,i)=>`<button class="pl" type="button" data-pl="${i}" style="--c:${p.col}"><span class="pfw"><span class="pf">${avHTML(i,34,null,true)}</span><i class="sus" aria-hidden="true"><b></b></i></span><span class="tx"><b>${i===ME?'You':esc(p.name)}</b><small class="cs"></small>${G.target?'<i class="goal" aria-hidden="true"><b></b></i>':''}</span><span class="tk" title="${esc(TOKENS[p.tok].n)} token">${TOKENS[p.tok].s}</span><span class="st"></span></button>`).join('');}
+function buildPlayers(){$('#pls').innerHTML=G.players.map((p,i)=>`<button class="pl" type="button" data-pl="${i}" style="--c:${p.col}"><span class="pfw"><span class="pfr"><span class="pf">${avHTML(i,34,null,true)}</span></span><i class="sus" aria-hidden="true"><b></b></i></span><span class="tx"><b>${i===ME?'You':esc(p.name)}</b><small class="cs"></small>${G.target?'<i class="goal" aria-hidden="true"><b></b></i>':''}</span><span class="tk" title="${esc(TOKENS[p.tok].n)} token">${TOKENS[p.tok].s}</span><span class="st"></span></button>`).join('');}
 function renderPlayers(){$$('#pls .pl').forEach((el,i)=>{const p=G.players[i];el.classList.toggle('on',i===G.turn&&!G.over);el.classList.toggle('out',p.out);
  el.querySelector('.cs').textContent=p.out?(p.left?'Left':'Bankrupt'):fmt(VIEW.cash[i]);
  el.querySelector('.st').innerHTML=(p.leaving?'<i title="The computer plays for this seat">Away</i>':'')+(p.jail?'<i title="In Maafushi Prison">Prison</i>':'')+(p.cards.length?`<i class="card" title="Get out of Maafushi card: leave prison free">${p.cards.length>1?p.cards.length+' ':''}Card</i>`:'');
@@ -2004,7 +2025,7 @@ function openMenu(){const p=meP();if(ONLINE){const m=NET.meta()||{};openSheet('m
  <button class="switch" role="switch" aria-checked="${SND.on}" data-a="tsound">Sound<i></i></button>
  ${ME>=0&&!p.out?`<button class="switch" role="switch" aria-checked="${!!p.mute}" data-a="tmute">Mute trade offers from computer players<i></i></button>`:''}
  <button class="btn lite sm" data-a="log">Game log</button><button class="btn lite sm" data-a="rules">How to play</button>
- <button class="btn lite sm" data-a="home">Leave table</button>
+ <button class="btn sm quitb" data-a="leave">Leave table</button>
  ${ME>=0&&!p.out&&!G.over?'<p style="font-size:12px;color:var(--muted);margin:2px 0 0">If you leave, the computer plays one more round for you. Then your buildings are removed, loans cleared and your islands are auctioned.</p>':''}</div>`);return;}
  openSheet('menu',shead('Menu','')+`<div class="menu">
  <button class="btn em sm" data-a="close">Back to the game</button>
@@ -2012,7 +2033,8 @@ function openMenu(){const p=meP();if(ONLINE){const m=NET.meta()||{};openSheet('m
  <button class="switch" role="switch" aria-checked="${speedPref}" data-a="tspeed">Fast computer turns<i></i></button>
  <button class="switch" role="switch" aria-checked="${!!p.mute}" data-a="tmute">Mute trade offers from computer players<i></i></button>
  <button class="btn lite sm" data-a="log">Game log</button><button class="btn lite sm" data-a="rules">How to play</button>
- <button class="btn lite sm" data-a="home">Save and exit</button><button class="btn lite sm" data-a="newgame">Abandon and start a new game</button></div>`);}
+ <button class="btn lite sm" data-a="home">Save &amp; quit</button><button class="btn lite sm" data-a="newgame">Abandon and start a new game</button>
+ <button class="btn sm quitb" data-a="quit">Quit to lobby</button></div>`);}
 function openLog(){openSheet('log',shead('Game log','')+`<div class="logl">${G.log.slice().reverse().map(l=>`<div>${esc(human(l.s))}</div>`).join('')}</div>`);}
 const RULES=`<div class="rules"><p><b>Binveriya</b> (ބިންވެރިޔާ, "landowner") is a Maldivian island property game for 2 to 5 players.</p>
 <h3>The board</h3><ul><li>28 spaces, 6 on each side: a pair of islands, a transport and a group of three islands. Colour groups have 2 or 3 islands.</li><li>The four transports are <b>Malé Ferry Terminal</b>, <b>Hulhumalé Bus Stop</b>, <b>Seaplane Dock</b> and <b>Velana Airport</b>.</li></ul>
@@ -2144,6 +2166,13 @@ const H={
  log(){openLog();},rules(){openRules();},
  tipsagain(b){GUIDE.reset();b.textContent='Tips are on';toast('Tips are back on');},
  home(){closeSheet();if(ONLINE){NET.leave();return;}saveGame();showHome();},
+ /* online, from the table menu: confirm, then leave (a seated player's seat goes to the computer as before) */
+ async leave(){closeSheet();if(!ONLINE||!NET)return;const p=meP(),live=!!G&&!G.over&&ME>=0&&!p.out;
+  const ok=await NET.ask({title:'Leave the table?',text:live?'The computer plays one more round for you. Then your buildings are removed, loans cleared and your islands are auctioned. You can’t come back to this game.':ME>=0?'You’ll leave this table.':'You’ll stop watching this table.',ok:'Leave table',cancel:'Stay'});
+  if(ok&&ONLINE)NET.leave();},
+ /* vs Computer: confirm, then back to the home without saving */
+ async quit(){closeSheet();if(ONLINE)return;const t={title:'Quit to lobby?',text:'This game ends and won’t be saved.',ok:'Quit',cancel:'Keep playing'};
+  const ok=NET&&NET.ask?await NET.ask(t):confirm(t.title+' '+t.text);if(!ok||ONLINE)return;ls.del('bv-save');G=null;showHome();},
  newgame(b){if(ONLINE)return;if(!b.dataset.sure){b.dataset.sure=1;b.textContent='Tap again to abandon this game';return;}ls.del('bv-save');closeSheet();G=null;showHome();openSetup();},
  again(){closeSheet();if(ONLINE){NET.again();return;}ls.del('bv-save');showHome();openSetup();},
  oldnew(){closeSheet();ls.del('bv-save');showHome();openSetup();},results(){openOver();},
@@ -2251,7 +2280,7 @@ function showChecks(title,sub,res){if(FAST)return Promise.resolve();return new P
 /* ---------------------------------------------------------------- event playback */
 let PUMPING=false,DIRTY=false,PASSED=false;
 async function pump(force){if(!G)return;if(PUMPING){DIRTY=true;return;}PUMPING=true;let any=false;
- try{for(let guard=0;guard<50;guard++){const evs=E.drain();if(!evs.length)break;any=true;document.body.classList.add('pumping');for(const ev of evs){try{await play(ev);}catch(err){console.error(err);}}}}
+ try{for(let guard=0;guard<50;guard++){const evs=E.drain();if(!evs.length)break;any=true;document.body.classList.add('pumping');for(const ev of evs){if(!G)break;try{await play(ev);}catch(err){console.error(err);}}if(!G)break;}}
  finally{PUMPING=false;document.body.classList.remove('pumping');}
  if(!G)return;if(any||force||DIRTY){DIRTY=false;G.players.forEach((p,i)=>{VIEW.pos[i]=p.pos;VIEW.cash[i]=p.cash;});render();saveGame();if(G.over)onOver();}schedule();}
 async function play(ev){const slow=ev.p!=null&&isBot(ev.p)&&!WATCH?1:1;
@@ -2259,7 +2288,7 @@ async function play(ev){const slow=ev.p!=null&&isBot(ev.p)&&!WATCH?1:1;
   case 'dice':await animDice(ev.d);break;
   case 'move':{if(BV&&BV.path)BV.path(ev.path);const n=ev.path.length,step=FAST?0:RM.matches?40:(n>12?80:165)*(isBot(ev.p)?Math.max(.6,UI_SPEED()):1);
    if(ev.p===ME&&ev.path.includes(0))PASSED=true;
-   for(const pos of ev.path){VIEW.pos[ev.p]=pos;placeTokens(ev.p);if(n<=12||pos%4===0)SND.hop();follow(ev.p);await sleep(step);}if(n)SND.land();if(BV&&BV.path)DTIMERS.push(setTimeout(()=>BV&&BV.path([]),900));break;}
+   for(const pos of ev.path){if(!G)break;VIEW.pos[ev.p]=pos;placeTokens(ev.p);if(n<=12||pos%4===0)SND.hop();follow(ev.p);await sleep(step);}if(n)SND.land();if(BV&&BV.path)DTIMERS.push(setTimeout(()=>BV&&BV.path([]),900));break;}
   case 'jail':react(ev.p,'sad',2200);VIEW.pos[ev.p]=JAIL;placeTokens(ev.p);SND.jail();if(ev.p===ME)toast('Locked up in Maafushi Prison');await sleep(450);break;
   case 'free':placeTokens();break;
   case 'land':flashCell(ev.sp);break;
@@ -2295,7 +2324,7 @@ async function play(ev){const slow=ev.p!=null&&isBot(ev.p)&&!WATCH?1:1;
   case 'retire':react(ev.p,'sad',2400);decorate();placeTokens();renderPlayers();toast(`${G.players[ev.p].name} left the table.${ev.n?' Their islands go to auction.':''}`,3500);await sleep(500);break;}}
 
 /* ---------------------------------------------------------------- scheduling (AI turns, decisions) */
-let aiTimer=null,aiSeq=-1;
+let aiTimer=null,aiSeq=-1,HBK='';
 /* the safe default when a computer player makes no move */
 const FALLBACK=pe=>({turn:{t:'roll'},buy:{t:'decline'},rent:{t:'pay'},debt:{t:'bankrupt'},post:{t:pe.again?'roll':'end'},draw:{t:'draw'},card:{t:'cardok'},sandbank:{t:'sandbank',c:'relax'},court:{t:'court'}}[pe.t]||null);
 function schedule(){if(!G||G.over||SCREEN!=='game')return;const pe=G.pend;syncDecision();
@@ -2304,6 +2333,9 @@ function schedule(){if(!G||G.over||SCREEN!=='game')return;const pe=G.pend;syncDe
  if(FAST&&pe&&pe.p===ME&&!isBot(ME)&&(pe.t==='draw'||pe.t==='card')){const key='me:'+G.seq+':'+pe.t;if(aiSeq===key)return;aiSeq=key;
   macro(()=>{if(G&&G.pend===pe)E.act(ME,pe.t==='draw'?{t:'draw'}:{t:'cardok',keep:true});aiSeq=-1;pump(true);});return;}
  if(!pe||pe.p==null||!isBot(pe.p)||pe.t==='auction')return;
+ /* online Quick Match: at the start of a computer seat's turn, a waiting newcomer takes that seat (cash, islands,
+    position, everything) and plays this turn as a person, with the normal decision clock */
+ if(pe.t==='turn'&&netHost()&&G.players[pe.p].cpu){const hk=G.id+':'+G.tn+':'+pe.p;if(HBK!==hk){HBK=hk;if(NET.handBreak(G.players[pe.p].id)>0&&!isBot(pe.p)){pump(true);return;}}}
  if(!['turn','buy','rent','debt','post','draw','card','sandbank','court'].includes(pe.t))return;const key=G.seq+':'+pe.t;if(aiSeq===key)return;aiSeq=key;clearTimeout(aiTimer);
  const base={turn:650,buy:900,rent:1000,debt:700,post:600,draw:700,card:1900,sandbank:1100,court:1000}[pe.t]*UI_SPEED();
  const run=()=>{if(!G||G.pend!==pe||SCREEN!=='game')return;const s0=G.seq;AI.step(pe.p);
@@ -2345,7 +2377,7 @@ function openOver(){if(!G||!G.over)return;const o=G.over,w=o.winner,win=w===ME&&
 let MODE=ls.get('bv-mode')==='classic'?'classic':'quick',HOMEBV=null;
 function showHome(){SCREEN='home';GUIDE.hide();clearBanner();closeDraw(true);$('#game').hidden=true;$('#home').hidden=false;$('#boliN').textContent=boliCount().toLocaleString('en-US');
  const s=loadSave();$('#resumeBtn').hidden=!s;if(s)$('#resumeSub').textContent=s.old?'Saved on the old board':`${s.G.mode==='quick'?'Quick game':s.G.target?'Goal '+fmt(s.G.target):'Classic'} · round ${s.G.round} · ${s.G.players.length} players`;
- $$('.modes button').forEach(b=>b.setAttribute('aria-checked',b.dataset.mode===MODE));
+ $$('.modes button').forEach(b=>b.setAttribute('aria-checked',b.dataset.mode===MODE));homeLive();
  if(!HOMEBV){HOMEBV=LAYOUT.build($('#tilt'));const demo={27:[0,5],26:[0,2],12:[1,0],13:[1,1],5:[2,3],6:[2,0],17:[3,0]};
   Object.entries(demo).forEach(([i,[o,h]])=>deco(HOMEBV,+i,{o,h,m:false},PCOL[o],'YIMH'[o]));
   HOMEBV.tokens.innerHTML=[['dhoni',13,0],['turtle',17,1],['manta',27,2],['seaplane',7,3]].map(([t,i,k])=>tokHTML(t,PCOL[k])).join('');$$('.tok',HOMEBV.tokens).forEach((e,j)=>{const p=LAYOUT.pos([13,17,27,7][j]);tokAt(e,p.x,p.y);});}
@@ -2563,7 +2595,9 @@ function netView(){if(!G)return null;const g=JSON.parse(JSON.stringify(G));g.dec
 function netBackup(){return G?{g:JSON.parse(JSON.stringify(G)),lid:E.lid}:null;}
 function netStart(seats,opts){ONLINE=true;const used=new Set();
  const players=seats.map((s,k)=>{const l=s.id===MYID?{av:myAvatar(),tok:SETUP.tok}:lookOf(s.look);const tok=TOKENS[l.tok]&&!used.has(l.tok)?l.tok:TOKEN_KEYS.find(t=>!used.has(t));used.add(tok);
-  return{id:s.id,name:s.name,human:true,av:l.av,tok,col:PCOL[k%PCOL.length]};});
+  /* a Quick Match computer seat is a PERMANENT computer player (human:false, cpu:1): the AI plays it and it never
+     "leaves" like a dropped person does; a newcomer can take it over at the start of its turn (netSeatSwap) */
+  return s.cpu?{id:s.id,name:s.name,human:false,cpu:1,av:l.av,tok,col:PCOL[k%PCOL.length]}:{id:s.id,name:s.name,human:true,av:l.av,tok,col:PCOL[k%PCOL.length]};});
  const mode=opts.mode==='classic'?'classic':'quick';closeSheet(false);AI.reset();OVERSHOWN=null;REWARD=null;DL=null;
  const g=E.create({mode,players,minutes:30,target:mode==='classic'?Math.max(0,+opts.target||0):0});
  startWith(g,Math.max(0,players.findIndex(p=>p.id===MYID)));NET.sync();}
@@ -2576,7 +2610,16 @@ function netMigrate(o){ONLINE=true;const b=o.backup&&o.backup.g?o.backup:null,v=
  const g=E.load(JSON.parse(JSON.stringify(src)));if(!b)E.fixDecks();E.seedLid(Math.max(b?b.lid|0:0,v?v.lid|0:0,LASTLID)+1);
  G=g;ME=g.players.findIndex(p=>p.id===MYID);DL=null;AI.reset();if(SCREEN!=='game')startWith(g,ME);else{ACTKEY='';buildPlayers();render();}
  pump(true);NET.sync();}
-function netDrop(pid,why){if(!netHost()||!G)return;const i=G.players.findIndex(p=>p.id===pid);if(i>=0)seatLeaves(i,why);}
+function netDrop(pid,why){if(!netHost()||!G)return;const i=G.players.findIndex(p=>p.id===pid);if(i>=0&&!G.players[i].cpu)seatLeaves(i,why);}
+/* host: a waiting newcomer takes over a computer seat (called through NET.handBreak(cpuId) at the start of that
+   seat's turn). They keep its cash, islands, buildings, loans, cards, suspicion, token and position. */
+function netSeatSwap(cpuId,pl){if(!netHost()||!G||G.over||!pl||!pl.id)return false;const i=G.players.findIndex(p=>p.id===cpuId);if(i<0)return false;
+ const p=G.players[i];if(p.out||!p.cpu)return false;const l=lookOf(pl.look);
+ p.id=pl.id;p.name=String(pl.name||'Player').slice(0,14);p.av=l.av;p.human=true;p.cpu=0;p.leaving=0;p.aiTurns=0;p.mute=false;
+ if(DL&&DL.p===i)DL=null;ACTKEY='';buildPlayers();render();NET.sync();return true;}
+/* a Quick Match computer seat gets one of the game's own computer players (name + face) */
+function netCpuSeat(k,taken){const t=new Set((taken||[]).map(s=>String(s).toLowerCase()));const b=BOTS.find(x=>!t.has(x[0].toLowerCase()))||BOTS[k%BOTS.length];
+ let av=null;try{if(window.DGAvatar)av=b[1]?DGAvatar.presets[b[1]]:DGAvatar.random(b[0]+'bv');}catch(e){}return{name:b[0],look:{av,tok:''}};}
 /* test pilot (localhost ?auto): a guest answers its own decisions with the simple defaults */
 function guestAuto(pe){if(!AUTO||ME<0||!pe||pe.p!==ME||!DECIDE.includes(pe.t))return;const k=[pe.t,pe.id,pe.sp,G.tn,G.seq,pe.again?1:0].join(':');if(GUESTKEY===k)return;GUESTKEY=k;
  const a=pe.t==='buy'?(meP().cash>=SP[pe.sp].price+60?{t:'buy'}:{t:'decline'}):pe.t==='debt'?{t:'bankrupt'}:FALLBACK(pe);
@@ -2588,6 +2631,7 @@ function decisionClock(){const c=$('#statusChip');if(!c||!G)return;const d=netHo
 function netLobby(){ONLINE=true;DL=null;closeSheet(false);closeDraw(true);clearBanner();G=null;showHome();}
 function netEnd(){ONLINE=false;DL=null;GDL=null;closeSheet(false);closeDraw(true);clearBanner();G=null;ME=0;showHome();}
 function initNet(){if(!window.DGNet)return;NET=DGNet.create({game:'binveriya',title:'Binveriya',min:2,max:5,id:MYID,
+ cpu:true,quickSize:4,cpuSeat:netCpuSeat,onSeatSwap:netSeatSwap,
  me:()=>({name:netName(),look:{av:myAvatar(),tok:SETUP.tok}}),setName:v=>{ls.set('bv-name',v);},
  avatar:seat=>{const l=lookOf(seat.look);try{if(window.DGAvatar&&l.av)return DGAvatar.render(l.av,{size:38});}catch(e){}return '';},
  options:[{k:'mode',label:'Game length',def:'quick',choices:[['quick','Quick · 30 min'],['classic','Classic']]},
@@ -2602,12 +2646,16 @@ function initNet(){if(!window.DGNet)return;NET=DGNet.create({game:'binveriya',ti
  onTell:d=>{if(d&&d.err){toast(String(d.err));SND.err();}},
  toast:(t,ms)=>toast(t,ms||2600),
  dockHost:()=>SCREEN==='game'?$('#dgnSlot'):null,
- avatarEl:pid=>{if(!G||SCREEN!=='game')return null;const i=G.players.findIndex(p=>p.id===pid);const el=$$('#pls .pl')[i];return el?el.querySelector('.pf'):null;}});}
-$('#onlineBtn').addEventListener('click',()=>{SND.unlock();if(NET)NET.open();else toast('Online play needs a newer browser');});
+ avatarEl:pid=>{if(!G||SCREEN!=='game')return null;const i=G.players.findIndex(p=>p.id===pid);const el=$$('#pls .pl')[i];return el?el.querySelector('.pfr'):null;}});}   /* .pfr: overflow visible, so the speaking ring sits inside it, centred */
+$('#quickBtn').addEventListener('click',()=>{SND.unlock();if(NET)NET.quick();else toast('Online play needs a newer browser');});
+$('#friendsBtn').addEventListener('click',()=>{SND.unlock();if(NET)NET.friends();else toast('Online play needs a newer browser');});
+/* home: "N playing now" on Quick Match ("Be the first to play" at 0) */
+function paintLive(n){const e=$('#qLive');if(!e)return;n=n|0;e.innerHTML=n>0?`<i></i>${n.toLocaleString('en-US')} playing now`:'<span class="first">Be the first to play</span>';}
+function homeLive(){if(NET&&NET.playing)NET.playing(paintLive);else paintLive(0);}
 
 /* ---------------------------------------------------------------- boot + test hooks */
 showHome();if(document.fonts&&document.fonts.ready)document.fonts.ready.then(homeFit);
-initNet();if(NET)NET.boot();   /* invite links: ?t=CODE */
+initNet();if(NET)NET.boot();homeLive();   /* invite links: ?t=CODE */
 if(LOCAL&&Q.has('autostart')){SETUP.n=+(Q.get('n')||4);newGame({n:SETUP.n,mode:Q.get('mode')||MODE,minutes:Q.has('min')?+Q.get('min'):undefined,target:Q.has('goal')?+Q.get('goal'):undefined});}
 window.BINVERIYA={E,AI,get G(){return G;},get ME(){return ME;},get ONLINE(){return ONLINE;},get NET(){return NET;},act:a=>doAct(a),pump,newGame,LAYOUTS,
  /* all-computer test games; target = Classic win target (0 = Last one standing) */

@@ -17,8 +17,8 @@
 <title>Dhashundhama · Dhivehi Games</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=DM+Serif+Display&family=Fraunces:ital,opsz,wght@0,9..144,900;1,9..144,700&display=swap" onload="this.onload=null;this.rel='stylesheet'">
-<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=DM+Serif+Display&family=Fraunces:ital,opsz,wght@0,9..144,900;1,9..144,700&display=swap"></noscript>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=DM+Serif+Display&family=Fraunces:ital,opsz,wght@0,9..144,900;1,9..144,700&family=Noto+Sans+Thaana:wght@600;700&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=DM+Serif+Display&family=Fraunces:ital,opsz,wght@0,9..144,900;1,9..144,700&family=Noto+Sans+Thaana:wght@600;700&display=swap"></noscript>
 <style>
 /* ================= Dhashundhama · same Island Luxe system as Digu ================= */
 :root{--ink:#241A12;--muted:#6B6354;--panel:#FFFDF8;--cream:#F7F1E6;--line:rgba(36,26,18,.12);--edge:#E6D9C0;--accent:#A8431A;--deep:#3A1D0C;
@@ -127,6 +127,7 @@ img.boli{display:inline-block;width:18px;height:18px;object-fit:contain;vertical
 .dtitle h1 span{display:block}
 .dtitle h1 span+span{font-size:.5em;letter-spacing:.42em;margin:6px -.42em 0 0;color:#FFE3A8}
 .dtitle p{margin:10px 0 0;font:italic 700 15px/1.2 Fraunces,Georgia,serif;color:#FFE3A8}
+.dtitle .dv{display:block;margin:4px 0 -6px;font:700 clamp(25px,7.8vw,33px)/1.45 'Noto Sans Thaana','MV Boli','Faruma',sans-serif;color:#FFD36E;text-shadow:0 3px 14px rgba(0,0,0,.45)}
 .modes{position:relative;display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:22px 0 0}
 .mode{position:relative;border:0;text-align:left;font:inherit;color:#fff;cursor:pointer;border-radius:22px;padding:14px;min-height:118px;display:flex;flex-direction:column;justify-content:flex-end;gap:2px;background:rgba(255,255,255,.1);box-shadow:inset 0 0 0 1px rgba(255,255,255,.2);overflow:hidden}
 .mode .mi{position:absolute;top:12px;left:12px;width:40px;height:40px;border-radius:13px;display:grid;place-items:center;background:rgba(255,255,255,.16)}
@@ -143,6 +144,15 @@ img.boli{display:inline-block;width:18px;height:18px;object-fit:contain;vertical
 .mode.quick .mt{display:flex;flex-direction:column;min-width:0;flex:1}
 .mode.quick b{font-size:19px}.mode.quick small{opacity:.85}
 .mode.quick .go{flex:none;display:grid;opacity:.7}.mode.quick .go svg{width:22px;height:22px}
+/* v5 home order: Quick Match, Play with Friends, vs Computer */
+.mode.quick .live{display:flex;align-items:center;gap:6px;margin-top:4px;font-size:11.5px;font-weight:800;opacity:.92;min-height:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mode.quick .live i{flex:none;width:7px;height:7px;border-radius:50%;background:#1C7A48;box-shadow:0 0 0 3px rgba(28,122,72,.22)}
+.mode.frd{grid-column:1/-1;min-height:74px;flex-direction:row;align-items:center;gap:14px;margin-bottom:2px}
+.mode.frd .mi{position:static;flex:none;background:rgba(255,179,71,.22)}
+.mode.frd .mt{display:flex;flex-direction:column;min-width:0;flex:1}
+.mode.frd .go{flex:none;display:grid;opacity:.6}.mode.frd .go svg{width:20px;height:20px}
+.mode.sm{min-height:98px}
+.btn.danger{background:transparent;color:#A8321A;box-shadow:inset 0 0 0 1.5px rgba(168,50,26,.5)}
 .resume{position:relative;display:flex;align-items:center;gap:10px;width:100%;margin:12px 0 0;padding:10px 10px 10px 14px;border:0;border-radius:18px;background:rgba(0,0,0,.22);box-shadow:inset 0 0 0 1px rgba(255,227,168,.32);font:inherit;font-size:12.5px;color:#fff;text-align:left;cursor:pointer;min-height:54px}
 .resume b{color:#FFE3A8}.resume .go{margin-left:auto;flex:none;font-weight:800;color:#3A2305;background:#FFE3A8;padding:8px 14px;border-radius:99px;font-size:12px}
 .panel .resume{background:#F6F0E4;color:var(--ink);box-shadow:inset 0 0 0 1px var(--edge);margin:0 0 4px}.panel .resume b{color:var(--accent)}
@@ -225,6 +235,7 @@ main.table>*{width:100%;max-width:640px;margin-left:auto;margin-right:auto}
 /* players */
 .who{position:absolute;left:0;top:0;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;gap:3px;z-index:5;width:var(--ww,84px);text-align:center;pointer-events:none}
 .who .av{position:relative;width:var(--avs,50px);height:var(--avs,50px);border-radius:50%;isolation:isolate}
+.who .avw{position:relative;display:block;width:var(--avs,50px);height:var(--avs,50px);border-radius:50%}
 .who.on .av:before{content:"";position:absolute;inset:-7px;border-radius:50%;box-shadow:0 0 14px 3px rgba(255,211,110,.75);animation:tglow 1.6s ease-in-out infinite;pointer-events:none;z-index:-1}
 @keyframes tglow{0%,100%{opacity:.45}50%{opacity:1}}
 .who .nm{font-size:12px;font-weight:700;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-shadow:0 1px 2px rgba(0,0,0,.7);margin-top:3px;line-height:1.2}
@@ -370,7 +381,7 @@ a.hsp{box-shadow:inset 0 0 0 1px var(--edge)}
 :root{--dgn-bg:#17110B;--dgn-bg2:#231A10;--dgn-fg:#FFF3E2;--dgn-muted:rgba(255,236,210,.66);--dgn-line:rgba(255,214,150,.18);--dgn-soft:rgba(255,214,150,.1);
  --dgn-acc:#D0622A;--dgn-acc-fg:#fff;--dgn-font:'Sora',system-ui,sans-serif;--dgn-head:Fraunces,Georgia,serif;--dgn-talk:rgba(255,179,71,.9);
  --dgn-room-bg:linear-gradient(180deg,rgba(10,7,4,.78),#0A0806 70%),url(beach-home.webp?v=1) center 38%/cover no-repeat,#0B0906;
- --dgn-dock-inset:calc(env(safe-area-inset-top,0px) + 60px) 10px auto auto;--dgn-watch-bottom:calc(92px + env(safe-area-inset-bottom,0px));
+ --dgn-dock-inset:calc(env(safe-area-inset-top,0px) + 60px) 10px auto auto;--dgn-watch-bottom:calc(122px + env(safe-area-inset-bottom,0px));
  --dgn-dock-size:44px;--dgn-inline-bg:rgba(8,8,6,.6);--dgn-inline-shadow:inset 0 0 0 1px rgba(255,214,150,.22);--dgn-dock-z:30}
 .mode.online .mi{background:rgba(255,179,71,.22)}
 .tools .dgn-dock .dgn-ib{border-radius:14px}
@@ -389,7 +400,7 @@ a.hsp{box-shadow:inset 0 0 0 1px var(--edge)}
 <script src="../shared/avatar.js?v=10"></script>
 <script src="../shared/cosmetics.js?v=2"></script>
 <script src="../shared/sponsors.js?v=6"></script>
-<script src="../shared/net.js?v=4"></script>
+<script src="../shared/net.js?v=5"></script>
 <script>
 (function(){
 'use strict';
@@ -472,7 +483,10 @@ const IC={
  play:sv0('<path d="M7 4v16l13-8z" fill="currentColor"/>'),
  home:sv0('<path d="M3 11l9-7 9 7M5 10v10h14V10"/>'),
  cog:sv0('<circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"/>'),
- user:sv0('<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>')
+ user:sv0('<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>'),
+ bolt:sv0('<path d="M13 2 4 14h7l-1 8 9-12h-7z" fill="currentColor" stroke-width="1.6"/>'),
+ users:sv0('<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><path d="M16 4.6a3.5 3.5 0 0 1 0 6.8M18 14a6.5 6.5 0 0 1 4 6"/>'),
+ exit:sv0('<path d="M14 4h5v16h-5"/><path d="M10 8l-4 4 4 4M6 12h10"/>')
 };
 
 /* ---------- cards: Digu faces (DM Serif index, clean pips, coral-stone arches for J Q K) ---------- */
@@ -591,7 +605,10 @@ const pauses=new Set();
 const meIdx=()=>S?Math.max(0,S.players.findIndex(p=>p.id===myId)):0;
 const oppIdx=()=>1-meIdx();
 /* every change goes through here: the host applies the action, saves and renders (phase 2: and broadcasts) */
-function send(a,p){if(!S)return false;const N=clone(S);if(!E.act(N,p==null?meIdx():p,a,Date.now()))return false;commit(N);return true;}
+function send(a,p){if(!S)return false;
+ /* online host: a newcomer waiting to play takes a computer's seat right before the cards are dealt */
+ if(a&&a.k==='deal'&&isHostOn()&&(S.status==='ready'||S.status==='gameover')){NET.handBreak();NET.handBreak(false);}
+ const N=clone(S);if(!E.act(N,p==null?meIdx():p,a,Date.now()))return false;commit(N);return true;}
 const DHLOG=[];
 function commit(N){const e=N.last;S=N;save();
  if(LOCAL&&e&&e.seq>seen){const tot=N.stacks[0].length+N.stacks[1].length+N.pile.length;DHLOG.push({t:e.t,p:e.p,c:e.c,under:e.under,match:e.match,pick:e.pick&&e.pick.n,n:e.n,why:e.why,end:e.end,w:e.w,g:N.gameNo,tot:tot,st:N.status,wins:N.wins.slice(),clock:E.clock(N,Date.now())});if(DHLOG.length>5000)DHLOG.shift();}
@@ -634,14 +651,30 @@ function lookOf(l){const A=DGA();if(!A||!l)return null;try{return A.normalize(l)
 function shiftTimes(s,d){if(s&&d)['runAt','nextAt','turnAt','pausedAt'].forEach(k=>{if(s[k])s[k]-=d;});return s;}
 function clientTick(now){if(!S||S.status!=='playing'||!S.runAt||!seatedMe()||S.turn!==meIdx()||clientSent===S.seq||now<S.nextAt)return;
  if(tapQ||(auto&&now>=S.nextAt+AUTO_MS)){const w=tapQ?'tap':'auto';tapQ=false;clientSent=S.seq;NET.send({k:'flip',why:w});}}
+/* Quick Match computer seats (net.js v5): a seat {cpu:1} is played by the same AI as vs Computer (ai:true) */
 function netStart(seats,opts){online=true;clearTimeout(nextT);
- const players=seats.map(s=>({id:s.id,name:s.name,ch:s.id===myId?myChar():lookOf(s.look)}));
+ const players=seats.map(s=>s.cpu?{id:s.id,name:s.name,ai:true,ch:lookOf(s.look)}:{id:s.id,name:s.name,ch:s.id===myId?myChar():lookOf(s.look)});
  S=E.create({bestOf:+opts.bestOf===5?5:3,players:players,first:Math.random()<.5?0:1,per:PER,limit:GAME_MS,turnMs:ONLINE_TURN});
  seen=S.seq;ovKey='';clientSent=-1;tapQ=false;pauses.clear();closeSheet(true);buildTable();openRules();
+ /* the rules card is a break: anyone who arrives now sits down in a computer's seat at once */
+ NET.handBreak(true);
  nextT=setTimeout(()=>{if(isHostOn()&&S&&S.status==='ready')send({k:'deal'});},4500);NET.sync();}
 /* host: after every change */
 function hostAfter(){clearTimeout(nextT);if(S.status==='matchover'){NET.matchOver();return;}
- if(S.status==='gameover'){const g=S.gameNo;nextT=setTimeout(()=>{if(isHostOn()&&S&&S.status==='gameover'&&S.gameNo===g){closeOv();send({k:'deal'});}},NEXT_MS);}}
+ if(S.status==='gameover'){NET.handBreak(true);const g=S.gameNo;nextT=setTimeout(()=>{if(isHostOn()&&S&&S.status==='gameover'&&S.gameNo===g){closeOv();send({k:'deal'});}},NEXT_MS);}}
+/* a new computer seat: one of the vs Computer opponents, with its own look */
+function netCpuSeat(i,taken){const t=(taken||[]).map(x=>String(x).toLowerCase()),me=String(myName()||'').toLowerCase();
+ const free=BOTS.filter(b=>!t.includes(b.n.toLowerCase())&&b.n.toLowerCase()!==me),b=free[Math.floor(Math.random()*free.length)]||BOTS[0];
+ return{name:b.n,look:botChar(b.k)};}
+/* host: a newcomer takes the computer's seat between games and keeps its games won. S is changed in place (no commit here:
+   this runs inside NET.handBreak, which is called from commit/send) and the seat is redrawn. */
+function netSeatSwap(cpuId,pl){if(!S||S.status==='playing'||S.status==='matchover')return false;const i=S.players.findIndex(p=>p.id===cpuId);if(i<0)return false;
+ S.players[i]={id:pl.id,name:cleanName(pl.name)||'Player',ch:lookOf(pl.look)};
+ refreshSeats();if(screen==='table')drawStatic();NET.sync();return true;}
+/* redraw the names and avatars (after a seat changed hands) */
+function refreshSeats(){if(!S||screen!=='table')return;const me=meIdx();
+ [0,1].forEach(p=>{const pl=S.players[p],av=$('#av'+p),nm=$('#nm'+p);if(av)av.innerHTML=avInner(pl.ch,pl.name,true);
+  if(nm)nm.innerHTML=esc(p===me?(pl.name==='You'?'You':pl.name):pl.name)+(pl.ai?' <span class="aitag">CPU</span>':'');});}
 function netAction(pid,a){if(!S||!a||typeof a!=='object')return;const i=S.players.findIndex(p=>p.id===pid);if(i<0)return;
  if(a.k==='flip'&&S.status==='playing'&&S.turn===i)send({k:'flip',why:a.why==='auto'?'auto':'tap'},i);}
 /* the other player left, lost connection or was away: the match ends and the one still here wins */
@@ -651,6 +684,11 @@ function netForfeit(pid,why){if(!isHostOn()||!S||S.status==='matchover')return;c
  E.ev(N,{t:'forfeit',p:i,why:why});commit(N);
  if(pid===myId)setTimeout(()=>{if(online&&NET.isHost())NET.retire();},2500);}
 function netState(v){if(!v||!Array.isArray(v.players))return;online=true;const N=shiftTimes(clone(v),NET.skew());
+ const ids=x=>x.players.map(p=>p.id).join('|');
+ /* same match, but a seat changed hands (a newcomer took a computer's seat, maybe me): redraw the table from the new seats.
+    The last game's result belongs to the computer, so it is not shown (or paid) again. */
+ if(screen==='table'&&S&&S.gid===N.gid&&ids(S)!==ids(N)){const wasMe=seatedMe();S=N;seen=N.seq;clientSent=-1;tapQ=false;ovKey=N.gid+':'+N.gameNo+':'+N.status;
+  const st=seatedMe();if(st!==wasMe){closeSheet(true);closeOv();closeRules();}buildTable();if(N.status==='ready'&&st&&!wasMe)openRules();return;}
  if(screen!=='table'||!S||S.gid!==N.gid){S=N;seen=N.seq;ovKey='';clientSent=-1;tapQ=false;closeSheet(true);buildTable();
   if(N.status==='ready')openRules();else if(N.status!=='playing')setTimeout(()=>{if(S===N&&!busy)showResult();},300);return;}
  commit(N);}
@@ -660,6 +698,7 @@ function netMigrate(o){const v=o.backup||o.view;if(!v)return;online=true;const N
 function netLobby(){clearTimeout(nextT);closeOv();closeRules();closeSheet(true);S=null;if(screen==='table')renderHome();}
 function netEnd(){online=false;clearTimeout(nextT);closeOv();closeRules();closeSheet(true);S=null;tapQ=false;renderHome();}
 if(window.DGNet){NET=DGNet.create({game:'dhashundhama',title:'Dhashundhama',min:2,max:2,id:myId,
+ cpu:true,quickSize:2,cpuSeat:netCpuSeat,onSeatSwap:netSeatSwap,
  me:()=>({name:myName(),look:myChar()}),setName:v=>{ls.set('lg-name',v);if(screen==='home')renderHome();},
  avatar:seat=>avInner(lookOf(seat.look),seat.name,false),
  options:[{k:'bestOf',label:'Match length',def:3,choices:[[3,'Best of 3'],[5,'Best of 5']]}],
@@ -672,7 +711,10 @@ if(window.DGNet){NET=DGNet.create({game:'dhashundhama',title:'Dhashundhama',min:
  onState:netState,onLobby:netLobby,onMigrate:netMigrate,onEnd:netEnd,
  toast:(t,ms)=>toast(t,ms),
  dockHost:()=>screen==='table'?document.querySelector('.topbar .tools'):null,
- avatarEl:pid=>{if(!S||screen!=='table')return null;const i=S.players.findIndex(p=>p.id===pid);return i>=0?$('#av'+i):null;}});}
+ /* the ring and mic badge go on a wrapper round the avatar, so the avatar's reactions (which redraw it) never wipe them */
+ avatarEl:pid=>{if(!S||screen!=='table')return null;const i=S.players.findIndex(p=>p.id===pid);return i>=0?$('#avw'+i):null;}});}
+/* "N playing now" on the Quick Match button */
+function setLive(n){const e=$('#qmLive');if(!e)return;n=n|0;e.innerHTML=n>0?`<i aria-hidden="true"></i>${compactNum(n)} playing now`:'Be the first to play';}
 
 /* ================= screens ================= */
 function setTbl(on){const h=document.documentElement;if(on)h.dataset.tbl='t-dhanvaru';else delete h.dataset.tbl;}
@@ -688,16 +730,17 @@ function renderHome(){leaveScreen();screen='home';setTbl(false);S=null;
  app.innerHTML=`<main class="page enter">
 <div class="hometop"><a class="icon-btn dgh" href="../" aria-label="Back to Dhivehi Games">${IC.back}<svg class="dgmk dgmono" viewBox="14.4 6.4 71.2 88.2" width="19" height="24" aria-hidden="true"><defs><mask id="dgmkM" maskUnits="userSpaceOnUse" x="-60" y="-60" width="120" height="120"><rect x="-30" y="-40" width="60" height="80" rx="8" fill="#fff"/><path d="M50,32.65 A14.5,14.5 0 1 0 26.01,48.85 Q39.27,63.45 50,80 Q60.73,63.45 73.99,48.85 A14.5,14.5 0 1 0 50,32.65Z" transform="translate(0,1.5) scale(0.7778) translate(-50,-52.75)" fill="#000"/></mask></defs><g transform="translate(50,50.5) rotate(-8)"><rect x="-30" y="-40" width="60" height="80" rx="8" fill="currentColor" mask="url(#dgmkM)"/></g></svg></a><button class="profbtn" data-a="profile" aria-label="Your name">${miniAv(myChar(),nm||'P')}<span class="pwrap"><span class="pn">${nm?esc(nm):'Player'}</span><span class="ps">${nm?'Dhashundhama':'Tap to set your name'}</span></span></button><a class="shellpill" href="../digu/?open=boli" aria-label="${n} Boli">${BOLI.replace('width="18" height="18"','width="24" height="24"')}<span>${compactNum(n)}</span></a></div>
 ${heroHTML()}
-<div class="dtitle"><h1 aria-label="Dhashundhama"><span>DHASHUN</span><span>DHAMA</span></h1><p>Match the rank. Dump the pile.</p></div>
+<div class="dtitle"><h1 aria-label="Dhashundhama"><span>DHASHUN</span><span>DHAMA</span></h1><span class="dv" lang="dv" dir="rtl">ދަށުން ދަމާ</span><p>Match the rank. Dump the pile.</p></div>
 <section class="modes">
-<button class="mode quick" data-a="goSetup"><span class="mi">${IC.bot}</span><span class="mt"><b>vs Computer</b><small>Best of 3 or 5 · works offline</small></span><span class="go" aria-hidden="true">${IC.chev}</span></button>
-<button class="mode online" data-a="online"><span class="mi">${IC.globe}</span><b>Play online</b><small>1 v 1 · codes, Quick Match</small></button>
-<button class="mode" data-a="howto"><span class="mi">${IC.book}</span><b>How to play</b><small>The rules in 30 seconds</small></button>
+<button class="mode quick" data-a="quick"><span class="mi">${IC.bolt}</span><span class="mt"><b>Quick Match</b><small>Play real people now</small><span class="live" id="qmLive" aria-live="polite">Be the first to play</span></span><span class="go" aria-hidden="true">${IC.chev}</span></button>
+<button class="mode frd" data-a="friends"><span class="mi">${IC.users}</span><span class="mt"><b>Play with Friends</b><small>Create a table, or use a code</small></span><span class="go" aria-hidden="true">${IC.chev}</span></button>
+<button class="mode sm" data-a="goSetup"><span class="mi">${IC.bot}</span><b>vs Computer</b><small>Best of 3 or 5 · offline</small></button>
+<button class="mode sm" data-a="howto"><span class="mi">${IC.book}</span><b>How to play</b><small>The rules in 30 seconds</small></button>
 </section>
 ${resumeHTML()}
 <div class="homebelow"><div class="spbox" id="spbox"></div></div>
 <p class="snote">Win games to earn Boli ${BOLI}, up to ${DAILY_CAP} a day across Dhivehi Games.</p>
-</main>`;mountSponsors();window.scrollTo(0,0);}
+</main>`;mountSponsors();if(NET)NET.playing(setLive);window.scrollTo(0,0);}
 let setBest=ls.get('dh-best')==='5'?5:3,setBot=BOTS.some(b=>b.k===ls.get('dh-bot'))?ls.get('dh-bot'):'mariyam';
 function renderSetup(){leaveScreen();screen='setup';setTbl(false);S=null;const hasSave=!!loadSave();
  app.innerHTML=`<main class="page enter">
@@ -736,7 +779,7 @@ function sceneHTML(){const r=Math.random;let e='',g='',st='';
 function tableAd(){const w=$('#tadw');if(!w||!S||!window.DGSponsors)return;let s=null;try{s=DGSponsors.felt(Math.max(0,(S.gameNo||1)-1));}catch(e){}
  const k=s?s.title+'|'+S.gameNo:'';if(w._k===k)return;w._k=k;
  w.innerHTML=s?`<div class="tad" style="left:${SIGN[0]}px;top:${SIGN[1]}px"><span class="post"></span><span class="brd"><b>${esc(s.title)}</b>${s.house&&s.kicker?`<small>${esc(s.kicker)}</small>`:s.label==='Sponsored'?'<small>Sponsored</small>':''}</span></div>`:'';}
-function whoHTML(p){return `<div class="who" id="who${p}"><span class="av" id="av${p}"></span><span class="nm" id="nm${p}"></span><span class="pips" id="pp${p}"></span></div>`;}
+function whoHTML(p){return `<div class="who" id="who${p}"><span class="avw" id="avw${p}"><span class="av" id="av${p}"></span></span><span class="nm" id="nm${p}"></span><span class="pips" id="pp${p}"></span></div>`;}
 function buildTable(){leaveScreen();screen='table';setTbl(true);EQ.length=0;busy=false;tapQ=false;lastSec=-1;
  const me=meIdx(),op=1-me;
  app.innerHTML=`<main class="table" id="tbl"><div class="tlayer" aria-hidden="true"><div class="tsc" id="tsc">${sceneHTML()}</div></div>
@@ -750,7 +793,7 @@ ${whoHTML(me)}<button class="stk mine" id="st${me}" data-a="flip"></button><div 
 </section>
 <section class="me"><div class="status" id="status"></div><div class="ctrl"><button class="autob" id="autob" data-a="auto" aria-pressed="${auto}" aria-label="Auto flip"><span class="sw" aria-hidden="true"><i></i></span><span>Auto</span></button><button class="flipb" id="flipb" data-a="flip"><span class="fl" id="fl">Tap to flip</span><span class="tb" id="tb" aria-hidden="true"></span></button></div></section>
 </main>`;
- [0,1].forEach(p=>{const pl=S.players[p];$('#av'+p).innerHTML=avInner(pl.ch,pl.name,true);$('#nm'+p).innerHTML=esc(p===me?(pl.name==='You'?'You':pl.name):pl.name)+(pl.ai?' <span class="aitag">CPU</span>':'');});
+ refreshSeats();
  const tsc=$('#tsc');if(tsc)tsc.classList.toggle('still',reduce||isSmooth());
  snap();layout();drawStacks();drawPile();drawStatic();tableAd();if(online&&NET)NET.updDock();}
 /* the mat: scene art drawn in a 375x812 box, G = the mat's box (cx, cy, half width, half height).
@@ -968,14 +1011,23 @@ function openMenu(){if(!S)return;if(online){openNetMenu();return;}pauseGame('men
 <button class="btn soft" data-a="howto2">${IC.book}<span>How to play</span></button>
 <button class="btn soft" data-a="sound" data-lbl="1" aria-pressed="${SFX.on()}">${IC.sound}<span>Sound</span><span class="r">${SFX.on()?'On':'Off'}</span></button>
 <button class="btn soft" data-a="goSetup">${IC.cog}<span>New match</span></button>
-<button class="btn ghost" data-a="exit">${IC.home}<span>Save and exit</span></button></div>`,()=>resumeGame('menu'));}
+<button class="btn ghost" data-a="exit">${IC.home}<span>Save and exit</span></button>
+<button class="btn danger" data-a="quitAsk">${IC.exit}<span>Quit to lobby</span></button></div>`,()=>resumeGame('menu'));}
+/* vs Computer: quit this match (not saved) with a confirm step */
+function openQuitAsk(){sheet(`<div class="grab"></div><h2>Quit to lobby?</h2><p class="muted" style="margin:6px 0 0;font-size:13.5px">This match ends and is not saved. Use <b>Save and exit</b> to finish it later.</p>
+<div class="row"><button class="btn soft" data-a="quitNo">Stay</button><button class="btn primary" data-a="quitYes">Quit</button></div>`,()=>resumeGame('menu'));}
+/* online: leave the table with a confirm (net.js themed sheet) */
+function netLeaveAsk(){if(!NET||!online){renderHome();return;}closeSheet(true);
+ const seated=seatedMe(),live=seated&&S&&S.status!=='matchover';
+ NET.ask({title:'Leave the table?',text:!seated?'You’ll stop watching this table.':live?'Leaving ends this match, and the other player wins.':'You’ll leave this table.',ok:'Leave table',cancel:'Stay'})
+  .then(ok=>{if(ok&&online){closeOv();NET.leave();}});}
 /* online menu: an online match never pauses */
 function openNetMenu(){const m=NET.meta()||{},me=meIdx(),op=1-me,spec=!seatedMe();
  sheet(`<div class="grab"></div><h2>${spec?'Watching':'Online match'}</h2><p class="muted" style="margin:4px 0 0;font-size:13px">Table ${esc(m.code||'')} · ${S.gameNo?`Game ${S.gameNo} · `:''}Best of ${S.bestOf}${spec?'':` · you ${S.wins[me]}–${S.wins[op]} ${esc(S.players[op].name)}`}</p>
 <div class="mlist"><button class="btn primary" data-a="close">${IC.play}<span>Back to the table</span></button>
 <button class="btn soft" data-a="howto2">${IC.book}<span>How to play</span></button>
 <button class="btn soft" data-a="sound" data-lbl="1" aria-pressed="${SFX.on()}">${IC.sound}<span>Sound</span><span class="r">${SFX.on()?'On':'Off'}</span></button>
-<button class="btn ghost" data-a="netLeave">${IC.home}<span>Leave table</span></button></div>
+<button class="btn danger" data-a="netLeave">${IC.exit}<span>Leave table</span></button></div>
 ${spec?'':'<p class="muted" style="font-size:12px;margin:10px 2px 0">Leaving ends the match, and the other player wins.</p>'}`);}
 function openProfile(){const nm=myName();sheet(`<div class="grab"></div><h2>Your name</h2><p class="muted" style="font-size:13px;margin:4px 0 12px">Shown at the table. The same name is used in Digu and the other Dhivehi Games.</p>
 <label class="f" for="nmIn">Name</label><input class="in" id="nmIn" maxlength="14" autocomplete="nickname" value="${esc(nm)}" enterkeyhint="done">
@@ -991,7 +1043,12 @@ document.addEventListener('click',e=>{const b=e.target.closest('[data-a]');if(!b
  case 'goHome':closeSheet(true);renderHome();break;
  case 'goSetup':closeSheet(true);pauses.clear();renderSetup();break;
  case 'online':if(NET)NET.open();else toast('Online play needs a newer browser.');break;
- case 'netLeave':closeSheet(true);closeOv();if(NET&&online)NET.leave();else renderHome();break;
+ case 'quick':if(NET)NET.quick();else toast('Online play needs a newer browser.');break;
+ case 'friends':if(NET)NET.friends();else toast('Online play needs a newer browser.');break;
+ case 'netLeave':netLeaveAsk();break;
+ case 'quitAsk':closeSheet(true);openQuitAsk();break;
+ case 'quitNo':closeSheet();break;
+ case 'quitYes':closeSheet(true);pauses.clear();ls.del('dh-solo');S=null;renderHome();break;
  case 'netAgain':closeOv();if(NET)NET.again();break;
  case 'rulesOk':closeRules();break;
  case 'howto':openHowTo();break;
