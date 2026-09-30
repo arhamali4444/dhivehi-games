@@ -326,7 +326,7 @@ const GAMES={digu:{n:'Digu',c:'#2E8C69'},dhogu:{n:'Dhogu',c:'#6A4FD8'},bondi:{n:
  dhihaeh:{n:'Dhihaeh',c:'#2A7F86'},thaas:{n:'Thaas',c:'#2F4B8C'},joker:{n:'Joker',c:'#6B45B8'},juice:{n:'Juice',c:'#D2723A'}};
 /* presence keys accepted by the rules. Games check in under their own key: Ranga counts under bondi, Thaas under dhihaeh. */
 const PRES=[['digu','Digu'],['bondi','Bondi + Ranga'],['dhihaeh','Dhihaeh + Thaas'],['thaas','Thaas'],['dhashundhama','Dhashundhama'],
- ['binveriya','Binveriya'],['atolls','Atolls'],['joker','Joker'],['juice','Juice']];
+ ['binveriya','Binveriya'],['atolls','Atolls'],['joker','Joker'],['juice','Juice'],['dhogu','Dhogu'],['raalhu','Raalhu Rumble']];
 const presColor=k=>(GAMES[k]||{c:'#999'}).c;
 /* public table listings (retained MQTT topics NS+'lobby/CODE'). Digu and Dhogu have their own formats. */
 const NETS=[{ns:'dhivehidigu/v2/',g:'digu',f:'digu',mx:6},{ns:'dhivehidhogu/v1/',g:'dhogu',f:'dhogu',mx:6}]
@@ -383,7 +383,7 @@ service cloud.firestore {
       allow read: if true;
       allow create, update: if request.auth != null
         && request.auth.uid == uid
-        && game in ['digu', 'bondi', 'thaas', 'dhashundhama', 'binveriya', 'atolls', 'dhihaeh', 'joker', 'juice']
+        && game in ['digu', 'dhogu', 'bondi', 'thaas', 'dhashundhama', 'binveriya', 'atolls', 'dhihaeh', 'joker', 'juice', 'raalhu']
         && request.resource.data.keys().hasOnly(['t'])
         && request.resource.data.t == request.time;
       allow delete: if request.auth != null && request.auth.uid == uid;
