@@ -700,7 +700,7 @@ const SP=[
  {k:'jail',name:'Maafushi Prison',lab:'Maafushi\nPrison'},
  ISL('Thoddoo','pk',140,'Alif Alif Atoll','thoddoo'),
  ISL('Fulidhoo','pk',160,'Vaavu Atoll','fulidhoo'),
- TRN('Velana Airport','Velana\nAirport','air','airport'),
+ TRN('Hulhumalé Bus Stop','Hulhumalé\nBus Stop','bus','bus'),
  ISL('Ukulhas','or',180,'Alif Alif Atoll','ukulhas'),
  ISL('Rasdhoo','or',180,'Alif Alif Atoll','rasdhoo'),
  ISL('Guraidhoo','or',200,'Kaafu Atoll','guraidhoo'),
@@ -715,7 +715,7 @@ const SP=[
  ISL('Villimalé','gr',300,'Malé City','villimale'),
  ISL('Himmafushi','gr',300,'Kaafu Atoll','himmafushi'),
  ISL('Dhangethi','gr',320,'Alif Dhaal Atoll','dhangethi'),
- TRN('Hulhumalé Bus Stop','Hulhumalé\nBus Stop','bus','bus'),
+ TRN('Velana Airport','Velana\nAirport','air','airport'),
  ISL('Hulhumalé','db',350,'Malé City','hulhumale'),
  ISL('Malé','db',400,'Malé City','male')];
 SP.forEach((s,i)=>{s.i=i;if(!s.lab)s.lab=s.name;});
@@ -2015,7 +2015,7 @@ function openMenu(){const p=meP();if(ONLINE){const m=NET.meta()||{};openSheet('m
  <button class="btn lite sm" data-a="home">Save and exit</button><button class="btn lite sm" data-a="newgame">Abandon and start a new game</button></div>`);}
 function openLog(){openSheet('log',shead('Game log','')+`<div class="logl">${G.log.slice().reverse().map(l=>`<div>${esc(human(l.s))}</div>`).join('')}</div>`);}
 const RULES=`<div class="rules"><p><b>Binveriya</b> (ބިންވެރިޔާ, "landowner") is a Maldivian island property game for 2 to 5 players.</p>
-<h3>The board</h3><ul><li>28 spaces, 6 on each side: a pair of islands, a transport and a group of three islands. Colour groups have 2 or 3 islands.</li><li>The four transports are <b>Malé Ferry Terminal</b>, <b>Velana Airport</b>, <b>Seaplane Dock</b> and <b>Hulhumalé Bus Stop</b>.</li></ul>
+<h3>The board</h3><ul><li>28 spaces, 6 on each side: a pair of islands, a transport and a group of three islands. Colour groups have 2 or 3 islands.</li><li>The four transports are <b>Malé Ferry Terminal</b>, <b>Hulhumalé Bus Stop</b>, <b>Seaplane Dock</b> and <b>Velana Airport</b>.</li></ul>
 <h3>Your turn</h3><ul><li>Roll two dice and hop around the board. Every time you pass or land on <b>Malé Jetty</b> (Start) you collect MVR 200.</li><li>Land <b>right on</b> Malé Jetty with your dice roll and you also draw a <b>City Council</b> card.</li><li>Land on an island or transport nobody owns: <b>buy it</b> or send it to <b>auction</b>, where everyone bids.</li><li>Land on the <b>Sandbank</b> and choose: draw a Monsoon card, draw a City Council card, or relax (always safe).</li><li>Doubles: roll again. Three doubles in a row: straight to Maafushi.</li></ul>
 <h3>Rent</h3><ul><li>Land on someone else's island and pay the rent shown on its tag. Owning the whole colour group (all 2 or all 3 islands) doubles the base rent; guesthouses and resorts raise it much more. Tap any space for its full rent table.</li><li>Transports: rent is MVR 25 if the owner has one, 50 for two, 100 for three and 200 for all four.</li></ul>
 <h3>Bribes and suspicion</h3><ul><li>You never bribe players, only <b>officials</b>: the prison guard (${fmt(E.C.GUARD_BRIBE)} to walk out now), the judge at the Supreme Court (${fmt(E.C.JUDGE_BRIBE)} to stay free), or the council permit office (a guesthouse at half price, on your turn).</li>
