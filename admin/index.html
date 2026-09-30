@@ -1019,7 +1019,7 @@ document.addEventListener('click',async e=>{const b=e.target.closest('[data-a]')
   case 'google':authErr='';try{await DL.signInGoogle();}catch(x){const el=$('#lerr');if(el)el.textContent=authMsg(x);}break;
   case 'refresh':toast('Refreshing…',1200);loadPlayers();loadPresence();if(rulesOK!==false)loadInbox();if(tab==='stats'){TR.at=0;loadTraffic(true);}break;
   case 'copy-uid':copy(user.uid);break;
-  case 'copy-rules':copy(RULES.replace('OWNER_UID',user&&!MOCK?user.uid:'OWNER_UID'));break;
+  case 'copy-rules':copy(RULES.split("['OWNER_UID']").join("['"+(user&&!MOCK?user.uid:'OWNER_UID')+"']"));break;
   case 'probe':rulesOK=null;renderSetup();await probe();if(rulesOK){loadInbox();TR.at=0;TR.err='';}else renderInbox();toast(rulesOK?'Admin rules are active.':'Not active yet. Publish the rules, wait a minute, try again.',3500);break;
   case 'copy':copy(b.dataset.v);break;
   case 'tfilter':ST.tFilter=b.dataset.g;renderTables();break;
