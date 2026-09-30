@@ -53,7 +53,8 @@ var HATMAP={cap:'cap',capback:'cap',fisher:'cap',police:'cap',pilot:'cap',captai
  bucket:'brim',straw:'brim',cowboy:'brim',deerstalker:'brim',pirate:'brim',tophat:'brim',beanie:'beanie',chef:'beanie',headband:'band',headphones:'band',kulhi:'wrap'};
 var OUTFITC={tee:'#2F7FD1',blouse:'#F3EFE7',libaas:'#179C93',wrap:'#8E2F45',blazer:'#253766',hoodie:'#7B4FD6',mvjersey:'#D21034',polo:'#1E8A5E',mlinen:'#E9DFC9',shirt:'#8FB8E0',
  kurta:'#F3EFE7',hawaii:'#179C93',suit:'#3A3D48',tux:'#16161C',sequin:'#8C6FD6',police:'#27365C',trench:'#B8955E',chef:'#FBFAF7',pilot:'#FFFFFF',pirate:'#F3EEE4',diver:'#1D2027',
- astro:'#EFEFEC',hero:'#2F5FD0',boduberu:'#F4F0E8',royal:'#8E1B2C'};
+ astro:'#EFEFEC',hero:'#2F5FD0',boduberu:'#F4F0E8',royal:'#8E1B2C',
+ dino:'#7BC96F',princess:'#F6AFCB',prince:'#3656B5',rabbit:'#F6F3EE',turtle:'#78C47F',shark:'#8AA6C1'};
 function colOf(v,def){if(!v)return def;if(typeof v==='string')return v;if(Array.isArray(v))return v[0];if(v.base)return v.base;return def;}
 /* colours and families for a DGAvatar config (or plain colours for players without one) */
 function lookOf(cfg,fallback){var AV=G.DGAvatar,o={skin:'#CB9669',cloth:'#F0645A',hair:'#1E1B24',scarf:'#C57483',hat:'#E5484D',fam:'short',hatF:null};
