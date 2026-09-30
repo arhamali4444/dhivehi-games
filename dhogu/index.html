@@ -80,7 +80,16 @@ h1,h2,h3{font-family:Fredoka,Nunito,system-ui,sans-serif}
 .fw{position:relative;display:inline-block}
 .crown{position:absolute;top:-12px;right:-10px;width:24px;height:24px;z-index:2;rotate:18deg;filter:drop-shadow(0 2px 0 rgba(0,0,0,.25))}
 .crown svg{width:100%;height:100%}
-.vtalk{box-shadow:0 0 0 3px var(--mint),0 0 0 calc(4px + var(--vl,0)*8px) rgba(61,219,181,.45)!important}
+/* voice: a ring around the talker's picture that grows with their voice (transform + opacity only, --vl 0..1), in the
+   case-file gold; it fades ~0.3 s after they stop. A crossed-out mic marks anyone whose mic is off (or whom you muted). */
+.vring{position:absolute;inset:-5px;border-radius:50%;border:3px solid var(--vr,#E0B967);z-index:3;pointer-events:none;opacity:0;transform:scale(1);transition:opacity .3s ease-out,transform .3s ease-out}
+.ebt .opp .fw>.vring{inset:-4px;border-radius:4px}
+.vtalk>.vring{opacity:calc(.55 + var(--vl,0)*.45);transform:scale(calc(1 + var(--vl,0)*.16));transition:opacity .08s linear,transform .08s linear}
+.vtalk .dga-mouth{transform-box:fill-box;transform-origin:50% 25%;transform:scaleY(calc(1 + var(--mo,0)*.9))}
+.moff{position:absolute;right:-6px;bottom:-5px;z-index:4;width:20px;height:20px;border-radius:50%;background:#FBF6EA;color:#2A1C10;display:grid;place-items:center;box-shadow:0 1px 3px rgba(0,0,0,.5);pointer-events:none}
+.moff[hidden]{display:none}.moff svg{width:12px;height:12px}
+.cputag{position:absolute;left:50%;bottom:-2px;z-index:3;transform:translateX(-50%);padding:2px 5px 1px;border-radius:3px;background:#2A1C10;color:#F3E6CA;font:400 8.5px/1.1 "Special Elite",monospace;letter-spacing:.08em;text-transform:uppercase;white-space:nowrap;pointer-events:none}
+.cputag[hidden]{display:none}
 /* ---------- lamp + flicker ---------- */
 .lampw{position:relative;width:150px;margin:0 auto;pointer-events:none}
 .lampw svg{display:block;width:100%;height:auto;overflow:visible}
@@ -446,6 +455,53 @@ html.eb .sheet :focus-visible{outline-color:#2A1C10}
 .eb-how{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:44px;margin-top:10px;border:0;background:none;color:#C9A45C;font:500 14px Sora,system-ui,sans-serif}
 .eb-how svg{width:18px;height:18px}
 .eb-how:hover{color:#E3C27E}
+/* menu order (owner decision): CASE 01 Quick Match (big), CASE 02 Play with Friends, CASE 03 vs Computer (smaller) */
+.eb-qm .eb-fh{min-height:84px;padding:12px 16px 12px 18px}
+.eb-qm .eb-fh b{font-size:20px}
+.eb-qm .eb-go{width:44px;height:44px}.eb-qm .eb-go svg{width:22px;height:22px}
+.eb-lv{display:inline-flex;align-items:center;gap:6px;margin-top:7px;padding:4px 9px 4px 7px;border-radius:99px;background:rgba(42,28,16,.1);font:600 11.5px/1 Sora,system-ui,sans-serif;color:#2A1C10;white-space:nowrap}
+.eb-lv i{width:7px;height:7px;border-radius:50%;background:#B8322A;animation:ebLive 1.8s ease-out infinite}
+@keyframes ebLive{0%{box-shadow:0 0 0 0 rgba(184,50,42,.6)}100%{box-shadow:0 0 0 7px rgba(184,50,42,0)}}
+.eb-lv.first{background:none;padding:0;font:12px/1.3 "Special Elite",monospace;color:#6B5230}
+.f3{background:transparent;color:#D8B77A}
+.f3 .eb-tab{background:transparent;color:#9C8C70;padding-left:2px}
+.f3 .eb-fh{min-height:50px;padding:6px 12px 6px 14px;border-radius:12px;box-shadow:inset 0 0 0 1px rgba(216,183,122,.28)}
+.f3 .eb-fh b{font-size:15px}.f3 .eb-fh small{font-size:11px}
+.f3 .eb-go{width:30px;height:30px;box-shadow:inset 0 0 0 1px rgba(216,183,122,.4);color:#D8B77A}
+.f3.open .eb-fb{margin-top:10px}
+/* Quick Match search: ring for about 12 s, the seats filling up, then the offer of computer players */
+.qsrch{text-align:center;padding-top:20px}
+.qring{position:relative;width:140px;height:140px;margin:2px auto 0}
+.qring svg.tr{position:absolute;inset:0;width:100%;height:100%;transform:rotate(-90deg)}
+.qring .trk{fill:none;stroke:rgba(42,28,16,.14);stroke-width:7}
+.qring .arc{fill:none;stroke:#A5372B;stroke-width:7;stroke-linecap:round;transition:stroke-dashoffset .25s linear}
+.qring .qme{position:absolute;left:50%;top:50%;margin:-48px 0 0 -48px}
+.qring .qme .face{width:96px;height:96px;box-shadow:0 0 0 3px #FBF6EA,0 10px 22px -10px rgba(0,0,0,.6)}
+.qring .secs{position:absolute;left:50%;bottom:-6px;transform:translateX(-50%);padding:5px 10px 4px;border-radius:3px;background:#2A1C10;color:#F3E6CA;font:400 13px/1 "Special Elite",monospace;letter-spacing:.08em;white-space:nowrap}
+.qsrch h2{margin:22px 0 4px;font:400 26px/1.15 "DM Serif Display",Georgia,serif;color:#2A1C10}
+.qdots:after{content:"";display:inline-block;width:1.2em;text-align:left;animation:qDots 1.4s steps(4) infinite}
+@keyframes qDots{0%{content:""}25%{content:"."}50%{content:".."}75%{content:"..."}}
+.qseats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin:16px 0 6px}
+.qst{display:flex;flex-direction:column;align-items:center;gap:6px;min-width:0}
+.qst .face{width:50px;height:50px;box-shadow:0 0 0 2px #FBF6EA,0 6px 12px -6px rgba(0,0,0,.55);animation:qPop .45s cubic-bezier(.2,1.4,.4,1) both}
+.qst .emp{width:50px;height:50px;border-radius:50%;border:2px dashed rgba(42,28,16,.35);display:grid;place-items:center;color:rgba(42,28,16,.45)}
+.qst .emp svg{width:18px;height:18px}
+.qst span.sn{max-width:100%;font:600 11.5px/1.2 Sora,system-ui,sans-serif;color:#2A1C10;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.qst span.o{color:#7A6A52;font-weight:500}
+@keyframes qPop{from{transform:scale(.3);opacity:0}to{transform:none;opacity:1}}
+.qfill{margin:4px 0 14px;font:12.5px/1.3 "Special Elite",monospace;color:#6B5A45}
+.qhint{margin:14px 6px 0;text-align:center;font:13px/1.4 Sora,system-ui,sans-serif;color:#B6A688}
+.qbots{display:flex;align-items:center;gap:10px;margin:0 0 14px;padding:10px 12px;border-radius:8px;background:rgba(42,28,16,.07)}
+.qbots .hp{display:flex;flex:none}.qbots .hp .face{width:32px;height:32px;margin-left:-8px;box-shadow:0 0 0 2px #FBF6EA}.qbots .hp .face:first-child{margin-left:0}
+.qbots small{font:12.5px/1.35 Sora,system-ui,sans-serif;color:#5A4A36}
+html.eb .sheet .btn.qcd{position:relative;overflow:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;background:linear-gradient(180deg,#A5372B,#7C2018);color:#F8EBD3;width:100%}
+.qcd .cdt{display:block;margin-top:3px;font:12px/1.2 "Special Elite",monospace;opacity:.9}
+.qcd .bar{position:absolute;left:0;bottom:0;height:4px;width:100%;background:rgba(248,235,211,.7);transform-origin:left;transition:transform .25s linear}
+html.eb .sheet .btn.w+.btn.w{margin-top:10px}
+.ebt .wpill{position:absolute;left:50%;bottom:50px;z-index:6;transform:translateX(-50%);max-width:92%;display:flex;align-items:center;gap:6px;padding:5px 11px 4px;border-radius:99px;background:rgba(14,9,7,.86);box-shadow:inset 0 0 0 1px rgba(224,185,103,.3);color:#EFE4CC;font:12px/1.2 "Special Elite",monospace;letter-spacing:.04em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;pointer-events:none}
+.ebt .wpill[hidden]{display:none}
+.ebt .wpill svg{width:14px;height:14px;flex:none}.ebt .wpill span{overflow:hidden;text-overflow:ellipsis}
+.plist .face.vtalk{box-shadow:0 0 0 3px #E0B967}
 /* sponsor: a business card pinned under the folders */
 .eb-spon{max-width:330px;margin:20px auto 6px;transform:rotate(-1.2deg)}
 .eb-spon>.eb-pin{left:50%;top:9px;z-index:2}
@@ -753,7 +809,9 @@ function motesHTML(){let m='';for(let i=0;i<12;i++){const x=(i*53+17)%96+2,y=14+
  m+=`<i style="left:${x}%;top:${y}%;transform:rotate(${a}deg)"><b style="width:${s}px;height:${s}px;background:rgba(255,226,170,${o});animation-duration:${d}s;animation-delay:-${(i*1.9).toFixed(1)}s"></b></i>`;}return m;}
 function foldHTML(v,cls,tb,title,sub,d){const o=openF===v;
  return `<section class="eb-f ${cls}${o?' open':''} ent" style="--d:${d}s"><span class="eb-tab" aria-hidden="true">${tb}</span><button class="eb-fh" data-a="tab" data-v="${v}" aria-expanded="${o}"${o?' aria-controls="tabbody"':''}><span class="eb-ft"><b>${title}</b><small>${sub}</small></span><span class="eb-go" aria-hidden="true">${ARROW}</span></button>${o?`<div id="tabbody" class="eb-fb" role="region" aria-label="${title}">${v==='cpu'?cpuHTML():onlineHTML()}</div>`:''}</section>`;}
-function foldersHTML(){return foldHTML('cpu','f1','CASE 01 · SOLO','Play vs Computer','2 to 5 suspects at the table',.25)+foldHTML('online','f2','CASE 02 · ONLINE','Play online','Quick play, or a table with friends',.38);}
+/* Quick Match first and biggest, with the live count; then Play with Friends; then a smaller vs Computer */
+function qmFolderHTML(){return `<section class="eb-f f1 eb-qm ent" style="--d:.22s"><span class="eb-tab" aria-hidden="true">CASE 01 · QUICK MATCH</span><button class="eb-fh" data-a="quick"><span class="eb-ft"><b>Quick Match</b><small>Real suspects, right now</small><span id="qlive">${liveHTML()}</span></span><span class="eb-go" aria-hidden="true">${ICON.bolt}</span></button></section>`;}
+function foldersHTML(){return qmFolderHTML()+foldHTML('online','f2','CASE 02 · FRIENDS','Play with Friends','Your own table, or a code',.32)+foldHTML('cpu','f3','CASE 03 · SOLO','vs Computer','2 to 5 suspects at the table',.42);}
 function renderFolders(){const e=$('#ebacts');if(e)e.innerHTML=foldersHTML();}
 function revealOpen(){const fb=$('#tabbody');if(!fb)return;const fh=fb.parentNode.querySelector('.eb-fh'),r=fb.getBoundingClientRect(),h=fh.getBoundingClientRect(),over=r.bottom-innerHeight+16;
  if(over>0){const dy=Math.min(over,h.top-24);if(dy>0)scrollBy({top:dy,behavior:RM&&RM.matches?'auto':'smooth'});}}
@@ -783,7 +841,7 @@ function renderHome(){clearAll();screen='home';if(!isOn()){G=null;role=null;}clo
 </main>`;
  ebScale();fitHome();mountSpon();
  if(first){const m=$('.ebhome');setTimeout(()=>{if(m)m.classList.remove('ebfirst');},1600);}
- if(tab==='online')warmUp();}
+ warmUp();presenceCount();}
 /* the shared character builder (DGAvatar), opened from your name pill or your picture in the online folder */
 let charB=null;
 function openChar(){if(!DGA||!DGA.openBuilder){toast('The character builder could not load.');return;}
@@ -805,8 +863,7 @@ function onlineHTML(){const au=!!authName();
  return `${srvHTML()}
   <div class="lbl">Your detective</div><div class="idrow"><button class="lookbtn" data-a="me" aria-label="Change your character">${face(myFace(),'id')}</button><input id="nm" class="inp" maxlength="14" value="${esc(myName())}" placeholder="Your name" aria-label="Your name" autocomplete="nickname"${au?' disabled':''}></div>
   <p class="hint" style="text-align:left;margin-top:8px">Tap your picture to change your character. It is the same one across Dhivehi Games.</p>
-  <button class="btn coral w big go" data-a="quick">${ICON.bolt}Quick Play</button><p class="hint">Jump into an open table with other players.</p>
-  <div class="lbl">Play with friends</div><div class="two"><button class="btn teal" data-a="create" data-v="1">Public table</button><button class="btn soft" data-a="create" data-v="0">Private table</button></div>
+  <div class="lbl">Create a table</div><div class="two"><button class="btn teal" data-a="create" data-v="1">Public table</button><button class="btn soft" data-a="create" data-v="0">Private table</button></div>
   <div class="lbl">Join with a code</div><div class="joinrow"><input id="code" class="inp code" maxlength="4" placeholder="ABCD" autocapitalize="characters" autocomplete="off" spellcheck="false" aria-label="Table code"><button class="btn" data-a="join">Join</button></div>
   <div class="lbl">Open tables</div><div id="openlist">${openListHTML()}</div>`;}
 function rulesSheet(){sheet(`<h2>How to play</h2>
@@ -818,27 +875,30 @@ function rulesSheet(){sheet(`<h2>How to play</h2>
 <li><b>3 Lives mode:</b> a wrong call or a caught lie also costs a shell. No shells left and you're out of the round.</li>
 <li>Cards left in your hand are penalty points (+10 if you were knocked out). After the last round, the <b>fewest points</b> wins the case.</li>
 <li><b>Online:</b> 2 to 6 players, <b>15 seconds</b> a turn (time up and a card is played for you). If someone drops out, or is away for <b>2 turns in a row</b>, an <b>AI Rookie</b> finishes their round, then leaves; their score is frozen and they can’t rejoin that match. If the host leaves, the next player becomes host.</li>
-<li><b>Seats:</b> a private table’s empty seats stay locked. At a public table, anyone joining mid-match watches and gets a seat when the next match starts, with everyone at 0.</li></ol>
+<li><b>Seats:</b> a private table’s empty seats stay locked. At a public table, anyone joining mid-match watches and gets a seat when the next match starts, with everyone at 0.</li>
+<li><b>Quick Match:</b> if nobody turns up in about 12 seconds, computer players (with a small “Computer” tag) fill the empty seats. A real player who arrives later takes a computer’s seat when the next round starts, keeping its points, and a player who leaves is replaced by a computer.</li></ol>
 <button class="btn w" data-a="close">Got it</button>`);}
 function sheet(html,kind=''){closeSheet();const o=document.createElement('div');o.className='ov';o.id='ov';o.dataset.kind=kind;o.innerHTML=`<div class="sheet" role="dialog" aria-modal="true">${html}</div>`;
  o.addEventListener('click',e=>{if(e.target===o&&!o.dataset.lock)closeSheet();});document.body.appendChild(o);const f=o.querySelector('.btn');if(f)try{f.focus({preventScroll:true});}catch(e){}return o;}
 function closeSheet(){if(charB){try{charB.destroy();}catch(e){}charB=null;}const o=$('#ov');if(o)o.remove();}
 const sheetKind=()=>{const o=$('#ov');return o?o.dataset.kind||'x':'';};
 function renderWait(t){screen='wait';closeSheet();setHomeMode(false);app.innerHTML=`<div class="top"><span class="ttl2">Play Online</span></div><main class="home"><div class="wait"><div class="lens">${ICON.lens}</div><p id="waitt" aria-live="polite">${esc(t)}</p><button class="btn soft" data-a="cancel">Cancel</button></div></main>`;}
-function setWait(t){const e=$('#waitt');if(e)e.textContent=t;}
 /* ================= game engine (runs on solo and on the online host) ================= */
 function newMatch(){role='solo';const players=[{id:myId,name:shownName(),me:true,face:myFace(),score:0}];
  BOTS.slice(0,cfg.opp).forEach(([n],i)=>players.push({id:'b'+i,name:n,face:botFace(i),bot:true,score:0}));
  G={players,mode:cfg.mode,rounds:cfg.rounds,level:cfg.level,roundNo:0,status:'play',mid:rid(4),seq:0};newRound();}
-function newRound(){clearAll();closeSheet();G.roundNo++;G.status='play';G.final=false;const seats=G.players.filter(p=>!p.gone);G.decks=seats.length>=5?2:1;const d=deck(G.decks);
+function newRound(){clearAll();closeSheet();const took=role==='host'?seatCpuWatchers():[];G.roundNo++;G.status='play';G.final=false;const seats=G.players.filter(p=>!p.gone);G.decks=seats.length>=5?2:1;const d=deck(G.decks);
+ if(took.length)emit({t:'toast',m:tookSeatMsg(took)});
  G.players.forEach(p=>{p.hand=[];p.lives=3;p.out=!!p.gone;p.seen={};});
  d.forEach((c,i)=>seats[i%seats.length].hand.push(c));seats.forEach(sortHand);
- G.pile=[];G.rank=1;G.last=null;G.phase='play';G.sel=new Set();G.rv=null;G.cl=null;G.lr=null;G.turnEnd=0;
+ G.pile=[];G.rank=1;G.last=null;G.phase='play';G.rseq=G.seq|0;G.sel=new Set();G.rv=null;G.cl=null;G.lr=null;G.turnEnd=0;
  const s=G.players.findIndex(p=>!p.gone&&p.hand.some(c=>c.r===1&&c.s==='S'));G.turn=s<0?G.players.findIndex(p=>!p.gone):s;
  emit({t:'deal'});renderTable();sync();later(startTurn,900);}
 const sortHand=p=>p.hand.sort((a,b)=>a.r-b.r||'SHDC'.indexOf(a.s)-'SHDC'.indexOf(b.s));
 const active=()=>G.players.filter(p=>!p.out);
 const humansLeft=()=>G.players.filter(p=>!p.gone&&!p.bot).length;
+/* online the match ends when too few people are left: one is enough at a Quick Match table that has computer players */
+const tooFew=()=>humansLeft()<(G.players.some(p=>p.cpu&&!p.gone)?1:2);
 function nextIdx(i){const n=G.players.length;for(let k=1;k<=n;k++){const j=(i+k)%n;if(!G.players[j].out)return j;}return i;}
 /* effects: played locally and, on the host, forwarded to every player with the next state */
 function emit(e){if(role==='join')return;fxLocal(e);if(role==='host'&&net&&net.fxq)net.fxq.push(e);}
@@ -914,7 +974,7 @@ function roundOver(w){clearAll();G.phase='over';G.turnEnd=0;const pens={};
  G.lr={w:G.players.indexOf(w),pens};
  /* online: an AI Rookie only finishes the round of the player it replaced, then leaves */
  const rk=isOn()?G.players.filter(p=>p.rookie&&!p.gone):[];rk.forEach(p=>{p.gone=true;p.left=true;});
- G.final=G.roundNo>=G.rounds||(isOn()&&humansLeft()<2);if(G.final)G.status='over';
+ G.final=G.roundNo>=G.rounds||(isOn()&&tooFew());if(G.final)G.status='over';
  emit({t:'round'});update();sync();
  rk.forEach((p,k)=>setTimeout(()=>{if(G&&role==='host'){emit({t:'say',p:G.players.indexOf(p),m:'It was fun playing with you guys, good luck!'});sync();}},900+k*800));
  const meAfk=role==='host'&&G.players.some(p=>p.me&&p.afk);
@@ -936,7 +996,7 @@ function showRoundSheet(){if(!G)return;const lr=G.lr,w=lr&&lr.w>=0?G.players[lr.
  const H=G.players.find(p=>p.id===G.hostId);
  let btns='';
  if(role==='solo')btns=fin?`<button class="btn coral w" data-a="again">New case</button><button class="btn soft w" data-a="home">Back to menu</button>`:`<button class="btn coral w" data-a="next">Next round</button>`;
- else if(role==='host')btns=fin?`${humansLeft()+(G.watch||[]).length>=2?'<button class="btn coral w" data-a="again">Play again</button>':''}<button class="btn soft w" data-a="leave">Leave table</button>`:`<button class="btn coral w" data-a="next">Deal the next round</button><p class="hint">The next round starts by itself in a few seconds.</p>`;
+ else if(role==='host')btns=fin?`${humansLeft()+(G.watch||[]).length+(G.players.some(p=>p.cpu&&!p.gone)?1:0)>=2?'<button class="btn coral w" data-a="again">Play again</button>':''}<button class="btn soft w" data-a="leave">Leave table</button>`:`<button class="btn coral w" data-a="next">Deal the next round</button><p class="hint">The next round starts by itself in a few seconds.</p>`;
  else btns=fin?`<p class="hint">${net?`${esc(H?H.name:'The host')} can start a new game.`:'This table is closed.'}</p><button class="btn soft w" data-a="leave">Leave table</button>`:`<p class="hint">Waiting for ${esc(H?H.name:'the host')} to deal the next round…</p><button class="btn soft w" data-a="menu">Menu</button>`;
  const o=sheet(`<div class="rhead">${w?face(w.rookie?ROBO:w.face,'big'):''}<h2>${fin?'Case closed!':`Round ${G.roundNo} solved`}</h2></div>
 <p style="margin:0">${w?(w.me?'You got rid of all your cards!':esc(w.name)+' got rid of all their cards.'):'Not enough players left to keep going.'}</p>
@@ -944,7 +1004,7 @@ ${fin&&winners.length?`<p class="winline">${winners.map(p=>p.me?'You win the cas
 <table class="rtable"><tr><th>SUSPECT</th><th>THIS ROUND</th><th style="text-align:right">TOTAL</th></tr>
 ${rows.map(({p,pen})=>`<tr class="${fin&&!p.left&&p.score===best?'win':''}"><td>${esc(p.name)}${p.me?' (you)':''}${p.afk?'<span class="lt">Away</span>':p.left?'<span class="lt">Left</span>':p.out?'<span class="lt">Out</span>':''}</td><td>${pen==null?'–':'+'+pen}</td><td class="n">${p.score}</td></tr>`).join('')}</table>
 ${lr&&me?`<p class="earn">${awardGot?`+${awardGot} Boli earned`:'Daily Boli limit reached, keep playing for fun!'}</p>`:''}
-${watching()?`<p class="winline" style="font-size:16px">You’re in for the next game. You get a seat when ${fin?'the host starts a new game':'this match ends'}.</p>`:''}
+${watching()?`<p class="winline" style="font-size:16px">${myWatch().cpu&&!fin?'You take a computer’s seat when the next round starts, keeping its points.':`You’re in for the next game. You get a seat when ${fin?'the host starts a new game':'this match ends'}.`}</p>`:''}
 ${btns}`,'round');o.dataset.lock='1';o.dataset.h=(G.hostId||'')+(fin?'f':'');}
 function confetti(){if(matchMedia('(prefers-reduced-motion: reduce)').matches)return;const box=document.createElement('div');box.className='confetti';box.setAttribute('aria-hidden','true');const C=['#E0B967','#F3E6CA','#A5372B','#E6D2A6','#8C6B3F','#FBF6EA'];
  for(let i=0;i<90;i++){const s=document.createElement('i');s.style.cssText=`left:${Math.random()*100}%;background:${C[i%6]};--x:${((Math.random()*2-1)*140).toFixed(0)}px;--r:${(Math.random()*900-450).toFixed(0)}deg;animation-delay:${(Math.random()*.6).toFixed(2)}s;animation-duration:${(2.2+Math.random()*1.6).toFixed(2)}s;width:${(6+Math.random()*6).toFixed(0)}px;height:${(8+Math.random()*9).toFixed(0)}px`;box.appendChild(s);}
@@ -952,7 +1012,13 @@ function confetti(){if(matchMedia('(prefers-reduced-motion: reduce)').matches)re
 function menu(){if(!G)return;const on=isOn();
  sheet(`<h2>${on?'Menu':'Paused'}</h2><p>Round ${G.roundNo} of ${G.rounds} · ${G.mode==='lives'?'3 Lives':'Classic'}${on?'':' · '+G.level}</p>
 <button class="btn w" data-a="close">Keep playing</button><button class="btn soft w" data-a="rules">How to play</button>
-${on?`<button class="btn soft w" data-a="leave">Leave the table</button>${G.status!=='over'&&G.status!=='lobby'&&!watching()?'<p class="hint">If you leave mid-round, an AI Rookie finishes your round and you can’t rejoin this match.</p>':''}`:'<button class="btn soft w" data-a="home">Leave the table</button>'}`);}
+<button class="btn soft w" data-a="quitAsk">${on&&watching()?'Leave table':'Quit to lobby'}</button>`);}
+/* Quit to lobby, with a confirm step. Online you leave the table: at a Quick Match table a computer takes your seat,
+   at a friends' table an AI Rookie finishes your round. */
+function quitAsk(){if(!G){renderHome();return;}const on=isOn(),live=G.status!=='over'&&G.status!=='lobby';
+ const why=!on?'This case will be closed and not kept.':watching()?'You stop watching this table.':live&&G.quick?'A computer takes your seat so the others keep playing. You can’t rejoin this match.':live?'An AI Rookie finishes your round so the others keep playing. You can’t rejoin this match.':'You leave this table.';
+ sheet(`<h2>Leave this game?</h2><p>${why}</p><button class="btn coral w" data-a="quitGo">${on?'Leave table':'Quit'}</button><button class="btn soft w" data-a="close">${on?'Stay':'Keep playing'}</button>`,'quit');}
+function quitGo(){closeSheet();if(isOn()){leaveTable();return;}clearAll();role=null;G=null;renderHome();}
 /* ================= table rendering (same for solo, host and joiners) ================= */
 function seatOrder(){if(meIdx()<0)return G.players.filter(p=>!p.gone);const n=G.players.length,mi=meIdx(),r=[];for(let k=1;k<n;k++){const p=G.players[(mi+k)%n];if(!p.gone)r.push(p);}return r;}
 /* The interrogation desk: opponents are pinned polaroids around the top and sides, the evidence pile sits exactly in the
@@ -961,15 +1027,16 @@ const SEATANG={1:[90],2:[150,30],3:[166,90,14],4:[168,118,62,12],5:[170,136,90,4
 const TILT=[-3,2,-1.5,2.5,-2];
 /* a public-table newcomer who arrived mid-match: they watch, and get a seat when the next match starts */
 const watching=()=>!!(G&&G.watching&&meIdx()<0);
-function watchDock(){return `<section class="me watch"><div class="wslip"><span class="rstamp">NEXT GAME</span><div><b>You’re in for the next game</b><small>This match is already under way. Watch the table; you get a seat, with everyone at 0, when the next match starts.</small></div></div><button class="btn" data-a="leave">Leave table</button></section>`;}
+const myWatch=()=>(G&&(G.watch||[]).find(w=>w&&w.id===myId))||{};
+function watchDock(){const c=!!myWatch().cpu;return `<section class="me watch"><div class="wslip"><span class="rstamp">${c?'NEXT ROUND':'NEXT GAME'}</span><div><b>${c?'You’re watching':'You’re in for the next game'}</b><small>${c?'You take a computer’s seat when the next round starts, keeping its points.':'This match is already under way. Watch the table; you get a seat, with everyone at 0, when the next match starts.'}</small></div></div><button class="btn" data-a="leave">Leave table</button></section>`;}
 function renderTable(){screen='table';const me=ME(),wt=!me&&watching();if(!me&&!wt)return;setHomeMode(false);const opps=seatOrder(),n=opps.length;
  app.innerHTML=`<main class="table ebt">
 <div class="tbar"><button class="ib" data-a="menu" aria-label="Menu">${ICON.menu}</button><div class="ttl"><span class="chip">Round ${G.roundNo} of ${G.rounds}${G.mode==='lives'?' · 3 lives':''}</span></div>${isOn()?`<button class="ib" id="micbtn" data-a="mic" hidden aria-label="Turn mic on"></button><button class="ib" data-a="chat" aria-label="Quick chat">${ICON.chat}</button>`:''}${sndBtn()}</div>
 <section class="arena" id="arena"><div class="corkedge" aria-hidden="true"></div>
 <section class="felt" id="felt"><div class="spot" aria-hidden="true"><i></i></div><div class="need" id="need"></div><div class="pilew"><div class="pile" id="pile"></div><div class="ctag" id="ctag" hidden></div></div><div class="claim" id="claim" aria-live="polite"></div><div class="reveal" id="reveal"></div></section>
-<section class="opps n${n}" id="opps">${opps.map((p,i)=>`<div class="opp" data-pid="${esc(p.id)}" style="--tl:${TILT[i%5]}deg"><div class="pol"><div class="fw">${face(p.rookie?ROBO:p.face,'sq')}<span class="crown" hidden>${CROWN}</span></div><div class="nm">${esc(p.name)}</div><span class="tagx" hidden></span></div><span class="think" aria-hidden="true"><i></i><i></i><i></i></span><div class="ofan"></div><div class="lives"></div></div>`).join('')}</section>
-<div class="turnb" id="turnb"></div></section>
-${wt?watchDock()+'</main>':`<section class="me" data-pid="${esc(me.id)}"><div class="meinfo"><div class="fw">${face(me.face,'big')}<span class="crown" hidden>${CROWN}</span></div><div class="mi"><div class="nm">${esc(me.me&&!isOn()?shownName():me.name)}</div><div class="sub" id="mesub"></div></div><div class="lives" id="melives"></div><span class="spacer"></span><span class="timer" id="timer"></span></div>
+<section class="opps n${n}" id="opps">${opps.map((p,i)=>`<div class="opp" data-pid="${esc(p.id)}" data-a="opp" aria-label="${esc(p.name)}${p.cpu?', computer player':''}" style="--tl:${TILT[i%5]}deg"><div class="pol"><div class="fw"><span class="vring" aria-hidden="true"></span>${face(p.rookie?ROBO:p.face,'sq')}<span class="crown" hidden>${CROWN}</span><span class="cputag"${p.cpu?'':' hidden'}>Computer</span><span class="moff" hidden>${MIC_OFF}</span></div><div class="nm">${esc(p.name)}</div><span class="tagx" hidden></span></div><span class="think" aria-hidden="true"><i></i><i></i><i></i></span><div class="ofan"></div><div class="lives"></div></div>`).join('')}</section>
+<div class="turnb" id="turnb"></div><div class="wpill" id="wpill" hidden></div></section>
+${wt?watchDock()+'</main>':`<section class="me" data-pid="${esc(me.id)}"><div class="meinfo"><div class="fw"><span class="vring" aria-hidden="true"></span>${face(me.face,'big')}<span class="crown" hidden>${CROWN}</span><span class="moff" hidden>${MIC_OFF}</span></div><div class="mi"><div class="nm">${esc(me.me&&!isOn()?shownName():me.name)}</div><div class="sub" id="mesub"></div></div><div class="lives" id="melives"></div><span class="spacer"></span><span class="timer" id="timer"></span></div>
 <div class="hand" id="hand"></div><div class="acts"><button class="dhbtn" id="callbtn" data-a="dhogu" disabled><b>DHOGU!</b><small>Nothing to call yet</small></button><button class="btn go" id="playbtn" data-a="play" disabled>Select 1–4 cards</button></div></section></main>`}`;
  update();layoutArena();vcUI();}
 /* re-fit names once the typewriter and serif fonts have arrived */
@@ -1009,7 +1076,11 @@ function update(){if(!G||screen!=='table')return;const me=ME(),wt=!me&&watching(
   el.querySelector('.crown').hidden=!(on&&p.id===G.hostId);
   const FAN=n<=2?4:n===3?3:2,k=Math.min(FAN,p.hand.length);const fh=p.out?'<span class="outtag">Out</span>':(p.hand.length?`${Array.from({length:k},(_,j)=>`<i class="card back" style="--r:${((j-(k-1)/2)*(FAN>=4?11:13)).toFixed(1)}deg"></i>`).join('')}<span class="cc">${p.hand.length}</span>`:'<span class="outtag">0</span>');
   const fe=el.querySelector('.ofan');if(fe._h!==fh){const bump=fe._n!=null&&fe._n!==p.hand.length;fe.innerHTML=fh;fe._h=fh;fe.classList.remove('bump');if(bump){void fe.offsetWidth;fe.classList.add('bump');}fe._n=p.hand.length;}
-  const lv=livesHTML(p);const le=el.querySelector('.lives');if(le.innerHTML!==lv)le.innerHTML=lv;});
+  const lv=livesHTML(p);const le=el.querySelector('.lives');if(le.innerHTML!==lv)le.innerHTML=lv;
+  const ct=el.querySelector('.cputag');if(ct&&ct.hidden!==!p.cpu)ct.hidden=!p.cpu;});
+ /* "Name is watching": newcomers waiting for a computer's seat at the next round */
+ {const wp=$('#wpill');if(wp){const ws=(G.watch||[]).filter(w=>w&&w.cpu&&w.id!==myId).map(w=>w.name),h=ws.length?`${ICON.lens}<span>${esc(ws.join(', '))} ${ws.length>1?'are':'is'} watching</span>`:'';if(wp._h!==h){wp._h=h;wp.innerHTML=h;wp.hidden=!h;}}}
+ vcBadges();
  const mc=app.querySelector('.me .crown');if(mc&&me)mc.hidden=!(on&&me.id===G.hostId);
  const need=$('#need');if(need&&need._r!==G.rank){need._r=G.rank;need.innerHTML=`Now playing<b class="${need._init?'pop':''}">${RNAME[G.rank]||''}</b>`;need._init=1;}
  const pile=$('#pile');if(pile){const k=Math.min(6,G.pile.length);let h='';for(let i=0;i<k;i++)h+=backHTML(`transform:translate(${(i%3-1)*2}px,${-i*2}px) rotate(${[-6,4,-2,7,-4,3][i]}deg)`);h+=G.pile.length?`<span class="count">${G.pile.length}</span>`:'';if(pile._h!==h){pile.innerHTML=h;pile._h=h;}}
@@ -1088,6 +1159,28 @@ const NS=TEST_NS?'dhivehidhogu/test-'+TEST_NS+'/':'dhivehidhogu/v1/';
 const BROKERS=['wss://broker.emqx.io:8084/mqtt','wss://broker.hivemq.com:8884/mqtt'];
 let net=null,pool=null,poolT=null,srvState='checking',quickRun=0;const lobbyList={},poolSeen={};
 const TE=new TextEncoder(),TD=new TextDecoder();
+/* ---- "N playing now" on Quick Match, counted the same way as Digu and the shared online games: a tiny anonymous
+   check-in per player (Firestore presence/dhogu/users/{uid}, only the time), written once a minute while Dhogu is on
+   screen and never from localhost or a test table. The live Firestore rules must list 'dhogu' among the presence games
+   (extras/firestore-rules.txt) before these check-ins are accepted; until then the count falls back to the players
+   seen at public tables right now. ---- */
+const FBV='https://www.gstatic.com/firebasejs/12.19.0/',FBCFG={apiKey:'AIzaSyCl9Xz5r80755hYX0ww2GRaB6TZTH6sayE',authDomain:'dhivehi-digu.firebaseapp.com',projectId:'dhivehi-digu',storageBucket:'dhivehi-digu.firebasestorage.app',messagingSenderId:'778464006205',appId:'1:778464006205:web:7dce5d63707c6b2d0eda54'};
+const PRES_GAME='dhogu',presWrite=()=>!LOCAL&&!TEST_NS;
+let fbP=null,fbaP=null,presUid=null,presN=0,presAt=0;
+function fb(){if(fbP)return fbP;fbP=Promise.all([import(FBV+'firebase-app.js'),import(FBV+'firebase-firestore.js')]).then(([A,F])=>{const app=A.getApps&&A.getApps().length?A.getApp():A.initializeApp(FBCFG);return{A,F,app,db:F.getFirestore(app)};}).catch(e=>{fbP=null;throw e;});return fbP;}
+function fbAuth(){if(fbaP)return fbaP;fbaP=Promise.all([fb(),import(FBV+'firebase-auth.js')]).then(([f,U])=>({f,U,auth:U.getAuth(f.app)})).catch(e=>{fbaP=null;throw e;});return fbaP;}
+async function presence(){if(!presWrite()||document.hidden)return;try{const a=await fbAuth(),f=a.f;try{if(a.auth.authStateReady)await a.auth.authStateReady();}catch(e){}
+ const u=a.auth.currentUser||(await a.U.signInAnonymously(a.auth)).user;presUid=u.uid;await f.F.setDoc(f.F.doc(f.db,'presence',PRES_GAME,'users',u.uid),{t:f.F.serverTimestamp()});}catch(e){}}
+async function presenceOff(){if(!presUid||!presWrite())return;try{const f=await fb();f.F.deleteDoc(f.F.doc(f.db,'presence',PRES_GAME,'users',presUid)).catch(()=>{});}catch(e){}}
+async function presenceCount(){if(Date.now()-presAt<25000)return;presAt=Date.now();
+ try{const f=await fb();const since=f.F.Timestamp.fromMillis(Date.now()-120000);const r=await f.F.getCountFromServer(f.F.query(f.F.collection(f.db,'presence',PRES_GAME,'users'),f.F.where('t','>',since)));presN=r.data().count|0;paintLive();}catch(e){}}
+if(presWrite()){setTimeout(presence,2500);setInterval(presence,60000);addEventListener('pagehide',()=>{presenceOff();});}
+setInterval(()=>{if(screen==='home'&&!document.hidden)presenceCount();},30000);
+/* people at public tables right now (from the listings), so the count is never below what the lobby can see */
+const tablesN=()=>{const now=Date.now();return Object.values(lobbyList).filter(x=>Math.abs(now-x.t)<40000).reduce((s,x)=>s+(x.h|0||x.n|0),0);};
+const liveN=()=>Math.max(presN,tablesN());
+const liveHTML=()=>{const n=liveN();return n>0?`<span class="eb-lv"><i></i>${n} playing now</span>`:'<span class="eb-lv first">Be the first to play</span>';};
+function paintLive(){const e=$('#qlive');if(!e)return;const h=liveHTML();if(e._h!==h){e._h=h;e.innerHTML=h;}}
 function b64(u8){let s='';for(let i=0;i<u8.length;i+=0x8000)s+=String.fromCharCode.apply(null,u8.subarray(i,i+0x8000));return btoa(s);}
 function unb64(s){const b=atob(s),u=new Uint8Array(b.length);for(let i=0;i<b.length;i++)u[i]=b.charCodeAt(i);return u;}
 function rid(n){const a=new Uint8Array(n);crypto.getRandomValues(a);return Array.from(a,x=>x.toString(16).padStart(2,'0')).join('');}
@@ -1144,18 +1237,18 @@ function setSrv(v){if(srvState!==v){srvState=v;const e=$('#srv');if(e)e.outerHTM
 function warmUp(){if(net||!window.WebSocket)return;
  if(!pool){pool=makeClients(null);const p0=pool;p0.forEach(o=>o.onUp2=()=>setSrv('ok'));anyUp(p0,10000).then(v=>{if(!v&&pool===p0&&srvState!=='ok')setSrv('fail');});}
  const p=pool;p.forEach(o=>{o.h=onPoolMsg;o.subs=()=>[NS+'lobby/+'];if(o.ok)o.c.subscribe([NS+'lobby/+']);});
- clearTimeout(poolT);poolT=setTimeout(()=>{if(pool!==p)return;if((screen==='home'&&tab==='online')||screen==='wait'){warmUp();return;}p.forEach(o=>o.c.end());pool=null;},5*60*1000);}
+ clearTimeout(poolT);poolT=setTimeout(()=>{if(pool!==p)return;if(screen==='home'||screen==='wait'||screen==='quick'){warmUp();return;}p.forEach(o=>o.c.end());pool=null;},5*60*1000);}
 function onPoolMsg(o,topic,m){if(topic.indexOf(NS+'lobby/')===0){onLobbyMsg(topic,m);return;}const mm=/\/([A-Z]{4})\/i$/.exec(topic);if(mm&&m&&m.host)poolSeen[mm[1]]=m;}
 function onLobbyMsg(topic,m){const code=topic.slice((NS+'lobby/').length);if(!/^[A-Z]{4}$/.test(code))return;
  if(!m||!m.t)delete lobbyList[code];
- else{const cur=lobbyList[code];if(!cur||+m.t>=cur.t)lobbyList[code]={code,name:cleanName(m.name)||'Player',n:Math.max(1,Math.min(6,m.n|0)),t:+m.t,c:+m.c||+m.t,status:m.status==='lobby'?'lobby':'busy',q:!!m.q,host:String(m.host||'')};}
- if(screen==='home')updOpenList();quickCheck();}
+ else{const cur=lobbyList[code];if(!cur||+m.t>=cur.t)lobbyList[code]={code,name:cleanName(m.name)||'Player',n:Math.max(1,Math.min(6,m.n|0)),t:+m.t,c:+m.c||+m.t,status:m.status==='lobby'?'lobby':'busy',q:!!m.q,host:String(m.host||''),h:Math.max(0,Math.min(12,m.h|0)),cf:Math.max(0,Math.min(5,m.cf|0))};}
+ if(screen==='home'){updOpenList();paintLive();}quickCheck();}
 /* listings are refreshed every 15 s; anything older than 40 s is treated as a ghost */
 /* open tables: lobbies first; public tables mid-match are listed too (a newcomer waits for the next match). Quick Play only uses lobbies. */
 function openTables(all){const now=Date.now();return Object.values(lobbyList).filter(x=>(x.status==='lobby'||all)&&x.n<6&&Math.abs(now-x.t)<40000&&x.host!==myId).sort((a,b)=>(a.status==='lobby'?0:1)-(b.status==='lobby'?0:1)||b.n-a.n||b.t-a.t);}
 function openListHTML(){const l=openTables(true);
  if(!l.length)return `<p class="empty-list">${srvState==='fail'?'Can’t load open tables on this network.':srvState==='checking'?'Looking for open tables…':'No open tables right now. Create a public table, or try Quick Play.'}</p>`;
- return l.map(x=>`<div class="otable${x.status==='lobby'?'':' busy'}"><span class="oi">${ICON.table}</span><div class="ot"><b>${esc(x.name)}’s table</b><small>${x.status==='lobby'?`${x.n} of 6 players${x.q?' · Quick Play':''}`:'Match in progress: join for the next game'}</small></div><button class="btn sm" data-a="joinOpen" data-code="${esc(x.code)}">Join</button></div>`).join('');}
+ return l.map(x=>`<div class="otable${x.status==='lobby'?'':' busy'}"><span class="oi">${ICON.table}</span><div class="ot"><b>${esc(x.name)}’s table</b><small>${x.status==='lobby'?`${x.n} of ${x.q?QM_SEATS:6} players${x.q?' · Quick Match':''}`:x.cf>0?'A computer’s seat is free: join at the next round':'Match in progress: join for the next game'}</small></div><button class="btn sm" data-a="joinOpen" data-code="${esc(x.code)}">Join</button></div>`).join('');}
 let listT=0;function updOpenList(){if(listT)return;listT=setTimeout(()=>{listT=0;const e=$('#openlist');if(e)e.innerHTML=openListHTML();},250);}
 setInterval(()=>{if(screen==='home'&&tab==='online'&&!document.hidden)updOpenList();},5000);
 function genCode(){const a='ABCDEFGHJKLMNPQRSTUVWXYZ';let s='';for(let i=0;i<4;i++)s+=a[Math.floor(Math.random()*a.length)];return s;}
@@ -1192,18 +1285,20 @@ function updListing(force){const n=net;if(!n||n.role!=='host'||!G)return;const t
  const lob=G.status==='lobby',k=seatCount();
  const show=n.isPublic&&k<6;
  if(show){if(!n.lc){n.lc=makeClients({topic,payload:''});/* its own Last Will clears the public listing */n.lc.forEach(o=>{o.onUp2=()=>updListing(true);});}
-  const h=G.players.find(p=>p.id===myId)||{};const sig=h.name+'|'+k+'|'+lob;if(!force&&sig===n.lsig&&Date.now()-n.lsent<14000)return;n.lsig=sig;n.lsent=Date.now();
-  const msg={v:1,code:n.code,name:h.name,n:k,t:Date.now(),c:n.created,status:lob?'lobby':'busy',q:n.quick,host:myId};n.listed=true;n.lc.forEach(o=>pub(o,topic,msg,true));}
+  /* cf: computer seats a newcomer can take (Quick Match finds these); h: people at the table, for "N playing now" */
+  const cf=lob?0:cpuFree(),hp=G.players.filter(p=>!p.gone&&!p.bot).length+(G.watch||[]).length;
+  const h=G.players.find(p=>p.id===myId)||{};const sig=h.name+'|'+k+'|'+lob+'|'+cf+'|'+hp;if(!force&&sig===n.lsig&&Date.now()-n.lsent<14000)return;n.lsig=sig;n.lsent=Date.now();
+  const msg={v:1,code:n.code,name:h.name,n:k,t:Date.now(),c:n.created,status:lob?'lobby':'busy',q:n.quick,host:myId,h:hp,cf};n.listed=true;n.lc.forEach(o=>pub(o,topic,msg,true));}
  else if(n.lc){const lc=n.lc;n.lc=null;n.listed=false;n.lsig='';lc.forEach(o=>{try{if(o.ok)o.c.publish(topic,'',true);}catch(e){}});setTimeout(()=>lc.forEach(o=>{try{o.c.end();}catch(e){}}),800);}}
 async function sendPlayer(topic,pl,obj){const n=net;if(!n||n.role!=='host'||!pl||!pl.key)return;try{const m=await seal(pl.key,obj);let o=n.clients[pl.bi];if(!o||!o.ok)o=n.clients.find(x=>x.ok);pub(o,NS+n.code+'/p/'+topic,m);}catch(e){}}
 function connIds(){const n=net,now=Date.now();return G.players.filter(p=>p.me||(!p.bot&&!p.gone&&n&&n.last[p.id]&&now-n.last[p.id]<8000)).map(p=>p.id);}
 function pubState(pid){const L=G.last;return{v:1,rev:G.rev|0,mid:G.mid,code:G.code,quick:!!G.quick,pub:!!(net&&net.isPublic),hostId:myId,ep:net?net.ep:0,created:net?net.created:0,status:G.status,mode:G.mode,rounds:G.rounds,roundNo:G.roundNo|0,decks:G.decks||1,
  rank:G.rank||1,phase:G.phase||null,turn:G.turn|0,tl:G.turnEnd?Math.max(0,G.turnEnd-Date.now()):0,pile:(G.pile||[]).length,seq:G.seq|0,
- last:L?{p:G.players.indexOf(L.p),n:L.n,rank:L.rank,seq:L.seq}:null,rv:G.rv?{cards:G.rv.cards,lie:G.rv.lie}:null,cl:G.cl||null,lr:G.lr||null,final:!!G.final,al:G.autoAt?Math.max(0,G.autoAt-Date.now()):0,conn:connIds(),watch:(G.watch||[]).map(w=>({id:w.id,name:w.name,face:w.face})),
- players:G.players.map(p=>({id:p.id,name:p.name,face:p.face,score:p.score|0,n:(p.hand||[]).length,lives:p.lives==null?3:p.lives,out:!!p.out,bot:!!p.bot,rookie:!!p.rookie,afk:!!p.afk,left:!!p.left,gone:!!p.gone,hand:p.id===pid?p.hand:undefined}))};}
+ last:L?{p:G.players.indexOf(L.p),n:L.n,rank:L.rank,seq:L.seq}:null,rv:G.rv?{cards:G.rv.cards,lie:G.rv.lie}:null,cl:G.cl||null,lr:G.lr||null,final:!!G.final,al:G.autoAt?Math.max(0,G.autoAt-Date.now()):0,conn:connIds(),watch:(G.watch||[]).map(w=>({id:w.id,name:w.name,face:w.face,cpu:!!w.cpu})),
+ players:G.players.map(p=>({id:p.id,name:p.name,face:p.face,score:p.score|0,n:(p.hand||[]).length,lives:p.lives==null?3:p.lives,out:!!p.out,bot:!!p.bot,cpu:!!p.cpu,mic:p.me?(VC.on?1:0):p.mic?1:0,rookie:!!p.rookie,afk:!!p.afk,left:!!p.left,gone:!!p.gone,hand:p.id===pid?p.hand:undefined}))};}
 let syncQ=false;
 function sync(){if(role!=='host'||!net||syncQ)return;syncQ=true;queueMicrotask(()=>{syncQ=false;const n=net;if(!n||role!=='host'||!G)return;G.rev=(G.rev|0)+1;const fx=n.fxq;n.fxq=[];
- n.players.forEach((pl,tp)=>{if(pl.pid)sendPlayer(tp,pl,{k:'state',s:pubState(pl.pid),fx});});updListing(false);if(screen==='lobby')updLobby();});}
+ n.players.forEach((pl,tp)=>{if(pl.pid)sendPlayer(tp,pl,{k:'state',s:pubState(pl.pid),fx});});updListing(false);if(screen==='lobby')updLobby();else if(screen==='quick')qmPaint();});}
 async function onHostMsg(o,topic,m,ret){const n=net;if(!n||n.role!=='host')return;
  if(topic.indexOf(NS+'lobby/')===0){onLobbyMsg(topic,m);return;}
  if(topic===NS+n.code+'/i'){
@@ -1226,7 +1321,11 @@ function onHostData(pl,topic,d){const n=net;if(!G||!d||typeof d!=='object')retur
   if(G.watch.some(w=>w.id===id)){mapPlayer(topic,pl,id);sendPlayer(topic,pl,{k:'state',s:pubState(id),fx:[]});return;}
   /* mid-match: a private table keeps its seats locked; a public one lets the newcomer wait for the next match */
   if(G.status!=='lobby'&&!n.isPublic){sendPlayer(topic,pl,{k:'err',m:'That game has already started. Seats at a private table stay locked until the match is over.'});return;}
-  if(seatCount()>=6){sendPlayer(topic,pl,{k:'err',m:'That table is full.'});return;}
+  /* a free computer seat: sit straight down before the first play, otherwise watch until the next round */
+  if(G.status!=='lobby'&&G.status!=='over'&&cpuFree()>0){mapPlayer(topic,pl,id);const w={id,name:cleanName(d.name)||'Player',face:vf(d.fc,id),cpu:true};
+   if(preDeal()){const p=G.players.find(q=>q.cpu&&!q.gone);takeCpuSeat(p,w);emit({t:'toast',m:tookSeatMsg([w.name])});SFX.pop();renderTable();if(G.phase==='play'&&G.players[G.turn]===p)startTurn();else sync();return;}
+   G.watch.push(w);emit({t:'toast',m:`${w.name} is watching, and takes a computer’s seat after this round.`});SFX.pop();update();sync();return;}
+  if(seatCount()>=(G.status==='lobby'&&G.quick?QM_SEATS:6)){sendPlayer(topic,pl,{k:'err',m:'That table is full.'});return;}
   if(G.status!=='lobby'){mapPlayer(topic,pl,id);const nm_=cleanName(d.name)||'Player';G.watch.push({id,name:nm_,face:vf(d.fc,id)});
    emit({t:'toast',m:`${nm_} joined. They get a seat when the next game starts.`});SFX.pop();sync();return;}
   mapPlayer(topic,pl,id);G.players.push({id,name:cleanName(d.name)||'Player',face:vf(d.fc,id),score:0});SFX.pop();sync();return;}
@@ -1241,6 +1340,7 @@ function onHostData(pl,topic,d){const n=net;if(!G||!d||typeof d!=='object')retur
  const p=G.players[i];
  if(d.k==='ping'){if((d.rev|0)!==(G.rev|0))sendPlayer(topic,pl,{k:'state',s:pubState(pl.pid),fx:[]});else sendPlayer(topic,pl,{k:'pong'});return;}
  if(d.k==='chat'){const m=QC[d.m|0];if(m&&!p.bot){emit({t:'say',p:i,m});sync();}return;}
+ if(d.k==='mic'){const on=d.on?1:0;if((p.mic|0)!==on){p.mic=on;update();sync();}return;}
  if(d.k==='rtc'){const to=String(d.to||'');if(to===myId)vcOnSignal(pl.pid,d.d);else n.players.forEach((q,tp)=>{if(q.pid===to)sendPlayer(tp,q,{k:'rtc',f:pl.pid,d:d.d});});return;}
  if(d.k==='leave'){dropPlayer(p,true);return;}
  if(d.k==='act'&&!p.bot&&!p.gone){
@@ -1252,6 +1352,9 @@ function dropPlayer(p,byChoice){const n=net;if(!n||!G)return;const i=G.players.i
  if(G.status==='lobby'){G.players.splice(i,1);emit({t:'toast',m:`${p.name} left the table.`});sync();return;}
  n.banned.add(p.id);p.left=true;
  if(G.status==='over'){sync();return;}
+ /* Quick Match: a computer takes the seat for good (same cards and points), so the others keep playing */
+ if(G.quick){const nm0=p.name;cpuReplace(p);emit({t:'toast',m:`${nm0} ${byChoice?'left':'lost connection'}. A computer takes their seat.`});
+  if(G.phase==='play'&&G.turn===i)later(()=>botPlay(p),1200);renderTable();sync();return;}
  if(G.phase==='over'){p.gone=true;emit({t:'toast',m:`${p.name} left the match.`});if(humansLeft()<2)endMatchNow();else{showRoundSheet();emit({t:'round'});}sync();return;}
  p.bot=true;p.rookie=true;emit({t:'rookie',p:i,c:byChoice?1:0});
  if(G.phase==='play'&&G.turn===i)later(()=>botPlay(p),1200);
@@ -1259,21 +1362,37 @@ function dropPlayer(p,byChoice){const n=net;if(!n||!G)return;const i=G.players.i
 function hostWatch(){const n=net;if(!n||n.role!=='host'||!G)return;const now=Date.now();
  G.players.slice().forEach(p=>{if(p.me||p.bot||p.gone)return;const t=n.last[p.id]||(n.last[p.id]=now);if(now-t>30000)dropPlayer(p,false);});
  (G.watch||[]).slice().forEach(w=>{const t=n.last[w.id]||(n.last[w.id]=now);if(now-t>30000)dropWatcher(w.id);});
- if(G.status==='lobby'&&G.quick){const k=G.players.length;
-  if(k>=2){if(!G.autoAt||G._ak!==k){G.autoAt=now+(k>=6?2000:20000);G._ak=k;sync();}else if(now>=G.autoAt){hostStart();return;}}
-  else if(G.autoAt){G.autoAt=0;G._ak=0;sync();}}
+ /* a Quick Match lobby is started by the Quick Match clock (qmTick): full table, or computer players after ~12 s */
  if(screen==='lobby')updLobby();}
 function hostStart(){if(role!=='host'||!G||G.status!=='lobby'||G.players.length<2)return;G.players.forEach(p=>{p.score=0;});G.status='play';G.roundNo=0;G.level='easy';G.autoAt=0;G.seq=0;newRound();}
 /* seats taken (or promised) at this table: in the lobby everyone; mid-match the humans still playing plus anyone waiting */
-function seatCount(){if(!G)return 0;if(G.status==='lobby')return G.players.length;return G.players.filter(p=>!p.gone&&!p.bot).length+(G.watch||[]).length;}
+function seatCount(){if(!G)return 0;if(G.status==='lobby')return G.players.length;return G.players.filter(p=>!p.gone&&(!p.bot||p.cpu)).length+(G.watch||[]).filter(w=>!w.cpu).length;}
+/* Quick Match computer seats (cpu: permanent computer players, unlike the AI Rookie that stands in for a leaver).
+   A newcomer takes one when the next round is dealt (straight away before the first play) and keeps its points.
+   This replaces the old "wait for the whole match" rule only where a computer seat is free. */
+const cpuFree=()=>G?Math.max(0,G.players.filter(p=>p.cpu&&!p.gone).length-(G.watch||[]).filter(w=>w.cpu).length):0;
+/* cards dealt but nobody has played yet this round (the first deal, or just after a round break) */
+const preDeal=()=>!!G&&G.status==='play'&&G.phase==='play'&&(G.seq|0)===(G.rseq|0);
+function cpuPlayer(taken){const names=new Set(taken.map(p=>p.name));let i=BOTS.findIndex(b=>!names.has(b[0]));if(i<0)i=taken.length%BOTS.length;
+ return{id:'c'+rid(3),name:BOTS[i][0],face:botFace(i),bot:true,cpu:true,score:0};}
+/* the newcomer sits in a computer's seat: same cards, same points */
+function takeCpuSeat(p,w){p.id=w.id;p.name=w.name;p.face=w.face;p.bot=false;p.cpu=false;p.to=0;p.seen={};p.mic=0;const n=net;if(n)n.last[w.id]=Date.now();}
+function seatCpuWatchers(){const w=(G.watch||[]).filter(x=>x.cpu);if(!w.length)return[];const names=[];
+ w.forEach(x=>{const p=G.players.find(q=>q.cpu&&!q.gone);if(!p){x.cpu=false;return;}takeCpuSeat(p,x);names.push(x.name);});
+ G.watch=(G.watch||[]).filter(x=>!G.players.some(p=>p.id===x.id));return names;}
+const tookSeatMsg=names=>names.join(' and ')+(names.length>1?' took seats':' took a seat');
+/* a player's seat becomes a computer's (same cards and points); they can't rejoin this match */
+function cpuReplace(p){const c=cpuPlayer(G.players.filter(q=>q!==p));p.id=c.id;p.name=c.name;p.face=c.face;p.bot=true;p.cpu=true;p.rookie=false;p.left=false;p.gone=false;p.mic=0;p.seen={};}
 function dropWatcher(id){const n=net;if(!G||!G.watch)return;const w=G.watch.find(x=>x.id===id);if(!w)return;G.watch=G.watch.filter(x=>x.id!==id);
  if(n){n.players.forEach((pl,tp)=>{if(pl.pid===id)n.players.delete(tp);});delete n.last[id];}sync();}
 /* a new match: everyone still at the table, plus anyone who was waiting, all back to 0 */
-function hostAgain(){const w=(G.watch||[]).map(p=>({id:p.id,name:p.name,face:p.face,score:0}));G.watch=[];
- G.players=G.players.filter(p=>!p.gone&&!p.bot).map(p=>({id:p.id,name:p.name,face:p.face,me:p.me,score:0})).concat(w).slice(0,6);G.roundNo=0;G.final=false;G.status='play';G.mid=rid(4);G.seq=0;newRound();}
+function hostAgain(){G.players=G.players.filter(p=>!p.gone&&(!p.bot||p.cpu)).map(p=>({id:p.id,name:p.name,face:p.face,me:p.me,score:0,mic:p.mic,bot:!!p.cpu,cpu:!!p.cpu}));
+ /* Quick Match: newcomers take the computer seats first, anyone else gets a new seat */
+ G.watch=G.watch||[];const took=seatCpuWatchers();const w=G.watch.map(p=>({id:p.id,name:p.name,face:p.face,score:0}));G.watch=[];
+ G.players=G.players.concat(w).slice(0,6);if(took.length)emit({t:'toast',m:tookSeatMsg(took)});G.roundNo=0;G.final=false;G.status='play';G.mid=rid(4);G.seq=0;newRound();}
 function quickCheck(){const n=net;if(!n||n.role!=='host'||!n.quick||!G||G.status!=='lobby'||G.players.length>1||n.merging)return;
  const other=openTables().filter(x=>x.q&&x.code!==n.code&&(x.c<n.created||(x.c===n.created&&x.code<n.code)))[0];if(!other)return;
- n.merging=true;const run=++quickRun;cleanupNet();role=null;G=null;renderWait('Joining '+other.name+'’s table…');
+ n.merging=true;const run=++quickRun;cleanupNet();role=null;G=null;renderQuick('Joining '+other.name+'’s table…');
  setTimeout(()=>{if(run!==quickRun)return;netJoin(other.code,{timeout:6000,onFail:()=>{if(run===quickRun){warmUp();tryQuick(run,new Set([other.code]));}}});},200);}
 async function hostLeave(){const n=net;if(!n||n.role!=='host')return;const mig=G&&G.status!=='over'?1:0;const jobs=[];
  n.players.forEach((pl,tp)=>{if(pl.pid)jobs.push(sendPlayer(tp,pl,{k:'bye',mig}));});await Promise.race([Promise.all(jobs),sleep(800)]);}
@@ -1323,13 +1442,15 @@ async function onJoinMsg(o,topic,m,ret){const n=net;if(!n||n.role!=='join')retur
   else if(d.afk&&G&&G.status==='over'&&screen==='table'){cleanupNet();const hn=document.querySelector('#ov .sheet .hint');if(hn)hn.textContent='This table is closed.';toast('The host was away, so the table is closed.',4000);}
   else endOnline('The host closed the table.');return;}
  if(d.k==='state'&&d.s){if(G&&G.view&&G.mid===d.s.mid&&(d.s.ep|0)===(G.ep|0)&&(d.s.rev|0)<=(G.rev|0))return;applyState(d.s,d.fx);}}
+/* the seat line-up (a computer's seat taken, or a leaver replaced by a computer) changed: the table is drawn again */
+const pidsOf=V=>V&&V.players?V.players.map(p=>p.id+(p.cpu?'c':'')).join('|'):'';
 function applyState(s,fx){const prev=G;const players=(s.players||[]).map(p=>({...p,face:vf(p.face,p.id),me:p.id===myId,hand:Array.isArray(p.hand)?p.hand:Array.from({length:p.n|0},(_,k)=>({id:'x'+k,r:0,s:'S'}))}));
  const mine=players.find(p=>p.me),wt=!mine&&Array.isArray(s.watch)&&s.watch.some(w=>w&&w.id===myId);
  if(!mine&&!wt){endOnline('You are no longer at this table.');return;}
  if(mine&&mine.afk){endOnline();afkNotice();return;}
  if(wt){/* waiting for the next match: watch the table without a hand */
   G={...s,players,view:true,watching:true,pile:Array(s.pile|0).fill(0),turnEnd:s.tl?Date.now()+s.tl:0,autoAt:0,last:s.last?{...s.last,p:players[s.last.p]}:null,sel:new Set()};
-  if(screen!=='table'||!prev||!prev.watching||prev.mid!==G.mid||prev.roundNo!==G.roundNo||prev.ep!==G.ep)renderTable();
+  if(screen!=='table'||!prev||!prev.watching||prev.mid!==G.mid||prev.roundNo!==G.roundNo||prev.ep!==G.ep||pidsOf(prev)!==pidsOf(G))renderTable();
   if(G.phase!=='over'&&sheetKind()==='round')closeSheet();
   (fx||[]).forEach(fxLocal);update();
   if(G.phase==='over'){const o=$('#ov');if(!o||o.dataset.kind!=='round'||o.dataset.h!==(G.hostId||'')+(G.final?'f':''))showRoundSheet();}return;}
@@ -1337,45 +1458,92 @@ function applyState(s,fx){const prev=G;const players=(s.players||[]).map(p=>({..
  const sel=prev&&prev.view&&prev.mid===s.mid&&prev.roundNo===s.roundNo&&prev.sel?prev.sel:new Set();
  G={...s,players,view:true,pile:Array(s.pile|0).fill(0),turnEnd:s.tl?Date.now()+s.tl:0,autoAt:s.al?Date.now()+s.al:0,last:s.last?{...s.last,p:players[s.last.p]}:null,sel:new Set([...sel].filter(id=>mine.hand.some(c=>c.id===id)))};
  if(G.status==='lobby'){if(screen!=='lobby')renderLobby();else updLobby();(fx||[]).forEach(fxLocal);return;}
- if(screen!=='table'||!prev||!prev.view||prev.watching||prev.mid!==G.mid||prev.roundNo!==G.roundNo||prev.status==='lobby'||prev.ep!==G.ep)renderTable();
+ if(screen!=='table'||!prev||!prev.view||prev.watching||prev.mid!==G.mid||prev.roundNo!==G.roundNo||prev.status==='lobby'||prev.ep!==G.ep||pidsOf(prev)!==pidsOf(G))renderTable();
  if(G.phase!=='over'&&sheetKind()==='round')closeSheet();
  (fx||[]).forEach(fxLocal);update();vcUI();
  if(G.phase==='over'){const o=$('#ov');if(!o||o.dataset.kind!=='round'||o.dataset.h!==(G.hostId||'')+(G.final?'f':''))showRoundSheet();}}
 /* host migration: the next player rebuilds the table from the last public state */
 async function becomeHost(){const n=net;if(!n||n.role!=='join'||n.promoting||!G)return;n.promoting=true;const V=G,old=V.hostId;
- const players=V.players.map(p=>({id:p.id,name:p.name,face:p.face,score:p.score|0,me:p.id===myId,bot:!!p.bot,rookie:!!p.rookie,afk:!!p.afk,left:!!p.left,gone:!!p.gone}));
+ const players=V.players.map(p=>({id:p.id,name:p.name,face:p.face,score:p.score|0,me:p.id===myId,bot:!!p.bot,cpu:!!p.cpu,mic:p.mic?1:0,rookie:!!p.rookie,afk:!!p.afk,left:!!p.left,gone:!!p.gone}));
  const lobby=V.status==='lobby',between=V.phase==='over'||V.status==='over';
  const oi=players.findIndex(p=>p.id===old);
- if(oi>=0){if(lobby)players.splice(oi,1);else{const o=players[oi];o.left=true;if(between)o.gone=true;else{o.bot=true;o.rookie=true;}}}
+ if(oi>=0){if(lobby)players.splice(oi,1);else{const o=players[oi];o.left=true;if(V.quick&&V.status!=='over'){const c=cpuPlayer(players.filter(q=>q!==o));Object.assign(o,{id:c.id,name:c.name,face:c.face,bot:true,cpu:true,left:false,gone:false,rookie:false,mic:0});}else if(between)o.gone=true;else{o.bot=true;o.rookie=true;}}}
  const oldCl=n.clients;n.timers.forEach(clearInterval);clearTimeout(n.failT);oldCl.forEach(o=>{o.h=null;o.onUp2=null;});net=null;
  const h=await hostNet(V.code,{ep:(n.ep|0)+1,pub:!!V.pub,quick:!!V.quick,created:V.created});
  setTimeout(()=>oldCl.forEach(o=>{try{o.c.end();}catch(e){}}),600);
  if(!h){endOnline('Lost the connection to the table.');return;}
  role='host';if(old&&!lobby)h.banned.add(old);
  G={players,mode:V.mode,rounds:V.rounds,level:'easy',roundNo:V.roundNo|0,status:V.status,code:V.code,quick:!!V.quick,pub:!!V.pub,hostId:myId,ep:h.ep,created:h.created,rev:(V.rev|0)+100,mid:V.mid,decks:V.decks||1,
-  phase:lobby?null:V.phase,lr:V.lr,final:!!V.final,watch:(V.watch||[]).filter(w=>w&&w.id&&w.id!==old).map(w=>({id:String(w.id),name:cleanName(w.name)||'Player',face:vf(w.face,w.id)})),sel:new Set(),pile:[],cl:null,rv:null,last:null,rank:V.rank||1,turn:0,seq:(V.seq|0)+1,autoAt:0};
+  phase:lobby?null:V.phase,lr:V.lr,final:!!V.final,watch:(V.watch||[]).filter(w=>w&&w.id&&w.id!==old).map(w=>({id:String(w.id),name:cleanName(w.name)||'Player',face:vf(w.face,w.id),cpu:!!w.cpu})),sel:new Set(),pile:[],cl:null,rv:null,last:null,rank:V.rank||1,turn:0,seq:(V.seq|0)+1,autoAt:0};
  const now=Date.now();G.watch.forEach(w=>{h.last[w.id]=now;});players.forEach(p=>{if(!p.me&&!p.bot&&!p.gone)h.last[p.id]=now;p.hand=[];p.lives=3;p.out=!!p.gone;p.seen={};});
  closeSheet();
  if(lobby){renderLobby();sync();toast('The host left, so you are the host now.');return;}
  if(V.status==='over'){renderTable();showRoundSheet();sync();return;}
- if(humansLeft()<2){renderTable();endMatchNow();toast('Everyone else has left the table.');return;}
+ if(tooFew()){renderTable();endMatchNow();toast('Everyone else has left the table.');return;}
  if(between){renderTable();showRoundSheet();sync();toast('The host left, so you are the host now.');
   if(!G.final)later(()=>{if(G&&role==='host'&&G.phase==='over'&&!G.final)newRound();},10000);return;}
  toast('The host left, so you are the new host. This round is dealt again; scores stay the same.',5000);
  G.roundNo--;newRound();}
 function netWake(){const n=net;if(!n)return;(n.clients||[]).concat(n.lc||[]).forEach(o=>{try{if(!o.c.connected)o.c.reconnect();}catch(e){}});
  if(n.role==='join'&&n.ready)joinSend({k:'ping',rev:G?G.rev|0:0,id:myId});else if(n.role==='host')sync();}
-/* ---------- quick play ---------- */
-async function quickMatch(){if(!netOK())return;const run=++quickRun;cleanupNet();role=null;G=null;renderWait('Connecting…');warmUp();
+/* ---------- Quick Match (owner-approved flow, Sept 2026) ----------
+   Search for about 12 s while real players fill the seats; if the table isn't full, offer "Start with computer players"
+   (starts by itself after 5 s) or "Keep waiting". Computer seats are permanent computer players with a Computer tag;
+   a real player who arrives later takes one when the next round is dealt (straight away before the first play),
+   keeping its points. */
+const QM_SEATS=4,QM_SEARCH=12000,QM_AUTO=5000;
+let qmT0=0,qmSheetAt=0,qmIv=0,qmStarting=false;
+const QM_PLUS=sv('<path d="M12 5v14M5 12h14"/>',2.2);
+const qmLobby=()=>isOn()&&!!G&&!!G.quick&&G.status==='lobby';
+const qmHost=()=>qmLobby()&&role==='host';
+function renderQuick(t){screen='quick';closeSheet();setHomeMode(false);
+ app.innerHTML=`<div class="top"><button class="ib" data-a="cancel" aria-label="Cancel">${ICON.back}</button><span class="ttl2">Quick Match</span></div>
+<main class="home">${glowHTML()}<section class="panel rise qsrch"><span class="ftab">CASE 01 · QUICK MATCH</span>
+ <div class="qring"><svg class="tr" viewBox="0 0 140 140" aria-hidden="true"><circle class="trk" cx="70" cy="70" r="62"/><circle class="arc" id="qarc" cx="70" cy="70" r="62" stroke-dasharray="389.6" stroke-dashoffset="0"/></svg><span class="qme">${face(myFace(),'big')}</span><span class="secs" id="qsecs">${Math.round(QM_SEARCH/1000)} s</span></div>
+ <h2 id="qtext" aria-live="polite"></h2><div class="qseats" id="qseats"></div><div class="qfill" id="qfill"></div>
+ <button class="btn soft w" data-a="cancel">Cancel</button></section>
+ <p class="qhint">If the table isn’t full after about ${Math.round(QM_SEARCH/1000)} seconds, you can start with computer players.</p></main>`;
+ setWait(t);qmPaint();qmTick();}
+/* the search screen's heading (setWait is also what the older wait screen used) */
+function setWait(t){const q=$('#qtext');if(q){const h=`<span class="qdots">${esc(String(t||'').replace(/…$/,''))}</span>`;if(q._h!==h){q._h=h;q.innerHTML=h;}return;}const e=$('#waitt');if(e)e.textContent=t;}
+function qmPaint(){if(screen!=='quick')return;if(!qmT0)qmT0=Date.now();
+ const ps=qmLobby()?G.players:[{id:myId,name:shownName(),face:myFace(),me:true}],n=Math.min(ps.length,QM_SEATS);
+ const e=$('#qseats');if(e){let h='';for(let i=0;i<QM_SEATS;i++){const p=ps[i];h+=p?`<div class="qst">${face(p.face)}<span class="sn">${p.id===myId?'You':esc(p.name)}</span></div>`:`<div class="qst"><span class="emp">${QM_PLUS}</span><span class="sn o">Open seat</span></div>`;}if(e._h!==h){e._h=h;e.innerHTML=h;}}
+ const f=$('#qfill');if(f)f.textContent=n+' of '+QM_SEATS+' seats filled';
+ if(qmLobby()){const H=G.players.find(q=>q.id===G.hostId);setWait(ps.length>=QM_SEATS?'Table full, dealing':qmHost()?(Date.now()-qmT0>=QM_SEARCH?'Still looking for suspects':'Finding suspects'):'Waiting for '+(H?H.name:'the host')+' to start');}}
+/* one quiet clock for the ring, the offer and its 5 s countdown */
+function qmTick(){if(qmIv)return;qmIv=setInterval(()=>{if(screen!=='quick'){clearInterval(qmIv);qmIv=0;qmSheetAt=0;return;}
+ if(!qmT0)qmT0=Date.now();const el=Date.now()-qmT0,f=Math.min(1,el/QM_SEARCH);
+ const a=$('#qarc');if(a)a.setAttribute('stroke-dashoffset',(389.6*f).toFixed(1));const s=$('#qsecs');if(s){const t=Math.max(0,Math.ceil((QM_SEARCH-el)/1000))+' s';if(s.textContent!==t)s.textContent=t;}
+ if(!qmHost())return;
+ if(G.players.length>=QM_SEATS){if(qmSheetAt)closeSheet();qmSheetAt=0;qmStart(false);return;}
+ if(qmSheetAt){const b=$('#qcdt');if(!b){qmWait();return;}const g=Date.now()-qmSheetAt;b.textContent='Starting by itself in '+Math.max(1,Math.ceil((QM_AUTO-g)/1000))+' s';
+  const bar=$('#qcdbar');if(bar)bar.style.transform=`scaleX(${Math.max(0,1-g/QM_AUTO).toFixed(3)})`;if(g>=QM_AUTO)qmStart(true);return;}
+ if(f>=1)qmNobody();},200);}
+function qmNobody(){if(!qmHost()||qmSheetAt)return;const need=QM_SEATS-G.players.length,some=G.players.length>1,bots=[];
+ for(let i=0;i<need;i++)bots.push(cpuPlayer(G.players.concat(bots)));qmPaint();
+ sheet(`<h2>${some?'Still '+need+' seat'+(need>1?'s':'')+' free':'Nobody’s around yet'}</h2><p>${some?'Fill them with computer players and start. Anyone who turns up later takes a computer’s seat.':'Start now with computer players. If real players turn up, they take a computer’s seat.'}</p>
+<div class="qbots"><span class="hp">${bots.map(b=>face(b.face)).join('')}</span><small>${need===1?'1 computer player fills the empty seat.':need+' computer players fill the empty seats.'} Each has a small “Computer” tag.</small></div>
+<button class="btn w qcd" data-a="qmBots"><span>Start with computer players</span><span class="cdt" id="qcdt">Starting by itself in ${Math.round(QM_AUTO/1000)} s</span><span class="bar" id="qcdbar"></span></button>
+<button class="btn soft w" data-a="qmWait">Keep waiting</button>`,'qm');qmSheetAt=Date.now();}
+function qmWait(){qmSheetAt=0;if(sheetKind()==='qm')closeSheet();qmT0=Date.now();qmPaint();}
+/* the host deals: computers fill any empty seat (withBots), everyone starts at 0 */
+function qmStart(withBots){if(!qmHost()||qmStarting)return;if(!withBots&&G.players.length<QM_SEATS)return;qmStarting=true;qmSheetAt=0;if(sheetKind()==='qm')closeSheet();
+ if(withBots)while(G.players.length<QM_SEATS)G.players.push(cpuPlayer(G.players));
+ if(G.players.length<2){qmStarting=false;return;}hostStart();updListing(true);}
+async function quickMatch(){if(!netOK())return;const run=++quickRun;cleanupNet();role=null;G=null;qmT0=Date.now();qmSheetAt=0;qmStarting=false;renderQuick('Connecting…');warmUp();
  const up=pool?await anyUp(pool,10000):false;if(run!==quickRun)return;
  if(!up){setSrv('fail');renderHome();toast(netErr,5000);return;}
  setSrv('ok');setWait('Looking for an open table…');
  await sleep(Object.keys(lobbyList).length?400:1800);if(run!==quickRun)return;tryQuick(run,new Set());}
-function tryQuick(run,tried){if(run!==quickRun)return;if(screen!=='wait')renderWait('Looking for an open table…');
- const l=openTables().filter(x=>!tried.has(x.code)).sort((a,b)=>(b.q-a.q)||(b.n-a.n)||(a.c-b.c));
- if(l.length){const x=l[0];tried.add(x.code);setWait('Joining '+x.name+'’s table…');
+function tryQuick(run,tried){if(run!==quickRun)return;if(screen!=='quick')renderQuick('Looking for an open table…');
+ /* order: a Quick Match table still filling up, then a game with a free computer seat, then any open table */
+ const now=Date.now(),l=openTables().filter(x=>!tried.has(x.code)&&!(x.q&&x.n>=QM_SEATS)).sort((a,b)=>(b.q-a.q)||(b.n-a.n)||(a.c-b.c));
+ const lc=Object.values(lobbyList).filter(x=>x.status==='busy'&&x.q&&x.cf>0&&Math.abs(now-x.t)<40000&&x.host!==myId&&!tried.has(x.code)).sort((a,b)=>b.cf-a.cf);
+ const x=l.filter(y=>y.q)[0]||lc[0]||l[0];
+ if(x){tried.add(x.code);setWait(x.status==='lobby'?'Joining '+x.name+'’s table…':'Joining '+x.name+'’s game. You take a computer’s seat…');
   netJoin(x.code,{timeout:6000,onFail:()=>{if(run!==quickRun)return;warmUp();setWait('That table didn’t answer. Trying another…');setTimeout(()=>tryQuick(run,tried),600);}});}
- else{setWait('No open tables. Creating one…');netCreate({pub:true,quick:true}).then(ok=>{if(!ok&&run===quickRun)renderHome();});}}
+ else{setWait('Finding suspects');netCreate({pub:true,quick:true}).then(ok=>{if(!ok&&run===quickRun)renderHome();});}}
 function startJoin(code){const run=++quickRun;role=null;G=null;renderWait('Joining table '+code+'…');
  netJoin(code,{timeout:15000,onFail:m=>{if(run!==quickRun)return;renderHome();toast(m||'Couldn’t join that table.',5000);}});}
 async function leaveTable(){closeSheet();quickRun++;
@@ -1388,10 +1556,13 @@ addEventListener('pagehide',()=>{const n=net;if(!n)return;
  else joinSend({k:'leave'});});
 addEventListener('pageshow',e=>{if(e.persisted&&net)endOnline('You left the table.');});
 addEventListener('storage',e=>{if((e.key==='dg-char'||e.key==='dg-av')&&screen==='home')renderHome();});
-document.addEventListener('visibilitychange',()=>{if(!document.hidden){netWake();if(screen==='home'&&tab==='online'&&!net)warmUp();}});
+document.addEventListener('visibilitychange',()=>{if(!document.hidden){netWake();if(screen==='home'&&!net)warmUp();presence();}else presenceOff();});
 /* ---------- lobby screen ---------- */
 const inviteLink=()=>location.origin+location.pathname+'?t='+(G?G.code:'');
-function renderLobby(){screen='lobby';closeSheet();setHomeMode(false);
+function renderLobby(){
+ /* a Quick Match table that hasn't started yet stays on the search screen, with its seats filling up */
+ if(G.quick){if(screen!=='quick'||!$('#qseats'))renderQuick('Finding suspects');else{qmPaint();qmTick();}return;}
+ screen='lobby';closeSheet();setHomeMode(false);
  app.innerHTML=`<div class="top"><button class="ib" data-a="leave" aria-label="Leave table">${ICON.back}</button><span class="ttl2">${G.quick?'Quick Play table':role==='host'?'Your table':'Friends table'}</span><button class="ib" id="micbtn" data-a="mic" hidden aria-label="Turn mic on"></button><button class="ib" data-a="chat" aria-label="Quick chat">${ICON.chat}</button></div>
 <main class="home">${glowHTML()}<section class="panel rise"><span class="ftab">TABLE ${esc(G.code)}</span>
  <div class="lbl" style="margin-top:4px;text-align:center">Table code</div><div class="bigcode" aria-label="Table code ${esc(G.code.split('').join(' '))}">${G.code.split('').map(c=>`<span>${c}</span>`).join('')}</div>
@@ -1422,13 +1593,16 @@ let chatAt=0;
 function chatSheet(){sheet(`<h2>Quick chat</h2><div class="qc">${QC.map((m,i)=>`<button class="btn soft" data-a="say" data-v="${i}">${esc(m)}</button>`).join('')}</div><button class="btn w" data-a="close">Close</button>`);}
 function sayIdx(i){if(!QC[i]||!G)return;if(Date.now()-chatAt<1500){toast('Slow down a little!');return;}chatAt=Date.now();
  if(role==='host'){const mi=meIdx();if(mi>=0){emit({t:'say',p:mi,m:QC[i]});sync();}}else if(role==='join'){joinSend({k:'chat',m:i});}}
-/* ---------- voice chat (ported from Digu) ----------
+/* ---------- voice chat (ported from Digu; friends tables and, since Sept 2026, Quick Match tables) ----------
    Phone-to-phone audio (WebRTC). Connection details travel through the table's encrypted channel, relayed by the host.
-   Everyone connects automatically so they can hear; the mic stays off until the player taps it. Quick Play has no voice. */
+   Everyone connects automatically so they can hear; the mic stays off until the player taps it (always, so strangers
+   never hear you by surprise). Tap a player's photo to mute them on your phone. Each player's mic on/off is shared
+   (players[].mic) so a crossed-out mic shows on anyone who is silent. */
 const VC={peers:new Map(),stream:null,on:false,ac:null,me:null,lv:{},code:null,box:null};
+const mutedP=new Set();
 const VC_ICE=[{urls:['stun:stun.l.google.com:19302','stun:stun1.l.google.com:19302']},{urls:'stun:stun.cloudflare.com:3478'}];
 const MIC_ON=sv('<rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/>',2),MIC_OFF=sv('<rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/><path d="M4 4l16 16"/>',2);
-const vcTable=()=>isOn()&&!!net&&!!G&&!G.quick&&G.status!=='over'&&!watching();
+const vcTable=()=>isOn()&&!!net&&!!G&&G.status!=='over'&&!watching()&&meIdx()>=0;
 const vcSupported=()=>!!window.RTCPeerConnection&&!!(navigator.mediaDevices&&navigator.mediaDevices.getUserMedia)&&window.isSecureContext!==false;
 const vcAvail=()=>vcTable()&&vcSupported();
 function vcSend(to,d){if(window.__vcOut){window.__vcOut(to,d);return;}const n=net;if(!n)return;
@@ -1442,7 +1616,7 @@ function vcPeer(id,offerer){let p=VC.peers.get(id);if(p)return p;
  if(!VC.box){VC.box=document.createElement('div');VC.box.hidden=true;document.body.appendChild(VC.box);}
  const au=document.createElement('audio');au.autoplay=true;au.setAttribute('playsinline','');VC.box.appendChild(au);
  p={pc,tr:offerer?pc.addTransceiver('audio',{direction:'sendrecv'}):null,au,meter:null,t:Date.now()};VC.peers.set(id,p);vcAttach(p);
- pc.ontrack=e=>{const st=(e.streams&&e.streams[0])||new MediaStream([e.track]);au.srcObject=st;au.play().catch(()=>{});p.meter=vcMeter(st);};
+ pc.ontrack=e=>{const st=(e.streams&&e.streams[0])||new MediaStream([e.track]);au.srcObject=st;au.muted=mutedP.has(id);au.play().catch(()=>{});p.meter=vcMeter(st);};
  pc.onconnectionstatechange=()=>{if(pc.connectionState==='failed')vcDrop(id);};
  return p;}
 function vcDrop(id){const p=VC.peers.get(id);if(!p)return;VC.peers.delete(id);try{p.pc.close();}catch(e){}try{p.au.srcObject=null;p.au.remove();}catch(e){}try{p.meter&&p.meter.src.disconnect();}catch(e){}delete VC.lv[id];}
@@ -1465,21 +1639,43 @@ async function vcMic(){if(vcTable()&&!vcSupported()){toast('Voice chat isn’t a
   catch(e){if(e&&(e.name==='NotAllowedError'||e.name==='SecurityError')){vcMicHelp(e);return;}
    try{VC.stream=await navigator.mediaDevices.getUserMedia({audio:true});}catch(e2){vcMicHelp(e2);return;}}VC.me=vcMeter(VC.stream);}
  VC.on=!VC.on;VC.stream.getAudioTracks().forEach(t=>t.enabled=VC.on);VC.peers.forEach(vcAttach);
- buzz(6);toast(VC.on?'Mic on. Everyone at the table can hear you.':'Mic off.');vcUI();}
-function vcUI(){const b=$('#micbtn');if(!b)return;const on=VC.on;b.hidden=!vcTable();b.setAttribute('aria-pressed',String(on));b.setAttribute('aria-label',on?'Turn mic off':'Turn mic on');const h=on?MIC_ON:MIC_OFF;if(b._h!==h){b.innerHTML=h;b._h=h;}}
+ buzz(6);toast(VC.on?'Mic on. Everyone at the table can hear you.':'Mic off.');vcShare();vcUI();}
+/* tell the table whether my mic is on (the host carries it in players[].mic) */
+let micSent=-1;
+function vcShare(){if(!G||!isOn())return;const on=VC.on?1:0;if(role==='host'){const me=ME();if(me&&(me.mic|0)!==on){me.mic=on;update();sync();}return;}
+ const me=ME();if(me&&(me.mic|0)===on){micSent=on;return;}joinSend({k:'mic',on});micSent=on;}
+/* crossed-out mic on anyone who can't be heard: their mic is off, or I muted them */
+function vcBadges(){if(screen!=='table'||!G)return;const show=vcTable();
+ document.querySelectorAll('.ebt [data-pid]').forEach(el=>{const b=el.querySelector('.moff');if(!b)return;const p=G.players.find(q=>q.id===el.dataset.pid);if(!p)return;
+  const off=show&&!p.bot&&!p.gone&&(p.me?!VC.on:(!p.mic||mutedP.has(p.id))),lb=mutedP.has(p.id)?'Muted by you':'Mic off';if(b.hidden!==!off)b.hidden=!off;if(b.getAttribute('aria-label')!==lb)b.setAttribute('aria-label',lb);});}
+/* tap a player's photo (online): mute or unmute their voice on this phone */
+function openOpp(id){if(!G||!isOn())return;const p=G.players.find(q=>q.id===id);if(!p||p.me)return;const m=mutedP.has(id);
+ sheet(`<div class="rhead">${face(p.rookie?ROBO:p.face,'big')}<h2>${esc(p.name)}</h2></div><p>${p.cpu?'Computer player':p.rookie?'An AI Rookie is playing their round':p.id===G.hostId?'Host':'Player'} · ${p.score|0} pts</p>
+${p.bot?'':`<button class="btn w" data-a="mutep" data-id="${esc(id)}" aria-pressed="${m}">${m?'Unmute their voice':'Mute their voice'}</button>`}<button class="btn soft w" data-a="close">Close</button>`,'opp');}
+let vcHint='';
+function vcUI(){vcBadges();if(vcAvail()&&G.quick&&screen==='table'&&vcHint!==G.code){vcHint=G.code;setTimeout(()=>{if(vcAvail()&&!VC.on)toast('Voice chat is on at this table. Your mic is off: tap the mic to talk.',4200);},2600);}
+ const b=$('#micbtn');if(!b)return;const on=VC.on;b.hidden=!vcTable();b.setAttribute('aria-pressed',String(on));b.setAttribute('aria-label',on?'Turn mic off':'Turn mic on');const h=on?MIC_ON:MIC_OFF;if(b._h!==h){b.innerHTML=h;b._h=h;}}
 function vcLevel(m){if(!m)return 0;m.an.getByteTimeDomainData(m.buf);let s=0;for(let i=0;i<m.buf.length;i++){const v=(m.buf[i]-128)/128;s+=v*v;}return Math.min(1,Math.sqrt(s/m.buf.length)*5);}
 setInterval(()=>{if(!vcAvail()){if(VC.peers.size||VC.stream)vcStopAll();return;}
  if(VC.code&&VC.code!==G.code)vcStopAll();VC.code=G.code;
  const ids=G.players.filter(q=>q.id!==myId&&!q.bot&&!q.gone).map(q=>q.id);
  [...VC.peers.keys()].forEach(id=>{if(!ids.includes(id))vcDrop(id);});
  ids.forEach(id=>{const p=VC.peers.get(id);if(!p){if(myId<id)vcCall(id);return;}
-  if(myId<id&&p.pc.connectionState!=='connected'&&Date.now()-p.t>15000){vcDrop(id);vcCall(id);}});
- vcUI();},3000);
+  if(myId<id&&p.pc.connectionState!=='connected'&&Date.now()-p.t>15000){vcDrop(id);vcCall(id);}p.au.muted=mutedP.has(id);});
+ vcShare();vcUI();},3000);
 document.addEventListener('pointerdown',()=>{if(!VC.peers.size)return;vcAC();VC.peers.forEach(p=>{if(p.au.paused&&p.au.srcObject)p.au.play().catch(()=>{});});},{passive:true,capture:true});
-setInterval(()=>{if(!G||!G.players||(!VC.peers.size&&!VC.on)){if(VC._lit){document.querySelectorAll('.vtalk').forEach(e=>e.classList.remove('vtalk'));VC._lit=false;}return;}
- G.players.forEach(q=>{const raw=q.id===myId?(VC.on?vcLevel(VC.me):0):vcLevel((VC.peers.get(q.id)||{}).meter);
-  const lv=VC.lv[q.id]=Math.max(raw,(VC.lv[q.id]||0)*.72);const el=document.querySelector(`[data-pid="${cq(q.id)}"] .face`);if(!el)return;
-  el.style.setProperty('--vl',lv.toFixed(2));el.classList.toggle('vtalk',lv>.06);});VC._lit=true;},90);
+/* the speaking ring: ~17 level readings a second, rises at once and falls off by .72 a reading (gone ~0.3 s after they stop).
+   window.__vcFake(id) (localhost tests only) stands in for the real analyser. */
+function vcRing(el){let r=el._vr;if(r&&r.parentNode===el)return r;r=el.querySelector(':scope>.vring');if(!r){r=document.createElement('span');r.className='vring';r.setAttribute('aria-hidden','true');el.prepend(r);}el._vr=r;return r;}
+setInterval(()=>{const fk=LOCAL&&typeof window.__vcFake==='function'?window.__vcFake:null;
+ if(!G||!G.players||(!VC.peers.size&&!VC.on&&!fk)){if(VC._lit){document.querySelectorAll('.vtalk').forEach(e=>e.classList.remove('vtalk'));VC.lv={};VC._lit=false;}return;}
+ G.players.forEach(q=>{if(q.bot)return;const lvOf=m=>fk?Math.max(0,Math.min(1,+fk(q.id)||0)):vcLevel(m);
+  const raw=mutedP.has(q.id)?0:q.id===myId?(VC.on?lvOf(VC.me):0):lvOf((VC.peers.get(q.id)||{}).meter);
+  const lv=VC.lv[q.id]=Math.max(raw,(VC.lv[q.id]||0)*.72);const t=lv>.06;
+  const el=document.querySelector(`.ebt [data-pid="${cq(q.id)}"] .fw`);
+  if(!el){const lf=screen==='lobby'&&document.querySelector(`#plist [data-pid="${cq(q.id)}"] .face`);if(lf&&lf.classList.contains('vtalk')!==t)lf.classList.toggle('vtalk',t);return;}
+  if(t||el.classList.contains('vtalk')){vcRing(el);el.style.setProperty('--vl',lv.toFixed(2));el.style.setProperty('--mo',Math.min(1,raw).toFixed(2));}
+  if(el.classList.contains('vtalk')!==t)el.classList.toggle('vtalk',t);});VC._lit=true;},57);
 /* ================= input ================= */
 document.addEventListener('click',e=>{const b=e.target.closest('[data-a],[data-set],#hand .card');if(!b||b.disabled)return;ac();
  if(b.matches('#hand .card')){if(!G||G.phase!=='play'||!G.players[G.turn]||!G.players[G.turn].me||G.players[G.turn].bot||G.pend)return;const id=b.dataset.id;if(G.sel.has(id))G.sel.delete(id);else if(G.sel.size<4)G.sel.add(id);else{toast('You can play up to 4 cards.');return;}SFX.pick();buzz(4);update();return;}
@@ -1504,7 +1700,13 @@ document.addEventListener('click',e=>{const b=e.target.closest('[data-a],[data-s
  case 'create':{if(!netOK())break;const run=++quickRun;renderWait('Creating your table…');netCreate({pub:v==='1'}).then(ok=>{if(!ok&&run===quickRun)renderHome();});break;}
  case 'join':{const c=(($('#code')||{}).value||'').trim().toUpperCase();if(!/^[A-Z]{4}$/.test(c)){toast('Table codes are 4 letters.');break;}startJoin(c);break;}
  case 'joinOpen':if(/^[A-Z]{4}$/.test(b.dataset.code||''))startJoin(b.dataset.code);break;
- case 'cancel':quickRun++;cleanupNet();role=null;G=null;renderHome();break;
+ case 'cancel':qmSheetAt=0;if(isOn()&&G){leaveTable();break;}quickRun++;cleanupNet();role=null;G=null;renderHome();break;
+ case 'qmBots':qmStart(true);break;
+ case 'qmWait':qmWait();break;
+ case 'quitAsk':quitAsk();break;
+ case 'quitGo':quitGo();break;
+ case 'opp':openOpp(b.dataset.pid);break;
+ case 'mutep':{const id=b.dataset.id;if(mutedP.has(id))mutedP.delete(id);else mutedP.add(id);const vp=VC.peers.get(id);if(vp)vp.au.muted=mutedP.has(id);vcBadges();openOpp(id);break;}
  case 'leave':leaveTable();break;
  case 'hstart':hostStart();break;
  case 'lset':if(role==='host'&&G&&G.status==='lobby'){const k=b.dataset.k;if(k==='mode'&&['classic','lives'].includes(v)){G.mode=v;cfg.mode=v;ls.set('dh-mode',v);}else if(k==='rounds'&&['3','5','10'].includes(v)){G.rounds=+v;cfg.rounds=+v;ls.set('dh-rounds',v);}SFX.pick();sync();updLobby();}break;
@@ -1522,6 +1724,8 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'){const o=$('#ov');if
 let pending=null;try{const t=Q.get('t');if(t&&/^[A-Za-z]{4}$/.test(t)){pending=t.toUpperCase();Q.delete('t');const qs=Q.toString();history.replaceState(null,'',location.pathname+(qs?'?'+qs:'')+location.hash);}}catch(e){}
 if(pending){tab='online';openF='online';ls.set('dh-tab','online');renderHome();startJoin(pending);}else renderHome();
 window.__dh={get G(){return G},get role(){return role},get net(){return net},get screen(){return screen},myId,cfg,SFX,lobbyList,openTables};
+/* automated tests on this computer only (localhost): drive the game and read voice state */
+if(LOCAL){Object.assign(window.__dh,{VC,mutedP,doPlay,call,newRound,roundOver,update,sync,cpuFree});Object.defineProperty(window.__dh,'ME',{get:()=>G&&G.players?ME()||null:null});}
 })();
 </script>
 <script>if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("/sw.js").catch(()=>{}));</script>
