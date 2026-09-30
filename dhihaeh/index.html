@@ -19,6 +19,8 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=DM+Serif+Display&family=Fraunces:ital,opsz,wght@0,9..144,600..800;1,9..144,500&family=Oswald:wght@500;600&family=Noto+Sans+Thaana:wght@600&display=swap" onload="this.onload=null;this.rel='stylesheet'">
 <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=DM+Serif+Display&family=Fraunces:ital,opsz,wght@0,9..144,600..800;1,9..144,500&family=Oswald:wght@500;600&family=Noto+Sans+Thaana:wght@600&display=swap"></noscript>
+<script>/* the home's time of day before first paint: Dhihaeh = morning (light), Thaas = dusk (dark) */
+(function(){try{var q=new URLSearchParams(location.search).get('mode'),m=q==='thaas'||q==='dhihaeh'?q:(localStorage.getItem('dhihaeh-mode')==='thaas'?'thaas':'dhihaeh');document.documentElement.dataset.mode=m;}catch(e){}})();</script>
 <style>
 /* ================= Dhihaeh & Thaas · a jetty at sunset: golden light on the lagoon, lanterns, a Bodu Beru drum set into the table ================= */
 :root{--ink:#FFF4E6;--muted:#D9BBA2;--panel2:#2B1B18;--line:rgba(255,220,180,.1);--edge:rgba(255,214,170,.18);
@@ -32,10 +34,11 @@
 html,body{margin:0;min-height:100%}
 html{background:#140c14;-webkit-text-size-adjust:100%;touch-action:manipulation;overflow-x:hidden;overflow-x:clip}
 body{font-family:'Sora',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;font-size:14px;line-height:1.45;color:var(--ink);-webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent;overscroll-behavior:none;background:transparent;overflow-x:hidden;overflow-x:clip}
-/* home backdrop: the jetty running out into the sunset (baked), darker towards the buttons */
-body:before{content:"";position:fixed;inset:0;z-index:-3;pointer-events:none;transform:translateZ(0);
- background:linear-gradient(180deg,rgba(20,10,20,.25),rgba(20,10,20,0) 22%,rgba(22,10,12,.35) 52%,rgba(16,8,10,.92) 78%,#120a0c),url(home.webp?v=1) center top/cover no-repeat,#1d1330}
-html[data-mode="thaas"] body:before{filter:hue-rotate(-14deg) saturate(1.08) brightness(.82)}
+/* home page colour under the drawn jetty scene (.hsc): Thaas = dusk (dark), Dhihaeh = morning (light) */
+body:before{content:"";position:fixed;inset:0;z-index:-3;pointer-events:none;transform:translateZ(0);background:#140A14}
+html[data-mode="dhihaeh"]:not([data-scr="table"]){background:#F6EFE2}
+html[data-mode="dhihaeh"]:not([data-scr="table"]) body{min-height:100vh;background:linear-gradient(180deg,#EAF6F3 0%,#F4F3EA 60%,#F6EFE2 100%)}
+html[data-mode="dhihaeh"]:not([data-scr="table"]) body:before{display:none}
 html[data-scr="table"] body:before{display:none}
 .embers{position:fixed;inset:0;z-index:-1;pointer-events:none;overflow:hidden}
 .embers i{position:absolute;bottom:-10px;width:3px;height:3px;border-radius:50%;background:#FFD08A;box-shadow:0 0 6px 2px rgba(255,170,80,.6);opacity:0;animation:ember 11s linear infinite}
@@ -108,15 +111,22 @@ html[data-mode="dhihaeh"] .face.ten:before{content:"";position:absolute;inset:ca
 .shellpill{display:inline-flex;align-items:center;gap:6px;height:44px;padding:0 14px 0 10px;border:0;border-radius:99px;background:rgba(30,16,20,.62);box-shadow:inset 0 0 0 1px rgba(255,214,170,.22);color:#fff;font:inherit;font-weight:800;font-size:14px;cursor:pointer;flex:none;text-decoration:none;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
 img.boli{display:inline-block;width:18px;height:18px;object-fit:contain;vertical-align:-3px;filter:drop-shadow(0 1px 1.5px rgba(0,0,0,.4))}
 .shellpill img.boli{width:24px;height:24px;vertical-align:middle}
-.dhero{position:relative;height:clamp(176px,50vw,224px);margin-top:4px;pointer-events:none}
-.dhero .card{--w:clamp(64px,19vw,84px);left:50%;top:34px;margin-left:calc(var(--w)/-2);transform-origin:50% 135%;animation:heroIn 1s var(--spring) both,breathe 6s ease-in-out 1.2s infinite}
-.dhero .card:nth-child(1){--r:-24deg;animation-delay:.05s,1.2s}
-.dhero .card:nth-child(2){--r:-8deg;animation-delay:.12s,1.4s}
-.dhero .card:nth-child(3){--r:8deg;animation-delay:.19s,1.6s}
-.dhero .card:nth-child(4){--r:24deg;animation-delay:.26s,1.8s}
-.dhero .card .face{box-shadow:inset 0 0 0 1px rgba(40,30,10,.1),0 0 0 1px rgba(255,210,140,.3),0 16px 30px -8px rgba(40,8,0,.8),0 0 40px -10px rgba(255,170,80,.6)}
-@keyframes breathe{0%,100%{transform:rotate(var(--r)) translateY(0)}50%{transform:rotate(calc(var(--r) * 1.1)) translateY(-5px)}}
-@keyframes heroIn{from{transform:rotate(0) translateY(60px) scale(.8);opacity:0}to{transform:rotate(var(--r)) translateY(0);opacity:1}}
+/* the home scene (owner-approved H2-M / H2-D): the Bodu Beru drum on the jetty, drawn by homeScene().
+   Sized like a phone column (up to 390 px) and centred; sky, sea and deck run on past both sides on wide screens */
+.hsc{--pw:min(100vw,390px);--H:clamp(360px,calc((var(--pw) - 32px)*1.04),400px);--SH:max(calc(var(--pw)*400/390),var(--H));position:absolute;left:0;right:0;top:0;z-index:0;height:calc(var(--H) + env(safe-area-inset-top,0px));overflow:hidden;pointer-events:none;background:#140E2E}
+.hsc.mo{background:#86C6E4}
+.hsc svg{position:absolute;left:50%;top:env(safe-area-inset-top,0px);height:var(--SH);width:calc(var(--SH)*7.975);transform:translateX(-50%);display:block}
+.hsc:after{content:"";position:absolute;left:0;right:0;bottom:-2px;height:90px;background:linear-gradient(180deg,rgba(20,10,20,0),#140A14)}
+.hsc.mo:after{background:linear-gradient(180deg,rgba(234,246,243,0),#EAF6F3)}
+.hhero{height:clamp(236px,calc((min(100vw,390px) - 32px)*.71),276px);pointer-events:none}
+/* the only ambient motion on the home: the water shimmer and the drum-beat ripple (transform/opacity) */
+.hsc .shim{opacity:.6;animation:hshim 4.2s ease-in-out infinite}
+@keyframes hshim{0%,100%{opacity:.25}50%{opacity:.95}}
+.hsc .rip{opacity:0;transform-box:fill-box;transform-origin:center;animation:hbeat 3.4s ease-out infinite}
+.hsc .rip.b{animation-delay:1.7s}
+@keyframes hbeat{0%{transform:scale(1);opacity:.55}70%,100%{transform:scale(1.13);opacity:0}}
+.dg-lite .hsc *{animation:none!important}
+@media (prefers-reduced-motion:reduce){.hsc *{animation:none!important}}
 .dtitle{position:relative;text-align:center;margin-top:-14px}
 .dtitle .kick{display:inline-flex;align-items:center;gap:8px;font:600 11px/1 var(--cond);letter-spacing:.34em;text-transform:uppercase;color:#FFE2B0;background:rgba(30,12,18,.7);padding:7px 12px 7px 15px;border-radius:99px;margin-bottom:10px;box-shadow:inset 0 0 0 1px rgba(255,200,120,.35);animation:ytin .5s var(--spring) both}
 .dtitle h1{font:800 clamp(50px,16vw,68px)/.92 var(--serif);letter-spacing:.03em;background:var(--gold);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 4px 14px rgba(60,10,0,.7))}
@@ -136,8 +146,6 @@ img.boli{display:inline-block;width:18px;height:18px;object-fit:contain;vertical
 .mode .tag{position:absolute;top:12px;right:12px;font:600 9.5px/1 var(--cond);letter-spacing:.18em;text-transform:uppercase;background:rgba(255,255,255,.08);color:#FFD9A8;padding:5px 8px;border-radius:99px}
 .mode:disabled,.mode[aria-disabled="true"]{cursor:default;opacity:.62}
 .mode.quick{grid-column:1/-1;min-height:88px;flex-direction:row;align-items:center;gap:14px;background:var(--accBtn);color:var(--accInk);box-shadow:0 5px 0 var(--accEdge),0 18px 34px -14px var(--accGlow);margin-bottom:6px}
-.mode.quick:after{content:"";position:absolute;top:-60%;left:-40%;width:30%;height:220%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.55),transparent);transform:rotate(14deg);animation:sheen 5.5s ease-in-out infinite}
-@keyframes sheen{0%,62%{translate:0 0}100%{translate:520% 0}}
 .mode.quick .mi{position:static;background:rgba(80,30,0,.12);width:52px;height:52px;border-radius:15px;flex:none;box-shadow:none}
 .mode.quick .mi svg{width:28px;height:28px}
 .mode.quick .mt{display:flex;flex-direction:column;min-width:0;flex:1}
@@ -395,6 +403,72 @@ main.table>*{width:100%;max-width:640px;margin-left:auto;margin-right:auto}
 .dgn-plist li.dhs .sb{flex:none;min-height:36px;padding:6px 11px;border-radius:10px;border:1px solid var(--dgn-line);background:var(--dgn-soft);font-weight:700;font-size:12.5px}
 .dgn-plist li.dhs .sb.pri{background:var(--dgn-acc);color:var(--dgn-acc-fg);border-color:transparent}
 .t0x{--tcol:var(--us)}.t1x{--tcol:var(--them)}
+/* v5: the crossed-out mic sits top-right on a seat (the tricks badge is bottom-right, the dealer chip top-left) */
+.seat .av .dgn-moff,.meav .dgn-moff{right:-6px;top:-5px;bottom:auto}
+/* home menu: Quick Match, Play with Friends, vs Computer (same order in every game) */
+.mode.quick .live{display:flex;align-items:center;gap:6px;margin-top:4px;font-size:11.5px;font-weight:800;opacity:.9;line-height:1.2}
+.mode.quick .live i{flex:none;width:7px;height:7px;border-radius:50%;background:#1d7a44;box-shadow:0 0 0 3px rgba(29,122,68,.22)}
+.mode.quick .live.zero i{background:rgba(43,19,5,.45);box-shadow:none}
+.mode.row{grid-column:1/-1;min-height:70px;flex-direction:row;align-items:center;justify-content:flex-start;gap:12px;padding:12px 14px}
+.mode.row .mi{position:static;flex:none}
+.mode.row .mt{display:flex;flex-direction:column;min-width:0;flex:1}
+.mode.row .chev{flex:none;width:18px;height:18px;opacity:.6}
+.mode.fr{box-shadow:inset 0 0 0 1.5px rgba(255,197,110,.42),inset 0 1px 0 rgba(255,255,255,.06)}
+.mode.sm{min-height:56px;padding:9px 14px}.mode.sm .mi{width:34px;height:34px;border-radius:10px}.mode.sm .mi svg{width:18px;height:18px}.mode.sm b{font-size:14.5px}
+/* ===== the home, owner-approved H2 (30 Sept 2026): Dhihaeh = the jetty in the morning (light page, amber),
+   Thaas = the jetty at dusk (dark page, lagoon teal). Only the home changes; the table keeps its own look ===== */
+.home .dtitle{margin-top:-4px}
+.home .dtitle .kick{margin-bottom:0}
+.home .dtitle h1{margin-top:8px;font:800 clamp(50px,calc((min(100vw,390px) - 32px)*.165),66px)/.95 var(--serif);letter-spacing:.03em;background:none;-webkit-background-clip:border-box;background-clip:border-box;filter:none;color:#FFEBD0;text-shadow:0 4px 18px rgba(40,6,0,.55)}
+.home .dtitle .dv{font-size:24px}
+.home .lace{display:block;width:150px;height:12px;margin:12px auto 0;opacity:.8;color:var(--accTxt)}
+.home .modes{margin-top:16px}
+.home .mode.quick{min-height:92px;margin-bottom:4px}
+.home .mode.quick b{font:800 21px/1.1 'Sora',system-ui,sans-serif}
+.home .mode.fr{min-height:64px}
+.home .mode.sm{min-height:52px}
+.home .how{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;margin:10px 0 0;min-height:44px;border:0;background:transparent;color:#FFE2C4;font:700 13px/1 'Sora',system-ui,sans-serif;opacity:.84;cursor:pointer;border-radius:12px}
+.home .how svg{width:17px;height:17px;flex:none}
+.home .homebelow{margin-top:16px}
+.home .snote{margin-top:14px}
+/* Thaas at dusk: the lagoon-teal accent, the string lights on */
+.home.du{--accBtn:linear-gradient(180deg,#8EF0DF,#23B09C);--accInk:#062A26;--accEdge:#0B5E54;--accGlow:rgba(60,210,190,.5);--acc:#7FE8D7;--accTxt:#7FE8D7;--accSoft:rgba(95,214,196,.45)}
+.home.du .dtitle .kick{color:#CFF6EE;box-shadow:inset 0 0 0 1px rgba(111,224,207,.4)}
+.home.du .dtitle h1{color:#F2FFFB}
+.home.du .dtitle .dv{color:#CFF6EE}
+.home.du .mhint b{color:#7FE8D7}
+.home.du .mode.quick .mi{background:rgba(0,40,36,.12)}
+.home.du .mode.fr{background:linear-gradient(180deg,rgba(52,26,30,.9),rgba(30,15,20,.92));box-shadow:inset 0 0 0 1.5px var(--accSoft)}
+.home.du .mode.row .mi{background:rgba(255,255,255,.07);box-shadow:none;color:var(--accTxt)}
+.home.du .mode.sm{background:rgba(30,15,20,.6);box-shadow:inset 0 0 0 1px rgba(255,214,170,.15)}
+.home.du .mode.sm .mi{background:transparent}
+.home.du .resume b{color:#7FE8D7}
+/* Dhihaeh in the morning: a light page, deep-teal title, amber Quick Match */
+.home.mo{--accTxt:#B8650F;--accSoft:rgba(196,106,18,.35);color:#13343A}
+.home.mo .icon-btn,.home.mo .profbtn,.home.mo .shellpill{background:rgba(255,255,255,.74);box-shadow:inset 0 0 0 1px rgba(15,63,70,.14);color:#13343A}
+.home.mo .icon-btn.dgh .dgmk.dgmono{color:#E5604D}
+.home.mo .profbtn .ps{color:rgba(19,52,58,.66)}
+.home.mo .dtitle .kick{color:#0F4C52;background:rgba(255,255,255,.82);box-shadow:inset 0 0 0 1px rgba(15,76,82,.2),0 4px 12px -6px rgba(15,60,70,.35)}
+.home.mo .dtitle h1{color:#0F3F46;text-shadow:0 2px 14px rgba(255,255,255,.7)}
+.home.mo .dtitle .dv{color:#1C7F86;text-shadow:none}
+.home.mo .dtitle p{color:#9A5A1E;text-shadow:none}
+.home.mo .lace{color:#D98424}
+.home.mo .mseg{background:rgba(255,255,255,.72);box-shadow:inset 0 0 0 1px rgba(15,63,70,.12)}
+.home.mo .mseg button{color:#13343A}
+.home.mo .mseg button[aria-pressed="true"]{color:var(--accInk)}
+.home.mo .mhint{color:rgba(19,52,58,.86)}
+.home.mo .mhint b{color:#B8650F}
+.home.mo .mode.row{color:#13343A}
+.home.mo .mode.fr{background:#fff;box-shadow:0 10px 20px -14px rgba(15,63,70,.4),inset 0 0 0 1.5px var(--accSoft)}
+.home.mo .mode.row .mi{background:#FFF1DC;box-shadow:none;color:#C0701A}
+.home.mo .mode.sm{background:rgba(255,255,255,.5);box-shadow:inset 0 0 0 1px rgba(15,63,70,.16)}
+.home.mo .mode.sm .mi{background:transparent}
+.home.mo .how{color:#0F4C52}
+.home.mo .resume{background:rgba(255,255,255,.86);color:#13343A;box-shadow:inset 0 0 0 1.5px var(--accSoft)}
+.home.mo .resume b{color:#B8650F}
+.home.mo .snote{color:rgba(19,52,58,.7)}
+.home.mo .snote a{color:#0F4C52}
+.btn.danger{background:transparent;color:#FF9E82;box-shadow:inset 0 0 0 1.5px rgba(255,122,92,.55)}
 </style>
 </head>
 <body>
@@ -409,7 +483,7 @@ main.table>*{width:100%;max-width:640px;margin-left:auto;margin-right:auto}
 <script src="../shared/avatar.js?v=10"></script>
 <script src="../shared/cosmetics.js?v=2"></script>
 <script src="../shared/sponsors.js?v=6"></script>
-<script src="../shared/net.js?v=4"></script>
+<script src="../shared/net.js?v=5"></script>
 <script>
 /* =====================================================================
    ENGINE: Dhihaeh + Thaas (Dhivehi Games). Pure: no DOM, no clock, no Math.random.
@@ -631,6 +705,8 @@ const sortHand=(h,tr)=>{const o=tr?[tr].concat(SUITS.filter(s=>s!==tr)):SUITS;/*
 const HI={
 bot:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="7" width="16" height="12" rx="3.5"/><path d="M12 7V4"/><circle cx="12" cy="3.4" r=".9"/><circle cx="9.3" cy="12.6" r="1.2" fill="currentColor" stroke="none"/><circle cx="14.7" cy="12.6" r="1.2" fill="currentColor" stroke="none"/><path d="M9.5 16h5"/></svg>',
 friends:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><circle cx="17" cy="9" r="2.5"/><path d="M16.2 14.1c2.7.4 4.8 2.7 4.8 5.9"/></svg>',
+bolt:'<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M13.2 2.5 4.8 13.1c-.4.5 0 1.2.6 1.2h5.1l-1 7.1c-.1.8.9 1.2 1.4.6l8.3-10.6c.4-.5 0-1.2-.6-1.2h-5.1l1-7.1c.1-.8-.9-1.2-1.3-.6z"/></svg>',
+chev:'<svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>',
 book:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v15H6.5A2.5 2.5 0 0 0 4 20.5z"/><path d="M4 20.5V5.5M8 7.5h8"/></svg>',
 drum:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><ellipse cx="12" cy="7" rx="8" ry="3"/><path d="M4 7v9c0 1.7 3.6 3 8 3s8-1.3 8-3V7"/><path d="M4 9l3 8M8 10l3 9M12 10l3 9M16 10l3 7M20 9l-2 8"/></svg>',
 shell:'<img class="boli" src="boli.webp" alt="" width="18" height="18">',
@@ -754,7 +830,7 @@ function autoPlay(k){if(!S||actor()!==k)return;if(S.status==='trump'){act('trump
    next player takes over and that hand is dealt again (hand wins stay). Public joiners watch and play from
    the next match; private tables stay locked.
    ===================================================================== */
-let NET=null,nextT=0,hostSel=null;
+let NET=null,nextT=0,hostSel=null,lateSeat=null;   /* lateSeat: I took a computer's seat after this hand (no Boli for hands I didn't play) */
 const isHostOn=()=>mode==='online'&&!!NET&&NET.isHost();
 function lookOf(l){const o={ch:null,ring:''};if(!l||typeof l!=='object')return o;const A=DGA();try{if(A&&l.ch)o.ch=A.normalize(l.ch);}catch(e){}
  if(typeof l.ring==='string'&&/^f-[a-z0-9-]{1,24}$/.test(l.ring))o.ring=l.ring;return o;}
@@ -765,19 +841,36 @@ function seatToAI(pid,why){if(!isHostOn()||!S)return;const k=S.players.findIndex
  p.gone=1;p.bot=true;if(why==='afk')p.afk=1;commit(N);}
 function hostAfter(){clearTimeout(nextT);if(!S)return;
  if(S.status==='over'){NET.matchOver();if(NET.hostAway())setTimeout(()=>{if(isHostOn())NET.retire();},3000);return;}
- if(S.status==='handover'){if(NET.hostAway()){setTimeout(()=>{if(isHostOn())NET.retire();},3000);return;}const h=S.handNo;nextT=setTimeout(()=>{if(isHostOn()&&S&&S.status==='handover'&&S.handNo===h){closeOv();hostNext();}},NEXT_MS);}}
-function hostNext(){if(!isHostOn()||!S||S.status!=='handover')return;clearTimeout(nextT);act('next',null,0);}
+ if(S.status==='handover'){if(NET.hostAway()){setTimeout(()=>{if(isHostOn())NET.retire();},3000);return;}const h=S.handNo;nextT=setTimeout(()=>{if(isHostOn()&&S&&S.status==='handover'&&S.handNo===h){closeOv();hostNext();}},NEXT_MS);
+  /* v5: a break between hands: anyone waiting takes a computer's seat now, and newcomers sit down as they arrive */
+  NET.handBreak(true);}}
+function hostNext(){if(!isHostOn()||!S||S.status!=='handover')return;clearTimeout(nextT);hostDeal('next');}
+/* host: deal (the first hand or the next one); waiting newcomers take computer seats just before the cards go out */
+function hostDeal(type){if(!isHostOn()||!S)return false;NET.handBreak();const ok=act(type,null,0);NET.handBreak(false);return ok;}
+/* v5 host: a newcomer takes a computer's seat (between hands only). They keep its place, team and score */
+function netSeatSwap(cpuId,p){if(!isHostOn()||!S||S.status==='playing'||S.status==='trump')return false;
+ const k=S.players.findIndex(q=>q.id===cpuId);if(k<0||!p||!p.id)return false;const l=lookOf(p.look),N=clone(S),q=N.players[k];
+ q.id=p.id;q.name=p.name||'Player';q.ch=l.ch;q.ring=l.ring;q.bot=false;delete q.cpu;delete q.gone;delete q.afk;
+ S=N;const el=document.querySelector(`.seat[data-k="${k}"]`);if(el)el.remove();if(screen==='table')renderTable();schedule();NET.sync();return true;}
+/* v5: a Quick Match computer seat gets one of the game's own computer players (name, character) */
+function cpuSeat(i,taken){const t=(taken||[]).map(x=>String(x).toLowerCase());const b=BOTS.find(x=>!t.includes(x[0].toLowerCase()))||BOTS[i%BOTS.length];
+ let ch=null;const A=DGA();if(A){try{ch=A.presets[b[1]]||A.random(b[0]);}catch(e){}}return{name:b[0],look:ch?{ch:ch}:null};}
+const botCol=nm=>{const b=BOTS.find(x=>x[0].toLowerCase()===String(nm||'').toLowerCase());return b?b[2]:'#8A6A5A';};
 function rid(){try{const a=new Uint32Array(2);crypto.getRandomValues(a);return a[0].toString(36)+a[1].toString(36);}catch(e){return Math.random().toString(36).slice(2);}}
 function netStart(seats,opts,info){mode='online';clearTimeout(nextT);const m=opts.mode==='thaas'?'thaas':'dhihaeh',target=[3,5,7].includes(+opts.target)?+opts.target:TARGET;
  const byId={};seats.forEach(s=>{byId[s.id]=s;});const want=(info&&info.x&&Array.isArray(info.x.seats))?info.x.seats:[];
  const order=[null,null,null,null];want.slice(0,4).forEach((id,i)=>{if(id&&byId[id]&&!order.includes(id))order[i]=id;});
  seats.forEach(s=>{if(!order.includes(s.id)){const i=[0,2,1,3].find(j=>!order[j]);if(i!=null)order[i]=s.id;}});
  const taken=seats.map(s=>String(s.name||'').toLowerCase());const pool=BOTS.filter(b=>!taken.includes(b[0].toLowerCase()));let bi=0;
- const players=order.map((id,i)=>{if(id){const s=byId[id],l=id===myId?{ch:myChar(),ring:myRing()}:lookOf(s.look);return{id:id,name:s.name,ch:l.ch,ring:l.ring,col:i&1?'#FF9573':'#5EE0D0'};}
+ const players=order.map((id,i)=>{if(id){const s=byId[id],l=id===myId?{ch:myChar(),ring:myRing()}:lookOf(s.look);
+   /* a Quick Match computer seat (permanent until a newcomer takes it): played by the AI, never dropped */
+   if(s.cpu){let ch=l.ch;const A=DGA();if(!ch&&A){try{ch=A.random(s.name);}catch(e){}}return{id:id,name:s.name,bot:true,cpu:1,ch:ch,col:botCol(s.name)};}
+   return{id:id,name:s.name,ch:l.ch,ring:l.ring,col:i&1?'#FF9573':'#5EE0D0'};}
   const b=pool[bi++%pool.length];let ch=null;const A=DGA();if(A){try{ch=A.presets[b[1]]||A.random(b[0]);}catch(e){}}return{id:'bot'+i,name:b[0],bot:true,cpu:1,ch:ch,col:b[2]};});
  game=m;document.documentElement.dataset.mode=m;S=E.create({mode:m,players:players,seed:newSeed(),target:target,gid:'g'+rid()});S.online=1;
  closeSheet();buildTable();draw();openRules();
- nextT=setTimeout(()=>{if(isHostOn()&&S&&S.status==='lobby'){closeRules();act('start');}},5000);NET.sync();}
+ nextT=setTimeout(()=>{if(isHostOn()&&S&&S.status==='lobby'){closeRules();hostDeal('start');}},5000);NET.sync();
+ NET.handBreak(true);   /* people who arrive while the rules are up sit down at once */}
 function netAction(pid,a){if(!S||!a||typeof a!=='object')return;const k=S.players.findIndex(p=>p.id===pid);if(k<0||S.players[k].bot)return;
  if(a.t==='play'&&typeof a.c==='string'){if(!act('play',a.c.slice(0,6),k))NET.sync();}
  else if(a.t==='trump'&&typeof a.s==='string'){if(!act('trump',a.s.slice(0,1),k))NET.sync();}}
@@ -785,6 +878,10 @@ function netDrop(pid,why){if(!isHostOn()||!S)return;seatToAI(pid,why);}
 /* each player sees only their own hand (a watcher sees none); the seed and the RNG state never leave the host */
 function viewFor(pid){if(!S)return null;return E.view(S,S.players.findIndex(p=>p.id===pid));}
 function netState(v){if(!v||!Array.isArray(v.players))return;mode='online';const N=clone(v);if(N.turnAt)N.turnAt-=NET.skew();
+ /* v5: a seat changed hands (a newcomer took a computer's seat). If it was me, redraw the whole table with me seated */
+ const idsOf=V=>V.players.map(p=>p.id).join('|'),swapped=!!S&&S.gid===N.gid&&idsOf(S)!==idsOf(N);
+ if(swapped){const was=meIdx(),now=N.players.findIndex(p=>p.id===myId);if(was<0&&now>=0&&N.status!=='lobby')lateSeat={gid:N.gid,h:N.handNo};
+  if(was!==now)S=null;else N.players.forEach((p,k)=>{if(S.players[k]&&S.players[k].id!==p.id){const el=document.querySelector(`.seat[data-k="${k}"]`);if(el)el.remove();}});}
  if(screen!=='table'||!S||S.gid!==N.gid){S=N;game=N.mode;document.documentElement.dataset.mode=N.mode;closeSheet();closeOv();buildTable();draw();schedule();
   if(N.status==='lobby')openRules();return;}
  if(N.status!=='lobby')closeRules();commit(N);}
@@ -792,7 +889,7 @@ function netState(v){if(!v||!Array.isArray(v.players))return;mode='online';const
 function netMigrate(o){mode='online';const v=o.view;if(!v){NET.again();return;}const N=clone(v);if(N.turnAt)N.turnAt-=o.skew||0;
  const goneIds=new Set((o.meta.players||[]).filter(p=>p.gone).map(p=>p.id));N.players.forEach(p=>{if(goneIds.has(p.id)){p.gone=1;p.bot=true;}});
  N.rs=newSeed()|0;S=N;if(screen!=='table')buildTable();
- if(N.status==='lobby'){draw();nextT=setTimeout(()=>{if(isHostOn()&&S&&S.status==='lobby'){closeRules();act('start');}},2500);NET.sync();return;}
+ if(N.status==='lobby'){draw();nextT=setTimeout(()=>{if(isHostOn()&&S&&S.status==='lobby'){closeRules();hostDeal('start');}},2500);NET.sync();return;}
  if(N.status==='playing'||N.status==='trump'){const M=clone(N);M.status='handover';M.handNo=Math.max(0,(M.handNo|0)-1);M.dealer=((M.dealer|0)+3)%4;S=M;hostNext();toast('The host left, so this hand was dealt again. Hand wins stay the same.',4500);return;}
  draw();hostAfter();NET.sync();}
 function netLobby(){clearTimeout(nextT);clearTimeout(botT);clearTimeout(turnT);clearTimeout(warnT);closeOv();closeRules();closeSheet();S=null;if(screen==='table')renderHome();}
@@ -800,9 +897,11 @@ function netEnd(){clearTimeout(nextT);clearTimeout(botT);clearTimeout(turnT);cle
 /* ---------- waiting room: seats. T.x.seats = [pid|null] x4; seats 0+2 and 1+3 are partners ---------- */
 const SEAT_ORDER=[0,2,1,3];
 function seatsOf(T){const s=T.x&&Array.isArray(T.x.seats)?T.x.seats.slice(0,4):[];while(s.length<4)s.push(null);return s;}
-function lobbyFix(T){const ids=T.players.filter(p=>!p.gone).map(p=>p.id);const s=seatsOf(T).map(id=>id&&ids.includes(id)?id:null);
+function lobbyFix(T){const ids=T.players.filter(p=>!p.gone).map(p=>p.id);const old=seatsOf(T),s=old.map(id=>id&&ids.includes(id)?id:null);
  s.forEach((id,i)=>{if(id&&s.indexOf(id)!==i)s[i]=null;});
- ids.forEach(id=>{if(!s.includes(id)){const i=SEAT_ORDER.find(j=>!s[j]);if(i!=null)s[i]=id;}});T.x=Object.assign({},T.x||{},{seats:s});
+ /* a seat whose player just went (e.g. a newcomer took that computer's place) goes to the newcomer first: same team */
+ const freed=old.map((id,i)=>id&&!s[i]?i:-1).filter(i=>i>=0);
+ ids.forEach(id=>{if(!s.includes(id)){let i=freed.find(j=>!s[j]);if(i==null)i=SEAT_ORDER.find(j=>!s[j]);if(i!=null)s[i]=id;}});T.x=Object.assign({},T.x||{},{seats:s});
  if(hostSel&&!ids.includes(hostSel))hostSel=null;}
 function onLobbyMsg(pid,o){const T=NET.meta();if(!T)return;lobbyFix(T);const s=T.x.seats,i=+o.s;if(!(i>=0&&i<4))return;
  if(o.t==='sit'){if(s[i])return;const j=s.indexOf(pid);if(j>=0)s[j]=null;s[i]=pid;}
@@ -815,21 +914,23 @@ const BOT_IC='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-
 function roomList(T,c){const s=seatsOf(T),P={};T.players.forEach(p=>{P[p.id]=p;});const mine=s.indexOf(c.me),host=c.host,sel=host?hostSel:null;
  const nm=i=>s[i]&&P[s[i]]?(s[i]===c.me?'You':P[s[i]].name):null;
  const team=t=>{const a=nm(t),b=nm(t+2);if(!a&&!b)return '2 computer players';if(a&&b)return esc(a)+' & '+esc(b);return esc(a||b)+' + computer';};
- const humans=s.filter(Boolean).length;
+ const humans=s.filter(id=>id&&P[id]&&!P[id].cpu).length;
  let h=`<li class="dhs-sum">${team(0)} <span style="color:var(--dgn-muted)">vs</span> ${team(1)}<small>${humans<4?'Empty seats are played by the computer. ':''}${host?'Tap Move, then a seat, to arrange the players.':'Tap an empty seat to sit there.'}</small></li>`;
  [0,1].forEach(t=>{h+=`<li class="dhs-h t${t}x"><i></i>Team ${t+1}<small>partners sit opposite</small></li>`;
   [t,t+2].forEach(i=>{const id=s[i],p=id&&P[id];
    if(!p){const btn=sel?`<button class="sb pri" data-dgn="x" data-a="put" data-s="${i}">Move here</button>`:mine>=0?`<button class="sb" data-dgn="x" data-a="sit" data-s="${i}">Sit here</button>`:'';
     h+=`<li class="dhs ai t${t}x"><span class="av">${BOT_IC}</span><span class="nm">Computer<small>Seat ${i+1} · open</small></span>${btn}</li>`;return;}
-   const tags=(id===T.hostId?`<span class="dgn-tag">${c.icons.crown}Host</span>`:'')+(id===c.me?'<span class="dgn-tag you">You</span>':'');
+   const tags=(id===T.hostId?`<span class="dgn-tag">${c.icons.crown}Host</span>`:'')+(id===c.me?'<span class="dgn-tag you">You</span>':'')+(p.cpu?' · Computer':'');
    let btn='';if(host){if(sel&&sel!==id)btn=`<button class="sb pri" data-dgn="x" data-a="put" data-s="${i}">Swap here</button>`;else btn=`<button class="sb" data-dgn="x" data-a="pick" data-id="${esc(id)}" aria-pressed="${sel===id}">${sel===id?'Cancel':'Move'}</button>`;
-    if(!T.quick&&id!==c.me&&!sel)btn+=`<button class="dgn-kick" data-dgn="kick" data-id="${esc(id)}" aria-label="Remove ${esc(p.name)}">${c.icons.x}</button>`;}
+    if(!T.quick&&!p.cpu&&id!==c.me&&!sel)btn+=`<button class="dgn-kick" data-dgn="kick" data-id="${esc(id)}" aria-label="Remove ${esc(p.name)}">${c.icons.x}</button>`;}
    h+=`<li class="dhs t${t}x${sel===id?' sel':''}" data-pid="${esc(id)}"><span class="av">${c.avatar(p,38)}</span><span class="nm">${esc(p.name)}<small>Seat ${i+1}${tags}</small></span>${btn}</li>`;});});
  return h;}
 function initNet(){if(!window.DGNet)return;NET=DGNet.create({game:'dhihaeh',title:'Dhihaeh & Thaas',min:2,max:4,id:myId,
+ /* v5 Quick Match: 4 seats so both teams are complete; empty seats get permanent computer players (our own bots) */
+ cpu:true,quickSize:4,cpuSeat:cpuSeat,onSeatSwap:netSeatSwap,
  me:()=>({name:myName(),look:{ch:myChar(),ring:myRing()}}),setName:v=>{ls.set('lg-name',v);if(screen==='home')renderHome();},
  avatar:(seat,size)=>{const l=lookOf(seat.look);return avInner({name:seat.name,ch:l.ch,col:'#E48F3A'},size);},
- options:[{k:'mode',label:'Game',def:game,choices:[['dhihaeh','Dhihaeh'],['thaas','Thaas']],hint:o=>o.mode==='thaas'?'5 cards, name trumps, then first team to 7 tricks wins the hand.':'Trumps are the dealer’s last card. Take 3 or 4 tens to win the hand.'},
+ options:[{k:'mode',label:'Game',get def(){return game;},choices:[['dhihaeh','Dhihaeh'],['thaas','Thaas']],hint:o=>o.mode==='thaas'?'5 cards, name trumps, then first team to 7 tricks wins the hand.':'Trumps are the dealer’s last card. Take 3 or 4 tens to win the hand.'},
   {k:'target',label:'Match length',def:5,choices:[[3,'First to 3'],[5,'First to 5'],[7,'First to 7']]}],
  rulesNote:'2 to 4 players, 2 v 2: partners sit opposite, and the computer plays any empty seat. 15 seconds a turn (and to name trumps), then a card is played for you. Miss 2 turns in a row, or leave, and the computer plays your seat for the rest of the match so the teams stay 2 v 2.',
  listInfo:m=>{const g=(m.opts&&m.opts.mode)==='thaas'?'Thaas':'Dhihaeh';return m.status!=='lobby'&&S?g+' · hand '+Math.max(1,S.handNo)+' · '+S.score[0]+'–'+S.score[1]:g+' · first to '+(m.opts?m.opts.target:5);},
@@ -849,31 +950,103 @@ function initNet(){if(!window.DGNet)return;NET=DGNet.create({game:'dhihaeh',titl
 const MODEN={dhihaeh:'Dhihaeh',thaas:'Thaas'},MODEDV={dhihaeh:'ދިހައެއް',thaas:'ތާސް'};
 function setMode(m){game=m==='thaas'?'thaas':'dhihaeh';ls.set('dhihaeh-mode',game);document.documentElement.dataset.mode=game;try{const u=new URL(location.href);u.searchParams.set('mode',game);history.replaceState(null,'',u.pathname+u.search);}catch(e){}}
 function meP(){return{id:myId,name:myName()||'You',ch:myChar(),ring:myRing(),col:'#E5604D'};}
-function heroFan(){const cs=game==='thaas'?['14-C','14-H','14-S','14-D']:['10-S','10-H','10-C','10-D'];return `<div class="dhero" aria-hidden="true">${cs.map(c=>`<div class="card">${faceHTML(c)}</div>`).join('')}</div>`;}
+/* ---------- the home scene (owner-approved H2-M / H2-D, 30 Sept 2026): the Bodu Beru drum on the jetty, the four
+   cards on its head with the 2 v 2 seats marked. Dhihaeh: early morning, a soft sun low in the east, haze, a turquoise
+   lagoon, sunlit planks, the string lights unlit. Thaas: sunset into dusk, the string lights on. Drawn in a 390x400
+   frame; sky, sea, deck, clouds and lights run on XW units past both sides so wide screens stay covered.
+   The only motion is CSS: .shim (water) and .rip (drum beat), both off with Reduce Motion and in smooth mode. */
+const HXW=1400;
+function hPalm(x,y,h,lean,c){const tx=x+lean,ty=y-h;let p=`<path d="M${x} ${y} Q${x+lean*.2} ${y-h*.55} ${tx} ${ty}" stroke="${c}" stroke-width="2.2" fill="none"/>`;
+ [[-15,4],[-11,-4],[0,-7],[11,-4],[15,5],[-6,8],[7,8]].forEach(f=>{p+=`<path d="M${tx} ${ty} q${f[0]*.5} ${f[1]*.5-4} ${f[0]} ${f[1]}" stroke="${c}" stroke-width="1.8" fill="none" stroke-linecap="round"/>`;});return p;}
+function homeScene(m){const mo=m!=='thaas',P=mo?'hsM':'hsD',hz=150,cx=195,cy=262,rx=140,ry=58,L=-HXW,W=390+2*HXW,f=v=>v.toFixed(1);
+ const cards=mo?['10-S','10-H','10-C','10-D']:['14-C','14-H','14-S','14-D'];
+ const us=mo?'#C46A12':'#6FE0CF',them=mo?'#C83A55':'#FF8FA0',rip=mo?'#E8952E':'#6FE0CF';
+ const swags=(fn)=>{let o='';for(let k=-4;k<=4;k++)o+=fn(k*410);return o;};
+ let s=`<svg viewBox="${L} 0 ${W} 400" aria-hidden="true" focusable="false"><defs>`;
+ if(mo){const sx=116,sy=hz-22,MI='#4E7F78';
+  s+=`<linearGradient id="${P}sk" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#86C6E4"/><stop offset=".45" stop-color="#B8DFEC"/><stop offset=".78" stop-color="#E9F0E4"/><stop offset=".93" stop-color="#FCE4C2"/><stop offset="1" stop-color="#FFE9C8"/></linearGradient>`+
+   `<linearGradient id="${P}se" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#A9E6DE"/><stop offset=".12" stop-color="#5DD3C8"/><stop offset=".5" stop-color="#23AEB3"/><stop offset="1" stop-color="#11808F"/></linearGradient>`+
+   `<radialGradient id="${P}su"><stop offset="0" stop-color="#FFFFFF"/><stop offset=".6" stop-color="#FFF4D6"/><stop offset="1" stop-color="#FFDFA6"/></radialGradient>`+
+   `<radialGradient id="${P}gl"><stop offset="0" stop-color="rgba(255,240,205,.85)"/><stop offset="1" stop-color="rgba(255,236,200,0)"/></radialGradient>`+
+   `<linearGradient id="${P}hz" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="rgba(255,255,255,0)"/><stop offset=".55" stop-color="rgba(255,252,244,.7)"/><stop offset="1" stop-color="rgba(255,255,255,0)"/></linearGradient>`+
+   `<linearGradient id="${P}dk" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#E2BF90"/><stop offset=".45" stop-color="#C39466"/><stop offset="1" stop-color="#94643F"/></linearGradient>`+
+   `<radialGradient id="${P}hd" cx=".45" cy=".4" r=".7"><stop offset="0" stop-color="#FBF0D8"/><stop offset=".7" stop-color="#EDD6A8"/><stop offset="1" stop-color="#D2B07A"/></radialGradient></defs>`+
+   `<rect x="${L}" width="${W}" height="${hz+1}" fill="url(#${P}sk)"/><circle cx="${sx}" cy="${sy}" r="120" fill="url(#${P}gl)"/>`+
+   swags(o=>`<g fill="#FFFFFF" opacity=".55" transform="translate(${o} 0)"><rect x="200" y="56" width="150" height="7" rx="3.5"/><rect x="236" y="70" width="96" height="5" rx="2.5"/><rect x="10" y="40" width="110" height="6" rx="3"/><rect x="170" y="112" width="120" height="4" rx="2"/></g>`)+
+   `<circle cx="${sx}" cy="${sy}" r="30" fill="url(#${P}su)"/>`+
+   `<rect x="${L}" y="${hz}" width="${W}" height="24" fill="url(#${P}se)"/>`;
+  [[4,70],[10,54],[17,40],[25,30],[34,22]].forEach((r,i)=>{s+=`<rect class="shim" style="animation-delay:-${(i*.7).toFixed(1)}s" x="${sx-r[1]/2}" y="${hz+r[0]}" width="${r[1]}" height="2" rx="1" fill="#FFFFFF"/>`;});
+  s+=`<rect x="${L}" y="${hz-26}" width="${W}" height="40" fill="url(#${P}hz)"/>`+
+   `<g opacity=".8"><path d="M300 ${hz} C318 ${hz-7} 356 ${hz-9} 394 ${hz}Z" fill="${MI}"/>${hPalm(334,hz-5,24,-4,MI)}${hPalm(356,hz-6,30,4,MI)}</g>`;
+  /* the string lights, unlit in the morning */
+  s+=swags(o=>{let g=`<path d="M${o-10} 62 Q${o+195} 122 ${o+400} 62" stroke="#6B5A4C" stroke-opacity=".6" stroke-width="1.1" fill="none"/>`;
+   for(let i=1;i<12;i++){const t=i/12,x=(1-t)*(1-t)*-10+2*(1-t)*t*195+t*t*400,y=(1-t)*(1-t)*62+2*(1-t)*t*122+t*t*62;g+=`<circle cx="${f(x+o)}" cy="${f(y+4)}" r="2.5" fill="#F6F1E6" stroke="#8C7F70" stroke-width=".8"/>`;}return g;});
+ }else{
+  s+=`<linearGradient id="${P}sk" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#140E2E"/><stop offset=".5" stop-color="#3B1F55"/><stop offset=".82" stop-color="#8E3A62"/><stop offset="1" stop-color="#D86C52"/></linearGradient>`+
+   `<radialGradient id="${P}su"><stop offset="0" stop-color="#FFF1CC"/><stop offset=".75" stop-color="#FFC877"/><stop offset="1" stop-color="#FF9E5A"/></radialGradient>`+
+   `<radialGradient id="${P}gl"><stop offset="0" stop-color="rgba(255,190,120,.5)"/><stop offset="1" stop-color="rgba(255,150,90,0)"/></radialGradient>`+
+   `<radialGradient id="${P}hd" cx=".45" cy=".4" r=".7"><stop offset="0" stop-color="#F7E8C6"/><stop offset=".7" stop-color="#E6CB98"/><stop offset="1" stop-color="#C9A56C"/></radialGradient>`+
+   `<linearGradient id="${P}dk" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5A3228"/><stop offset="1" stop-color="#1E0F13"/></linearGradient>`+
+   `<clipPath id="${P}cp"><rect x="${L}" width="${W}" height="${hz}"/></clipPath></defs>`+
+   `<rect x="${L}" width="${W}" height="${hz+2}" fill="url(#${P}sk)"/><circle cx="195" cy="${hz+8}" r="140" fill="url(#${P}gl)"/><circle cx="195" cy="${hz+8}" r="58" fill="url(#${P}su)" clip-path="url(#${P}cp)"/>`+
+   swags(o=>`<g opacity=".5" transform="translate(${o} 0)"><rect x="30" y="92" width="130" height="4" rx="2" fill="#C2485A"/><rect x="236" y="110" width="120" height="3.5" rx="1.8" fill="#F29A6A"/></g>`)+
+   `<rect x="${L}" y="${hz}" width="${W}" height="22" fill="#6A2E52"/><rect class="shim" x="150" y="${hz+5}" width="90" height="2" rx="1" fill="#FFD89A"/><rect class="shim" style="animation-delay:-1.4s" x="165" y="${hz+12}" width="60" height="2" rx="1" fill="#FFD89A"/>`+
+   `<path d="M-4 ${hz} C14 ${hz-7} 52 ${hz-9} 88 ${hz}Z" fill="#241022"/>${hPalm(28,hz-5,24,-4,'#241022')}${hPalm(50,hz-6,30,4,'#241022')}`;
+  /* the string lights, on at dusk */
+  s+=swags(o=>{let g=`<path d="M${o-10} 62 Q${o+195} 122 ${o+400} 62" stroke="#1A0C12" stroke-width="1.2" fill="none"/>`;
+   for(let i=1;i<12;i++){const t=i/12,x=(1-t)*(1-t)*-10+2*(1-t)*t*195+t*t*400,y=(1-t)*(1-t)*62+2*(1-t)*t*122+t*t*62;g+=`<circle cx="${f(x+o)}" cy="${f(y+4)}" r="7" fill="rgba(255,210,140,.25)"/><circle cx="${f(x+o)}" cy="${f(y+4)}" r="2.4" fill="#FFE6B0"/>`;}return g;});
+ }
+ /* the deck: planks running towards the sea */
+ s+=`<rect x="${L}" y="${hz+22}" width="${W}" height="${400-hz-22}" fill="url(#${P}dk)"/>`;
+ for(let j=-38;j<=38;j++){const xb=195+j*44,xt=195+j*44*.42;s+=`<line x1="${f(xt)}" y1="${hz+22}" x2="${xb}" y2="400" stroke="${mo?'#6E4A30':'#170A0D'}" stroke-opacity="${mo?.38:.55}" stroke-width="1.2"/>`;}
+ s+=`<line x1="${L}" y1="${hz+22}" x2="${L+W}" y2="${hz+22}" stroke="${mo?'#FFF6E4':'#F7A765'}" stroke-opacity="${mo?.8:.45}" stroke-width="${mo?1.4:1.2}"/>`;
+ /* the drum: shadow, body, lacing, head, the beat ripple */
+ s+=mo?`<ellipse cx="${cx+10}" cy="${cy+22}" rx="${rx+10}" ry="${ry+8}" fill="rgba(90,50,20,.25)"/><ellipse cx="${cx}" cy="${cy+12}" rx="${rx}" ry="${ry}" fill="#5A2C18"/><ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" fill="#8A4A28"/>`
+  :`<ellipse cx="${cx}" cy="${cy+22}" rx="${rx+10}" ry="${ry+8}" fill="rgba(0,0,0,.35)"/><ellipse cx="${cx}" cy="${cy+12}" rx="${rx}" ry="${ry}" fill="#2A120C"/><ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" fill="#5E2E1A"/>`;
+ let lp='';for(let q=0;q<=36;q++){const a=q/36*Math.PI*2;lp+=(q?'L':'M')+f(cx+Math.cos(a)*rx*(q%2?.9:.985))+' '+f(cy+Math.sin(a)*ry*(q%2?.9:.97));}
+ s+=`<path d="${lp}" fill="none" stroke="${mo?'#F6DDB0':'#E9C58C'}" stroke-width="1.3" stroke-linejoin="round" opacity="${mo?.9:.85}"/>`+
+  `<ellipse cx="${cx}" cy="${cy}" rx="${rx*.86}" ry="${ry*.86}" fill="url(#${P}hd)"/><ellipse cx="${cx}" cy="${cy}" rx="${rx*.86}" ry="${ry*.86}" fill="none" stroke="#8C5A2E" stroke-opacity="${mo?.45:.5}" stroke-width="1"/>`+
+  `<ellipse class="rip" cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" fill="none" stroke="${rip}" stroke-width="1.6"/><ellipse class="rip b" cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" fill="none" stroke="${rip}" stroke-width="1.2"/>`;
+ /* four cards on the drum head: north and south your team, east and west them */
+ [[cx,cy-30,0,cards[0],us],[cx+78,cy,-80,cards[1],them],[cx,cy+30,180,cards[2],us],[cx-78,cy,80,cards[3],them]].forEach(st=>{const p=E.P(st[3]),red=(p.s==='H'||p.s==='D')?'#C4262E':'#18161C';
+  s+=`<g transform="translate(${st[0]} ${st[1]}) scale(1 .62) rotate(${st[2]})"><rect x="-15" y="-21" width="30" height="42" rx="3.5" fill="#FFFDF6" stroke="${st[4]}" stroke-width="2.2"/><text x="-10" y="-8" font-family="DM Serif Display,Georgia,serif" font-size="12" fill="${red}">${RL[p.r]}</text><g transform="translate(-6 -3) scale(.62)" fill="${red}">${SUITSVG[p.s]}</g></g>`;});
+ /* the trump chip in the middle */
+ s+=`<ellipse cx="${cx}" cy="${cy}" rx="15" ry="10" fill="${mo?'#FFFFFF':'#FFF7E6'}" stroke="#8C5A2E" stroke-opacity=".6"/><g transform="translate(${cx-6} ${cy-6}) scale(.5)" fill="${mo?'#C4262E':'#18161C'}">${SUITSVG[mo?'H':'S']}</g>`;
+ const tagp=(x,y,t,c)=>{const w=t.length*5.6+14;return `<g><rect x="${f(x-w/2)}" y="${y-8}" width="${f(w)}" height="16" rx="8" fill="${mo?'rgba(255,255,255,.92)':'rgba(20,10,16,.78)'}" stroke="${c}" stroke-width="1"/><text x="${x}" y="${y+3.5}" text-anchor="middle" font-family="Oswald,Arial Narrow,sans-serif" font-weight="600" font-size="9" letter-spacing="1.2" fill="${c}">${t}</text></g>`;};
+ s+=tagp(cx+56,cy-30,'PARTNER',us)+tagp(cx+44,cy+30,'YOU',us)+tagp(cx+rx-6,cy-ry+2,'THEM',them)+tagp(cx-rx+6,cy-ry+2,'THEM',them)+'</svg>';
+ return `<div class="hsc ${mo?'mo':'du'}" aria-hidden="true">${s}</div>`;}
+function laceHTML(){let z='';for(let i=0;i<10;i++)z+=` L${(i*15+7.5).toFixed(1)} 10.5 L${((i+1)*15).toFixed(1)} 1.5`;
+ return `<svg class="lace" viewBox="0 0 150 12" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"><path d="M0 1.5H150M0 10.5H150" opacity=".5"/><path d="M0 1.5${z}"/></g></svg>`;}
 function savedGame(m){try{const d=JSON.parse(ls.get(saveKey(m))||'null');if(d&&d.game==='dhihaeh'&&d.mode===(m||game)&&d.players&&d.status!=='over'&&d.status!=='lobby'&&d.sv===SAVE_V)return d;}catch(e){}return null;}
 function resumeHTML(){const d=savedGame();if(!d)return '';
 return `<button class="resume" data-a="resume"><span>Unfinished ${MODEN[d.mode]}: <b>Hand ${d.handNo}</b>, your team ${d.score[0]}–${d.score[1]}</span><span class="go">Resume</span></button>`;}
 let spCtl=null;
-function offTable(){document.documentElement.dataset.scr=screen;if(spCtl){try{spCtl.destroy();}catch(e){}spCtl=null;}}
-function embers(){const e=$('#embers');if(!e||e._k||reduce)return;e._k=1;let h='';for(let i=0;i<14;i++)h+=`<i style="left:${(Math.random()*100).toFixed(1)}%;animation-delay:${(-Math.random()*11).toFixed(1)}s;animation-duration:${(9+Math.random()*7).toFixed(1)}s;--dx:${(Math.random()*60-30).toFixed(0)}px"></i>`;e.innerHTML=h;}
-function renderHome(){screen='home';offTable();closeOv();closeRules();document.documentElement.dataset.mode=game;embers();
+function offTable(){document.documentElement.dataset.scr=screen;if(spCtl){try{spCtl.destroy();}catch(e){}spCtl=null;}
+ const tc=document.querySelector('meta[name="theme-color"]');if(tc)tc.content=screen!=='home'?'#1d1330':game==='thaas'?'#140E2E':'#86C6E4';}
+function renderHome(){screen='home';offTable();closeOv();closeRules();document.documentElement.dataset.mode=game;
 const nm=myName(),me=meP(),th=game==='thaas';
-app.innerHTML=`<main class="page">
+app.innerHTML=`${homeScene(game)}<main class="page home ${th?'du':'mo'}">
 <div class="hometop"><a class="icon-btn dgh" href="../" aria-label="Back to Dhivehi Games">${HI.back}<svg class="dgmk dgmono" viewBox="14.4 6.4 71.2 88.2" width="19" height="24" aria-hidden="true"><defs><mask id="dgmkM" maskUnits="userSpaceOnUse" x="-60" y="-60" width="120" height="120"><rect x="-30" y="-40" width="60" height="80" rx="8" fill="#fff"/><path d="M50,32.65 A14.5,14.5 0 1 0 26.01,48.85 Q39.27,63.45 50,80 Q60.73,63.45 73.99,48.85 A14.5,14.5 0 1 0 50,32.65Z" transform="translate(0,1.5) scale(0.7778) translate(-50,-52.75)" fill="#000"/></mask></defs><g transform="translate(50,50.5) rotate(-8)"><rect x="-30" y="-40" width="60" height="80" rx="8" fill="currentColor" mask="url(#dgmkM)"/></g></svg></a><button class="profbtn" data-a="name" aria-label="Your name: ${esc(nm||'not set')}. Change">${avatarHTML(me,0,38)}<span class="pwrap"><span class="pn">${nm?esc(nm):'Player'}</span><span class="ps">${nm?'Tap to rename':'Set your name'}</span></span></button><a class="shellpill" href="../digu/?open=boli" aria-label="${shells()} Boli">${HI.shell}<span>${compact(shells())}</span></a></div>
-${heroFan()}
-<div class="dtitle"><span class="kick">${HI.drum.replace('<svg','<svg width="14" height="14"')}2 v 2 · Sunset jetty</span><h1>${th?'THAAS':'DHIHAEH'}</h1><span class="dv" lang="dv" dir="rtl">${MODEDV[game]}</span><p>${th?'Name trumps. Take seven tricks.':'Capture the tens with your partner'}</p></div>
+<div class="hhero" aria-hidden="true"></div>
+<div class="dtitle"><span class="kick">${HI.drum.replace('<svg','<svg width="14" height="14"')}2 v 2 · ${th?'Sunset':'Morning'} jetty</span><h1>${th?'THAAS':'DHIHAEH'}</h1><span class="dv" lang="dv" dir="rtl">${MODEDV[game]}</span><p>${th?'Name trumps. Take seven tricks.':'Capture the tens with your partner'}</p>${laceHTML()}</div>
 <div class="mseg" role="group" aria-label="Game"><button data-a="mode" data-v="dhihaeh" aria-pressed="${!th}">Dhihaeh<small>Win the tens</small></button><button data-a="mode" data-v="thaas" aria-pressed="${th}">Thaas<small>Seven tricks</small></button></div>
 <p class="mhint">${th?'The player left of the dealer names <b>trumps</b> after 5 cards. First team to <b>7 tricks</b> (koatey) wins the hand.':'Trumps are the dealer’s last card. Can’t follow suit? <b>You must trump.</b> Take <b>3 or 4 tens</b> to win the hand.'}</p>
 <section class="modes">
-<button class="mode quick" data-a="solo"><span class="mi">${HI.bot}</span><span class="mt"><b>Play vs Computer</b><small>You + a computer partner · first to 5 hands</small></span></button>
-<button class="mode" data-a="online"><span class="mi">${HI.friends}</span><b>Play online</b><small>2 to 4 people · codes, Quick Match</small></button>
-<button class="mode" data-a="howto"><span class="mi">${HI.book}</span><b>How to play</b><small>${MODEN[game]} rules, with pictures</small></button>
+<button class="mode quick" data-a="quick"><span class="mi">${HI.bolt}</span><span class="mt"><b>Quick Match</b><small>Play real people now · ${MODEN[game]}</small><span class="live zero" id="qmLive"><i></i><span>Be the first to play</span></span></span></button>
+<button class="mode row fr" data-a="friends"><span class="mi">${HI.friends}</span><span class="mt"><b>Play with Friends</b><small>Create a table, or use a code</small></span>${HI.chev}</button>
+<button class="mode row sm" data-a="solo"><span class="mi">${HI.bot}</span><span class="mt"><b>vs Computer</b><small>You + a computer partner · first to 5</small></span>${HI.chev}</button>
 </section>
 ${resumeHTML()}
+<button class="how" data-a="howto">${HI.book}How to play ${MODEN[game]}</button>
 <div class="homebelow"><div class="spbox" id="spbox"></div></div>
 <p class="snote">Part of <a href="../">Dhivehi Games</a>. Win hands to earn Boli, up to ${DAILY_CAP} a day across the site.</p>
 </main>`;
-const el=$('#spbox');if(el&&window.DGSponsors){try{spCtl=DGSponsors.box(el);}catch(e){}}}
+const el=$('#spbox');if(el&&window.DGSponsors){try{spCtl=DGSponsors.box(el);}catch(e){}}
+if(NET&&NET.playing)NET.playing(liveLine);}
+/* "N playing now" on the Quick Match button (0: "Be the first to play") */
+function liveLine(n){const e=$('#qmLive');if(!e)return;n=n|0;e.classList.toggle('zero',n<=0);e.lastElementChild.textContent=n>0?n+' playing now':'Be the first to play';}
+/* Quick Match and new tables use the game picked on the home (the host's choice decides a shared table) */
+function netMode(){try{const k='dgn-opt-dhihaeh',o=JSON.parse(ls.get(k)||'{}')||{};if(o.mode!==game){o.mode=game;ls.set(k,JSON.stringify(o));}}catch(e){}}
 /* pictures for How to play: small real cards */
 const mc=(c,cls,lab,lc)=>`<span class="mc${cls?' '+cls:''}"><span class="card">${c?faceHTML(c):backHTML()}</span>${lab?`<em${lc?` class="${lc}"`:''}>${lab}</em>`:''}</span>`;
 function howDhihaeh(){return `
@@ -1045,7 +1218,7 @@ function renderHand(){const box=$('#hand');if(!box)return;const me=meIdx();const
  const hk=S.gid+':'+S.handNo;let dealt=false;if(handKey!==hk){handKey=hk;for(const id in cardEls)cardEls[id].remove();cardEls={};dealt=true;}
  order=sortHand(hand,S.trump);if(sel&&!(hand.includes(sel)&&playable(sel)))sel=null;
  for(const id in cardEls)if(!hand.includes(id)){cardEls[id].remove();delete cardEls[id];}
- let em=box.querySelector('.empty');const et=me<0&&mode==='online'&&S.status!=='lobby'?(NET&&NET.isWaiting()?'You play from the next match':'Watching live · the hands stay hidden'):'';
+ let em=box.querySelector('.empty');const et=me<0&&mode==='online'&&S.status!=='lobby'?(NET&&NET.isWaiting()?((NET.meta()&&NET.meta().players||[]).some(p=>p.cpu&&!p.gone)?'You take a computer’s seat after this hand':'You play from the next match'):'Watching live · the hands stay hidden'):'';
  if(et){if(!em){box.insertAdjacentHTML('beforeend','<div class="empty"></div>');em=box.querySelector('.empty');}if(em.textContent!==et)em.textContent=et;}else if(em)em.remove();
  const fresh=[];order.forEach(id=>{let el=cardEls[id];if(!el){el=document.createElement('div');el.className='card nt';el.dataset.id=id;el.innerHTML=faceHTML(id);el.setAttribute('role','button');el.tabIndex=0;box.appendChild(el);cardEls[id]=el;fresh.push(el);}
   const ok=playable(id),isT=S.trump&&P(id).s===S.trump;el.classList.toggle('off',canAct()&&!ok);el.classList.toggle('sel',sel===id);el.classList.toggle('trumpc',!!isT);
@@ -1125,7 +1298,8 @@ function events(prev,N){if(!prev||!N.move||(prev.move&&prev.move.seq===N.move.se
   N.players.forEach((p,k)=>{if(k===me&&!AUTO)return;setTimeout(()=>react(k,(k&1)===r.w?'laugh':'sad',2200),500);});}
  if(N.status==='playing'&&N.phase==='play'&&N.turn===me&&me>=0&&!(prev.status==='playing'&&prev.phase==='play'&&prev.turn===me))setTimeout(()=>{if(S&&S.turn===meIdx()&&S.phase==='play')SFX.turn();},150);
  if(N.status==='trump'&&N.chooser===me&&prev.status!=='trump')setTimeout(()=>SFX.turn(),300);}
-function handAward(){if(!S||!S.result||meIdx()<0||(mode==='online'&&S.players[meIdx()].gone))return null;const r=S.result,won=r.w===(meIdx()&1);let tot=null;
+function handAward(){if(!S||!S.result||meIdx()<0||(mode==='online'&&S.players[meIdx()].gone))return null;
+ if(mode==='online'&&lateSeat&&lateSeat.gid===S.gid&&S.handNo<=lateSeat.h)return null;const r=S.result,won=r.w===(meIdx()&1);let tot=null;
  const add=a=>{if(!a)return;tot=tot||{sh:0,capped:false};tot.sh+=a.sh;tot.capped=tot.capped||a.capped;};
  if(won)add(award('dhihaeh:'+S.gid+':'+S.handNo,4+r.pts*3));
  if(S.status==='over')add(award('dhihaeh:'+S.gid+':m',won?35:10));return tot;}
@@ -1163,8 +1337,13 @@ function openMenu(){if(!S)return;const me=myT();
  const hist=S.history.slice(-6).reverse().map(h=>`<div><span>Hand ${h.h} · ${suitI(h.trump)}</span><span>${h.w===me?'<span class="u">Us</span>':'<span class="t">Them</span>'} +${h.pts}${h.huk?' · hukunbunye':h.baga?' · baga':''} · ${h.tricks[me]}–${h.tricks[1-me]} tricks</span></div>`).join('');
  sheet(`<div class="grab"></div><h2>${MODEN[S.mode]}</h2><p class="muted" style="margin:4px 0 0">${S.status==='lobby'?'Not started':'Hand '+S.handNo} · first team to ${S.target} hand wins</p>
 ${S.handNo?teamBoxes(-1):''}${hist?`<div class="hist">${hist}</div>`:''}
-<div class="mlist"><button class="btn soft wide" data-a="menuRules">Rules</button><button class="btn soft wide" data-a="howto">How to play</button><button class="btn soft wide" data-a="sfx" aria-pressed="${sfxOn()}">Sound: ${sfxOn()?'On':'Off'}</button>${mode==='online'?`<button class="btn ghost wide" data-a="netLeave">Leave table</button>${meIdx()>=0&&(S.status==='playing'||S.status==='trump')?'<p class="muted" style="font-size:12px;margin:2px 2px 0">If you leave, the computer plays your seat for the rest of this match and you can’t rejoin it.</p>':''}`
- :`<button class="btn ghost wide" data-a="leave">${S.status==='playing'||S.status==='trump'?'Leave (your game is saved)':'Back to home'}</button>`}</div>`);}
+<div class="mlist"><button class="btn soft wide" data-a="menuRules">Rules</button><button class="btn soft wide" data-a="howto">How to play</button><button class="btn soft wide" data-a="sfx" aria-pressed="${sfxOn()}">Sound: ${sfxOn()?'On':'Off'}</button>${mode==='online'?`<button class="btn danger wide" data-a="netLeave">Leave table</button>${meIdx()>=0&&(S.status==='playing'||S.status==='trump')?'<p class="muted" style="font-size:12px;margin:2px 2px 0">If you leave, the computer plays your seat for the rest of this match and you can’t rejoin it.</p>':''}`
+ :`${S.status==='playing'||S.status==='trump'||S.status==='handover'?'<button class="btn ghost wide" data-a="leave">Save &amp; quit</button>':''}<button class="btn danger wide" data-a="quitAsk">Quit to lobby</button>`}</div>`);}
+/* vs Computer: quit with a confirm step (the game is not saved; "Save & quit" keeps it) */
+async function quitAsk(){closeSheet();const q={title:'Quit to lobby?',text:'This game ends here and isn’t saved.',ok:'Quit',cancel:'Keep playing'};
+ let ok=false;if(NET&&NET.ask)ok=await NET.ask(q);else ok=window.confirm(q.title+' '+q.text);
+ if(!ok||mode==='online')return;clearTimeout(botT);clearTimeout(turnT);clearTimeout(warnT);clearTimeout(saveT);
+ if(S){ls.del(saveKey(S.mode));setMode(S.mode);}closeRules();closeOv();S=null;mode=null;renderHome();}
 function toggleSfx(){ls.set('dd-sfx',sfxOn()?'0':'1');document.querySelectorAll('[data-a="sfx"]').forEach(b=>{b.setAttribute('aria-pressed',String(sfxOn()));if(b.classList.contains('btn'))b.textContent='Sound: '+(sfxOn()?'On':'Off');});if(sfxOn()){AU.unlock();setTimeout(()=>SFX.reveal(),80);}else AU.sleep();}
 function leave(){clearTimeout(botT);clearTimeout(turnT);clearTimeout(warnT);if(mode==='online'&&NET&&NET.isOnline()){closeSheet();closeOv();NET.leave();return;}if(mode==='solo'&&S&&S.status!=='over'&&S.status!=='lobby')ls.set(saveKey(S.mode),JSON.stringify(S));closeSheet();closeRules();closeOv();if(S)setMode(S.mode);S=null;mode=null;renderHome();}
 
@@ -1174,8 +1353,11 @@ function leave(){clearTimeout(botT);clearTimeout(turnT);clearTimeout(warnT);if(m
 document.addEventListener('click',e=>{AU.unlock();const b=e.target.closest('[data-a]');if(!b)return;const a=b.dataset.a;
 switch(a){
 case 'mode':setMode(b.dataset.v);renderHome();break;
-case 'online':if(NET)NET.open();else toast('Online play needs a newer browser.');break;
-case 'netLeave':closeSheet();closeOv();if(NET&&mode==='online')NET.leave();else leave();break;
+case 'online':if(NET){netMode();NET.open();}else toast('Online play needs a newer browser.');break;
+case 'quick':if(NET){netMode();NET.quick();}else toast('Online play needs a newer browser.');break;
+case 'friends':if(NET){netMode();NET.friends();}else toast('Online play needs a newer browser.');break;
+case 'netLeave':closeSheet();if(NET&&mode==='online'&&NET.isOnline())NET.leaveAsk();else leave();break;
+case 'quitAsk':quitAsk();break;
 case 'netAgain':closeOv();if(NET)NET.again();break;
 case 'rulesOk':closeRules();break;
 case 'howto':openHowTo(S?S.mode:game);break;
@@ -1185,7 +1367,7 @@ case 'name':openName();break;
 case 'saveName':saveName();break;
 case 'solo':startSolo();break;
 case 'resume':resume();break;
-case 'rulesDeal':closeRules();if(mode!=='online'||isHostOn())act('start');break;
+case 'rulesDeal':closeRules();if(isHostOn())hostDeal('start');else if(mode!=='online')act('start');break;
 case 'menu':openMenu();break;
 case 'menuRules':sheet(`<div class="grab"></div>${rulesCardHTML(S)}<div class="row"><button class="btn primary" data-a="close">Back to the game</button></div>`);break;
 case 'sfx':toggleSfx();break;

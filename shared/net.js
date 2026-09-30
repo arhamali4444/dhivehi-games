@@ -4,6 +4,21 @@
        <script src="../shared/net.js?v=2"></script>        (bump ?v= in EVERY game whenever this file changes)
    v2 (Sept 2026, backward-compatible): optional waiting-room hooks roomList / roomClick / onLobbyMsg / lobbyFix,
    NET.lobby(obj), game-owned lobby data T.x (also passed to onStart as info.x). Used by Dhihaeh for 2 v 2 seats.
+   v5 (Sept 2026, backward-compatible; games opt in with cfg.cpu:true):
+   - Quick Match flow: a 12 s search screen (timer ring, seats filling), then "Nobody's around yet" with
+     "Start with computer players" (starts by itself after 5 s) or "Keep waiting".
+   - PERMANENT computer seats in T.players ({id:'cpu…',name,look,cpu:1}). They are skipped by the AFK check,
+     host hand-over and voice, count as free seats in the table listing, and reach onStart as seats[i].cpu=1.
+     start() may begin with a single person when computers fill the other seats.
+   - A newcomer takes a computer's seat: in the waiting room at once; during a match they watch, then the game
+     calls NET.handBreak() between hands (or NET.handBreak(cpuId) at the start of that computer's turn) and
+     cfg.onSeatSwap(cpuId,{id,name,look}) hands the seat over (the newcomer keeps its score). The toast says
+     "Name took a seat". With no computer seats the old rule stays: public joiners play from the next match.
+   - Voice on Quick Match tables too (mic off until tapped), per-player mute and report in the voice tray,
+     each player's mic on/off shared (T.mic), a crossed-out mic badge on muted players, and a speaking ring
+     (.dgn-ring, transform + opacity only, colour --dgn-talk) around cfg.avatarEl(pid).
+   - NET.friends() (Play with Friends sheet), NET.playing(cb) ("N playing now" for the home), NET.ask(o)
+     (a themed confirm sheet → Promise<boolean>), NET.leaveAsk() (confirm, then leave the table).
 
    WHAT IT DOES (extracted from Digu's proven online code, plus Dhogu's Last-Will and epoch-based
    host hand-over, which are more robust):
@@ -67,10 +82,17 @@
        roomClick(dataset),           // a data-dgn="x" button in the room was tapped (every player)
        onLobbyMsg(pid,obj),          // host: a player sent NET.lobby(obj) while the table waits; change T.x (NET.meta().x), then it syncs
        lobbyFix(T)                   // host: tidy T.x before each waiting-room update (players come and go)
+       // v5 computer seats (all optional unless cpu:true):
+       cpu:true,                     // Quick Match fills empty seats with computer players
+       quickSize:4,                  // seats Quick Match looks for (default max)
+       cpuSeat(i,taken),             // {name,look} for a new computer seat (default: a Maldivian name, no look)
+       onSeatSwap(cpuId,player),     // host: a newcomer takes that computer's seat now; return false to refuse
+       onCount(n)                    // "N playing now" changed (also NET.playing(cb))
      });
      NET.open()   NET.boot()   NET.leave()   NET.sync()   NET.send(action)   NET.start()   NET.again()
      NET.matchOver()   NET.strike(pid)   NET.clear(pid)   NET.afk(pid)   NET.retire()   NET.lobby(obj)
      NET.isOnline() isHost() isClient() isSpectator() meta() hostNow() humans() id ns test
+     v5: NET.friends()  NET.playing(cb)  NET.handBreak([true|false|cpuId])  NET.ask(o)  NET.leaveAsk()  NET.isCpu(id)
    ===================================================================================== */
 (function(){
 'use strict';
@@ -80,7 +102,10 @@ const BROKERS=['wss://broker.emqx.io:8084/mqtt','wss://broker.hivemq.com:8884/mq
 const LOCAL=/^(localhost|127\.\d+\.\d+\.\d+|\[::1\])$/.test(location.hostname)||/\.(localhost|test)$/.test(location.hostname);
 const Q=new URLSearchParams(location.search);
 const LIST_MS=10000,STALE_MS=45000,INFO_MS=5000,PING_MS=2500,AWAY_MS=30000,LOST_MS=12000,MIG_STEP=7000,MIG_GIVEUP=50000,
-      MAX_VIEW=30,AFK_TURNS=2,QUICK_WAIT=20000,QUICK_FULL=3000,QUICK_AGAIN=25000,BK_MS=1200;
+      MAX_VIEW=30,AFK_TURNS=2,QUICK_WAIT=20000,QUICK_FULL=3000,QUICK_AGAIN=25000,BK_MS=1200,
+      QUICK_SEARCH=12000,QUICK_ASK=5000,QUICK_REFILL=6000;
+const CPU_NAMES=['Aisha','Ibrahim','Mariyam','Hassan','Aminath','Moosa','Hawwa','Yoosuf','Shifa','Nasih','Zahir','Leena'];
+const REPORT_REASONS=['Abusive voice','Abusive chat','Offensive name','Cheating or unfair play','Other'];
 const ls={get(k){try{return localStorage.getItem(k);}catch(e){return null;}},set(k,v){try{localStorage.setItem(k,v);}catch(e){}},del(k){try{localStorage.removeItem(k);}catch(e){}}};
 const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
@@ -194,6 +219,11 @@ const IC={
  users:SV('<circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><circle cx="17" cy="9" r="2.5"/><path d="M16.2 14.1c2.7.4 4.8 2.7 4.8 5.9"/>'),
  lock:SV('<rect x="5" y="11" width="14" height="10" rx="2.5"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>'),
  globe:SV('<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.8 3 2.8 15 0 18M12 3c-2.8 3-2.8 15 0 18"/>'),
+ bot:SV('<rect x="4" y="7" width="16" height="12" rx="3.5"/><path d="M12 7V4"/><circle cx="9.3" cy="12.6" r="1.4" fill="currentColor" stroke="none"/><circle cx="14.7" cy="12.6" r="1.4" fill="currentColor" stroke="none"/>',' stroke-width="2.4"'),
+ seat:SV('<circle cx="12" cy="8" r="3.5"/><path d="M5 20c.8-3.5 3.6-6 7-6s6.2 2.5 7 6"/>'),
+ flag:SV('<path d="M5 21V4M5 4h11l-2 4 2 4H5"/>'),
+ mute:SV('<path d="M4 9.5h3.5L12 5v14l-4.5-4.5H4z"/><path d="M16 9.5l5 5M21 9.5l-5 5"/>'),
+ micX:SV('<path d="M15 9.5V6a3 3 0 0 0-5.6-1.5M9 9v2a3 3 0 0 0 4.6 2.5"/><path d="M5.5 11a6.5 6.5 0 0 0 10.4 5.2M18.4 12.5c.1-.5.1-1 .1-1.5M12 17.5V21M4 4l16 16"/>',' stroke-width="2.6"'),
  crown:'<svg viewBox="0 0 24 16" aria-hidden="true"><path d="M2 14h20l1.5-10-6.5 4.5L12 1 7 8.5.5 4z" fill="#F2C94C" stroke="#8A6414" stroke-width="1.2" stroke-linejoin="round"/></svg>'};
 const PHRASES=['Hello!','Good luck!','Nice one!','Oops!','Well played!','Your turn!','Thanks!','Hurry up!','Be right back','Good game!','One more?','Bye!'];
 
@@ -316,8 +346,70 @@ const STYLE=`
 #dgnNote .dgn-scrim{z-index:calc(var(--dgn-z,9000) + 6)}#dgnNote .dgn-sheet{z-index:calc(var(--dgn-z,9000) + 7)}
 .dgn-note ol{margin:6px 0 10px;padding-left:20px;font-size:14px;line-height:1.5}
 .dgn-note p{font-size:14.5px;line-height:1.5;margin:6px 0 14px;color:var(--dgn-muted,rgba(245,241,232,.8))}
-.dgn-talk{box-shadow:0 0 0 calc(2px + var(--dgn-vl,0) * 5px) var(--dgn-talk,rgba(67,181,129,.85))!important;border-radius:50%}
-@media (prefers-reduced-motion:reduce){.dgn *{animation:none!important;transition:none!important}}
+/* v5: speaking ring + muted badge around a seat avatar (only transform and opacity change while someone talks) */
+.dgn-ring{position:absolute;inset:-5px;border-radius:50%;pointer-events:none;box-sizing:border-box;border:3px solid var(--dgn-talk,rgba(67,181,129,.9));
+ box-shadow:0 0 12px var(--dgn-talk,rgba(67,181,129,.6)),inset 0 0 8px var(--dgn-talk,rgba(67,181,129,.5));opacity:0;transform:scale(1);transition:opacity .3s ease-out,transform .3s ease-out;z-index:3;will-change:transform,opacity}
+.dgn-ring.on{transition:opacity .08s linear,transform .08s linear}
+.dgn-moff{padding:0;margin:0;position:absolute;right:-4px;bottom:-3px;width:18px;height:18px;border-radius:50%;background:#fff;color:#1c1c1e;display:grid;place-items:center;box-shadow:0 1px 3px rgba(0,0,0,.4);z-index:4;pointer-events:none}
+.dgn-moff svg{width:62%;height:62%}
+.dgn-moff.dgn-me{box-shadow:0 0 0 1.5px var(--dgn-acc,#E5604D),0 1px 3px rgba(0,0,0,.4)}
+.dgn-moff[hidden]{display:none!important}
+/* v5: Quick Match search */
+.dgn-qs{text-align:center}
+.dgn-qpanel{margin:8px 0 0;padding:22px 14px 18px;border-radius:calc(var(--dgn-radius,18px) + 4px);background:var(--dgn-bg2,#1d2128);border:1px solid var(--dgn-line,rgba(255,255,255,.08))}
+.dgn-ringw{position:relative;width:148px;height:148px;margin:4px auto 0}
+.dgn-ringw svg.tr{position:absolute;inset:0;width:100%;height:100%;transform:rotate(-90deg)}
+.dgn-ringw .trk{fill:none;stroke:var(--dgn-line,rgba(255,255,255,.14));stroke-width:8}
+.dgn-ringw .arc{fill:none;stroke:var(--dgn-acc,#E5604D);stroke-width:8;stroke-linecap:round}
+.dgn-ringw .dgn-rme{position:absolute;left:50%;top:50%;width:104px;height:104px;margin:-52px 0 0 -52px;border-radius:50%;overflow:hidden;display:grid;place-items:center;background:var(--dgn-soft,rgba(255,255,255,.1));font-weight:800;font-size:40px;line-height:1;font-family:var(--dgn-head,inherit);box-shadow:0 0 0 4px var(--dgn-bg,#15181d)}
+.dgn-ringw .dgn-rme svg{width:100%;height:100%;display:block}
+.dgn-secs{position:absolute;left:50%;bottom:-6px;transform:translateX(-50%);background:var(--dgn-bg,#15181d);color:var(--dgn-acc,#E5604D);font-weight:800;font-size:12px;line-height:1;font-family:var(--dgn-font,inherit);padding:6px 10px;border-radius:99px;box-shadow:0 4px 12px -6px rgba(0,0,0,.6);white-space:nowrap;border:1px solid var(--dgn-line,rgba(255,255,255,.12))}
+.dgn-qs h3{margin:22px 0 4px;font-weight:800;font-size:22px;line-height:1.15;font-family:var(--dgn-head,inherit);letter-spacing:-.01em}
+.dgn-quick.qs{display:block;padding:0;text-align:left}
+.dgn-qs .dgn-qst{font-size:12.5px;font-weight:600;color:var(--dgn-muted,rgba(245,241,232,.64));margin:0;min-height:1.4em}
+.dgn-dots::after{content:"";display:inline-block;width:1.2em;text-align:left;animation:dgnDots 1.4s steps(4) infinite}
+@keyframes dgnDots{0%{content:""}25%{content:"."}50%{content:".."}75%{content:"..."}}
+.dgn-seats{display:flex;flex-wrap:wrap;justify-content:center;gap:10px 4px;margin:16px 0 6px}
+.dgn-st{display:flex;flex-direction:column;align-items:center;gap:5px;width:66px;min-width:0}
+.dgn-st .av,.dgn-st .emp{width:52px;height:52px;border-radius:50%;flex:none}
+.dgn-st .av{overflow:hidden;display:grid;place-items:center;background:var(--dgn-soft,rgba(255,255,255,.1));font-weight:800;font-size:20px;box-shadow:0 0 0 2.5px var(--dgn-bg,#15181d);animation:dgnPop .45s cubic-bezier(.2,1.4,.4,1) both}
+.dgn-st .av svg{width:100%;height:100%;display:block}
+.dgn-st .av.cpu{color:var(--dgn-muted,rgba(245,241,232,.7))}.dgn-st .av.cpu>svg{width:58%;height:58%}
+.dgn-st .emp{border:2px dashed var(--dgn-line,rgba(255,255,255,.22));display:grid;place-items:center;color:var(--dgn-muted,rgba(245,241,232,.5))}
+.dgn-st .emp svg{width:18px;height:18px}
+.dgn-st .n{font-size:11.5px;font-weight:700;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dgn-st .n.o{color:var(--dgn-muted,rgba(245,241,232,.6));font-weight:600}
+@keyframes dgnPop{from{transform:scale(.3);opacity:0}to{transform:none;opacity:1}}
+.dgn-ctag{display:inline-flex;align-items:center;gap:3px;font-size:9.5px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;padding:2px 6px;border-radius:99px;background:var(--dgn-soft,rgba(255,255,255,.12));color:var(--dgn-muted,rgba(245,241,232,.8));white-space:nowrap;vertical-align:middle}
+.dgn-ctag svg{width:10px;height:10px}
+.dgn-qfill{font-size:12.5px;color:var(--dgn-muted,rgba(245,241,232,.64));margin:2px 0 14px}
+.dgn-qs .dgn-qhint{font-size:12px;font-weight:500;color:var(--dgn-muted,rgba(245,241,232,.64));margin:12px 4px 0;text-align:center}
+#dgnQa .dgn-scrim{z-index:calc(var(--dgn-z,9000) + 4)}#dgnQa .dgn-sheet{z-index:calc(var(--dgn-z,9000) + 5)}
+.dgn-bots{display:flex;align-items:center;gap:10px;margin:0 0 14px;padding:10px 12px;border-radius:14px;background:var(--dgn-bg2,#1d2128);text-align:left}
+.dgn-bots .hp{display:flex;flex:none}
+.dgn-bots .hp span{width:32px;height:32px;border-radius:50%;margin-left:-8px;display:grid;place-items:center;overflow:hidden;background:var(--dgn-soft,rgba(255,255,255,.12));box-shadow:0 0 0 2px var(--dgn-bg,#15181d);color:var(--dgn-muted,rgba(245,241,232,.8))}
+.dgn-bots .hp span:first-child{margin-left:0}.dgn-bots .hp svg{width:60%;height:60%}
+.dgn-bots small{font-size:12px;line-height:1.35;color:var(--dgn-muted,rgba(245,241,232,.7))}
+.dgn-btn.cd{position:relative;overflow:hidden;flex-direction:column;gap:2px}
+.dgn-btn.cd .cdt{display:block;font-size:11.5px;font-weight:600;opacity:.9}
+.dgn-btn.cd .bar{position:absolute;left:0;bottom:0;height:4px;width:100%;background:rgba(255,255,255,.7);transform-origin:left;transform:scaleX(1)}
+.dgn-stack{display:grid;gap:10px}
+/* v5: voice tray players, report */
+.dgn-tray{max-height:min(78vh,78dvh);overflow:auto;overscroll-behavior:contain}
+.dgn-vlist{display:grid;gap:6px;margin-top:2px}
+.dgn-vp{display:flex;align-items:center;gap:8px;padding:6px 6px 6px 8px;border-radius:12px;background:var(--dgn-bg2,#1d2128);border:1px solid var(--dgn-line,rgba(255,255,255,.08))}
+.dgn-vp .av{width:30px;height:30px;border-radius:50%;overflow:hidden;flex:none;display:grid;place-items:center;background:var(--dgn-soft,rgba(255,255,255,.1));font-weight:800;font-size:13px}
+.dgn-vp .av svg{width:100%;height:100%;display:block}
+.dgn-vp b{flex:1;min-width:0;font-size:13.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dgn-vp .ms{width:16px;height:16px;flex:none;opacity:.75;display:grid;place-items:center}.dgn-vp .ms svg{width:16px;height:16px}
+.dgn-vp .dgn-btn.sm{min-height:36px;padding:4px 9px;font-size:12.5px}
+.dgn-vp .dgn-btn.sm[aria-pressed="true"]{background:var(--dgn-bad,#E5604D);color:#fff;border-color:transparent}
+.dgn-rr{display:grid;gap:6px;margin:6px 0 10px}
+.dgn-rr label{display:flex;align-items:center;gap:10px;min-height:44px;padding:6px 12px;border-radius:12px;background:var(--dgn-bg2,#1d2128);font-weight:700;font-size:14px;cursor:pointer}
+.dgn-rr input{accent-color:var(--dgn-acc,#E5604D);width:18px;height:18px;flex:none}
+.dgn-ta{width:100%;min-height:64px;border-radius:12px;border:1px solid var(--dgn-line,rgba(255,255,255,.14));background:var(--dgn-bg2,#1d2128);color:inherit;font-weight:500;font-size:14px;line-height:1.4;font-family:var(--dgn-font,inherit);padding:10px 12px;resize:vertical;outline:none}
+.dgn-chk{display:flex;align-items:center;gap:8px;font-size:13.5px;margin:10px 0 14px;font-weight:600}
+@media (prefers-reduced-motion:reduce){.dgn *{animation:none!important;transition:none!important}.dgn-ring{transition:none!important}}
 `;
 
 /* ======================================================================================== */
@@ -327,6 +419,8 @@ function create(cfg){
  const NS=nsFor(GAME,cfg.v||1),TEST=NS.indexOf('/test-')>0;
  const MIN=Math.max(2,cfg.min|0||2),MAX=Math.max(MIN,cfg.max|0||MIN);
  const TITLE=cfg.title||'the game';
+ /* v5: computer seats (Quick Match); off unless the game opts in, so older games keep today's behaviour */
+ const CPU=!!cfg.cpu,QSIZE=Math.max(MIN,Math.min(MAX,cfg.quickSize|0||MAX));
  const PH=Array.isArray(cfg.phrases)&&cfg.phrases.length?cfg.phrases.slice(0,12):PHRASES;
  const myId=cfg.id||pid();
  const NET_ERR='Can’t reach the game server. If you’re on office or school Wi-Fi, try mobile data.';
@@ -353,7 +447,17 @@ function create(cfg){
  const seatOf=id=>T&&T.players?T.players.find(p=>p.id===id):null;
  const seated=id=>{const s=seatOf(id);return !!s&&!s.gone;};
  const nameOf=id=>{const s=seatOf(id)||(T&&T.wait||[]).find(p=>p.id===id);return s?s.name:'';};
- const freeSeats=()=>Math.max(0,MAX-T.players.filter(p=>!p.gone).length-T.wait.length);
+ /* computer seats count as free: a newcomer can take one */
+ const isCpuP=p=>!!(p&&p.cpu);
+ const humanSeats=()=>T&&T.players?T.players.filter(p=>!p.gone&&!p.cpu):[];
+ const cpuSeats=()=>T&&T.players?T.players.filter(p=>!p.gone&&p.cpu):[];
+ const freeSeats=()=>Math.max(0,MAX-humanSeats().length-T.wait.length);
+ function cpuMake(){const taken=new Set(T.players.map(p=>String(p.name||'').toLowerCase()));let o=null;
+  if(cfg.cpuSeat){try{o=cfg.cpuSeat(T.players.length,[...taken]);}catch(e){console.error(e);}}
+  let name=o&&cleanName(o.name);if(!name||taken.has(name.toLowerCase()))name=CPU_NAMES.find(n=>!taken.has(n.toLowerCase()))||('Computer '+(T.players.length+1));
+  let id;do{id='cpu'+rid(3);}while(T.players.some(p=>p.id===id));
+  return{id,name,look:o?validLook(o.look):null,cpu:1};}
+ function cpuFill(k){if(!T)return 0;let a=0;while(T.players.length<Math.min(MAX,k)){T.players.push(cpuMake());a++;}return a;}
  function noteSkew(hostNow){skews.push(hostNow-Date.now());if(skews.length>20)skews.shift();skew=Math.max.apply(null,skews);}
  function netOK(){if(window.WebSocket&&window.crypto&&crypto.subtle&&window.TextEncoder)return true;toast('This browser can’t play online. Try Chrome or Safari.',5000);return false;}
  let wake=null;
@@ -373,7 +477,7 @@ function create(cfg){
  function onLobbyMsg(topic,m){const code=topic.slice((NS+'lobby/').length);if(!/^[A-Z]{4}$/.test(code))return;
   if(!m||!m.t)delete lobby[code];
   else{const cur=lobby[code];if(!cur||+m.t>=cur.t)lobby[code]={code,name:cleanName(m.name)||'Player',n:clampInt(m.n,1,12),mx:clampInt(m.mx||MAX,2,12),t:+m.t,c:+m.c||+m.t,
-   status:m.status==='lobby'?'lobby':'playing',q:!!m.q,host:String(m.host||'').slice(0,24),vw:clampInt(m.vw,0,999),f:clampInt(m.f,0,12),info:String(m.info||'').slice(0,60),
+   status:m.status==='lobby'?'lobby':'playing',q:!!m.q,host:String(m.host||'').slice(0,24),vw:clampInt(m.vw,0,999),f:clampInt(m.f,0,12),cp:clampInt(m.cp,0,12),info:String(m.info||'').slice(0,60),
    ids:Array.isArray(m.ids)?m.ids.slice(0,12).map(x=>String(x).slice(0,24)):[]};}
   updLists();quickCheck();}
  const fresh=x=>Math.abs(Date.now()-x.t)<STALE_MS&&x.host!==myId;
@@ -400,6 +504,7 @@ function create(cfg){
   n.info=()=>{if(net!==n)return;n.clients.forEach(c=>pub(c,NS+code+'/i',{v:1,host:myId,pub:n.pub,t:Date.now(),ep:n.ep,since:n.created},true));};
   n.clients.forEach(c=>c.onUp2=()=>{n.info();updListing(true);});n.info();
   n.timers.push(setInterval(n.info,INFO_MS),setInterval(()=>updListing(true),LIST_MS),setInterval(hostWatch,2000));
+  if(CPU&&n.quick)n.timers.push(setInterval(quickTick,250));
   return n;}
  function localGuard(o){if(LOCAL&&!TEST&&(o.pub||o.quick)){toast('On localhost, add ?ns=test1 to the address to test public tables and Quick Match.',6000);return false;}return true;}
  async function hostCreate(o){o=o||{};if(!netOK()||!localGuard(o))return false;const r=++run;vcStop();closeNet();role=null;T=null;
@@ -420,12 +525,12 @@ function create(cfg){
    players:[{id:myId,name:me.name||'Player',look:me.look}],wait:[],viewers:0,conn:[myId],mid:0,rev:1,note:null,autoAt:0};
   keepAwake(true);closeHub();hideQuick();enterLobby();sync();return true;}
  function updListing(force){const n=net;if(!n||n.role!=='host'||!T)return;const topic=NS+'lobby/'+n.code;
-  const here=T.players.filter(p=>!p.gone).length,live=T.status!=='lobby';
-  const show=n.isPublic&&(live||T.players.length<MAX);
+  const here=humanSeats().length,live=T.status!=='lobby',inRoom=T.players.filter(p=>!p.cpu).length;
+  const show=n.isPublic&&(live||inRoom<MAX);
   if(show){const now=Date.now();if(!force&&now-n.lsent<1500){clearTimeout(n.lT);n.lT=setTimeout(()=>updListing(true),1600);return;}n.lsent=now;
    const h=T.players.find(p=>p.id===T.hostId)||T.players[0]||{};let info='';try{info=cfg.listInfo?String(cfg.listInfo(T)||''):'';}catch(e){}
-   const msg={v:1,code:n.code,name:h.name,n:live?here:T.players.length,mx:MAX,t:now,c:n.created,status:live?'playing':'lobby',q:n.quick,host:myId,vw:T.viewers|0,
-    f:live?freeSeats():Math.max(0,MAX-T.players.length),info:info.slice(0,60),ids:T.players.filter(p=>!p.gone).map(p=>p.id).slice(0,12)};
+   const msg={v:1,code:n.code,name:h.name,n:live?here:inRoom,mx:MAX,t:now,c:n.created,status:live?'playing':'lobby',q:n.quick,host:myId,vw:T.viewers|0,
+    f:live?freeSeats():Math.max(0,MAX-inRoom),cp:cpuSeats().length,info:info.slice(0,60),ids:humanSeats().map(p=>p.id).slice(0,12)};
    n.listed=true;n.clients.forEach(c=>pub(c,topic,msg,true));}
   else if(n.listed){n.listed=false;n.clients.forEach(c=>{try{if(c.ok)c.c.publish(topic,'',true);}catch(e){}});}}
  async function sendTo(tp,pl,obj){const n=net;if(!n||n.role!=='host'||!pl||!pl.key)return;try{const m=await seal(pl.key,obj);let o=n.clients[pl.bi];if(!o||!o.ok)o=n.clients.find(x=>x.ok);pub(o,NS+n.code+'/p/'+tp,m);}catch(e){}}
@@ -447,36 +552,65 @@ function create(cfg){
   let b=null;try{b=cfg.backup();}catch(e){console.error(e);return;}if(b==null)return;
   successors(2).forEach(id=>sendToId(id,{k:'bk',b,rev:T.rev}));}
  function successors(k){const P=T.players,N=P.length,hi=Math.max(0,P.findIndex(p=>p.id===myId)),c=connIds(),out=[];
-  for(let i=1;i<N&&out.length<k;i++){const p=P[(hi+i)%N];if(p.id!==myId&&!p.gone&&c.includes(p.id))out.push(p.id);}return out;}
+  for(let i=1;i<N&&out.length<k;i++){const p=P[(hi+i)%N];if(p.id!==myId&&!p.gone&&!p.cpu&&c.includes(p.id))out.push(p.id);}return out;}
  function nextHost(){if(!T)return null;if(role==='host')return successors(1)[0]||null;return null;}
  function hostWatch(){const n=net;if(!n||role!=='host'||!T)return;const now=Date.now();let ch=false;
   if(!document.hidden&&now-(n.wokeAt||0)>15000){
-   T.players.slice().forEach(p=>{if(p.id===myId||p.gone)return;const t=n.last[p.id]||(n.last[p.id]=now);if(now-t>AWAY_MS)drop(p.id,'lost');});
+   T.players.slice().forEach(p=>{if(p.id===myId||p.gone||p.cpu)return;const t=n.last[p.id]||(n.last[p.id]=now);if(now-t>AWAY_MS)drop(p.id,'lost');});
    n.players.forEach((pl,tp)=>{if(pl.pid&&!seated(pl.pid)&&now-(pl.seen||0)>AWAY_MS){n.players.delete(tp);ch=true;}});}
   const alive=id=>[...n.players.values()].some(pl=>pl.pid===id);const w=T.wait.filter(x=>alive(x.id));if(w.length!==T.wait.length){T.wait=w;ch=true;}
   if(viewers()!==(T.viewers|0))ch=true;
-  if(T.status==='lobby'&&T.quick){const k=T.players.length;
+  if(T.status==='lobby'&&T.quick&&!CPU){const k=T.players.length;
    if(k>=MIN){if(!n.autoAt||n.autoK!==k){n.autoAt=now+(k>=MAX?QUICK_FULL:QUICK_WAIT);n.autoK=k;T.autoAt=n.autoAt;ch=true;}else if(now>=n.autoAt){n.autoAt=0;start();return;}}
    else if(n.autoAt){n.autoAt=0;n.autoK=0;T.autoAt=0;ch=true;}}
   if(T.status==='over'&&T.quick&&n.overAt&&now-n.overAt>QUICK_AGAIN){again();return;}
   if(ch)sync();}
+ /* v5 Quick Match waiting room (host): search ~12 s, then offer computer players (they start by itself after 5 s).
+    A full table of people starts after 3 s; a rematch that already has computer seats starts after 6 s. */
+ function quickTick(){const n=net;if(!n||role!=='host'||!T||!T.quick||T.status!=='lobby'||!CPU)return;const now=Date.now();
+  const hum=T.players.filter(p=>!p.cpu).length,tot=T.players.length,cpus=tot-hum;let ch=false;
+  if(hum>=QSIZE||(cpus&&tot>=QSIZE&&!n.qAsk)){const want=hum>=QSIZE?QUICK_FULL:QUICK_REFILL;
+   if(!n.autoAt||n.autoK!==tot*100+hum){n.autoAt=now+want;n.autoK=tot*100+hum;T.autoAt=n.autoAt;n.qAsk=0;T.qAsk=0;ch=true;}
+   else if(now>=n.autoAt){n.autoAt=0;start();return;}}
+  else{if(n.autoAt){n.autoAt=0;n.autoK=0;T.autoAt=0;ch=true;}
+   if(!n.qEnd){n.qEnd=now+QUICK_SEARCH;T.qEnd=n.qEnd;ch=true;}
+   if(!n.qAsk&&now>=n.qEnd){n.qAsk=now+QUICK_ASK;T.qAsk=n.qAsk;ch=true;}
+   else if(n.qAsk&&now>=n.qAsk){quickBots();return;}}
+  if(ch)sync();}
+ /* fill the empty seats with computer players and start */
+ function quickBots(){const n=net;if(!n||role!=='host'||!T||T.status!=='lobby')return;n.qAsk=0;T.qAsk=0;cpuFill(Math.max(QSIZE,MIN));start();}
+ function quickWaitMore(){const n=net;if(!n||role!=='host'||!T||T.status!=='lobby')return;n.qAsk=0;T.qAsk=0;n.qEnd=Date.now()+QUICK_SEARCH;T.qEnd=n.qEnd;sync();}
+ /* v5: a newcomer who waited takes a computer's seat (every waiter while seats last, or just into one seat) */
+ function seatSwap(only){const n=net;if(role!=='host'||!n||!T||T.status==='over')return 0;let k=0;
+  while(T.wait.length){const i=T.players.findIndex(p=>p.cpu&&!p.gone&&(!only||p.id===only));if(i<0)break;
+   const w=T.wait[0],c=T.players[i];let ok=true;
+   if(T.status!=='lobby'){if(!cfg.onSeatSwap)break;try{ok=cfg.onSeatSwap(c.id,{id:w.id,name:w.name,look:w.look})!==false;}catch(e){console.error(e);ok=false;}}
+   if(!ok)break;
+   T.wait.shift();T.players[i]={id:w.id,name:w.name,look:w.look};
+   n.players.forEach(pl=>{if(pl.pid===w.id){pl.spec=false;pl.seen=Date.now();}});n.last[w.id]=Date.now();clearStrikes(w.id);
+   note(w.name+' took a seat');toast(w.name+' took a seat');k++;if(only)break;}
+  if(k){sync();updDock();}return k;}
+ function handBreak(a){const n=net;if(role!=='host'||!n||!T)return 0;
+  if(a===false){n.brk=false;return 0;}if(a===true)n.brk=true;
+  return seatSwap(typeof a==='string'?a:null);}
  function mapConn(tp,pl,id,spec){const n=net;n.players.forEach((q,t2)=>{if(t2!==tp&&q.pid===id)n.players.delete(t2);});pl.pid=id;pl.spec=!!spec;pl.seen=Date.now();n.last[id]=Date.now();}
- function note(t){if(T)T.note={k:(T.rev|0)+1,t};}
+ function note(t){if(T)T.note={k:Math.max((T.rev|0)+1,((T.note&&T.note.k)|0)+1),t};}
  function drop(id,why){const n=net;if(!n||role!=='host'||!T||id===myId)return;
   n.players.forEach((pl,tp)=>{if(pl.pid===id)n.players.delete(tp);});delete n.last[id];
   const i=T.players.findIndex(p=>p.id===id);
   if(i<0){const nm=nameOf(id),w=T.wait.length;T.wait=T.wait.filter(x=>x.id!==id);if(w!==T.wait.length)note(nm+' left.');sync();return;}
-  const p=T.players[i];if(p.gone)return;
+  const p=T.players[i];if(p.gone||p.cpu)return;
+  if(T.mic)delete T.mic[id];
   if(T.status==='lobby'){T.players.splice(i,1);note(p.name+' left the table.');sync();return;}
   p.gone=1;let t='';try{t=cfg.dropText?cfg.dropText(p.name,why):'';}catch(e){}
   note(t||(p.name+(why==='left'?' left.':' lost connection.')+' The computer takes their seat.'));
   try{cfg.onDrop&&cfg.onDrop(id,why);}catch(e){console.error(e);}
   sync();}
  /* AFK: the game reports each timed-out turn; 2 in a row and the seat goes to the AI */
- function strike(id){if(role!=='host'||!T||!net)return false;const p=seatOf(id);if(!p||p.gone)return false;const n=net;n.strikes[id]=(n.strikes[id]|0)+1;
+ function strike(id){if(role!=='host'||!T||!net)return false;const p=seatOf(id);if(!p||p.gone||p.cpu)return false;const n=net;n.strikes[id]=(n.strikes[id]|0)+1;
   if(n.strikes[id]<AFK_TURNS)return false;n.strikes[id]=0;markAfk(id);return true;}
  function clearStrikes(id){if(net&&net.strikes)net.strikes[id]=0;}
- function markAfk(id){if(role!=='host'||!T||!net)return;const p=seatOf(id);if(!p||p.gone)return;p.gone=1;p.afk=1;
+ function markAfk(id){if(role!=='host'||!T||!net)return;const p=seatOf(id);if(!p||p.gone||p.cpu)return;p.gone=1;p.afk=1;if(T.mic)delete T.mic[id];
   let t='';try{t=cfg.dropText?cfg.dropText(p.name,'afk'):'';}catch(e){}note(t||(p.name+' is away. The computer takes their seat.'));
   if(id===myId){hostAway=true;notice('You were away',cfg.hostAfkText||'You missed 2 turns in a row, so the computer is playing your seat. You’ll leave the table when it’s done.');}
   else{const n=net;n.players.forEach((pl,tp)=>{if(pl.pid===id){sendTo(tp,pl,{k:'afk',m:AFK_MSG});n.players.delete(tp);}});}
@@ -489,15 +623,22 @@ function create(cfg){
   T.opts[k]=c[0];ls.set(optsKey(),JSON.stringify(T.opts));sync();}
  function start(){const n=net;if(role!=='host'||!n||!T||T.status!=='lobby')return;const seats=T.players.filter(p=>!p.gone);
   if(seats.length<MIN){toast('You need at least '+MIN+' players.');return;}
-  T.players=seats;T.status='playing';T.mid=(T.mid|0)+1;T.autoAt=0;n.autoAt=0;n.strikes={};n.overAt=0;T.note=null;hideRoom();
+  T.players=seats;T.status='playing';T.mid=(T.mid|0)+1;T.autoAt=0;n.autoAt=0;n.strikes={};n.overAt=0;T.note=null;
+  n.brk=false;n.qEnd=0;n.qAsk=0;T.qEnd=0;T.qAsk=0;hideRoom();closeQa();
   if(cfg.lobbyFix){try{cfg.lobbyFix(T);}catch(e){console.error(e);}}
-  try{cfg.onStart&&cfg.onStart(seats.map(p=>({id:p.id,name:p.name,look:p.look})),clone(T.opts),{mid:T.mid,quick:T.quick,x:clone(T.x)});}catch(e){console.error(e);}
+  try{cfg.onStart&&cfg.onStart(seats.map(p=>p.cpu?{id:p.id,name:p.name,look:p.look,cpu:1}:{id:p.id,name:p.name,look:p.look}),clone(T.opts),{mid:T.mid,quick:T.quick,x:clone(T.x),cpu:seats.filter(p=>p.cpu).map(p=>p.id)});}catch(e){console.error(e);}
   sync();updDock();}
  function matchOver(){const n=net;if(role!=='host'||!n||!T||T.status!=='playing')return;T.status='over';n.overAt=Date.now();sync();}
  /* next match: everyone still seated plus the players who waited, up to the table size */
  function again(){const n=net;if(!T)return;if(role!=='host'){toast('Waiting for the host to start the next match…');return;}if(!n||T.status==='lobby')return;
-  const keep=T.players.filter(p=>!p.gone).map(p=>({id:p.id,name:p.name,look:p.look}));const add=T.wait.slice(0,Math.max(0,MAX-keep.length));
-  T.players=keep.concat(add);T.wait=T.wait.slice(add.length);T.status='lobby';T.autoAt=0;n.autoAt=0;n.autoK=0;n.overAt=0;n.strikes={};T.note=null;
+  const keep=T.players.filter(p=>!p.gone).map(p=>p.cpu?{id:p.id,name:p.name,look:p.look,cpu:1}:{id:p.id,name:p.name,look:p.look});
+  /* people who waited take computer seats first, then any empty seats */
+  const wq=T.wait.slice();keep.forEach((p,i)=>{if(p.cpu&&wq.length){const w=wq.shift();keep[i]={id:w.id,name:w.name,look:w.look};}});
+  const add=wq.slice(0,Math.max(0,MAX-keep.length));
+  T.players=keep.concat(add);T.wait=wq.slice(add.length);T.status='lobby';T.autoAt=0;n.autoAt=0;n.autoK=0;n.overAt=0;n.strikes={};T.note=null;
+  n.brk=false;n.qEnd=0;n.qAsk=0;T.qEnd=0;T.qAsk=0;
+  if(CPU&&T.quick&&T.players.some(p=>p.cpu))cpuFill(QSIZE);
+  n.players.forEach(pl=>{if(pl.pid&&seated(pl.pid))pl.spec=false;});
   const now=Date.now();T.players.forEach(p=>{if(p.id!==myId)n.last[p.id]=n.last[p.id]||now;});
   try{cfg.onLobby&&cfg.onLobby();}catch(e){console.error(e);}enterLobby();sync();}
  async function onHostMsg(o,topic,m,ret){const n=net;if(!n||n.role!=='host')return;
@@ -517,13 +658,17 @@ function create(cfg){
    const seat=seatOf(id);
    if(seat){if(seat.gone){sendTo(tp,pl,{k:'err',m:seat.afk?AFK_REJOIN:LEFT_REJOIN});return;}mapConn(tp,pl,id,false);
     if(T.status==='lobby'){seat.name=name;seat.look=look;sync();}else sendState(tp,pl);return;}
-   if(T.status==='lobby'&&!d.spec){if(T.players.length>=MAX){sendTo(tp,pl,{k:'err',m:'That table is full.'});return;}
+   if(T.status==='lobby'&&!d.spec){const ci=T.players.findIndex(p=>p.cpu);
+    if(ci>=0){mapConn(tp,pl,id,false);T.players[ci]={id,name,look};T.wait=T.wait.filter(q=>q.id!==id);note(name+' took a seat');toast(name+' took a seat');sync();return;}
+    if(T.players.length>=MAX){sendTo(tp,pl,{k:'err',m:'That table is full.'});return;}
     mapConn(tp,pl,id,false);T.players.push({id,name,look});note(name+' joined.');sync();return;}
    if(!T.pub){sendTo(tp,pl,{k:'err',m:d.spec?'That table is private, so it can’t be watched.':'That match has already started. Private tables open again between matches.'});return;}
    const waiting=T.wait.some(q=>q.id===id);
    if(!waiting&&viewers()>=MAX_VIEW&&![...n.players.values()].some(q=>q.pid===id)){sendTo(tp,pl,{k:'err',m:'This table has too many viewers right now.'});return;}
    mapConn(tp,pl,id,true);
-   if(!d.spec&&!waiting&&T.status!=='lobby'&&freeSeats()>0){T.wait.push({id,name,look});note(name+' joins for the next match.');}
+   if(!d.spec&&!waiting&&T.status!=='lobby'&&freeSeats()>0){T.wait.push({id,name,look});
+    const cs=CPU&&cpuSeats().length>T.wait.length-1;note(cs?name+' is watching, and takes a computer’s seat at the next break.':name+' joins for the next match.');
+    if(cs&&n.brk&&T.status==='playing'&&seatSwap(null)){sendState(tp,pl);return;}}
    sync();sendState(tp,pl);return;}
   if(!pl.pid){/* a ping on a fresh key after a host change: map it if that player is seated */
    const id=String(d.id||'').slice(0,24);if(!id)return;if(n.banned.has(id))return;const s=seatOf(id);if(!s||s.gone)return;mapConn(tp,pl,id,false);}
@@ -536,6 +681,7 @@ function create(cfg){
    case 'rtc':{if(!seat)return;const to=String(d.to||'');if(to===myId)vcSignal(id,d.d);else if(seated(to))sendToId(to,{k:'rtc',f:id,d:d.d});return;}
    case 'look':if(seat&&T.status==='lobby'){seat.name=cleanName(d.name)||seat.name;seat.look=validLook(d.look);sync();}return;
    case 'lob':if(seat&&T.status==='lobby')lobbyMsg(id,d.d);return;
+   case 'mic':if(seat&&!seat.gone){const on=!!d.on;T.mic=T.mic||{};if(!!T.mic[id]!==on){if(on)T.mic[id]=1;else delete T.mic[id];sync();}}return;
    case 'leave':n.players.delete(tp);drop(id,'left');if(!seat)sync();return;}}
 
  /* ================= JOINER ================= */
@@ -560,7 +706,7 @@ function create(cfg){
    if(now-n.lostAt>=r*MIG_STEP+1500)becomeHost();}}
  /* who takes over when the host is gone: the next connected player after the host, in seat order */
  function myRank(){if(!T||!seated(myId))return -1;const P=T.players,N=P.length,hi=P.findIndex(p=>p.id===T.hostId),c=[];
-  for(let k=1;k<=N;k++){const p=P[((hi<0?0:hi)+k)%N];if(p.id===T.hostId||p.gone)continue;if(T.conn&&!T.conn.includes(p.id)&&p.id!==myId)continue;if(!c.includes(p.id))c.push(p.id);}return c.indexOf(myId);}
+  for(let k=1;k<=N;k++){const p=P[((hi<0?0:hi)+k)%N];if(p.id===T.hostId||p.gone||p.cpu)continue;if(T.conn&&!T.conn.includes(p.id)&&p.id!==myId)continue;if(!c.includes(p.id))c.push(p.id);}return c.indexOf(myId);}
  async function onJoinMsg(o,topic,m,ret){const n=net;if(!n||n.role!=='join')return;
   if(topic===NS+n.code+'/i'){
    if(!m||!m.pub||!m.host){if(n.ready&&!n.lostAt)n.lostAt=Date.now();return;}   /* host info wiped: the host is gone */
@@ -605,7 +751,7 @@ function create(cfg){
   if(oi>=0){if(M.status==='lobby')M.players.splice(oi,1);else if(!M.players[oi].gone){M.players[oi].gone=1;wasSeated=true;}}
   const oldName=(T.players.find(p=>p.id===old)||{}).name||'The host';
   M.hostId=myId;M.ep=h.ep;M.rev=(M.rev|0)+100;M.wait=M.wait||[];T=M;
-  const now=Date.now();T.players.forEach(p=>{if(p.id!==myId&&!p.gone)h.last[p.id]=now;});
+  const now=Date.now();T.players.forEach(p=>{if(p.id!==myId&&!p.gone&&!p.cpu)h.last[p.id]=now;});if(T.mic)delete T.mic[old];
   note(oldName+' left. '+(meInfo().name||'You')+' is the host now.');
   toast('The host left, so you are the host now.');
   if(T.status==='lobby'||!cfg.onMigrate){if(T.status!=='lobby'){T.status='lobby';try{cfg.onLobby&&cfg.onLobby();}catch(e){}}enterLobby();sync();return;}
@@ -648,12 +794,12 @@ function create(cfg){
   await sleep(Object.keys(lobby).length?400:1800);if(r!==run)return;tryQuick(r,new Set());}
  function tryQuick(r,tried){if(r!==run)return;if(!UI.quickOn)showQuick('Looking for an open table…');
   const l=openTables().filter(x=>!tried.has(x.code)).sort((a,b)=>(b.q-a.q)||(b.n-a.n)||(a.c-b.c));
-  const lv=liveTables().filter(x=>x.f>0&&!tried.has(x.code));const x=l[0]||lv[0];
-  if(x){tried.add(x.code);setQuick(l[0]?'Joining '+x.name+'’s table…':'Joining '+x.name+'’s table. You play from the next match…');
+  const lv=liveTables().filter(x=>x.f>0&&!tried.has(x.code)&&(!CPU||x.cp>0)).sort((a,b)=>(b.cp-a.cp)||(b.q-a.q));const x=l[0]||lv[0];
+  if(x){tried.add(x.code);setQuick(l[0]?'Joining '+x.name+'’s table…':x.cp>0?'Joining '+x.name+'’s table. You take a computer’s seat at the next break…':'Joining '+x.name+'’s table. You play from the next match…');
    netJoin(x.code,{timeout:6500,onFail:()=>{if(r!==run)return;warm();setQuick('That table didn’t answer. Trying another…');setTimeout(()=>tryQuick(r,tried),600);}});}
   else{setQuick('No open tables. Starting one…');hostCreate({pub:true,quick:true}).then(ok=>{if(!ok&&r===run)hideQuick();});}}
  /* a lone Quick Match host merges into an older quick table if one shows up */
- function quickCheck(){const n=net;if(!n||role!=='host'||!n.quick||!T||T.status!=='lobby'||T.players.length>1||n.merging)return;
+ function quickCheck(){const n=net;if(!n||role!=='host'||!n.quick||!T||T.status!=='lobby'||T.players.filter(p=>!p.cpu).length>1||n.merging)return;
   const other=openTables().filter(x=>x.q&&x.code!==n.code&&(x.c<n.created||(x.c===n.created&&x.code<n.code)))[0];if(!other)return;
   n.merging=true;const r=++run;vcStop();closeNet();role=null;T=null;hideRoom();showQuick('Joining '+other.name+'’s table…');
   setTimeout(()=>{if(r!==run)return;netJoin(other.code,{timeout:6500,onFail:()=>{if(r===run){warm();tryQuick(r,new Set([other.code]));}}});},200);}
@@ -668,9 +814,14 @@ function create(cfg){
   if(meInfo().name)return true;openHub();setTimeout(()=>{const i=document.getElementById('dgnName');if(i){i.focus();}},120);toast('Choose a name first, so the others know who you are.');return false;}
 
  /* ================= VOICE (WebRTC, signalled through the table) ================= */
- const VC={peers:new Map(),stream:null,on:false,deaf:ls.get('dgn-deaf')==='1',ac:null,me:null,lv:{},code:null,box:null,lit:false};
+ const VC={peers:new Map(),stream:null,on:false,deaf:ls.get('dgn-deaf')==='1',ac:null,me:null,lv:{},code:null,box:null,lit:false,mute:new Set(),fake:null};
  const ICE=[{urls:['stun:stun.l.google.com:19302','stun:stun1.l.google.com:19302']},{urls:'stun:stun.cloudflare.com:3478'}];
- const vcTable=()=>!!role&&!!T&&!T.quick&&seated(myId);
+ /* v5: voice at Quick Match tables too for games with computer seats (mic off until tapped); older games keep friends-only */
+ const vcTable=()=>!!role&&!!T&&(!T.quick||CPU)&&seated(myId);
+ const vcHears=id=>!VC.deaf&&!VC.mute.has(id);
+ /* tell the table whether my mic is on (T.mic, kept by the host) */
+ function vcShare(){if(!role||!T||!seated(myId))return;const on=!!VC.on;
+  if(role==='host'){T.mic=T.mic||{};if(!!T.mic[myId]!==on){if(on)T.mic[myId]=1;else delete T.mic[myId];sync();}}else joinSend({k:'mic',on:on?1:0});}
  const vcSupported=()=>!!window.RTCPeerConnection&&!!(navigator.mediaDevices&&navigator.mediaDevices.getUserMedia)&&window.isSecureContext!==false;
  const vcAvail=()=>vcTable()&&vcSupported();
  function vcSend(to,d){if(role==='host')sendToId(to,{k:'rtc',f:myId,d});else joinSend({k:'rtc',to,d});}
@@ -683,12 +834,12 @@ function create(cfg){
   if(!VC.box){VC.box=document.createElement('div');VC.box.hidden=true;document.body.appendChild(VC.box);}
   const au=document.createElement('audio');au.autoplay=true;au.setAttribute('playsinline','');VC.box.appendChild(au);
   p={pc,tr:offerer?pc.addTransceiver('audio',{direction:'sendrecv'}):null,au,meter:null,t:Date.now()};VC.peers.set(id,p);vcAttach(p);
-  pc.ontrack=e=>{const st=(e.streams&&e.streams[0])||new MediaStream([e.track]);au.srcObject=st;au.muted=VC.deaf;au.play().catch(()=>{});p.meter=vcMeter(st);};
+  pc.ontrack=e=>{const st=(e.streams&&e.streams[0])||new MediaStream([e.track]);au.srcObject=st;au.muted=!vcHears(id);au.play().catch(()=>{});p.meter=vcMeter(st);};
   pc.onconnectionstatechange=()=>{if(pc.connectionState==='failed')vcDrop(id);};
   return p;}
  function vcDrop(id){const p=VC.peers.get(id);if(!p)return;VC.peers.delete(id);try{p.pc.close();}catch(e){}try{p.au.srcObject=null;p.au.remove();}catch(e){}try{p.meter&&p.meter.src.disconnect();}catch(e){}delete VC.lv[id];}
  async function vcCall(id){const p=vcPeer(id,true);try{await p.pc.setLocalDescription(await p.pc.createOffer());await vcWait(p.pc);if(VC.peers.get(id)!==p)return;vcSend(id,{t:'offer',sdp:p.pc.localDescription.sdp});}catch(e){vcDrop(id);}}
- async function vcSignal(from,d){if(!vcAvail()||!d||!from||from===myId||!seated(from))return;
+ async function vcSignal(from,d){if(!vcAvail()||!d||!from||from===myId||!seated(from)||isCpuP(seatOf(from)))return;
   try{if(d.t==='offer'){vcDrop(from);const p=vcPeer(from,false);await p.pc.setRemoteDescription({type:'offer',sdp:String(d.sdp)});
     p.tr=p.pc.getTransceivers()[0];if(p.tr){p.tr.direction='sendrecv';vcAttach(p);}
     await p.pc.setLocalDescription(await p.pc.createAnswer());await vcWait(p.pc);if(VC.peers.get(from)!==p)return;vcSend(from,{t:'answer',sdp:p.pc.localDescription.sdp});}
@@ -705,7 +856,7 @@ function create(cfg){
   notice('Allow the microphone',`<p>Your browser blocked the mic for this game. To talk:</p><ol>${steps}</ol><p style="font-size:12px">You can still hear everyone without a mic. (${esc(nm)})</p>`,true);}
  async function vcMic(){if(vcTable()&&!vcSupported()){const why=!window.isSecureContext?'this page isn’t opened over a secure (https) link':!window.RTCPeerConnection?'this browser can’t make voice calls':'this browser doesn’t allow microphone access';
    notice('Voice chat isn’t available here',`<p>Voice needs a browser that supports it, and ${why}. Update your browser, and open the game from its normal link, not inside WhatsApp, Instagram or Facebook.</p>`,true);return;}
-  if(!vcAvail()){toast(T&&T.quick?'Voice chat is for friends tables, not Quick Match.':'Voice chat works for players at the table.');return;}
+  if(!vcAvail()){toast(T&&T.quick&&!CPU?'Voice chat is for friends tables, not Quick Match.':'Voice chat works for players at the table.');return;}
   vcAC();VC.peers.forEach(p=>{if(p.au.paused&&p.au.srcObject)p.au.play().catch(()=>{});});
   /* iPhone: an 'ambient' audio session forbids recording, so switch to play-and-record first */
   if(!VC.stream){window.__vcRec=true;try{if(navigator.audioSession)navigator.audioSession.type='play-and-record';}catch(e){}
@@ -713,29 +864,78 @@ function create(cfg){
    catch(e){if(e&&(e.name==='NotAllowedError'||e.name==='SecurityError')){vcMicHelp(e);return;}
     try{VC.stream=await navigator.mediaDevices.getUserMedia({audio:true});}catch(e2){vcMicHelp(e2);return;}}VC.me=vcMeter(VC.stream);}
   VC.on=!VC.on;VC.stream.getAudioTracks().forEach(t=>t.enabled=VC.on);VC.peers.forEach(vcAttach);
-  toast(VC.on?'Mic on. Everyone at the table can hear you.':'Mic off.');vcUI();}
- function vcDeaf(){VC.deaf=!VC.deaf;ls.set('dgn-deaf',VC.deaf?'1':'0');VC.peers.forEach(p=>{p.au.muted=VC.deaf;});toast(VC.deaf?'Voices muted.':'Voices on.');vcUI();}
+  toast(VC.on?'Mic on. Everyone at the table can hear you.':'Mic off.');vcShare();vcUI();}
+ function vcDeaf(){VC.deaf=!VC.deaf;ls.set('dgn-deaf',VC.deaf?'1':'0');VC.peers.forEach((p,id)=>{p.au.muted=!vcHears(id);});toast(VC.deaf?'Voices muted.':'Voices on.');vcUI();}
+ /* mute one player, only for me */
+ function vcMute(id){if(!id||id===myId)return;if(VC.mute.has(id))VC.mute.delete(id);else VC.mute.add(id);const p=VC.peers.get(id);if(p)p.au.muted=!vcHears(id);
+  toast((nameOf(id)||'Player')+(VC.mute.has(id)?' is muted for you.':' can be heard again.'));vcUI();}
+ /* report a player (voice, chat, name…): Firestore "reports" (create-only), never from localhost or test tables; otherwise kept on this device */
+ function openReport(id){const nm=nameOf(id)||'Player';
+  notice('Report '+nm,`<p>Reports are private. We review them and act on repeated or serious ones.</p><div class="dgn-rr" role="radiogroup" aria-label="Reason">${REPORT_REASONS.map((r,i)=>`<label><input type="radio" name="dgnRr" value="${i}"${i?'':' checked'}><span>${esc(r)}</span></label>`).join('')}</div>
+<label class="dgn-lbl" for="dgnRn" style="margin-top:4px">Anything else? (optional)</label><textarea class="dgn-ta" id="dgnRn" maxlength="300"></textarea>
+<label class="dgn-chk"><input type="checkbox" id="dgnRm" checked> Also mute ${esc(nm)} for me</label>
+<div class="dgn-two"><button class="dgn-btn" data-dgn="noteClose">Cancel</button><button class="dgn-btn pri" data-dgn="sendReport" data-id="${esc(id)}">Send report</button></div>`,true,true);}
+ async function sendReport(id){const s=document.querySelector('input[name="dgnRr"]:checked'),reason=REPORT_REASONS[s?+s.value:0]||'Other';
+  const rep={reason,note:String((($i('dgnRn')||{}).value||'')).replace(/[\u0000-\u001f<>]/g,' ').slice(0,300),targetId:String(id).slice(0,40),targetName:String(nameOf(id)||'').slice(0,20),
+   byId:myId,byName:String(meInfo().name||'Player').slice(0,20),table:String(T?T.code:'').slice(0,8),mode:'net:'+GAME+(T&&T.quick?':quick':''),chat:[],t:Date.now()};
+  const also=!!(($i('dgnRm')||{}).checked);closeNote();if(also&&!VC.mute.has(id))vcMute(id);
+  let ok=false;if(!LOCAL&&!TEST){try{const a=await fbAuth(),f=a.f;try{if(a.auth.authStateReady)await a.auth.authStateReady();}catch(e){}const u=a.auth.currentUser||(await a.U.signInAnonymously(a.auth)).user;
+   await f.F.addDoc(f.F.collection(f.db,'reports'),Object.assign({},rep,{uid:u.uid,at:f.F.serverTimestamp()}));ok=true;}catch(e){}}
+  if(!ok){let q=[];try{q=JSON.parse(ls.get('dd-report-queue')||'[]');if(!Array.isArray(q))q=[];}catch(e){}q.push(rep);ls.set('dd-report-queue',JSON.stringify(q.slice(-20)));}
+  toast(ok?'Report sent. Thank you for helping keep the games friendly.':'Report saved. It will be sent from Digu when you’re back online.',4000);}
  function vcUI(){const tbl=vcTable();document.querySelectorAll('[data-dgn="voice"]').forEach(b=>{b.hidden=!tbl;b.setAttribute('aria-pressed',String(VC.on));b.setAttribute('aria-label',VC.on?'Voice chat: your mic is on':'Voice chat: your mic is off');const h=VC.on?IC.micOn:IC.micOff;if(b._h!==h){b.innerHTML=h;b._h=h;}});
   const t=$i('dgnTray');if(t&&!t.hidden&&t.dataset.k==='voice')renderVoice();}
  function renderVoice(){const t=$i('dgnTray');t.dataset.k='voice';
   t.innerHTML=`<div class="th"><span>Voice chat</span><button class="dgn-x" data-dgn="trayClose" aria-label="Close">${IC.x}</button></div><div class="dgn-voice">
 <button class="dgn-btn${VC.on?' pri':''}" data-dgn="mic" aria-pressed="${VC.on}">${VC.on?IC.micOn:IC.micOff}${VC.on?'Mic on · tap to turn off':'Turn on my mic'}</button>
 <button class="dgn-btn" data-dgn="deaf" aria-pressed="${VC.deaf}">${VC.deaf?IC.spkOff:IC.spk}${VC.deaf?'Voices muted · tap to hear them':'Mute everyone’s voices'}</button>
-<p class="dgn-hint" style="margin:2px 2px 0">Your mic stays off until you turn it on. Only the players at this table can hear you.</p></div>`;}
- function openVoice(){ensureUI();if(!vcTable()){toast(T&&T.quick?'Voice chat is for friends tables, not Quick Match.':'Voice chat works for players at the table.');return;}
+<p class="dgn-hint" style="margin:2px 2px 0">Your mic stays off until you turn it on. Only the players at this table can hear you.</p>${vcPlayersHTML()}</div>`;}
+ /* v5: everyone else at the table: mic on/off, mute for me, report */
+ function vcPlayersHTML(){if(!T)return '';const ps=T.players.filter(p=>p.id!==myId&&!p.gone&&!p.cpu);if(!ps.length)return '';
+  return `<span class="dgn-lbl" style="margin:8px 2px 0">At this table</span><div class="dgn-vlist">${ps.map(p=>{const m=VC.mute.has(p.id),on=!!(T.mic&&T.mic[p.id]);
+   return `<div class="dgn-vp" data-pid="${esc(p.id)}"><span class="av">${av(p,30)}</span><b>${esc(p.name)}</b><span class="ms" role="img" aria-label="${on?'Mic on':'Mic off'}">${on?IC.micOn:IC.micX}</span><button class="dgn-btn sm" data-dgn="vmute" data-id="${esc(p.id)}" aria-pressed="${m}" aria-label="${m?'Unmute ':'Mute '}${esc(p.name)}">${m?IC.mute+'Muted':'Mute'}</button><button class="dgn-btn sm" data-dgn="vreport" data-id="${esc(p.id)}" aria-label="Report ${esc(p.name)}">${IC.flag}</button></div>`;}).join('')}</div>`;}
+ function openVoice(){ensureUI();if(!vcTable()){toast(T&&T.quick&&!CPU?'Voice chat is for friends tables, not Quick Match.':'Voice chat works for players at the table.');return;}
   const t=$i('dgnTray');if(!t.hidden&&t.dataset.k==='voice'){closeTray();return;}t.hidden=false;renderVoice();} function vcLevel(m){if(!m)return 0;m.an.getByteTimeDomainData(m.buf);let s=0;for(let i=0;i<m.buf.length;i++){const v=(m.buf[i]-128)/128;s+=v*v;}return Math.min(1,Math.sqrt(s/m.buf.length)*5);}
- function avatarEl(id){let el=null;if(UI.roomOn){el=document.querySelector(`.dgn-plist li[data-pid="${CSS.escape(id)}"] .av`);}if(!el&&cfg.avatarEl){try{el=cfg.avatarEl(id);}catch(e){}}return el||null;}
+ function avatarEl(id){let el=null;if(UI.roomOn){el=document.querySelector(`.dgn-plist li[data-pid="${CSS.escape(id)}"] .av,.dgn-st[data-pid="${CSS.escape(id)}"] .av`);}if(!el&&cfg.avatarEl){try{el=cfg.avatarEl(id);}catch(e){}}return el||null;}
  setInterval(()=>{if(!vcAvail()){if(VC.peers.size||VC.stream)vcStop();return;}
   if(VC.code&&VC.code!==T.code)vcStop();VC.code=T.code;
-  const ids=T.players.filter(p=>p.id!==myId&&!p.gone).map(p=>p.id);
+  const ids=T.players.filter(p=>p.id!==myId&&!p.gone&&!p.cpu).map(p=>p.id);
   [...VC.peers.keys()].forEach(id=>{if(!ids.includes(id))vcDrop(id);});
   ids.forEach(id=>{const p=VC.peers.get(id);if(!p){if(myId<id)vcCall(id);return;}
-   const cs=p.pc.connectionState;if(myId<id&&cs!=='connected'&&Date.now()-p.t>15000){vcDrop(id);vcCall(id);}p.au.muted=VC.deaf;});
+   const cs=p.pc.connectionState;if(myId<id&&cs!=='connected'&&Date.now()-p.t>15000){vcDrop(id);vcCall(id);}p.au.muted=!vcHears(id);});
+  if(VC.on&&!(T.mic&&T.mic[myId]))vcShare();
   vcUI();},3000);
  document.addEventListener('pointerdown',()=>{if(!VC.peers.size)return;vcAC();VC.peers.forEach(p=>{if(p.au.paused&&p.au.srcObject)p.au.play().catch(()=>{});});},{passive:true,capture:true});
- setInterval(()=>{if(!T||(!VC.peers.size&&!VC.on)){if(VC.lit){document.querySelectorAll('.dgn-talk').forEach(e=>e.classList.remove('dgn-talk'));VC.lit=false;}return;}
-  T.players.forEach(q=>{const raw=q.id===myId?(VC.on?vcLevel(VC.me):0):(VC.deaf?0:vcLevel((VC.peers.get(q.id)||{}).meter));
-   const lv=VC.lv[q.id]=Math.max(raw,(VC.lv[q.id]||0)*.72);const el=avatarEl(q.id);if(!el)return;el.style.setProperty('--dgn-vl',lv.toFixed(2));el.classList.toggle('dgn-talk',lv>.06);});VC.lit=true;},90);
+ /* v5 speaking ring: a .dgn-ring element around each seat avatar, scaled and faded with the voice level (~18 readings
+    a second; it rises at once and fades about 0.3 s after the talking stops). Plus a crossed-out mic badge on anyone
+    whose mic is off (or who I muted). Games re-render their seats, so the ring and badge are put back when missing. */
+ const DECO=new WeakMap();
+ function decoFor(el){let d=DECO.get(el);if(d&&d.ring.isConnected&&(d.inside?d.ring.parentNode===el:d.ring.parentNode===el.parentNode))return d;
+  if(d){try{d.ring.remove();d.badge.remove();}catch(e){}}
+  const cs=getComputedStyle(el),inside=cs.overflow==='visible'&&cs.overflowX==='visible'&&cs.overflowY==='visible'&&el.tagName!=='IMG'&&el.tagName!=='svg';
+  const ring=document.createElement('span');ring.className='dgn-ring';ring.setAttribute('aria-hidden','true');
+  const badge=document.createElement('span');badge.className='dgn-moff';badge.hidden=true;badge.innerHTML=IC.micX;
+  if(inside){if(cs.position==='static')el.style.position='relative';el.appendChild(ring);el.appendChild(badge);}
+  else{const par=el.parentNode;if(!par)return null;par.insertBefore(ring,el.nextSibling);par.insertBefore(badge,ring.nextSibling);}
+  d={ring,badge,inside,lv:-1,b:null};DECO.set(el,d);return d;}
+ function decoPlace(el,d){if(d.inside)return;const w=el.offsetWidth,h=el.offsetHeight,x=el.offsetLeft,y=el.offsetTop,k=x+','+y+','+w+','+h;if(d.k===k)return;d.k=k;
+  Object.assign(d.ring.style,{inset:'auto',left:(x-5)+'px',top:(y-5)+'px',width:(w+10)+'px',height:(h+10)+'px'});
+  const b=Math.max(14,Math.min(20,Math.round(w*.36)));Object.assign(d.badge.style,{left:(x+w-b+4)+'px',top:(y+h-b+3)+'px',right:'auto',bottom:'auto',width:b+'px',height:b+'px'});}
+ function decoClear(){document.querySelectorAll('.dgn-ring,.dgn-moff').forEach(e=>e.remove());document.querySelectorAll('.dgn-talk').forEach(e=>e.classList.remove('dgn-talk'));}
+ let vcTick=0;
+ setInterval(()=>{const tbl=vcTable(),talk=!!T&&(VC.peers.size>0||VC.on||!!VC.fake);
+  if(!T||!role||(!tbl&&!talk)){if(VC.lit){decoClear();VC.lit=false;}return;}
+  const slow=(++vcTick%6)===0;VC.lit=true;
+  T.players.forEach(q=>{if(q.cpu)return;const fk=VC.fake&&VC.fake[q.id];
+   const raw=q.gone?0:fk!=null?+fk:q.id===myId?(VC.on?vcLevel(VC.me):0):(vcHears(q.id)?vcLevel((VC.peers.get(q.id)||{}).meter):0);
+   const lv=VC.lv[q.id]=Math.max(raw,(VC.lv[q.id]||0)*.6);const el=avatarEl(q.id);if(!el||!el.isConnected)return;
+   const d=decoFor(el);if(!d)return;if(slow||d.lv<0)decoPlace(el,d);
+   const on=lv>.06;el.style.setProperty('--dgn-vl',lv.toFixed(2));if(el.classList.contains('dgn-talk')!==on)el.classList.toggle('dgn-talk',on);
+   if(on||d.lv>.06){d.ring.classList.toggle('on',on);d.ring.style.transform=on?`scale(${(1+lv*.22).toFixed(3)})`:'scale(1)';d.ring.style.opacity=on?(.55+lv*.45).toFixed(2):'0';}
+   d.lv=lv;
+   /* crossed-out mic: their mic is off, or I muted them (only where voice is on for me) */
+   const off=tbl&&!q.gone&&(q.id===myId?!VC.on:(!(T.mic&&T.mic[q.id])||VC.mute.has(q.id)));const b=off?(q.id===myId?'me':'x'):'';
+   if(d.b!==b){d.b=b;d.badge.hidden=!off;d.badge.classList.toggle('dgn-me',b==='me');d.badge.title=!off?'':q.id===myId?'Your mic is off':VC.mute.has(q.id)?'Muted by you':'Mic off';}});},57);
 
  /* ================= PRESENCE ================= */
  let presT=0,presUid=null,countN=0,countAt=0;
@@ -747,7 +947,12 @@ function create(cfg){
  async function presenceOff(){if(!presUid||!presWrite())return;try{const f=await fb();f.F.deleteDoc(f.F.doc(f.db,'presence',GAME,'users',presUid)).catch(()=>{});}catch(e){}}
  async function presenceCount(){if(cfg.presence===false||Date.now()-countAt<25000)return;countAt=Date.now();
   try{const f=await fb();const since=f.F.Timestamp.fromMillis(Date.now()-120000);
-   const r=await f.F.getCountFromServer(f.F.query(f.F.collection(f.db,'presence',GAME,'users'),f.F.where('t','>',since)));countN=r.data().count|0;updHubLive();}catch(e){}}
+   const r=await f.F.getCountFromServer(f.F.query(f.F.collection(f.db,'presence',GAME,'users'),f.F.where('t','>',since)));countN=r.data().count|0;updHubLive();countTell();}catch(e){}}
+ /* v5: "N playing now" for the game's home (Quick Match button). cb(n) runs now and whenever the count changes. */
+ let countCb=null,countSent=-1;
+ function countTell(){if(countN===countSent)return;countSent=countN;if(countCb){try{countCb(countN);}catch(e){}}try{cfg.onCount&&cfg.onCount(countN);}catch(e){}}
+ function playing(cb){if(typeof cb==='function'){countCb=cb;try{cb(countN);}catch(e){}}presenceCount();return countN;}
+ setInterval(()=>{if((countCb||cfg.onCount)&&!document.hidden&&!role)presenceCount();},30000);
  function presenceStart(){if(presT||!presWrite())return;setTimeout(presence,2500);presT=setInterval(presence,60000);addEventListener('pagehide',presenceOff);}
 
  /* ================= UI ================= */
@@ -756,28 +961,51 @@ function create(cfg){
   if(!document.getElementById('dgn-css')){const st=document.createElement('style');st.id='dgn-css';st.textContent=STYLE;document.head.appendChild(st);}
   const r=document.createElement('div');r.className='dgn';r.id='dgn';
   r.innerHTML='<div id="dgnHub" hidden></div><div id="dgnRoom" class="dgn-room" hidden role="dialog" aria-modal="true" aria-label="Waiting room"></div><div id="dgnQuick" class="dgn-quick" hidden role="dialog" aria-modal="true" aria-live="polite"></div>'+
-   '<div id="dgnDock" class="dgn-dock" hidden></div><div id="dgnWatch" class="dgn-watch" hidden role="status"></div><div id="dgnTray" class="dgn-tray" hidden role="dialog" aria-label="Quick chat"></div><div id="dgnNote" hidden></div><div id="dgnToast" class="dgn-toast" hidden role="status" aria-live="polite"></div>';
+   '<div id="dgnDock" class="dgn-dock" hidden></div><div id="dgnWatch" class="dgn-watch" hidden role="status"></div><div id="dgnTray" class="dgn-tray" hidden role="dialog" aria-label="Quick chat"></div><div id="dgnQa" hidden></div><div id="dgnNote" hidden></div><div id="dgnToast" class="dgn-toast" hidden role="status" aria-live="polite"></div>';
   document.body.appendChild(r);UI.root=r;UI.dock=r.querySelector('#dgnDock');UI.dock.addEventListener('click',e=>{e.stopPropagation();onUIClick(e);});
   r.addEventListener('click',onUIClick);
   r.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.id==='dgnCode'){e.preventDefault();joinCode(e.target.value);}if(e.key==='Enter'&&e.target.id==='dgnName'){e.preventDefault();e.target.blur();}});
   r.addEventListener('input',e=>{if(e.target.id==='dgnCode')e.target.value=e.target.value.toUpperCase().replace(/[^A-Z]/g,'').slice(0,4);});
   r.addEventListener('change',e=>{if(e.target.id==='dgnName'){const v=cleanName(e.target.value);if(v)setNameSafe(v);}});
-  document.addEventListener('keydown',e=>{if(e.key==='Escape'){if(!document.getElementById('dgnNote').hidden)closeNote();else if(!document.getElementById('dgnTray').hidden)closeTray();else if(UI.hubOn)closeHub();}});
-  document.addEventListener('click',e=>{const tr=document.getElementById('dgnTray');if(tr&&!tr.hidden&&!e.target.closest('#dgnTray,[data-dgn="chat"],[data-dgn="voice"]'))closeTray();},true);
+  document.addEventListener('keydown',e=>{if(e.key==='Escape'){if(!document.getElementById('dgnNote').hidden)closeNote();else if(!document.getElementById('dgnTray').hidden)closeTray();else if(UI.hubOn)closeHub();}});  document.addEventListener('click',e=>{const tr=document.getElementById('dgnTray');if(tr&&!tr.hidden&&!e.target.closest('#dgnTray,[data-dgn="chat"],[data-dgn="voice"]'))closeTray();},true);
   return r;}
  const $i=id=>document.getElementById(id);
  function toast(t,ms){if(cfg.toast){try{cfg.toast(t,ms);return;}catch(e){}}ensureUI();const e=$i('dgnToast');e.textContent=t;e.hidden=false;e.style.animation='none';void e.offsetWidth;e.style.animation='';clearTimeout(e._t);e._t=setTimeout(()=>{e.hidden=true;},ms||2800);}
- function notice(title,html,raw){ensureUI();const n=$i('dgnNote');n.hidden=false;
-  n.innerHTML=`<div class="dgn-scrim" data-dgn="noteClose"></div><section class="dgn-sheet dgn-note" role="alertdialog" aria-modal="true" aria-labelledby="dgnNt"><div class="dgn-grab"></div><div class="dgn-hd"><h2 id="dgnNt">${esc(title)}</h2></div>${raw?html:`<p>${esc(html)}</p>`}<button class="dgn-btn pri w" data-dgn="noteClose">OK</button></section>`;
-  setTimeout(()=>{const b=n.querySelector('.dgn-btn');b&&b.focus({preventScroll:true});},60);}
- function closeNote(){const n=$i('dgnNote');if(n){n.hidden=true;n.innerHTML='';}}
- function hideAll(){closeHub();hideRoom();hideQuick();closeTray();updDock();}
+ function notice(title,html,raw,noOk){ensureUI();const n=$i('dgnNote');if(n._res){const r=n._res;n._res=null;r(false);}n.hidden=false;
+  n.innerHTML=`<div class="dgn-scrim" data-dgn="noteClose"></div><section class="dgn-sheet dgn-note" role="alertdialog" aria-modal="true" aria-labelledby="dgnNt"><div class="dgn-grab"></div><div class="dgn-hd"><h2 id="dgnNt">${esc(title)}</h2></div>${raw?html:`<p>${esc(html)}</p>`}${noOk?'':'<button class="dgn-btn pri w" data-dgn="noteClose">OK</button>'}</section>`;
+  setTimeout(()=>{const b=n.querySelector('.dgn-btn.pri')||n.querySelector('.dgn-btn');b&&b.focus({preventScroll:true});},60);}
+ function closeNote(v){const n=$i('dgnNote');if(n){n.hidden=true;n.innerHTML='';if(n._res){const r=n._res;n._res=null;r(v===true);}}}
+ /* v5: a themed confirm sheet. ask({title,text,ok,cancel}) → Promise<boolean> */
+ function ask(o){o=o||{};return new Promise(res=>{notice(o.title||'Are you sure?',`${o.text?`<p>${esc(o.text)}</p>`:''}<div class="dgn-two"><button class="dgn-btn" data-dgn="noteClose">${esc(o.cancel||'Stay')}</button><button class="dgn-btn pri" data-dgn="askYes">${esc(o.ok||'OK')}</button></div>`,true,true);$i('dgnNote')._res=res;});}
+ /* v5: "Leave table" with a confirm; a computer (the game's AI) takes a seated player's seat */
+ async function leaveAsk(){if(!role){leave();return true;}const me=seatOf(myId),live=!!T&&T.status==='playing'&&!!me&&!me.gone;
+  const ok=await ask({title:'Leave the table?',text:live?'A computer player takes your seat, and you can’t come back to this match.':me?'You’ll leave this table.':'You’ll stop watching this table.',ok:'Leave table',cancel:'Stay'});
+  if(ok)leave();return ok;}
+ function hideAll(){closeHub();hideRoom();hideQuick();closeTray();closeQa();updDock();}
 
  /* ---------- hub ---------- */
- function openHub(){ensureUI();if(role){if(T&&T.status==='lobby')enterLobby();else toast('You are already at a table.');return;}
+ function openHub(o){ensureUI();if(role){if(T&&T.status==='lobby')enterLobby();else toast('You are already at a table.');return;}
+  UI.friends=!!(o&&o.friends===true);if(UI.friends)UI.pubPick=ls.get('dgn-pub')==='1';
   UI.hubOn=true;warm();presenceCount();guestTaken(meInfo().name);renderHub();}
+ /* v5: Play with Friends: make a table (private or public) or join with a code; public tables and live games below */
+ function openFriends(){openHub({friends:true});}
  function closeHub(){UI.hubOn=false;const h=$i('dgnHub');if(h){h.hidden=true;h.innerHTML='';}}
  function renderHub(pre){const h=$i('dgnHub');const me=meInfo();h.hidden=false;
+  if(UI.friends){h.innerHTML=`<div class="dgn-scrim" data-dgn="hubClose"></div><section class="dgn-sheet" role="dialog" aria-modal="true" aria-labelledby="dgnHt">
+<div class="dgn-grab"></div>
+<div class="dgn-hd"><h2 id="dgnHt">Play with Friends</h2><button class="dgn-x" data-dgn="hubClose" aria-label="Close">${IC.x}</button></div>
+<p class="dgn-srv" id="dgnSrv"></p>
+${TEST?`<p class="dgn-hint" style="margin:-6px 0 8px">Test namespace: <b>${esc(NS)}</b></p>`:''}
+<label class="dgn-lbl" for="dgnName">Your name</label><input class="dgn-in" id="dgnName" maxlength="14" autocomplete="nickname" enterkeyhint="done" placeholder="Your name" value="${esc(me.name)}">
+<div class="dgn-card"><span class="dgn-lbl">${IC.plus.replace('<svg','<svg style="width:14px;height:14px;vertical-align:-2px;margin-right:4px"')}Create a table</span>
+ <div class="dgn-seg" role="group" aria-label="Who can join"><button data-dgn="pubPick" data-v="0" aria-pressed="${!UI.pubPick}">${IC.lock}Private</button><button data-dgn="pubPick" data-v="1" aria-pressed="${UI.pubPick}">${IC.globe}Public</button></div>
+ <p class="dgn-hint" id="dgnPubHint">${UI.pubPick?'Anyone can find it and join from Quick Match.':'Only people with your invite link or code can join.'}</p>
+ <button class="dgn-btn pri w" style="margin-top:10px" data-dgn="create">${IC.plus}Create table</button></div>
+<div class="dgn-card"><label class="dgn-lbl" for="dgnCode">Join with a code</label><div class="dgn-row"><input class="dgn-in code" id="dgnCode" maxlength="4" autocapitalize="characters" autocomplete="off" autocorrect="off" spellcheck="false" enterkeyhint="go" placeholder="CODE" value="${esc(pre||'')}"><button class="dgn-btn pri" data-dgn="join">Join</button></div></div>
+<h3 class="dgn-h3">Public tables</h3><div class="dgn-list" id="dgnOpen"></div>
+<h3 class="dgn-h3">Watch a live game</h3><div class="dgn-list" id="dgnLiveL"></div>
+${cfg.rulesNote?`<p class="dgn-fine">${esc(cfg.rulesNote)}</p>`:''}
+</section>`;updHubLive();updLists(true);return;}
   h.innerHTML=`<div class="dgn-scrim" data-dgn="hubClose"></div><section class="dgn-sheet" role="dialog" aria-modal="true" aria-labelledby="dgnHt">
 <div class="dgn-grab"></div>
 <div class="dgn-hd"><h2 id="dgnHt">Play ${esc(TITLE)} online</h2><span class="dgn-live" id="dgnCount" hidden><i></i><b></b></span><button class="dgn-x" data-dgn="hubClose" aria-label="Close">${IC.x}</button></div>
@@ -808,17 +1036,63 @@ ${cfg.rulesNote?`<p class="dgn-fine">${esc(cfg.rulesNote)}</p>`:''}
  setInterval(()=>{if(UI.hubOn&&!document.hidden){if(!net&&!pool)warm();updLists();presenceCount();}},5000);
 
  /* ---------- quick wait ---------- */
- function showQuick(t){ensureUI();UI.quickOn=true;const q=$i('dgnQuick');q.hidden=false;q.innerHTML=`<div class="qi"><div class="dgn-spin" aria-hidden="true"></div><p id="dgnQt">${esc(t)}</p><button class="dgn-btn" data-dgn="cancel">Cancel</button></div>`;}
+ function showQuick(t){ensureUI();UI.quickOn=true;const q=$i('dgnQuick');q.hidden=false;
+  /* v5: games with computer seats show the Quick Match search screen from the first moment (the ring starts once a table is ready) */
+  if(CPU&&/^(Connecting|Looking|No open|That table|Joining)/.test(String(t))){q.classList.add('qs');const me=Object.assign({id:myId},meInfo());
+   q.innerHTML=`<div class="dgn-room-in dgn-qs">${qTopHTML('cancel')}<section class="dgn-qpanel">${qRingHTML(me)}<h3><span class="dgn-dots">Finding players</span></h3><p class="dgn-qst" id="dgnQt">${esc(t)}</p>
+<div class="dgn-seats">${qSeatsHTML([me])}</div><div class="dgn-qfill">1 of ${QSIZE} seats filled</div><button class="dgn-btn w" data-dgn="cancel">Cancel</button></section>
+<p class="dgn-qhint">If the table isn’t full after about 12 seconds, you can start with computer players.</p></div>`;return;}
+  q.classList.remove('qs');q.innerHTML=`<div class="qi"><div class="dgn-spin" aria-hidden="true"></div><p id="dgnQt">${esc(t)}</p><button class="dgn-btn" data-dgn="cancel">Cancel</button></div>`;}
  function setQuick(t){const e=$i('dgnQt');if(e)e.textContent=t;else showQuick(t);}
- function hideQuick(){UI.quickOn=false;const q=$i('dgnQuick');if(q){q.hidden=true;q.innerHTML='';}}
+ function hideQuick(){UI.quickOn=false;const q=$i('dgnQuick');if(q){q.hidden=true;q.innerHTML='';q.classList.remove('qs');}}
+ /* ---------- v5 Quick Match search screen (the waiting room of a Quick Match table) ---------- */
+ const RING_C=414.7;
+ const qTopHTML=a=>`<div class="dgn-top"><button class="dgn-ib" data-dgn="${a}" aria-label="${a==='cancel'?'Cancel':'Leave table'}">${IC.back}</button><span class="ttl">Quick Match</span>${a==='leave'?`<button class="dgn-ib" data-dgn="voice" hidden></button><button class="dgn-ib" data-dgn="chat" aria-label="Quick chat">${IC.chat}</button>`:''}</div>`;
+ const qRingHTML=me=>`<div class="dgn-ringw"><svg class="tr" viewBox="0 0 148 148" aria-hidden="true"><circle class="trk" cx="74" cy="74" r="66"/><circle class="arc" id="dgnQarc" cx="74" cy="74" r="66" stroke-dasharray="${RING_C}" stroke-dashoffset="0"/></svg><span class="dgn-rme">${av(me,104)}</span><span class="dgn-secs" id="dgnQsecs">${Math.round(QUICK_SEARCH/1000)} s</span></div>`;
+ function qSeatsHTML(list){let h='';for(let i=0;i<Math.max(QSIZE,list.length);i++){const p=list[i];
+   h+=p?`<div class="dgn-st" data-pid="${esc(p.id)}"><span class="av${p.cpu?' cpu':''}">${p.cpu&&!cfg.avatar?IC.bot:av(p,52)}</span><span class="n">${p.id===myId?'You':esc(p.name)}</span>${p.cpu?`<span class="dgn-ctag">${IC.bot}Computer</span>`:''}</div>`
+    :`<div class="dgn-st"><span class="emp">${IC.seat}</span><span class="n o">Open seat</span></div>`;}return h;}
+ function renderQRoom(r){if(r._built!==2){r._built=2;const me=seatOf(myId)||Object.assign({id:myId},meInfo());
+   r.innerHTML=`<div class="dgn-room-in dgn-qs">${qTopHTML('leave')}<section class="dgn-qpanel">${qRingHTML(me)}<h3 id="dgnQh"></h3><p class="dgn-qst" id="dgnQs"></p>
+<div class="dgn-seats" id="dgnQseats"></div><div class="dgn-qfill" id="dgnQf"></div><button class="dgn-btn w" data-dgn="leave">Cancel</button></section>
+<p class="dgn-qhint">If the table isn’t full after about 12 seconds, you can start with computer players.</p></div>`;}
+  qPaint();vcUI();}
+ function qPaint(){if(!UI.roomOn||!T||!T.quick||!CPU||T.status!=='lobby')return;const host=role==='host',now=Date.now()+(host?0:skew);
+  const set=(id,h)=>{const e=$i(id);if(e&&e._h!==h){e._h=h;e.innerHTML=h;}};
+  const hum=T.players.filter(p=>!p.cpu).length,free=Math.max(0,QSIZE-T.players.length);
+  let f=0,secs='',head='<span class="dgn-dots">Finding players</span>',sub=hum>1?'Players found. Looking for more…':'Looking for players…';
+  if(T.autoAt){f=1;const s=Math.max(0,Math.ceil((T.autoAt-now)/1000));secs='Starting';head=hum>=QSIZE?'Table full':'Starting soon';sub='The match starts in '+s+' s';}
+  else if(T.qAsk){f=1;secs='0 s';head=hum>1?'Still '+free+' seat'+(free===1?'':'s')+' free':'Nobody’s around yet';sub=host?'':'Starting soon…';}
+  else if(T.qEnd){const left=T.qEnd-now;f=Math.max(0,Math.min(1,1-left/QUICK_SEARCH));secs=Math.max(0,Math.ceil(left/1000))+' s';}
+  const a=$i('dgnQarc');if(a)a.setAttribute('stroke-dashoffset',(RING_C*f).toFixed(1));
+  const sc=$i('dgnQsecs');if(sc&&sc.textContent!==secs)sc.textContent=secs||' ';
+  set('dgnQh',head);const st=$i('dgnQs');if(st&&st.textContent!==sub)st.textContent=sub;
+  set('dgnQseats',qSeatsHTML(T.players));
+  const fl=$i('dgnQf'),ft=Math.min(T.players.length,QSIZE)+' of '+QSIZE+' seats filled';if(fl&&fl.textContent!==ft)fl.textContent=ft;
+  if(host&&T.qAsk)renderQa(now);else closeQa();}
+ function renderQa(now){ensureUI();const q=$i('dgnQa');const hum=T.players.filter(p=>!p.cpu).length,n=Math.max(1,Math.max(QSIZE,MIN)-T.players.length);
+  const left=Math.max(0,T.qAsk-now),f=Math.max(0,Math.min(1,left/QUICK_ASK));
+  const key=hum+':'+n;if(q.hidden||q._k!==key){q._k=key;q.hidden=false;
+   q.innerHTML=`<div class="dgn-scrim"></div><section class="dgn-sheet" role="dialog" aria-modal="true" aria-labelledby="dgnQah"><div class="dgn-grab"></div>
+<div class="dgn-hd"><h2 id="dgnQah">${hum>1?'Still '+n+' seat'+(n===1?'':'s')+' free':'Nobody’s around yet'}</h2></div>
+<p class="dgn-hint" style="font-size:13.5px;margin:0 0 14px">${hum>1?'Fill them with computer players and start. Anyone who turns up later takes a computer’s seat.':'Start now with computer players. If real players turn up, they take a computer’s seat.'}</p>
+<div class="dgn-bots"><span class="hp">${Array.from({length:Math.min(n,4)},()=>`<span>${IC.bot}</span>`).join('')}</span><small>${n===1?'1 computer player fills the empty seat.':n+' computer players fill the empty seats.'} Each has a small “Computer” tag.</small></div>
+<div class="dgn-stack"><button class="dgn-btn pri w cd" style="min-height:62px" data-dgn="qBots"><span>Start with computer players</span><span class="cdt" id="dgnCdt"></span><span class="bar" id="dgnCdb"></span></button>
+<button class="dgn-btn w" data-dgn="qWait">Keep waiting</button></div></section>`;
+   setTimeout(()=>{const b=q.querySelector('.dgn-btn.pri');b&&b.focus({preventScroll:true});},60);}
+  const t=$i('dgnCdt'),s='Starting by itself in '+Math.max(1,Math.ceil(left/1000))+' s';if(t&&t.textContent!==s)t.textContent=s;
+  const b=$i('dgnCdb');if(b)b.style.transform='scaleX('+f.toFixed(3)+')';}
+ function closeQa(){const q=$i('dgnQa');if(q&&!q.hidden){q.hidden=true;q.innerHTML='';q._k='';}}
+ setInterval(()=>{if(UI.roomOn&&T&&T.quick&&CPU&&T.status==='lobby')qPaint();},200);
 
  /* ---------- waiting room ---------- */
  function enterLobby(){ensureUI();closeHub();hideQuick();if(!UI.roomOn){UI.roomOn=true;const r=$i('dgnRoom');r.hidden=false;r._built=0;}renderRoom();updDock();}
- function hideRoom(){UI.roomOn=false;const r=$i('dgnRoom');if(r){r.hidden=true;r.innerHTML='';r._built=0;}}
+ function hideRoom(){UI.roomOn=false;const r=$i('dgnRoom');if(r){r.hidden=true;r.innerHTML='';r._built=0;}closeQa();}
  function av(seat,size){if(cfg.avatar){try{const h=cfg.avatar(seat,size);if(h)return h;}catch(e){}}return esc((seat.name||'?').slice(0,1).toUpperCase());}
  const inviteURL=()=>{const u=location.origin+location.pathname+'?t='+(T?T.code:'');return TEST?u+'&ns='+encodeURIComponent(Q.get('ns')):u;};
  function renderRoom(){if(!UI.roomOn||!T||T.status!=='lobby')return;const r=$i('dgnRoom');const host=role==='host',me=seatOf(myId);
-  if(!r._built){r._built=1;const code=T.code;
+  if(T.quick&&CPU){renderQRoom(r);return;}
+  if(r._built!==1){r._built=1;const code=T.code;
    r.innerHTML=`<div class="dgn-room-in"><div class="dgn-top"><button class="dgn-ib" data-dgn="leave" aria-label="Leave table">${IC.back}</button><span class="ttl" id="dgnRt"></span><button class="dgn-ib" data-dgn="voice" hidden></button><button class="dgn-ib" data-dgn="chat" aria-label="Quick chat">${IC.chat}</button></div>
 <div class="dgn-codebox"><span class="dgn-lbl">Table code</span><div class="dgn-code" aria-label="Table code ${esc(code.split('').join(' '))}">${code.split('').map(c=>`<span>${c}</span>`).join('')}</div>
 <div class="dgn-two"><button class="dgn-btn pri" data-dgn="share">${IC.share}Invite</button><button class="dgn-btn" data-dgn="copy">${IC.copy}Copy link</button></div></div>
@@ -857,7 +1131,8 @@ ${cfg.rulesNote?`<p class="dgn-fine">${esc(cfg.rulesNote)}</p>`:''}
   if(host&&host.isConnected){if(d.parentNode!==host)host.insertBefore(d,host.firstChild);d.classList.add('inline');}else if(d.parentNode!==UI.root){UI.root.appendChild(d);d.classList.remove('inline');}
   d.hidden=false;const vw=d.querySelector('.dgn-vw'),n=T.viewers|0;vw.hidden=n<1;const vh=IC.eye+'<span>'+n+'</span>';if(vw._h!==vh){vw._h=vh;vw.innerHTML=vh;}vw.setAttribute('aria-label',n+' watching');
   const cb=d.querySelector('[data-dgn="chat"]');if(cb)cb.hidden=!(me||waiting);
-  if(me){w.hidden=true;}else{w.hidden=false;const t=waiting?'You’re in for the next match':'Watching live',s=[n?n+' watching':'',waiting?'You play from the start of the next match':T.pub&&freeSeatsSafe()>0&&T.status!=='lobby'?'Tap Join to play in the next match':''].filter(Boolean).join(' · ');
+  const cs=CPU&&cpuSeats().length>0&&T.status==='playing';
+  if(me){w.hidden=true;}else{w.hidden=false;const t=waiting?(cs?'You’re next to play':'You’re in for the next match'):'Watching live',s=[n?n+' watching':'',waiting?(cs?'You take a computer’s seat at the next break':'You play from the start of the next match'):T.pub&&freeSeatsSafe()>0&&T.status!=='lobby'?(cs?'Tap Join to take a computer’s seat':'Tap Join to play in the next match'):''].filter(Boolean).join(' · ');
    const h=`<span class="we">${IC.eye}</span><div class="wt"><b>${esc(t)}</b><small>${esc(s)}</small></div>${!waiting&&T.pub&&freeSeatsSafe()>0?'<button class="dgn-btn sm pri" data-dgn="waitJoin">Join</button>':''}<button class="dgn-btn sm" data-dgn="leave">Leave</button>`;if(w._h!==h){w._h=h;w.innerHTML=h;}}
   vcUI();}
  const freeSeatsSafe=()=>{try{return freeSeats();}catch(e){return 0;}};
@@ -886,7 +1161,7 @@ ${cfg.rulesNote?`<p class="dgn-fine">${esc(cfg.rulesNote)}</p>`:''}
    case 'trayClose':closeTray();break;
    case 'quick':quickMatch();break;
    case 'pubPick':UI.pubPick=b.dataset.v==='1';ls.set('dgn-pub',UI.pubPick?'1':'0');b.parentNode.querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));
-    {const h=$i('dgnPubHint');if(h)h.textContent=UI.pubPick?'Anyone can join from the list below, and watch once it starts.':'Only people with your code or invite link can join.';}break;
+    {const h=$i('dgnPubHint');if(h)h.textContent=UI.friends?(UI.pubPick?'Anyone can find it and join from Quick Match.':'Only people with your invite link or code can join.'):UI.pubPick?'Anyone can join from the list below, and watch once it starts.':'Only people with your code or invite link can join.';}break;
    case 'create':needNameOK().then(ok=>{if(ok)hostCreate({pub:UI.pubPick});});break;
    case 'join':joinCode(($i('dgnCode')||{}).value);break;
    case 'joinOpen':case 'joinLive':joinCode(b.dataset.code);break;
@@ -905,6 +1180,12 @@ ${cfg.rulesNote?`<p class="dgn-fine">${esc(cfg.rulesNote)}</p>`:''}
    case 'mic':vcMic();break;
    case 'voice':openVoice();break;
    case 'deaf':vcDeaf();break;
+   case 'vmute':vcMute(b.dataset.id);break;
+   case 'vreport':closeTray();openReport(b.dataset.id);break;
+   case 'sendReport':sendReport(b.dataset.id);break;
+   case 'askYes':closeNote(true);break;
+   case 'qBots':quickBots();break;
+   case 'qWait':closeQa();quickWaitMore();break;
    case 'waitJoin':if(net&&role==='join'){net.spec=false;hello();toast('You’re in for the next match.');}break;}}
 
  /* ---------------- boot: invite links (?t=CODE) ---------------- */
@@ -917,14 +1198,19 @@ ${cfg.rulesNote?`<p class="dgn-fine">${esc(cfg.rulesNote)}</p>`:''}
   open:openHub,close:closeHub,boot,join:joinCode,quick:quickMatch,create:hostCreate,leave,retire:()=>leave({afk:true}),
   isOnline:()=>!!role,isHost:()=>role==='host',isClient:()=>role==='join',
   isSpectator:()=>!!role&&!!T&&!seated(myId),isWaiting:()=>!!T&&(T.wait||[]).some(w=>w.id===myId),hostAway:()=>hostAway,
-  meta:()=>T,view:()=>V,seated,humans:()=>T?T.players.filter(p=>!p.gone).length:0,
+  meta:()=>T,view:()=>V,seated,humans:()=>T?T.players.filter(p=>!p.gone&&!p.cpu).length:0,
   hostNow:()=>Date.now()+(role==='join'?skew:0),skew:()=>role==='join'?skew:0,
   sync,send:a=>role==='join'?joinSend({k:'act',a}):Promise.resolve(false),
   start,again,matchOver,strike,clear:clearStrikes,lobby:lobbySend,afk:markAfk,drop:(id,why)=>drop(id,why||'left'),note:t=>{note(t);sync();},
   tell:(id,obj)=>{if(role==='host'&&id!==myId)sendToId(id,{k:'tell',d:obj});},
   chat:sayChat,showChat,toast,notice,updDock,
-  lists:()=>({open:openTables(),live:liveTables()})});
- if(LOCAL){window.__NET=R;R._vc=()=>({on:VC.on,deaf:VC.deaf,stream:!!VC.stream,peers:[...VC.peers].map(([id,p])=>[id,p.pc.connectionState,!!p.au.srcObject])});}   /* localhost test hooks */
+  lists:()=>({open:openTables(),live:liveTables()}),
+  /* v5 */
+  friends:openFriends,playing,handBreak,ask,leaveAsk,isCpu:id=>isCpuP(seatOf(id)),cpu:CPU,quickSize:QSIZE});
+ if(LOCAL){window.__NET=R;R._vc=()=>({on:VC.on,deaf:VC.deaf,stream:!!VC.stream,mute:[...VC.mute],mic:T&&T.mic||{},peers:[...VC.peers].map(([id,p])=>[id,p.pc.connectionState,!!p.au.srcObject])});
+  /* fake voice levels for tests: R._vcFake({pid:0..1}) or null; R._vcMic(on) sets my shared mic state without a real mic */
+  R._vcFake=o=>{VC.fake=o||null;};R._vcMic=on=>{VC.on=!!on;vcShare();vcUI();};
+  R._quick=()=>({qEnd:T&&T.qEnd,qAsk:T&&T.qAsk,autoAt:T&&T.autoAt,players:T?T.players.map(p=>({id:p.id,name:p.name,cpu:!!p.cpu,gone:!!p.gone})):[],wait:T?T.wait.map(w=>w.id):[]});}   /* localhost test hooks */
  return R;}
 
 window.DGNet={version:VERSION,create,pid,testName,ns:nsFor,local:LOCAL,PRESENCE};
