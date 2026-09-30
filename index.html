@@ -937,12 +937,8 @@ try{
  new MutationObserver(function(){if(!document.body.classList.contains('intro'))window.dispatchEvent(new Event('dg-revealed'));})
   .observe(document.body,{attributes:true,attributeFilter:['class']});
 })();</script>
-<script>/* ambience for the Pastel homepage: soft water only, very quiet, on by default after the first tap */
+<script>/* homepage music: M1 "Lagoon Pads" (original, generated live), on by default after the first tap */
 (function(){try{
-/* ---- sound: synthesised, gentle, ON by default: it starts on the first tap or key press anywhere
-   (browsers allow audio only after a gesture); the sound button mutes it (site-wide 'dd-sfx': '0' = muted) ----
-   Natural ambience only (no music, no tones, no wind): soft water lapping at the shore,
-   and small splashes and drips when a card surfaces. Everything is filtered noise with slow envelopes. */
 /* DGAudio: one shared AudioContext for the page, unlocked on the first gesture (same as in the intro sound script) */
 window.DGAudio=window.DGAudio||(function(){
  var A={ctx:null,bus:null,ready:[],done:false,
@@ -956,88 +952,141 @@ window.DGAudio=window.DGAudio||(function(){
   if(!A.done){A.done=true;A.ready.splice(0).forEach(function(f){try{f();}catch(e){}});}}
  ['pointerdown','touchstart','keydown'].forEach(function(n){addEventListener(n,gesture,{capture:true,passive:true});});
  return A;})();
-var sound=null,btn=document.getElementById('oceanSnd');
-function makeSound(ext){
- var AC=window.AudioContext||window.webkitAudioContext;if(!ext&&!AC)return null;
- var ctx=ext||new AC(),sr=ctx.sampleRate,i;
- function R(a,b){return a+Math.random()*(b-a);}
- /* master: fade (in over 3 s, out when hidden) -> warm lowpass (2.4 kHz) -> gentle compressor -> soft ceiling.
-    Barely there and soothing: about -37 LUFS, peaks under -24 dBFS (measured by offline render). */
- var LEVEL=.18;
- var master=ctx.createGain();master.gain.value=0;
- var warm=ctx.createBiquadFilter();warm.type='lowpass';warm.frequency.value=2400;warm.Q.value=.5;
- var cp=ctx.createDynamicsCompressor();cp.threshold.value=-34;cp.knee.value=12;cp.ratio.value=2;cp.attack.value=.05;cp.release.value=.6;
- var sh=ctx.createWaveShaper(),cn=2048,cvv=new Float32Array(cn);for(i=0;i<cn;i++){var x=i/(cn-1)*2-1;cvv[i]=.055*Math.tanh(x/.055);}sh.curve=cvv;
- master.connect(warm);warm.connect(cp);cp.connect(sh);sh.connect(window.DGAudio&&DGAudio.ctx===ctx&&DGAudio.bus?DGAudio.bus:ctx.destination);
+/* DGMusic: the homepage music, M1 "Lagoon Pads" (owner's choice, Oct 2026; samples: design-mockups/home-music).
+   Original, generated live with Web Audio (no files, no noise): warm pads + soft bass + kalimba on the F major
+   pentatonic, 64 BPM, a 60 s pass that repeats without a seam and varies a little each time.
+   About -32 LUFS, peaks about -21 dBFS (measured by offline render). make(ctx, dest, 'M1') ->
+   {on, ctx, start(sec), fadeIn(sec), fadeOut(sec), sch(until), pos(), cycle} */
+window.DGMusic=window.DGMusic||(function(){
+function mtof(m){return 440*Math.pow(2,(m-69)/12);}
+function rng(s){return function(){s|=0;s=s+0x6D2B79F5|0;var t=Math.imul(s^s>>>15,1|s);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
+function pick(r,a){return a[Math.floor(r()*a.length)];}
+var P={};
+/* M1 Lagoon Pads: F major, 8 chords x 8 beats @64 = 60 s */
+P.M1={bpm:64,beats:64,level:.179,padCut:1100,padLevel:.18,bright:1.7,det:7,att:3,rel:3.5,bass:.22,pluckLevel:.32,pluckCut:3200,wet:.6,rt:1.6,
+ chords:[[41,[53,57,60,64]],[38,[53,57,60,64]],[46,[50,53,57,62]],[36,[55,57,60,65]],
+         [45,[53,57,60,67]],[43,[53,58,62,69]],[46,[53,57,60,62]],[36,[55,60,62,65]]],
+ mel:[[[0,69],[1,72],[2,74],[3.5,72],[5,69]],
+      [[0,74],[1.5,72],[3,69],[6,65]],
+      [[0,74],[1,77],[2,74],[3,72],[4.5,69]],
+      [[0,72],[2,67],[4,69],[7,72]],
+      [[0,81],[1,79],[2,77],[4,72],[6,74]],
+      [[0,74],[1.5,77],[3,74],[5,69]],
+      [[0,72],[1,74],[2,77],[4,74],[5.5,72]],
+      [[0,67],[2,72],[4,74]]],
+ compose:function(c,r){var E=[],me=this;
+  this.chords.forEach(function(ch,i){E.push({k:'pad',b:i*8,d:8,n:ch[1],bass:ch[0]});
+   me.mel[i].forEach(function(n,j){
+    if(c%3===2&&j>0&&r()<.3)return;                               /* every third pass breathes: fewer notes */
+    var v=(j===0?.9:.65)+r()*.15;E.push({k:'pl',b:i*8+n[0],m:n[1],v:v,pan:pick(r,[-1,0,1])});
+    if(c%2===1&&r()<.28)E.push({k:'pl',b:i*8+n[0]+1.5,m:n[1]+12,v:v*.35,pan:pick(r,[-1,1])}); /* soft echo an octave up */
+   });});
+  return E;}};
+
+function make(ctx,dest,name){
+ var p=P[name||'M1'],sr=ctx.sampleRate,i,beat=60/p.bpm,cycLen=p.beats*beat,R=Math.random;
+ /* sum -> air lowpass -> master (fade x level) -> dest (no compressor: the levels are fixed by design) */
+ var sum=ctx.createGain(),air=ctx.createBiquadFilter();air.type='lowpass';air.frequency.value=6500;air.Q.value=.5;
+ var master=ctx.createGain();master.gain.value=0;sum.connect(air);air.connect(master);master.connect(dest);
+ /* room: one smooth, dark MONO tail (no hiss), 15 ms pre-delay; the right side hears it 9 ms later */
+ var L=Math.round(sr*p.rt),ir=ctx.createBuffer(1,L,sr),rr=rng(11),pre=Math.round(sr*.015);
+ (function(){var o=ir.getChannelData(0),lp=0,lp2=0;for(i=pre;i<L;i++){var u=i/L;lp+=(rr()*2-1-lp)*(.42-.34*u);lp2+=(lp-lp2)*.5;o[i]=lp2*Math.pow(1-u,2.4)*Math.min(1,(i-pre)/(sr*.03));}})();
+ var send=ctx.createGain();send.channelCount=1;send.channelCountMode='explicit';send.channelInterpretation='speakers';
+ var conv=ctx.createConvolver();conv.buffer=ir;var ret=ctx.createGain();ret.gain.value=p.wet;
+ var mg=ctx.createChannelMerger(2),dl=ctx.createDelay(.05);dl.delayTime.value=.009;
+ send.connect(conv);conv.connect(ret);ret.connect(mg,0,0);ret.connect(dl);dl.connect(mg,0,1);mg.connect(sum);
+ function panner(x){if(!ctx.createStereoPanner)return ctx.createGain();var n=ctx.createStereoPanner();n.pan.value=x;return n;}
+ /* pads: chord tones spread left/right, gently detuned against each other -> slowly breathing lowpass */
+ var padF=ctx.createBiquadFilter();padF.type='lowpass';padF.frequency.value=p.padCut;padF.Q.value=.6;
+ var lfo=ctx.createOscillator();lfo.frequency.value=.037;var lfoG=ctx.createGain();lfoG.gain.value=p.padCut*.3;lfo.connect(lfoG);lfoG.connect(padF.frequency);
+ try{padF.frequency.automationRate='k-rate';}catch(e){}   /* per-block filter updates: much cheaper on phones */
+ var padG=ctx.createGain();padG.gain.value=p.padLevel;var padL=panner(-.45),padR=panner(.45);
+ padL.connect(padF);padR.connect(padF);padF.connect(padG);padG.connect(sum);var padS=ctx.createGain();padS.gain.value=.55;padG.connect(padS);padS.connect(send);
+ var bassG=ctx.createGain();bassG.gain.value=p.bass;bassG.connect(sum);
+ var N=10,re=new Float32Array(N+1),im=new Float32Array(N+1);for(i=1;i<=N;i++)im[i]=1/Math.pow(i,p.bright);
+ var W=ctx.createPeriodicWave(re,im),BW=ctx.createPeriodicWave(new Float32Array(3),new Float32Array([0,1,.28]));
+ /* kalimba: three pan positions -> lowpass -> level, with plenty of room */
+ var plF=ctx.createBiquadFilter();plF.type='lowpass';plF.frequency.value=p.pluckCut;plF.Q.value=.5;
+ var plG=ctx.createGain();plG.gain.value=p.pluckLevel;plF.connect(plG);plG.connect(sum);
+ var plS=ctx.createGain();plS.gain.value=.7;plG.connect(plS);plS.connect(send);
+ var pans=[panner(-.35),panner(0),panner(.35)];pans.forEach(function(n){n.connect(plF);});
+ lfo.start();
+ function env(g,t,a,peak,hold,rel){g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(peak,t+a);g.gain.setValueAtTime(peak,t+hold);g.gain.linearRampToValueAtTime(0,t+hold+rel);}
+ function osc(t,end,wave,f,det,peak,hold,out){var o=ctx.createOscillator(),g=ctx.createGain();o.setPeriodicWave(wave);o.frequency.value=f;o.detune.value=det;
+  env(g,t,p.att,peak,hold,p.rel);o.connect(g);g.connect(out);o.start(t);o.stop(end);}
+ function pad(t,d,notes,bass){var hold=Math.max(p.att,d*beat),end=t+hold+p.rel+.05,a=.62/notes.length,top=notes.length-1;
+  notes.forEach(function(m,k){var s=k%2?1:-1;osc(t,end,W,mtof(m),s*p.det+R()*2-1,a,hold,s>0?padR:padL);
+   if(k===top)osc(t,end,W,mtof(m),-s*p.det,a*.8,hold,s>0?padL:padR);});
+  if(bass&&p.bass)osc(t,end,BW,mtof(bass),0,.5,hold,bassG);}
+ /* every kalimba note is rendered ONCE into a small buffer at the context's own rate, then just played back */
+ var BUF={},PARTS=[[1,1,1.0],[2,.1,.3],[5.93,.05,.07]];
+ function pluckBuf(m){if(BUF[m])return BUF[m];var f=mtof(m),len=Math.round(sr*2.6),b=ctx.createBuffer(1,len,sr),d=b.getChannelData(0),at=Math.round(sr*.012),ft=Math.round(sr*.3);
+  PARTS.forEach(function(q){var fq=f*q[0];if(fq>9000)return;var w=2*Math.PI*fq/sr,dk=Math.exp(-1/(sr*q[2])),e=q[1];for(i=0;i<len;i++){d[i]+=e*Math.sin(w*i);e*=dk;}});
+  for(i=0;i<at;i++)d[i]*=i/at;for(i=len-ft;i<len;i++)d[i]*=(len-i)/ft;return BUF[m]=b;}
+ function pluck(t,m,v,pan){var src=ctx.createBufferSource(),g=ctx.createGain();src.buffer=pluckBuf(m);g.gain.value=v;src.connect(g);g.connect(pans[pan+1]);src.start(t);}
+ function play(e){if(e.k==='pad')pad(e.t,e.d,e.n,e.bass);else pluck(e.t+(R()-.5)*.03,e.m,e.v,e.pan);}
+ /* scheduler: compose a whole pass at a time, play what falls inside the look-ahead window.
+    A suspended context's clock stops, so nothing piles up while the page is away. */
+ var T0=null,gen=0,q=[];
+ function sch(until){if(T0===null)T0=ctx.currentTime+.15;
+  while(T0+gen*cycLen<until){var ev=p.compose(gen,rng(1009+gen*7919)),base=T0+gen*cycLen;
+   ev.forEach(function(e){e.t=base+e.b*beat;q.push(e);});gen++;q.sort(function(a,b){return a.t-b.t;});}
+  while(q.length&&q[0].t<until)play(q.shift());}
  function fade(to,sec){var n=ctx.currentTime;master.gain.cancelScheduledValues(n);master.gain.setValueAtTime(master.gain.value,n);master.gain.linearRampToValueAtTime(to,n+sec);}
- /* open-air space: a short, soft, generated stereo impulse */
- var L=Math.round(sr*1.4),ir=ctx.createBuffer(2,L,sr);
- for(var ch=0;ch<2;ch++){var o=ir.getChannelData(ch),lp=0;for(i=0;i<L;i++){var u=i/L;lp+=(Math.random()*2-1-lp)*(.35-.25*u);o[i]=lp*Math.pow(1-u,3);}}
- var cvn=ctx.createConvolver();cvn.buffer=ir;var wet=ctx.createGain();wet.gain.value=.6;var rv=ctx.createGain();rv.gain.value=.35;
- wet.connect(cvn);cvn.connect(rv);rv.connect(master);
- /* noise: 4 s white and brown, seam-faded so they loop cleanly */
- function buf(brown){var len=sr*4,b=ctx.createBuffer(1,len,sr),d=b.getChannelData(0),lv=0;
-  for(var j=0;j<len;j++){var w=Math.random()*2-1;if(brown){lv=(lv+.02*w)/1.02;d[j]=lv*3.5;}else d[j]=w*.5;}
-  for(var k=0;k<4000;k++){var m=k/4000;d[k]=d[k]*m+d[len-4000+k]*(1-m);}return b;}
- var WN=buf(false),BN=buf(true);
- function loop(b,type,f,q){var s=ctx.createBufferSource();s.buffer=b;s.loop=true;var fl=ctx.createBiquadFilter();fl.type=type;fl.frequency.value=f;fl.Q.value=q;
-  var g=ctx.createGain();g.gain.value=0;s.connect(fl);fl.connect(g);g.connect(master);s.start(0,R(0,3));return {f:fl,g:g};}
- /* the bed: low, warm water only (no wind) */
- var bed=loop(BN,'lowpass',300,.5);
- /* one noise event: filter (optionally swept) -> slow envelope -> pan -> dry + air */
- function V(t,o){var s=ctx.createBufferSource();s.buffer=o.b||WN;var f=ctx.createBiquadFilter();f.type=o.t||'lowpass';f.Q.value=o.q||.6;
-  f.frequency.setValueAtTime(o.f,t);var a=o.a||.03,h=o.h||0,dc=o.dc||.3;if(o.f1)f.frequency.exponentialRampToValueAtTime(o.f1,t+(o.fd||a+h+dc));
-  var g=ctx.createGain();g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(o.g,t+a);if(h)g.gain.setValueAtTime(o.g,t+a+h);g.gain.setTargetAtTime(0,t+a+h,dc/6.9);
-  s.connect(f);f.connect(g);var out=g;if(ctx.createStereoPanner&&(o.p||o.p1)){var pn=ctx.createStereoPanner();pn.pan.setValueAtTime(o.p||0,t);
-   if(o.p1!=null)pn.pan.linearRampToValueAtTime(o.p1,t+a+h+dc);g.connect(pn);out=pn;}
-  out.connect(master);if(o.s){var sg=ctx.createGain();sg.gain.value=o.s;out.connect(sg);sg.connect(wet);}
-  s.start(t,R(0,3),a+h+dc+.05);}
- /* a slow wave laps in and runs back: long, soft envelopes, nothing sharp */
- function lap(t,k){var p=R(-.5,.5),up=R(1.6,2.6);
-  V(t,{b:BN,f:R(240,300),f1:R(480,620),fd:up,a:up,h:.3,dc:R(2,3.2),g:.42*k,p:p,p1:p*.4,s:.35});
-  V(t+up*.85,{f:R(1100,1500),f1:R(600,800),fd:2,q:.5,a:.8,dc:R(1.8,2.6),g:.035*k,p:p*.5,p1:-p*.3,s:.45});}
- /* a soft plip: a drop meeting the water, muffled (well under the bed) */
- function plip(t,g,p){V(t,{f:R(700,1000),f1:R(420,560),fd:.12,q:1.2,a:.012,dc:.16,g:g,p:p,s:.6});}
- var next=0,swell=0,up=true,lastPl=0;
- /* slow scheduling ahead of the clock (works with a paused context: the clock does not move) */
- function sch(until){var now=ctx.currentTime;if(!next)next=now+.8;
-  while(next<until){lap(next,R(.6,1));next+=R(5,8.5);}
-  /* the whole bed breathes: a slow 8-12 s swell */
-  if(swell<until){var t=Math.max(swell,now);for(;t<until+2;){var half=R(4,6);up=!up;
-    bed.g.gain.setTargetAtTime(up?R(.13,.16):R(.07,.09),t,half/3);t+=half;}swell=t;}}
- var tm=0;
- return {on:false,ctx:ctx,sch:sch,
-  /* a card surfaces: one soft muffled plip and a couple of tiny drops (about 12 dB under the bed) */
-  bloop:function(s){var t=ctx.currentTime+.02;plip(t,.05+.03*s,R(-.2,.2));
-   for(var k=0,n=1+Math.round(1.5*s);k<n;k++)plip(t+R(.3,.9),.018+.012*s,R(-.5,.5));},
-  sink:function(s){var t=ctx.currentTime+.02;V(t,{b:BN,f:520,f1:240,fd:.4,a:.06,dc:.45,g:.08+.05*s,s:.4});},
-  slosh:function(s){var t=ctx.currentTime+.02;V(t,{f:600,f1:360,fd:.4,a:.08,dc:.4,g:.015+.015*s,p:R(-.3,.3),s:.4});},
-  plink:function(s){var t=ctx.currentTime;if(t-lastPl<.12)return;lastPl=t;plip(t,.01+.012*s,R(-.5,.5));},
-  tick:function(){},
-  start:function(){var me=this;sch(ctx.currentTime+2);clearInterval(tm);tm=setInterval(function(){if(me.on)sch(ctx.currentTime+2);},500);fade(LEVEL,3);},
-  fadeIn:function(sec){fade(LEVEL,sec||1.5);},
-  /* tab hidden: fade out, then pause the audio */
-  pause:function(){fade(0,.6);setTimeout(function(){if(document.hidden&&ctx.suspend)ctx.suspend();},650);}};
-}
-window.__dMakeSound=makeSound;   /* for level checks (offline rendering) */
-function startSound(){var c=DGAudio.get();if(!c)return;if(!sound){sound=makeSound(c);if(!sound)return;window.__d3snd=sound;}sound.on=true;sound.start();}
+ var tm=0,api={on:false,ctx:ctx,sch:sch,level:p.level,cycle:cycLen,master:master,
+  pos:function(){return T0===null?0:((ctx.currentTime-T0)%cycLen+cycLen)%cycLen;},
+  start:function(sec){api.on=true;sch(ctx.currentTime+2);clearInterval(tm);tm=setInterval(function(){if(api.on)sch(ctx.currentTime+2);},500);fade(p.level,sec==null?3:sec);},
+  fadeIn:function(sec){fade(p.level,sec||1.5);},
+  fadeOut:function(sec){fade(0,sec||.3);},
+  /* old ambience hooks (no longer used): keep them harmless */
+  bloop:function(){},sink:function(){},slosh:function(){},plink:function(){},tick:function(){}};
+ return api;}
+return {make:make,presets:P};
+})();
+
+/* ---- the homepage music (M1 "Lagoon Pads"): ON by default, it needs one tap or key press first (browsers allow
+   audio only after a gesture). A tap during the intro unlocks it but the music waits for the end of the intro
+   (dg-revealed; the intro's own card-shuffle sound is separate), then fades in over 3 s.
+   Hard stop: leaving the page (tab hidden, app switched, page hidden or frozen) fades it out fast and SUSPENDS the
+   AudioContext; it comes back only when the page is visible again and sound is on.
+   The sound button mutes it (site-wide 'dd-sfx': '0' / 'off' = muted, missing = on). ---- */
+var sound=null,btn=document.getElementById('oceanSnd'),waiting=false,hT=0;
+function introOn(){return document.body.classList.contains('intro');}
+function away(){return document.hidden||document.visibilityState==='hidden';}
+window.__dMakeSound=function(c,dest){return DGMusic.make(c,dest||c.destination,'M1');};   /* for level checks (offline rendering) */
+function startSound(){var c=DGAudio.get();if(!c||DGAudio.muted())return;
+ if(!sound){sound=DGMusic.make(c,DGAudio.bus||c.destination,'M1');window.__d3snd=sound;}
+ sound.on=true;if(away())return;
+ if(introOn()){waiting=true;return;}              /* never over the intro: dg-revealed starts it */
+ waiting=false;clearTimeout(hT);if(c.resume)c.resume();sound.start(3);}
+addEventListener('dg-revealed',function(){if(waiting&&sound&&sound.on&&!DGAudio.muted())startSound();});
+/* leaving: quick fade, then suspend (at once when the page is being hidden or frozen: timers may never run again) */
+function hush(now){var c=DGAudio.ctx;if(!c)return;if(sound)sound.fadeOut(now?.06:.25);clearTimeout(hT);
+ if(now){try{c.suspend();}catch(e){}}else hT=setTimeout(function(){if(away()&&c.state!=='closed')try{c.suspend();}catch(e){}},300);}
+/* back: resume and fade in, only if the sound is on (and not during the intro) */
+function back(){var c=DGAudio.ctx;if(!c||away()||!sound||!sound.on||DGAudio.muted())return;clearTimeout(hT);
+ if(c.resume)c.resume();if(introOn())waiting=true;else sound.fadeIn(1.5);}
+document.addEventListener('visibilitychange',function(){if(away())hush(false);else back();});
+addEventListener('pagehide',function(){hush(true);});
+document.addEventListener('freeze',function(){hush(true);});
+addEventListener('blur',function(){if(away())hush(false);});
+addEventListener('pageshow',function(e){if(e.persisted)back();});
+document.addEventListener('resume',function(){back();});
+/* safety net: if a hidden page is still running (a missed event), stop it */
+setInterval(function(){var c=DGAudio.ctx;if(c&&away()&&c.state==='running')hush(true);},1000);
 function paintBtn(){if(!btn)return;var on=!DGAudio.muted();btn.setAttribute('aria-pressed',on?'true':'false');btn.classList.toggle('on',on);
  btn.setAttribute('aria-label',on?'Sound on. Tap to mute':'Sound off. Tap to turn on');btn.title=on?'Mute':'Sound on';}
 paintBtn();
-/* on by default: the first gesture anywhere starts the lagoon (unless muted) */
+/* on by default: the first gesture anywhere starts the music (unless muted) */
 DGAudio.onGesture(function(){if(!DGAudio.muted())startSound();});
 /* native app wrapper: autoplay allowed */
 if((window.Capacitor||/DhivehiGamesApp/.test(navigator.userAgent))&&!DGAudio.muted())startSound();
 /* the button is a mute toggle */
 if(btn)btn.addEventListener('click',function(){
  var mute=!DGAudio.muted();DGAudio.setMuted(mute);
- if(mute){if(sound)sound.on=false;}else{DGAudio.unlock();startSound();}
+ if(mute){if(sound){sound.on=false;sound.fadeOut(.15);}waiting=false;}else{DGAudio.unlock();startSound();}
  paintBtn();
 });
-
-/* now and then a very soft plip; the tab hidden: fade out and pause */
-setInterval(function(){if(sound&&sound.on&&!document.hidden&&!DGAudio.muted()&&Math.random()<.5)sound.plink(.35);},7000);
-document.addEventListener('visibilitychange',function(){if(!sound)return;if(document.hidden)sound.pause();else if(sound.on&&!DGAudio.muted()&&sound.ctx.resume){sound.ctx.resume();sound.fadeIn(1.5);}});
 }catch(e){}})();</script>
 <div id="skipper" aria-hidden="true"></div>
 <script>/* tap (or press a key) to skip the intro */
