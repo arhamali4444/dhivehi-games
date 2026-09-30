@@ -158,6 +158,15 @@ html.dg-lite .mesh i{animation:none}
 .qc{position:relative;margin-top:46px;padding:46px 16px 16px;border-radius:24px;background:rgba(255,255,255,.82);box-shadow:inset 0 0 0 1px rgba(255,255,255,.95),0 18px 36px -24px rgba(70,50,120,.55);text-align:center}
 .qc .topic{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:800;letter-spacing:.04em;color:var(--coral);background:#FFE9EC;padding:4px 10px;border-radius:99px}
 .qc .topic svg{width:13px;height:13px}
+.qc .tags{display:flex;flex-wrap:wrap;justify-content:center;gap:6px}
+.lvl{display:inline-flex;align-items:center;font-size:10.5px;font-weight:800;letter-spacing:.04em;padding:4px 9px;border-radius:99px;white-space:nowrap}
+.lvl[lang=dv]{font:700 12px/1.2 var(--dv);letter-spacing:0;padding:3px 9px}
+.lvl.l1{color:#0F6B46;background:#DDF6EA}.lvl.l2{color:#3D2FA8;background:#E9E5FF}.lvl.l3{color:#8A4B00;background:#FFE9C7}.lvl.l4{color:#fff;background:linear-gradient(135deg,#E0405C,#8A1F55)}
+.lvls{display:grid;gap:8px;margin-top:14px}
+.lvb{display:flex;flex-direction:column;align-items:flex-start;gap:4px;width:100%;border:0;border-radius:16px;padding:12px 14px;background:#fff;cursor:pointer;text-align:left;box-shadow:inset 0 0 0 1px var(--line),0 8px 18px -14px rgba(70,50,120,.5)}
+.lvb .lvl{font-size:12.5px;padding:5px 11px}
+.lvb small{font-size:12px;color:var(--muted);font-weight:600}
+.lvb[aria-pressed=true]{box-shadow:inset 0 0 0 2px var(--coral),0 8px 18px -14px rgba(70,50,120,.5)}
 .qc .qq{margin:10px 0 0;font:700 19px/1.35 Sora,sans-serif;letter-spacing:-.01em;overflow-wrap:anywhere}
 .qc .qq[dir=rtl]{font:700 21px/1.8 var(--dv);letter-spacing:0}
 .ring{position:absolute;left:50%;top:-38px;width:76px;height:76px;margin-left:-38px;border-radius:50%;background:#fff;box-shadow:0 12px 24px -12px rgba(70,50,120,.6);display:grid;place-items:center}
@@ -176,6 +185,7 @@ html.dg-lite .mesh i{animation:none}
 .an .L{flex:none;width:36px;height:36px;border-radius:12px;display:grid;place-items:center;font-weight:800;font-size:14px;color:#fff}
 .an:nth-child(1) .L{background:var(--A)}.an:nth-child(2) .L{background:var(--B)}.an:nth-child(3) .L{background:var(--C)}.an:nth-child(4) .L{background:var(--D)}
 .an .tx{flex:1;min-width:0;overflow-wrap:anywhere}
+.an .L,.num{font-family:Sora,system-ui,sans-serif;font-style:normal}
 .ans[dir=rtl] .an{text-align:right;padding:8px 8px 8px 12px;font:700 17px/1.6 var(--dv)}
 .an.mine{box-shadow:inset 0 0 0 2.5px var(--ink),0 8px 18px -14px rgba(70,50,120,.6)}
 .ans.locked .an:not(.mine){opacity:.55}
@@ -237,6 +247,7 @@ html.dg-lite .mesh i{animation:none}
 .earn{display:flex;align-items:center;justify-content:center;gap:6px;margin:12px 0 0;font-weight:800;font-size:14px}
 .earn img{width:22px;height:22px}
 .earn.muted{color:var(--muted);font-weight:700;font-size:12.5px}
+.earn.xp{margin-bottom:-6px;color:#3D2FA8}
 .btns{display:grid;grid-template-columns:1.4fr 1fr;gap:10px;margin-top:16px}
 .btns.one{grid-template-columns:1fr}
 .bt{height:52px;border:0;border-radius:16px;font-weight:800;font-size:15px;cursor:pointer;background:rgba(255,255,255,.8);box-shadow:inset 0 0 0 1px rgba(255,255,255,.9),0 8px 18px -12px rgba(70,50,120,.5);transition:transform .15s}
@@ -323,7 +334,24 @@ const INTRO_MS=FAST?500:3600,REV_MS=FAST?900:6500,STAND_MS=FAST?800:4500,CPU_SPE
 const DAILY_CAP=500;                      /* the shared daily Boli cap (dd-inv), same as every game */
 const BOLI_QUICK=[30,20,10];              /* Quick Match: 1st, 2nd, 3rd */
 const BOLI_DAILY_PERFECT=10;              /* Daily quiz: 1 per right answer, plus this for a perfect round */
-const points=ms=>500+Math.round(500*Math.min(1,Math.max(0,(Q_MS-ms)/(Q_MS-1000))));   /* full bonus in the first second, none at the buzzer */
+/* four levels (owner, Sept 2026). A right answer scores the level's base points plus up to half again for speed:
+   the full bonus in the first second, none at the buzzer. */
+const LEVELS=[[1,'Easy'],[2,'Medium'],[3,'Hard'],[4,'Raajje Master']],LVNAME=Object.fromEntries(LEVELS),LVDV={4:'ރާއްޖެ މާސްޓަރ'};
+const BASE={1:500,2:650,3:800,4:1000};
+const points=(ms,d)=>{const b=BASE[d]||BASE[2];return b+Math.round(b*.5*Math.min(1,Math.max(0,(Q_MS-ms)/(Q_MS-1000))));};
+/* Quick Match and the Daily quiz ramp up through the match: Q1-3 Easy, Q4-6 Medium, Q7-8 Hard, Q9-10 Raajje Master */
+const RAMP=[1,1,1,2,2,2,3,3,4,4];
+const CPU_ACC={1:.86,2:.7,3:.52,4:.36};  /* computer players' chance of the right answer, by level */
+const WIN_BONUS={3:5,4:10};              /* Boli for winning Practice on Hard / Raajje Master (Friends tables give no Boli) */
+/* XP, every mode (about one card-game hand): 5 for playing, + the level of each right answer (Easy 1 ... Raajje Master 4),
+   + placing 10 / 5 / 2 scaled by the level (x1 Easy, x1.25 Medium or a ramped match, x1.5 Hard, x2 Raajje Master);
+   the Daily quiz has no placing: a perfect round adds 10 */
+const XP_PLACE=[10,5,2],XP_MULT={0:1.25,1:1,2:1.25,3:1.5,4:2};
+function xpFor(){const m=me();if(!m||m.gone)return 0;let x=5+(m.lvr|0);
+ if(S.kind==='daily')return x+(m.right===S.n?10:0);
+ const pl=place();if(pl>=0&&pl<3&&active().length>1)x+=Math.round(XP_PLACE[pl]*XP_MULT[S.level|0]);return x;}
+const rampFor=n=>n===RAMP.length?RAMP.slice():Array.from({length:n},(_,i)=>RAMP[Math.min(RAMP.length-1,Math.floor(i*RAMP.length/n))]);
+let levelSel=(()=>{const v=+ls.get('quiz-level');return v>=1&&v<=4?v:2;})();
 const myId=(()=>{if(window.DGNet&&DGNet.local&&/^[a-z0-9_-]{2,24}$/i.test(Q.get('pid')||''))return Q.get('pid');
  let v=ls.get('dd-pid');if(!v){v='p'+Math.random().toString(36).slice(2,10);ls.set('dd-pid',v);}return v;})();
 
@@ -416,10 +444,11 @@ function avHTML(p,size,expr,k){size=size||40;const A=DGA();let inner='';
 
 /* ---------- Boli (same wallet and daily cap as Digu: localStorage dd-inv) ---------- */
 function invRead(){try{const d=JSON.parse(ls.get('dd-inv')||'null');if(d&&d.v===1)return d;}catch(e){}return null;}
-function award(key,n){if(!(n>0))return null;let d=invRead();if(!d)d={v:1,shells:100,xp:0,owned:{},eq:{},hist:[],stats:{},aw:[],day:'',dayEarned:0};
+function award(key,n,xp){n=n>0?n|0:0;xp=xp>0?xp|0:0;if(!n&&!xp)return null;let d=invRead();if(!d)d={v:1,shells:100,xp:0,owned:{},eq:{},hist:[],stats:{},aw:[],day:'',dayEarned:0};
  d.aw=Array.isArray(d.aw)?d.aw:[];if(d.aw.includes(key))return null;d.aw.push(key);if(d.aw.length>80)d.aw.shift();
  const today=new Date().toISOString().slice(0,10);if(d.day!==today){d.day=today;d.dayEarned=0;}
- const got=Math.max(0,Math.min(n,DAILY_CAP-(d.dayEarned|0)));d.dayEarned=(d.dayEarned|0)+got;d.shells=(d.shells|0)+got;ls.set('dd-inv',JSON.stringify(d));return{sh:got,capped:got<n};}
+ const got=Math.max(0,Math.min(n,DAILY_CAP-(d.dayEarned|0)));d.dayEarned=(d.dayEarned|0)+got;d.shells=(d.shells|0)+got;d.xp=Math.max(0,d.xp|0)+xp;
+ ls.set('dd-inv',JSON.stringify(d));return{sh:got,xp,capped:got<n};}
 const shells=()=>{const d=invRead();return d?d.shells|0:100;};
 const compact=n=>n>=1e4?Math.round(n/1e3)+'k':String(n);
 
@@ -449,20 +478,22 @@ const RECENT_KEY='quiz-recent',RECENT_MAX=160;
 function recent(){try{const a=JSON.parse(ls.get(RECENT_KEY)||'[]');return Array.isArray(a)?a.filter(x=>typeof x==='string'):[];}catch(e){return[];}}
 function markSeen(id){if(!id)return;const a=recent().filter(x=>x!==id);a.push(id);ls.set(RECENT_KEY,JSON.stringify(a.slice(-RECENT_MAX)));}
 /* n questions from these topics: never-seen first (random order), then the ones seen longest ago; topics kept mixed */
-function pickQs(n,topics,preferDv){const all=BANK.en.q.filter(q=>topics.includes(q.t)),r=recent(),pos=new Map(r.map((id,i)=>[id,i]));
+/* lv: one level for every question, or a list (the ramp). A level that runs short borrows from the nearest level. */
+function pickQs(n,topics,preferDv,lv){const all=BANK.en.q.filter(q=>topics.includes(q.t)),r=recent(),pos=new Map(r.map((id,i)=>[id,i]));
  let fresh=shuffle(all.filter(q=>!pos.has(q.id)));if(preferDv)fresh=fresh.filter(q=>hasDv(q.id)).concat(fresh.filter(q=>!hasDv(q.id)));
  const pool=fresh.concat(all.filter(q=>pos.has(q.id)).sort((a,b)=>pos.get(a.id)-pos.get(b.id)));
- const cap=Math.max(2,Math.ceil(n/Math.max(1,topics.length))+1),per={},out=[];
- pool.forEach(q=>{if(out.length<n&&(per[q.t]|0)<cap){out.push(q);per[q.t]=(per[q.t]|0)+1;}});
- pool.forEach(q=>{if(out.length<n&&!out.includes(q))out.push(q);});
- return shuffle(out).map(q=>mkQ(q));}
+ const want=Array.isArray(lv)?lv.slice(0,n):Array(n).fill(lv||2);
+ const out=fillSlots(want,pool,Math.max(2,Math.ceil(n/Math.max(1,topics.length))+1));
+ return (Array.isArray(lv)?out:shuffle(out)).map(q=>mkQ(q));}
+function fillSlots(want,pool,cap){const used=new Set(),per={},out=[];
+ want.forEach(L=>{let q=null;for(let dist=0;dist<4&&!q;dist++){const ok=x=>!used.has(x.id)&&Math.abs((x.d|0)-L)===dist;
+   q=pool.find(x=>ok(x)&&(per[x.t]|0)<cap)||pool.find(ok);}
+  if(q){used.add(q.id);per[q.t]=(per[q.t]|0)+1;out.push(q);}});return out;}
 
 /* ---------- the Daily quiz: the same 10 questions for everyone, chosen from the date (Maldives time, UTC+5) ---------- */
 const mvDay=()=>new Date(Date.now()+5*3600e3).toISOString().slice(0,10);
 function dailyQs(day){const r=seeded('dhivehi-quiz|'+day),sorted=BANK.en.q.slice().sort((a,b)=>a.id<b.id?-1:a.id>b.id?1:0);
- const order=shuffle(sorted,r),per={},out=[];
- order.forEach(q=>{if(out.length<NQ&&(per[q.t]|0)<2){out.push(q);per[q.t]=(per[q.t]|0)+1;}});
- return out.map(q=>mkQ(q,r));}
+ return fillSlots(RAMP,shuffle(sorted,r),2).map(q=>mkQ(q,r));}
 const DAILY_KEY='quiz-daily';
 function dailyRec(){try{const d=JSON.parse(ls.get(DAILY_KEY)||'null');if(d&&d.day===mvDay())return d;}catch(e){}return null;}
 function dailySave(o){ls.set(DAILY_KEY,JSON.stringify(Object.assign({day:mvDay()},o)));}
@@ -472,6 +503,8 @@ function dailyLine(){const d=dailyRec();if(!d)return '10 questions, one try';ret
 let lang=ls.get('quiz-lang')==='dv'?'dv':'en';
 function setLang(v){lang=v==='dv'?'dv':'en';ls.set('quiz-lang',lang);if(lang==='dv')loadBank('dv').then(()=>{if(screen==='home')dvNote();}).catch(()=>{});}
 const qView=q=>lang==='dv'&&q.dv?q.dv:q.en;
+/* Dhivehi text: numbers such as +960 or 1978 are isolated left-to-right runs, so a sign or separator never flips side */
+const tx=(t,rtl)=>rtl?esc(t).replace(/[+\-−]?\d[\d.,:]*/g,m=>`<span dir="ltr" class="num">${m}</span>`):esc(t);
 let topicsSel=(()=>{try{const a=JSON.parse(ls.get('quiz-topics')||'null');if(Array.isArray(a)){const b=a.filter(x=>TKEYS.includes(x));if(b.length)return b;}}catch(e){}return TKEYS.slice();})();
 
 /* =====================================================================
@@ -486,7 +519,7 @@ const hostOn=()=>!!S&&(mode==='practice'||mode==='daily'||(online()&&!!NET&&NET.
 const meIdx=()=>S?S.players.findIndex(p=>p.id===myId):-1;
 const me=()=>{const k=meIdx();return k>=0?S.players[k]:null;};
 const active=()=>S.players.filter(p=>!p.gone);
-function newMatch(kind,players,qs,o){o=o||{};return{gid:rid(),kind,quick:!!o.quick,n:o.n||qs.length,qi:-1,phase:'intro',at:Date.now(),qs,players,picks:{},prev:null,day:o.day||''};}
+function newMatch(kind,players,qs,o){o=o||{};return{gid:rid(),kind,quick:!!o.quick,level:o.level||0,n:o.n||qs.length,qi:-1,phase:'intro',at:Date.now(),qs,players,picks:{},prev:null,day:o.day||''};}
 function commit(){render();if(online()&&NET&&NET.isHost())NET.sync();}
 function clearHost(){clearTimeout(hostT);hostT=0;cpuT.forEach(clearTimeout);cpuT=[];}
 function hostSched(){clearTimeout(hostT);hostT=0;if(!hostOn()||pausedAt)return;const el=Date.now()-S.at;
@@ -498,7 +531,7 @@ function hostStartQ(i){if(!hostOn())return;if(!S.qs||S.qs.length<=i){if(i>=S.n){
  brk(false);S.qi=i;S.phase='q';S.at=Date.now();S.picks={};S.prev=null;S.players.forEach(p=>{p.gain=null;});planCpus();commit();hostSched();}
 /* computer players: a random delay, and a chance of the right answer that falls with the question's difficulty */
 function planCpus(){cpuT.forEach(clearTimeout);cpuT=[];cpuPlan={};const q=S.qs[S.qi];
- S.players.forEach(p=>{if(!p.cpu||p.gone)return;const acc=Math.max(.15,Math.min(.95,({1:.84,2:.64,3:.44})[q.d||2]+(p.sk||0))),ok=rnd()<acc;
+ S.players.forEach(p=>{if(!p.cpu||p.gone)return;const acc=Math.max(.15,Math.min(.95,(CPU_ACC[q.d]||CPU_ACC[2])+(p.sk||0))),ok=rnd()<acc;
   if(rnd()<.03)return;   /* now and then a computer runs out of time too */
   const ms=Math.round((ok?1800+rnd()*7200:2600+rnd()*9400)*CPU_SPEED);
   const wrong=[0,1,2,3].filter(i=>i!==q.c);cpuPlan[p.id]={p:ok?q.c:wrong[Math.floor(rnd()*3)],ms};});
@@ -512,7 +545,7 @@ function hostPick(id,p,ms){if(!S||S.phase!=='q'||S.picks[id])return false;const 
 function rankIds(N){return N.players.filter(p=>!p.gone).slice().sort((a,b)=>b.score-a.score||(a.fast||0)-(b.fast||0)).map(p=>p.id);}
 function hostEndQ(){if(!hostOn()||S.phase!=='q')return;cpuT.forEach(clearTimeout);cpuT=[];const q=S.qs[S.qi];S.prev=rankIds(S);
  S.players.forEach(p=>{if(p.gone){p.gain=null;return;}const pk=S.picks[p.id];
-  if(pk&&pk.p===q.c){const g=points(pk.ms);p.score+=g;p.gain=g;p.right++;p.streak=(p.streak|0)+1;p.fast=(p.fast||0)+pk.ms;}
+  if(pk&&pk.p===q.c){const g=points(pk.ms,q.d);p.score+=g;p.lvr=(p.lvr|0)+(q.d|0);p.gain=g;p.right++;p.streak=(p.streak|0)+1;p.fast=(p.fast||0)+pk.ms;}
   else{p.gain=0;p.streak=0;}
   /* AFK: a person who misses 2 questions in a row is marked away (net.js counts the strikes) */
   if(online()&&NET&&!p.cpu&&!pk){if(NET.strike(p.id)){p.gone=1;p.afk=1;}}});
@@ -533,14 +566,17 @@ function answer(i){if(!S||S.phase!=='q'||meIdx()<0||me().gone)return;const qi=S.
  else{NET.send({t:'ans',q:qi,pick:i,ms});render();}}
 
 /* ---------- solo modes ---------- */
-function soloStart(kind){if(kind==='daily'){const d=dailyRec();if(d&&(d.done||d.started)){renderHome();toast('You’ve played today’s quiz. A new one comes at midnight, Maldives time.',4200);return;}}
+function openLevels(){sheet(`<div class="grab"></div><h2>Practice</h2><p class="muted" style="margin:4px 0 0;font-size:13px">Choose a level. ${topicsSel.length===TKEYS.length?'All topics':topicsSel.length+' of 8 topics'} · 10 questions against 3 computer players.</p>
+<div class="lvls">${LEVELS.map(([k,n])=>`<button class="lvb l${k}" data-a="practiceGo" data-lv="${k}" aria-pressed="${k===levelSel}"><span class="lvl l${k}">${esc(n)}</span><small>${BASE[k]} points a right answer${WIN_BONUS[k]?` · win for +${WIN_BONUS[k]} Boli`:''}</small></button>`).join('')}</div>
+<p class="muted" style="font-size:12px;margin:10px 2px 0">Raajje Master in Dhivehi: <span lang="dv" dir="rtl">${LVDV[4]}</span></p>`);}
+function soloStart(kind,lv){if(kind==='daily'){const d=dailyRec();if(d&&(d.done||d.started)){renderHome();toast('You’ve played today’s quiz. A new one comes at midnight, Maldives time.',4200);return;}}
  toast('Loading questions…',1600);const tok=++startTok;
  loadBoth().then(()=>{closeToast();if(tok!==startTok||online())return;
   const me0=meP();let players=[me0],qs;
   if(kind==='daily'){const day=mvDay();qs=dailyQs(day);dailySave({started:1,done:0,right:0,score:0,n:qs.length});S=newMatch('daily',players,qs,{day});}
   else{const bots=shuffle(CPUS).filter(n=>n.toLowerCase()!==me0.name.toLowerCase()).slice(0,3);
    players=players.concat(bots.map((n,i)=>({id:'cpu'+i,name:n,cpu:1,sk:(rnd()-.5)*.16,ch:cpuChar(n),score:0,right:0,streak:0,fast:0})));
-   qs=pickQs(NQ,topicsSel.length?topicsSel:TKEYS,lang==='dv');S=newMatch('practice',players,qs);}
+   const level=lv||levelSel;qs=pickQs(NQ,topicsSel.length?topicsSel:TKEYS,lang==='dv',level);S=newMatch('practice',players,qs,{level});}
   mode=kind;myPicks={};qShown={};buildMatch();commit();hostSched();
  }).catch(()=>{toast('Couldn’t load the questions. Check your connection and try again.',4500);});}
 let startTok=0;
@@ -562,8 +598,9 @@ function seatFrom(s,i){const ch=s.id===myId?myChar():lookCh(s.look);
  return{id:s.id,name:s.name,ch,score:0,right:0,streak:0,fast:0};}
 function netStart(seats,opts,info){mode='online';clearHost();myPicks={};qShown={};
  const quick=!!(info&&info.quick),n=quick?NQ:([5,10,15].includes(+opts.count)?+opts.count:NQ),topic=quick||!TKEYS.includes(opts.topic)?'all':opts.topic;
- S=newMatch('online',seats.map(seatFrom),[],{quick,n});closeSheet();buildMatch();commit();brk(true);
- loadBoth().then(()=>{if(!S||!online()||!NET.isHost())return;S.qs=pickQs(n,topic==='all'?TKEYS:[topic],lang==='dv');S.n=S.qs.length||n;commit();hostSched();})
+ const level=quick?0:([1,2,3,4].includes(+opts.level)?+opts.level:2);
+ S=newMatch('online',seats.map(seatFrom),[],{quick,n,level});closeSheet();buildMatch();commit();brk(true);
+ loadBoth().then(()=>{if(!S||!online()||!NET.isHost())return;S.qs=pickQs(n,topic==='all'?TKEYS:[topic],lang==='dv',quick?rampFor(n):level);S.n=S.qs.length||n;commit();hostSched();})
   .catch(()=>{toast('Couldn’t load the questions. Check your connection.',4500);});
  hostSched();}
 function netAction(pid,a){if(!S||!a||typeof a!=='object'||!hostOn())return;
@@ -597,10 +634,11 @@ function initNet(){if(!window.DGNet)return;NET=DGNet.create({game:'quiz',title:'
  cpu:true,quickSize:6,cpuSeat,onSeatSwap:netSeatSwap,
  me:()=>({name:myName(),look:{ch:myChar()}}),setName:v=>{ls.set('lg-name',v);if(screen==='home')renderHome();},
  avatar:(seat,size)=>{const s=avHTML({name:seat.name,ch:lookCh(seat.look)},size);return s.replace(/^<span class="av"[^>]*>|<\/span>$/g,'').replace(/^<span class="ai[^"]*"[^>]*>|<\/span>$/g,'');},
- options:[{k:'count',label:'Questions',def:10,choices:[[5,'5 questions'],[10,'10 questions'],[15,'15 questions']]},
+ options:[{k:'level',label:'Level',def:2,choices:LEVELS,hint:o=>BASE[o.level]+' points a right answer · friends tables give XP, no Boli'},
+  {k:'count',label:'Questions',def:10,choices:[[5,'5 questions'],[10,'10 questions'],[15,'15 questions']]},
   {k:'topic',label:'Topics',def:'all',choices:[['all','All topics']].concat(TOPICS)}],
  rulesNote:'2 to 6 players. Everyone gets the same question and 15 seconds to answer. A right answer scores 500, plus up to 500 more for speed. Miss 2 questions in a row and you are marked away.',
- listInfo:m=>S&&m.status!=='lobby'?'Question '+Math.max(1,S.qi+1)+' of '+S.n:((m.opts&&m.opts.count)||10)+' questions',
+ listInfo:m=>S&&m.status!=='lobby'?'Question '+Math.max(1,S.qi+1)+' of '+S.n:m.quick?'Easy to Raajje Master':(LVNAME[m.opts&&m.opts.level]||'Medium')+' · '+((m.opts&&m.opts.count)||10)+' questions',
  dropText:(nm,why)=>nm+(why==='afk'?' is away':why==='left'?' left':' lost connection')+'. Their points stay on the board.',
  afkText:'You missed 2 questions in a row, so you were marked away. You can’t rejoin this match.',
  hostAfkText:'You missed 2 questions in a row, so you are marked away. You’ll leave the table when this match ends.',
@@ -628,10 +666,10 @@ function renderHome(){screen='home';clearInterval(tickT);tickT=0;offHome();docum
  <button class="md qm" data-a="quick"><span class="mi">${I.bolt}</span><span class="mt"><b>Quick Match</b><small>2–6 players, the same question for all</small><span class="live" id="qmLive"><i></i><span>${liveText()}</span></span></span></button>
  <button class="md" data-a="friends"><span class="mi">${I.friends}</span><span class="mt"><b>Play with Friends</b><small>Create a table, or use a code</small></span>${I.chev}</button>
  <div class="md solo"><div class="row"><span class="mi">${I.cal}</span><span class="mt"><b>On your own</b><small>The daily quiz, or practise against the computer</small></span></div>
-  <div class="two"><button data-a="daily" class="${dailyRec()?'done':''}">Daily quiz<small>${dailyLine()}</small></button><button data-a="practice">Practice<small>vs computer · no Boli</small></button></div></div>
+  <div class="two"><button data-a="daily" class="${dailyRec()?'done':''}">Daily quiz<small>${dailyLine()}</small></button><button data-a="practice">Practice<small>vs computer · pick a level</small></button></div></div>
 </section>
 <div class="topics"><h4>Practice topics <span id="tcount">${topicsSel.length===TKEYS.length?'All':topicsSel.length+' of 8'}</span></h4><div class="chips">${TOPICS.map(([k,n])=>`<button class="chip" data-a="topic" data-v="${k}" aria-pressed="${topicsSel.includes(k)}">${I[k]}<span>${esc(n)}</span></button>`).join('')}</div></div>
-<div class="rew">${BOLI_IMG.replace('width="22" height="22"','width="28" height="28"')}<span><b>Win Boli.</b> Quick Match: ${BOLI_QUICK.join(' / ')} for the top three. Daily quiz: 1 per right answer, ${BOLI_DAILY_PERFECT} extra for a perfect round.</span></div>
+<div class="rew">${BOLI_IMG.replace('width="22" height="22"','width="28" height="28"')}<span><b>Win Boli.</b> Quick Match: ${BOLI_QUICK.join(' / ')} for the top three. Daily quiz: 1 per right answer, ${BOLI_DAILY_PERFECT} extra for a perfect round. Win Practice on Hard (+${WIN_BONUS[3]}) or Raajje Master (+${WIN_BONUS[4]}). Every game gives XP.</span></div>
 ${checking()}
 <button class="howlink" data-a="howto">${I.book}How to play</button>
 <div class="spbox" id="spbox"></div>
@@ -657,8 +695,10 @@ function buildMatch(){screen='match';offHome();document.documentElement.dataset.
  if(online()&&NET)NET.updDock();
  clearInterval(tickT);tickT=setInterval(tick,100);}
 const topicChip=t=>`<span class="topic">${I[t]||''}${esc(TNAME[t]||'')}</span>`;
+const lvlBadge=d=>d?`<span class="lvl l${d}"${lang==='dv'&&LVDV[d]?' lang="dv" dir="rtl"':''}>${esc(lang==='dv'&&LVDV[d]?LVDV[d]:LVNAME[d])}</span>`:'';
+const levelLine=()=>S.level?LVNAME[S.level]:'Easy to Raajje Master';
 function ringHTML(left){const sec=Math.max(0,Math.ceil(left/1000));return `<div class="ring${sec<=5?' low':''}" id="ring"><svg viewBox="0 0 64 64"><circle class="tk" cx="32" cy="32" r="29"/><circle class="pr" cx="32" cy="32" r="29" stroke-dasharray="${RC.toFixed(1)}" stroke-dashoffset="${(RC*(1-left/Q_MS)).toFixed(1)}"/></svg><b>${sec}</b></div>`;}
-const qLeft=()=>S?Math.max(0,Q_MS-(Date.now()-S.at)):0;
+const qLeft=()=>S?Math.max(0,Math.min(Q_MS,Q_MS-(Date.now()-S.at))):0;
 let lastStrip='';
 function stripHTML(){const rev=S.phase==='rev',k0=meIdx();
  return S.players.map((p,k)=>{const pk=S.picks[p.id]||(p.id===myId&&myPicks[S.qi]!=null&&S.phase==='q'?{p:myPicks[S.qi]}:null);
@@ -674,7 +714,7 @@ function render(){if(screen!=='match'||!S)return;const st=$('#stage');if(!st)ret
  const strip=$('#strip'),showStrip=!daily&&(S.phase==='q'||S.phase==='rev');strip.hidden=!showStrip;
  if(showStrip){const h=stripHTML();if(h!==lastStrip){lastStrip=h;strip.innerHTML=h;}}else lastStrip='';
  /* dock line */
- $('#dstat').innerHTML=online()?`${S.quick?'Quick Match':'Friends table'} · ${active().length} player${active().length===1?'':'s'}${spec?'<br>watching':''}`:daily?`Daily quiz · ${esc(fmtDay(S.day))}`:'Practice · no Boli';
+ $('#dstat').innerHTML=online()?`${S.quick?'Quick Match':'Friends table'} · ${active().length} player${active().length===1?'':'s'}${spec?'<br>watching':''}`:daily?`Daily quiz · ${esc(fmtDay(S.day))}`:'Practice · '+(LVNAME[S.level]||'')+(WIN_BONUS[S.level]?' · win for +'+WIN_BONUS[S.level]+' Boli':' · no Boli');
  const key=[S.gid,S.phase,S.qi,lang,JSON.stringify(S.picks),myPicks[S.qi],S.players.map(p=>p.id+p.score+(p.gone?'g':'')).join(),spec].join('|');
  if(key===lastRender)return;lastRender=key;
  if(S.phase==='intro')st.innerHTML=introHTML();
@@ -690,14 +730,14 @@ function render(){if(screen!=='match'||!S)return;const st=$('#stage');if(!st)ret
 let revSnd='';
 const fmtDay=d=>{try{return new Date(d+'T12:00:00Z').toLocaleDateString('en-GB',{day:'numeric',month:'short'});}catch(e){return d;}};
 function introHTML(){const daily=S.kind==='daily',left=Math.max(0,INTRO_MS-(Date.now()-S.at));
- return `<div class="intro"><p class="st">${daily?'The same 10 questions for everyone today · one try':S.kind==='practice'?'Practice · '+S.n+' questions':(S.quick?'Quick Match':'Friends table')+' · '+S.n+' questions'}</p>
+ return `<div class="intro"><p class="st">${daily?'The same 10 questions for everyone today · one try':S.kind==='practice'?'Practice · '+S.n+' questions':(S.quick?'Quick Match':'Friends table')+' · '+S.n+' questions'}</p><p class="st"><b>${esc(levelLine())}</b>${S.level?'':' · the questions get harder as you go'}</p>
  <div class="big" id="icd">${Math.max(1,Math.ceil(left/1000))}</div><p class="ttl2" style="margin-top:0">Get ready</p><p class="st">15 seconds a question. A faster right answer scores more.</p>
  ${daily?'':`<div class="ipl">${S.players.map((p,k)=>`<span data-pid="${esc(p.id)}">${avHTML(p,46,'',k)}</span>`).join('')}</div>`}${checking(true)}</div>`;}
 function qHTML(){const q=S.qs[S.qi];if(!q)return '<p class="waitline">Loading the question…</p>';const v=qView(q),rtl=lang==='dv'&&!!q.dv,k0=meIdx(),spec=k0<0||(me()&&me().gone);
  const mine=S.picks[myId]?S.picks[myId].p:myPicks[S.qi];const locked=mine!=null||spec;
- return `${S.kind==='daily'?soloScore():''}<div class="qc">${ringHTML(qLeft())}${topicChip(q.t)}<p class="qq"${rtl?' dir="rtl" lang="dv"':''}>${esc(v.q)}</p></div>
+ return `${S.kind==='daily'?soloScore():''}<div class="qc">${ringHTML(qLeft())}<div class="tags">${topicChip(q.t)}${lvlBadge(q.d)}</div><p class="qq"${rtl?' dir="rtl" lang="dv"':''}>${tx(v.q,rtl)}</p></div>
  ${lang==='dv'&&!q.dv?'<div class="dvnote">Not in Dhivehi yet: shown in English.</div>':''}
- <div class="ans${locked?' locked':''}"${rtl?' dir="rtl" lang="dv"':''}>${v.a.map((a,i)=>`<button class="an${mine===i?' mine':''}" data-a="ans" data-i="${i}"${locked?' disabled':''} aria-label="${L[i]}: ${esc(a)}"><span class="L">${L[i]}</span><span class="tx">${esc(a)}</span></button>`).join('')}</div>
+ <div class="ans${locked?' locked':''}"${rtl?' dir="rtl" lang="dv"':''}>${v.a.map((a,i)=>`<button class="an${mine===i?' mine':''}" data-a="ans" data-i="${i}"${locked?' disabled':''} aria-label="${L[i]}: ${esc(a)}"><span class="L">${L[i]}</span><span class="tx">${tx(a,rtl)}</span></button>`).join('')}</div>
  ${spec?`<p class="watchnote">${me()&&me().gone?'You were marked away: watching the rest of this match.':'You are watching this match.'}</p>`:mine!=null?'<p class="watchnote">Answer locked in. Waiting for the others…</p>':''}`;}
 function soloScore(){const m=me();if(!m)return '';return `<div class="solo-score">${avHTML(m,40)}<span><b>You</b><small>${S.kind==='daily'?'Daily quiz':'Practice'} · ${m.right} right so far</small></span><span class="pts">${m.score.toLocaleString('en')}</span></div>`;}
 function revHTML(){const q=S.qs[S.qi];if(!q)return '';const v=qView(q),rtl=lang==='dv'&&!!q.dv,m=me(),mp=S.picks[myId];
@@ -707,10 +747,10 @@ function revHTML(){const q=S.qs[S.qi];if(!q)return '';const v=qView(q),rtl=lang=
  const head=!m||m.gone?'Did you know?':mp&&mp.p===q.c?'Right! +'+(m.gain||0):mp?'Not this time':'Time is up';
  const cls=!m||m.gone?'':mp&&mp.p===q.c?'ok':'no';
  const solo=mode==='practice'||mode==='daily';
- return `${S.kind==='daily'?soloScore():''}<div class="qc"><div class="ring res${m&&!m.gone?res:''}">${m&&!m.gone?icon:sv('<path d="M5 12.5l4.5 4.5L19 7.5"/>','class="ic" stroke-width="3"')}</div>${topicChip(q.t)}<p class="qq"${rtl?' dir="rtl" lang="dv"':''}>${esc(v.q)}</p></div>
+ return `${S.kind==='daily'?soloScore():''}<div class="qc"><div class="ring res${m&&!m.gone?res:''}">${m&&!m.gone?icon:sv('<path d="M5 12.5l4.5 4.5L19 7.5"/>','class="ic" stroke-width="3"')}</div><div class="tags">${topicChip(q.t)}${lvlBadge(q.d)}</div><p class="qq"${rtl?' dir="rtl" lang="dv"':''}>${tx(v.q,rtl)}</p></div>
  <div class="ans"${rtl?' dir="rtl" lang="dv"':''}>${v.a.map((a,i)=>{const c=i===q.c?'right':(mp&&mp.p===i?'wrong':'dim');
   const who=(by[i]||[]).map(id=>{const k=S.players.findIndex(p=>p.id===id);return k<0?'':avHTML(S.players[k],24,'',k);}).join('');
-  return `<div class="an ${c}"><span class="L">${L[i]}</span><span class="tx">${esc(a)}</span>${S.kind==='daily'?'':`<span class="who">${who}</span>`}${i===q.c?I.check.replace('<svg','<svg class="mark"'):c==='wrong'?I.x.replace('<svg','<svg class="mark"'):''}</div>`;}).join('')}</div>
+  return `<div class="an ${c}"><span class="L">${L[i]}</span><span class="tx">${tx(a,rtl)}</span>${S.kind==='daily'?'':`<span class="who">${who}</span>`}${i===q.c?I.check.replace('<svg','<svg class="mark"'):c==='wrong'?I.x.replace('<svg','<svg class="mark"'):''}</div>`;}).join('')}</div>
  <div class="fact"><b class="${cls}">${esc(head)}</b>${esc(q.f)}${lang==='dv'&&q.dv?'':''}</div>
  ${solo?`<button class="bt pri nextb" data-a="next">${S.qi+1<S.n?(S.kind==='daily'?'Next question':'Standings'):'See the result'}</button>`:''}`;}
 function standHTML(){const ids=rankIds(S),prev=S.prev||ids,k0=meIdx(),left=Math.max(0,STAND_MS-(Date.now()-S.at));
@@ -726,12 +766,17 @@ function standHTML(){const ids=rankIds(S),prev=S.prev||ids,k0=meIdx(),left=Math.
 /* final results: podium, Boli */
 let overKey='',overAw=null;
 function place(){const ids=rankIds(S);return ids.indexOf(myId);}
-function overAward(){const k=S.gid;if(overKey===k)return overAw;overKey=k;overAw=null;const m=me();if(!m||m.gone)return null;
- if(S.kind==='daily'){const n=m.right+(m.right===S.n?BOLI_DAILY_PERFECT:0);overAw=award('quiz:daily:'+S.day,n)||{sh:0,none:!n};dailySave({started:1,done:1,right:m.right,score:m.score,n:S.n});}
- else if(S.kind==='online'&&S.quick){const pl=place();const n=pl>=0&&pl<3?BOLI_QUICK[pl]:0;overAw=n?award('quiz:'+S.gid,n):{sh:0,none:1};}
- else overAw={sh:0,none:1,practice:S.kind==='practice'};return overAw;}
-function earnHTML(aw){if(!aw)return '';if(aw.practice)return '<p class="earn muted">Practice rounds give no Boli.</p>';if(aw.sh>0)return `<p class="earn">+${aw.sh} ${BOLI_IMG} Boli${aw.capped?' (daily limit reached)':''}</p>`;
- if(aw.capped)return '<p class="earn muted">Daily Boli limit reached.</p>';return S.kind==='online'&&!S.quick?'<p class="earn muted">Friends tables are just for fun: no Boli.</p>':'';}
+function overAward(){const k=S.gid;if(overKey===k)return overAw;overKey=k;overAw=null;const m=me();if(!m||m.gone)return null;const xp=xpFor();
+ if(S.kind==='daily'){const n=m.right+(m.right===S.n?BOLI_DAILY_PERFECT:0);overAw=award('quiz:daily:'+S.day,n,xp)||{sh:0,xp:0};dailySave({started:1,done:1,right:m.right,score:m.score,n:S.n});}
+ else if(S.kind==='online'&&S.quick){const pl=place();const n=pl>=0&&pl<3?BOLI_QUICK[pl]:0;overAw=award('quiz:'+S.gid,n,xp)||{sh:0,xp:0};}
+ else if(S.kind==='practice'){const b=place()===0?WIN_BONUS[S.level]||0:0;overAw=award('quiz:'+S.gid,b,xp)||{sh:0,xp:0};if(!b)Object.assign(overAw,{none:1,practice:1});}
+ else{overAw=award('quiz:'+S.gid,0,xp)||{sh:0,xp:0};Object.assign(overAw,{none:1,friends:1});}
+ overAw.lv=S.level;return overAw;}
+function earnHTML(aw){if(!aw)return '';const x=aw.xp>0?`<p class="earn xp">+${aw.xp} XP</p>`:'';return x+earnBoli(aw);}
+function earnBoli(aw){const wb='Win on Hard (+'+WIN_BONUS[3]+') or Raajje Master (+'+WIN_BONUS[4]+') for Boli.';
+ if(aw.none&&aw.practice)return `<p class="earn muted">${WIN_BONUS[aw.lv]?'No win bonus this time.':'Practice gives no Boli. '+wb}</p>`;
+ if(aw.none&&aw.friends)return '<p class="earn muted">Friends tables give no Boli.</p>';if(aw.sh>0)return `<p class="earn">+${aw.sh} ${BOLI_IMG} Boli${aw.capped?' (daily limit reached)':''}</p>`;
+ if(aw.capped)return '<p class="earn muted">Daily Boli limit reached.</p>';return '';}
 let overFxK='';
 function overFx(){if(overFxK===S.gid)return;overFxK=S.gid;const pl=place();if(pl===0&&S.kind!=='daily')SFX.win();else if(S.kind==='daily'&&me()&&me().right>=7)SFX.win();}
 function overHTML(){const aw=overAward(),k0=meIdx(),m=me();
@@ -770,14 +815,19 @@ let toastT=0;function toast(t,ms){const e=$('#toast');e.textContent=t;e.classLis
 function closeToast(){clearTimeout(toastT);$('#toast').classList.remove('show');}
 function howHTML(){return `<div class="rules">
 <p><b>Dhivehi Quiz</b> asks questions about the Maldives: history, islands and atolls, Dhivehi and Thaana, food, sea life, sports, culture and general knowledge.</p>
-<p>A match is <b>10 questions</b>. Each has four answers and <b>15 seconds</b> on the clock. A right answer scores <b>500 points</b>, plus up to <b>500 more for speed</b>: the full bonus in the first second, none at the buzzer. A wrong answer or no answer scores nothing.</p>
+<p>A match is <b>10 questions</b>. Each has four answers and <b>15 seconds</b> on the clock. A wrong answer or no answer scores nothing.</p>
+<h3>Levels</h3>
+<p>There are four levels: <b>Easy</b> (500 points a right answer), <b>Medium</b> (650), <b>Hard</b> (800) and <b>Raajje Master</b> (1000, <span lang="dv" dir="rtl">ރާއްޖެ މާސްޓަރ</span>). A fast answer adds up to half as much again: the full bonus in the first second, none at the buzzer. Each question shows its level.</p>
+<p>In <b>Practice</b> you pick the level; at a <b>Friends table</b> the host does. <b>Quick Match</b> and the <b>Daily quiz</b> get harder as you go: questions 1–3 Easy, 4–6 Medium, 7–8 Hard, 9–10 Raajje Master.</p>
 <p>After each answer you see the right one and a short <b>Did you know?</b> fact. The standings show after every question, and the top three go on the podium.</p>
 <h3>Ways to play</h3>
 <p><b>Quick Match</b>: 2 to 6 players, all topics. If nobody else is around, computer players fill the seats; a person who arrives later takes a computer's seat between questions and keeps its points.</p>
-<p><b>Play with Friends</b>: create a table or join with a code. The host picks the number of questions and the topics.</p>
-<p><b>Daily quiz</b>: the same 10 questions for everyone that day (Maldives time), one try. <b>Practice</b>: pick your topics and play against the computer.</p>
+<p><b>Play with Friends</b>: create a table or join with a code. The host picks the level, the number of questions and the topics.</p>
+<p><b>Daily quiz</b>: the same 10 questions for everyone that day (Maldives time), one try. <b>Practice</b>: pick your topics and level, and play against the computer.</p>
 <h3>Boli</h3>
-<p>Quick Match: ${BOLI_QUICK[0]} for 1st, ${BOLI_QUICK[1]} for 2nd, ${BOLI_QUICK[2]} for 3rd. Daily quiz: 1 per right answer, ${BOLI_DAILY_PERFECT} extra for a perfect round. Practice gives no Boli. The usual daily Boli limit applies.</p>
+<p>Quick Match: ${BOLI_QUICK[0]} for 1st, ${BOLI_QUICK[1]} for 2nd, ${BOLI_QUICK[2]} for 3rd. Daily quiz: 1 per right answer, ${BOLI_DAILY_PERFECT} extra for a perfect round. Win Practice on Hard for +${WIN_BONUS[3]}, or on Raajje Master for +${WIN_BONUS[4]}; otherwise Practice gives no Boli. Friends tables give no Boli. The usual daily Boli limit applies.</p>
+<h3>XP</h3>
+<p>Every game gives XP towards your Dhivehi Games level, Friends tables and Practice too: 5 for playing, plus 1 to 4 for each right answer (Easy to Raajje Master), plus a bonus for 1st, 2nd or 3rd place that grows with the level.</p>
 <h3>Online</h3>
 <p>Voice chat is on at online tables (your mic stays off until you tap it). Miss 2 questions in a row and you are marked away.</p>
 <h3>Languages</h3>
@@ -810,10 +860,11 @@ document.addEventListener('click',e=>{const b=e.target.closest('[data-a]');if(!b
   case 'quick':if(NET)NET.quick();else toast('Online play needs a newer browser.');break;
   case 'friends':if(NET)NET.friends();else toast('Online play needs a newer browser.');break;
   case 'daily':soloStart('daily');break;
-  case 'practice':soloStart('practice');break;
+  case 'practice':openLevels();break;
+  case 'practiceGo':{const v=+b.dataset.lv;if(v>=1&&v<=4){levelSel=v;ls.set('quiz-level',String(v));}closeSheet();soloStart('practice',levelSel);break;}
   case 'ans':answer(+b.dataset.i);break;
   case 'next':if(hostOn()&&(mode==='practice'||mode==='daily')){if(S.phase==='rev')hostAfterRev();else if(S.phase==='stand')hostStartQ(S.qi+1);}break;
-  case 'again':if(mode==='practice'){S=null;soloStart('practice');}break;
+  case 'again':if(mode==='practice'){const lv=S.level||levelSel;S=null;soloStart('practice',lv);}break;
   case 'home':if(online()&&NET){NET.leave();}S=null;mode=null;clearHost();renderHome();break;
   case 'netAgain':if(NET)NET.again();break;
   case 'netLeave':closeSheet();if(NET&&online()){if(NET.leaveAsk)NET.leaveAsk();else NET.leave();}else soloQuit();break;
@@ -832,7 +883,10 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'&&$('#sheet').classLi
  if(screen==='match'&&S&&S.phase==='q'&&!$('#sheet').classList.contains('open')&&!(e.target&&/INPUT|TEXTAREA/.test(e.target.tagName))){const i='1234'.indexOf(e.key)>=0?'1234'.indexOf(e.key):'abcd'.indexOf(e.key.toLowerCase());if(i>=0&&e.key.length===1)answer(i);}});
 
 /* test hooks (used by the automated checks; harmless in normal play) */
-window.__quiz={get S(){return S;},get mode(){return mode;},get NET(){return NET;},get lang(){return lang;},answer,dailyIds:()=>loadBoth().then(()=>dailyQs(mvDay()).map(q=>q.id)),
+window.__quiz={RAMP,BASE,XP_PLACE,XP_MULT,
+ /* localhost tests only: show one question by id (the clock is parked) */
+ _show:id=>{if(!LOCAL||!S||!BANK.en)return false;const q=BANK.en.q.find(x=>x.id===id);if(!q)return false;clearHost();S.phase='q';S.qs[S.qi]=mkQ(q);S.at=Date.now()+1e9;S.picks={};myPicks={};lastRender='';render();return true;},
+ get S(){return S;},get mode(){return mode;},get NET(){return NET;},get lang(){return lang;},answer,dailyIds:()=>loadBoth().then(()=>dailyQs(mvDay()).map(q=>q.id)),
  view:viewFor,recent,mvDay,points,bank:()=>BANK};
 
 /* ---------- boot ---------- */
