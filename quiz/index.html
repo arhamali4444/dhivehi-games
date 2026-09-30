@@ -21,7 +21,7 @@
    note then disappears from the game. */
 var QUIZ_REVIEWED = false;
 /* OWNER SWITCH: while true, every mode plays only the 100 test questions ("testPool" in questions-en.json, listed in
-   extras/quiz-test-100.md). In Dhivehi mode the 19 Dhivehi questions can come up too. Set to false for the full bank. */
+   extras/quiz-test-100.md; all 100 have Dhivehi versions). Set to false for the full bank. */
 var TEST_POOL = true;
 </script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -60,18 +60,18 @@ html.dg-lite .mesh i{animation:none}
 .page{position:relative;max-width:480px;margin:0 auto;min-height:100vh;min-height:100dvh;padding:calc(10px + env(safe-area-inset-top,0px)) 14px calc(20px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column}
 /* ---------- top bar ---------- */
 .qt{display:flex;align-items:center;gap:8px;min-height:46px}
-.hp{flex:none;display:inline-flex;align-items:center;gap:1px;height:44px;padding:0 10px 0 6px;border:0;border-radius:99px;background:rgba(255,255,255,.8);color:var(--ink);text-decoration:none;cursor:pointer;
+.hp{flex:none;display:inline-flex;align-items:center;gap:1px;height:44px;padding-block:0;padding-inline:6px 10px;border:0;border-radius:99px;background:rgba(255,255,255,.8);color:var(--ink);text-decoration:none;cursor:pointer;
  box-shadow:inset 0 0 0 1px rgba(255,255,255,.9),0 8px 22px -14px rgba(90,70,140,.45)}
 .hp svg.bk{width:18px;height:18px}
 .hp .pcm{width:17px;height:22px;color:var(--coral);display:block}
 .hp.mb{padding:0 12px;gap:6px;font-weight:700;font-size:13px}
 .hp.mb svg{width:20px;height:20px}
-.pp{display:inline-flex;align-items:center;gap:8px;min-width:0;height:44px;padding:0 12px 0 3px;border:0;border-radius:99px;background:rgba(255,255,255,.72);cursor:pointer;text-align:left;
+.pp{display:inline-flex;align-items:center;gap:8px;min-width:0;height:44px;padding-block:0;padding-inline:3px 12px;border:0;border-radius:99px;background:rgba(255,255,255,.72);cursor:pointer;text-align:start;
  box-shadow:inset 0 0 0 1px rgba(255,255,255,.9),0 8px 22px -14px rgba(90,70,140,.45)}
 .pp .pn{display:flex;flex-direction:column;min-width:0;line-height:1.15}
 .pp .pn b{font-size:13.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .pp .pn small{font-size:10.5px;font-weight:700;color:#C0506A;white-space:nowrap}
-.bp{flex:none;margin-left:auto;display:inline-flex;align-items:center;gap:5px;height:44px;padding:0 12px 0 8px;border-radius:99px;background:rgba(255,255,255,.72);text-decoration:none;
+.bp{flex:none;margin-inline-start:auto;display:inline-flex;align-items:center;gap:5px;height:44px;padding-block:0;padding-inline:8px 12px;border-radius:99px;background:rgba(255,255,255,.72);text-decoration:none;
  box-shadow:inset 0 0 0 1px rgba(255,255,255,.9),0 8px 22px -14px rgba(90,70,140,.45);font-weight:800;font-size:13.5px}
 .bp img{width:22px;height:22px;object-fit:contain;filter:drop-shadow(0 1px 1.5px rgba(0,0,0,.3))}
 /* avatars: .av stays overflow-visible (the voice ring and mic badge sit on it), the picture is clipped inside .ai */
@@ -85,14 +85,50 @@ html.dg-lite .mesh i{animation:none}
 .hero h1{font:800 clamp(34px,11vw,42px)/1 var(--disp);letter-spacing:-.04em;margin:12px 0 0}
 .hero .dv{display:block;font:700 26px/1.5 var(--dv);color:var(--coral);margin-top:2px}
 .hero .tag{margin:2px 0 0;font-size:13px;color:var(--muted)}
-.lang{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:6px 10px;margin:14px 0 0;font-size:12px;font-weight:700;color:var(--muted)}
-.seg{display:inline-flex;padding:3px;border-radius:99px;background:rgba(255,255,255,.6);box-shadow:inset 0 0 0 1px rgba(255,255,255,.9)}
-.seg button{border:0;background:none;height:36px;padding:0 14px;border-radius:99px;font-weight:700;font-size:13px;color:var(--muted);cursor:pointer}
-.seg button[aria-pressed=true]{background:#fff;color:var(--ink);box-shadow:0 6px 14px -8px rgba(70,50,120,.5)}
-.seg .dvb{font-family:var(--dv);font-size:14px}
+/* language: two big buttons on the quiz home */
+.lang{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:16px 0 0}
+.lang button{display:flex;align-items:center;justify-content:center;gap:8px;min-height:54px;border:0;border-radius:18px;padding:6px 10px;cursor:pointer;background:rgba(255,255,255,.62);color:var(--muted);
+ font:800 16px/1.2 Sora,system-ui,sans-serif;box-shadow:inset 0 0 0 1px rgba(255,255,255,.9),0 8px 18px -14px rgba(70,50,120,.5);transition:transform .15s,background-color .2s,color .2s}
+.lang button:active{transform:scale(.98)}
+.lang button.dvb{font:700 19px/1.5 var(--dv)}
+.lang button[aria-pressed=true]{background:linear-gradient(135deg,#FF7A6B,#E0405C);color:#fff;box-shadow:0 12px 22px -14px rgba(224,64,92,.85)}
+.lang button svg{flex:none;width:18px;height:18px}
+.lang button[aria-pressed=false] svg{display:none}
 .dvnote{margin:10px 0 0;font-size:12px;font-weight:700;color:#8A4B00;background:#FFF1D6;border-radius:12px;padding:8px 10px;text-align:center;line-height:1.4}
+.dvchk{display:block;margin:10px auto 0;padding:4px 12px;border-radius:99px;width:max-content;max-width:100%;font:700 12px/1.6 var(--dv);color:#8A4B00;background:#FFF1D6;text-align:center}
+.entag{display:inline-flex;align-items:center;font:800 10.5px/1 Sora,sans-serif;letter-spacing:.04em;color:#3D2FA8;background:#E9E5FF;padding:4px 9px;border-radius:99px}
+/* Dhivehi UI: the page runs right to left (logical margins and paddings below keep the layout mirrored) */
+.page[dir=rtl] .hp svg.bk,.page[dir=rtl] .md .chev{transform:scaleX(-1)}
+.page[dir=rtl] .pp .pn b[dir=auto],.page[dir=rtl] .stand .nn b[dir=auto]{text-align:right}
+[lang=dv] .topics h4,[lang=dv] .fact b,[lang=dv] .rules h3,[lang=dv] .qc .topic,[lang=dv] .pl .cpu{letter-spacing:0;text-transform:none}
+.page[lang=dv] .md b{font-size:16.5px;line-height:1.5}.page[lang=dv] .md small{font-size:13px;line-height:1.55}
+.page[lang=dv] .md.qm b{font-size:20px}
+.page[lang=dv] .chip{font-size:13px}.page[lang=dv] .chip span{line-height:1.5}
+.page[lang=dv] .rew,.page[lang=dv] .chk,.page[lang=dv] .snote{font-size:13px;line-height:1.6}
+.page[lang=dv] .qhead b{font-size:14px;line-height:1.5}
+.page[lang=dv] .st,.page[lang=dv] .waitline,.page[lang=dv] .watchnote{font-size:13.5px;line-height:1.6}
+.page[lang=dv] .ttl2{font:700 26px/1.5 var(--dv)}
+.page[lang=dv] .intro .ttl2{font-size:24px}
+.page[lang=dv] .fact{font-size:14px;line-height:1.7}
+.page[lang=dv] .fact b{font-size:13px}
+.page[lang=dv] .qc .topic{font-size:12px}
+.page[lang=dv] .stand .nn small{font-size:12px;line-height:1.45}
+.page[lang=dv] .nextbar{font-size:14px}
+.page[lang=dv] .bt{font:700 16px/1.3 var(--dv)}
+.page[lang=dv] .md.solo .two button{font-size:14.5px;line-height:1.4}.page[lang=dv] .md.solo .two button small{font-size:12px;line-height:1.5}
+.page[lang=dv] .howlink{font-size:15px}
+.page[lang=dv] .pp .pn b{line-height:1.3}
+.sheet-b[lang=dv] h2{font:700 24px/1.5 var(--dv);letter-spacing:0}
+.sheet-b[lang=dv] .rules p,.sheet-b[lang=dv] p.muted{font-size:14px;line-height:1.75}
+.sheet-b[lang=dv] .rules h3{font-size:14px}
+.sheet-b[lang=dv] .bt{font:700 16px/1.3 var(--dv)}
+.sheet-b[lang=dv] .rr label{font-size:15px}
+.sheet-b[lang=dv] label.f{font-size:13px}
+.sheet-b[lang=dv] .lvb small{font-size:13px;line-height:1.5}
+.sheet-b[lang=dv] textarea.in{font-family:var(--dv),Sora,sans-serif}
+.toast[lang=dv]{font:700 14px/1.6 var(--dv)}
 .modes{display:grid;gap:10px;margin-top:16px}
-.md{display:flex;align-items:center;gap:12px;width:100%;border:0;text-align:left;cursor:pointer;border-radius:20px;padding:12px 14px;background:rgba(255,255,255,.72);box-shadow:inset 0 0 0 1px rgba(255,255,255,.9),0 10px 24px -16px rgba(70,50,120,.5);transition:transform .15s}
+.md{display:flex;align-items:center;gap:12px;width:100%;border:0;text-align:start;cursor:pointer;border-radius:20px;padding:12px 14px;background:rgba(255,255,255,.72);box-shadow:inset 0 0 0 1px rgba(255,255,255,.9),0 10px 24px -16px rgba(70,50,120,.5);transition:transform .15s}
 .md:active{transform:scale(.985)}
 .md .mi{flex:none;width:44px;height:44px;border-radius:14px;display:grid;place-items:center;background:#fff;color:var(--coral);box-shadow:0 4px 10px -6px rgba(70,50,120,.5)}
 .md .mi svg{width:22px;height:22px}
@@ -118,10 +154,10 @@ html.dg-lite .mesh i{animation:none}
 .topics h4{margin:0 0 8px;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);display:flex;justify-content:space-between;gap:8px}
 .topics h4 span{text-transform:none;letter-spacing:0;font-weight:600}
 .chips{display:grid;grid-template-columns:1fr 1fr;gap:7px}
-.chip{position:relative;display:flex;align-items:center;gap:7px;min-width:0;min-height:40px;font-size:12px;font-weight:700;padding:8px 26px 8px 9px;border:0;border-radius:14px;background:rgba(255,255,255,.35);color:var(--muted);box-shadow:inset 0 0 0 1px rgba(255,255,255,.7);cursor:pointer;text-align:left;transition:background-color .2s,color .2s}
+.chip{position:relative;display:flex;align-items:center;gap:7px;min-width:0;min-height:40px;font-size:12px;font-weight:700;padding-block:8px;padding-inline:9px 26px;border:0;border-radius:14px;background:rgba(255,255,255,.35);color:var(--muted);box-shadow:inset 0 0 0 1px rgba(255,255,255,.7);cursor:pointer;text-align:start;transition:background-color .2s,color .2s}
 .chip svg{flex:none;width:16px;height:16px;color:#B9A8B0}
 .chip span{min-width:0;line-height:1.25}
-.chip::after{content:"";position:absolute;right:9px;top:50%;width:12px;height:12px;margin-top:-6px;border-radius:50%;box-shadow:inset 0 0 0 1.5px rgba(42,20,24,.2)}
+.chip::after{content:"";position:absolute;inset-inline-end:9px;top:50%;width:12px;height:12px;margin-top:-6px;border-radius:50%;box-shadow:inset 0 0 0 1.5px rgba(42,20,24,.2)}
 .chip[aria-pressed=true]{background:rgba(255,255,255,.8);color:var(--ink);box-shadow:inset 0 0 0 1px rgba(255,255,255,.95),0 6px 14px -12px rgba(70,50,120,.6)}
 .chip[aria-pressed=true] svg{color:var(--coral)}
 .chip[aria-pressed=true]::after{background:var(--coral) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M3 6.2l2 2 4-4.4' fill='none' stroke='%23fff' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/12px no-repeat;box-shadow:none}
@@ -166,7 +202,7 @@ html.dg-lite .mesh i{animation:none}
 .lvl[lang=dv]{font:700 12px/1.2 var(--dv);letter-spacing:0;padding:3px 9px}
 .lvl.l1{color:#0F6B46;background:#DDF6EA}.lvl.l2{color:#3D2FA8;background:#E9E5FF}.lvl.l3{color:#8A4B00;background:#FFE9C7}.lvl.l4{color:#fff;background:linear-gradient(135deg,#E0405C,#8A1F55)}
 .lvls{display:grid;gap:8px;margin-top:14px}
-.lvb{display:flex;flex-direction:column;align-items:flex-start;gap:4px;width:100%;border:0;border-radius:16px;padding:12px 14px;background:#fff;cursor:pointer;text-align:left;box-shadow:inset 0 0 0 1px var(--line),0 8px 18px -14px rgba(70,50,120,.5)}
+.lvb{display:flex;flex-direction:column;align-items:flex-start;gap:4px;width:100%;border:0;border-radius:16px;padding:12px 14px;background:#fff;cursor:pointer;text-align:start;box-shadow:inset 0 0 0 1px var(--line),0 8px 18px -14px rgba(70,50,120,.5)}
 .lvb .lvl{font-size:12.5px;padding:5px 11px}
 .lvb small{font-size:12px;color:var(--muted);font-weight:600}
 .lvb[aria-pressed=true]{box-shadow:inset 0 0 0 2px var(--coral),0 8px 18px -14px rgba(70,50,120,.5)}
@@ -181,7 +217,7 @@ html.dg-lite .mesh i{animation:none}
 .ring.res{background:var(--good);color:#fff}.ring.res.no{background:var(--bad)}.ring.res.to{background:#8E7F87}
 .ring.res svg.ic{position:static;inset:auto;width:34px;height:34px;transform:none}
 .ans{display:grid;gap:9px;margin-top:14px}
-.an{position:relative;display:flex;align-items:center;gap:12px;width:100%;min-height:56px;border:0;border-radius:18px;padding:8px 12px 8px 8px;background:rgba(255,255,255,.85);cursor:pointer;text-align:left;
+.an{position:relative;display:flex;align-items:center;gap:12px;width:100%;min-height:56px;border:0;border-radius:18px;padding-block:8px;padding-inline:8px 12px;background:rgba(255,255,255,.85);cursor:pointer;text-align:start;
  box-shadow:inset 0 0 0 1px rgba(255,255,255,.95),0 8px 18px -14px rgba(70,50,120,.6);font-weight:700;font-size:15px;line-height:1.25;transition:transform .15s,background-color .25s,opacity .25s,box-shadow .25s}
 .an:not([disabled]):active{transform:scale(.98)}
 .an[disabled]{cursor:default}
@@ -189,14 +225,13 @@ html.dg-lite .mesh i{animation:none}
 .an:nth-child(1) .L{background:var(--A)}.an:nth-child(2) .L{background:var(--B)}.an:nth-child(3) .L{background:var(--C)}.an:nth-child(4) .L{background:var(--D)}
 .an .tx{flex:1;min-width:0;overflow-wrap:anywhere}
 .an .L,.num{font-family:Sora,system-ui,sans-serif;font-style:normal}
-.ans[dir=rtl] .an{text-align:right;padding:8px 8px 8px 12px;font:700 17px/1.6 var(--dv)}
+.ans[dir=rtl] .an{font:700 17px/1.6 var(--dv)}
 .an.mine{box-shadow:inset 0 0 0 2.5px var(--ink),0 8px 18px -14px rgba(70,50,120,.6)}
 .ans.locked .an:not(.mine){opacity:.55}
 .an .who{flex:none;display:flex}
-.an .who .av{--s:24px;margin-left:-7px}
-.an .who .av:first-child{margin-left:0}
+.an .who .av{--s:24px;margin-inline-start:-7px}
+.an .who .av:first-child{margin-inline-start:0}
 .an .who .av .ai{box-shadow:0 0 0 1.5px #fff}
-.ans[dir=rtl] .an .who .av{margin-left:0;margin-right:-7px}
 .an.right{background:var(--goodbg);box-shadow:inset 0 0 0 2px var(--good)}
 .an.right .L{background:var(--good)}
 .an.wrong{background:var(--badbg);box-shadow:inset 0 0 0 2px var(--bad)}
@@ -207,6 +242,8 @@ html.dg-lite .mesh i{animation:none}
 .fact{margin-top:12px;padding:12px 14px;border-radius:18px;background:rgba(255,255,255,.7);font-size:13px;line-height:1.45;box-shadow:inset 0 0 0 1px rgba(255,255,255,.9)}
 .fact b{display:block;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--coral);margin-bottom:2px}
 .fact b.ok{color:var(--good)}.fact b.no{color:var(--bad)}
+.fact .ft{display:block}.fact .ft[dir=rtl]{font:500 14.5px/1.75 var(--dv)}
+.ans[dir=rtl] .an .L{font:700 18px/1 var(--dv)}
 .qrepw{display:flex;justify-content:flex-end;margin-top:6px}
 .qrep{display:inline-flex;align-items:center;gap:5px;border:0;background:none;padding:6px 8px;border-radius:99px;font-size:11.5px;font-weight:700;color:var(--muted);cursor:pointer}
 .qrep svg{width:14px;height:14px}
@@ -218,7 +255,7 @@ textarea.in{height:auto;min-height:72px;padding:10px 12px;font:500 14px/1.4 Sora
 .watchnote{margin:10px 0 0;text-align:center;font-size:12.5px;font-weight:700;color:var(--muted)}
 .dock{display:flex;align-items:center;gap:8px;margin-top:auto;padding-top:14px;min-height:58px}
 .dock .dh{display:flex;align-items:center;gap:8px}
-.dock .ds{margin-left:auto;font-size:11.5px;font-weight:700;color:var(--muted);text-align:right;line-height:1.3}
+.dock .ds{margin-inline-start:auto;font-size:11.5px;font-weight:700;color:var(--muted);text-align:end;line-height:1.3}
 .dock .dgn-dock .dgn-ib{color:var(--ink)}
 .watching .dock{padding-bottom:70px}
 .ttl2{font:800 26px/1.1 var(--disp);letter-spacing:-.02em;text-align:center;margin:18px 0 2px}
@@ -229,7 +266,7 @@ textarea.in{height:auto;min-height:72px;padding:10px 12px;font:500 14px/1.4 Sora
 .intro .ipl .av{--s:46px}
 /* standings */
 .stand{list-style:none;margin:16px 0 0;padding:0;display:grid;gap:8px}
-.stand li{display:flex;align-items:center;gap:10px;padding:9px 12px 9px 10px;border-radius:18px;background:rgba(255,255,255,.75);box-shadow:inset 0 0 0 1px rgba(255,255,255,.9),0 8px 18px -14px rgba(70,50,120,.5)}
+.stand li{display:flex;align-items:center;gap:10px;padding-block:9px;padding-inline:10px 12px;border-radius:18px;background:rgba(255,255,255,.75);box-shadow:inset 0 0 0 1px rgba(255,255,255,.9),0 8px 18px -14px rgba(70,50,120,.5)}
 .stand li.me{box-shadow:inset 0 0 0 2px var(--coral),0 8px 18px -14px rgba(70,50,120,.5)}
 .stand li.gone{opacity:.55}
 .stand .rk{flex:none;width:22px;text-align:center;font:800 17px/1 var(--disp)}
@@ -237,11 +274,11 @@ textarea.in{height:auto;min-height:72px;padding:10px 12px;font:500 14px/1.4 Sora
 .stand .nn{flex:1;min-width:0}
 .stand .nn b{display:block;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .stand .nn small{display:block;font-size:11px;color:var(--muted);line-height:1.2}
-.stand .pt{flex:none;font-weight:800;font-size:14.5px;text-align:right;font-variant-numeric:tabular-nums}
+.stand .pt{flex:none;font-weight:800;font-size:14.5px;text-align:end;font-variant-numeric:tabular-nums}
 .stand .mv{flex:none;width:18px;height:18px}
 .stand .mv.up{color:var(--good)}.stand .mv.dn{color:var(--bad)}.stand .mv.eq{color:rgba(42,20,24,.3)}
 .nextbar{margin-top:14px;display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:18px;background:var(--ink);color:#fff;font-size:13px;font-weight:700}
-.nextbar .cd{margin-left:auto;width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:rgba(255,255,255,.14);font-weight:800;font-variant-numeric:tabular-nums}
+.nextbar .cd{margin-inline-start:auto;width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:rgba(255,255,255,.14);font-weight:800;font-variant-numeric:tabular-nums}
 /* podium */
 .pod{display:grid;grid-template-columns:1fr 1.12fr 1fr;align-items:end;gap:8px;margin-top:18px}
 .pod .p{display:flex;flex-direction:column;align-items:center;min-width:0}
@@ -253,7 +290,7 @@ textarea.in{height:auto;min-height:72px;padding:10px 12px;font:500 14px/1.4 Sora
 .pod .p1 .blk{height:112px;background:linear-gradient(180deg,#FF7A6B,#E0405C)}
 .pod .p2 .blk{height:84px;background:linear-gradient(180deg,#B7A9FF,#8A78F0)}
 .pod .p3 .blk{height:64px;background:linear-gradient(180deg,#6ED9BC,#35B08F)}
-.pod .bo{display:inline-flex;align-items:center;gap:3px;margin-top:4px;font-size:11.5px;font-weight:800;background:#fff;padding:3px 8px 3px 4px;border-radius:99px;box-shadow:0 4px 10px -6px rgba(70,50,120,.6)}
+.pod .bo{display:inline-flex;align-items:center;gap:3px;margin-top:4px;font-size:11.5px;font-weight:800;background:#fff;padding-block:3px;padding-inline:4px 8px;border-radius:99px;box-shadow:0 4px 10px -6px rgba(70,50,120,.6)}
 .pod .bo img{width:16px;height:16px;object-fit:contain}
 .earn{display:flex;align-items:center;justify-content:center;gap:6px;margin:12px 0 0;font-weight:800;font-size:14px}
 .earn img{width:22px;height:22px}
@@ -268,10 +305,10 @@ textarea.in{height:auto;min-height:72px;padding:10px 12px;font:500 14px/1.4 Sora
 .bt.wide{width:100%}
 .nextb{margin-top:12px;width:100%}
 .waitline{margin:14px 0 0;text-align:center;font-size:13px;font-weight:700;color:var(--muted)}
-.solo-score{display:flex;align-items:center;gap:10px;margin-top:14px;padding:8px 12px 8px 8px;border-radius:18px;background:rgba(255,255,255,.55)}
+.solo-score{display:flex;align-items:center;gap:10px;margin-top:14px;padding-block:8px;padding-inline:8px 12px;border-radius:18px;background:rgba(255,255,255,.55)}
 .solo-score .av{--s:40px}
 .solo-score b{font-size:14px}.solo-score small{display:block;font-size:11px;color:var(--muted)}
-.solo-score .pts{margin-left:auto;font:800 20px/1 var(--disp);font-variant-numeric:tabular-nums}
+.solo-score .pts{margin-inline-start:auto;font:800 20px/1 var(--disp);font-variant-numeric:tabular-nums}
 .big-res{font:800 64px/1 var(--disp);text-align:center;color:var(--coral);margin:18px 0 0;font-variant-numeric:tabular-nums}
 /* sheets + toast */
 .sheet{position:fixed;inset:0;background:rgba(42,20,40,.38);display:none;align-items:flex-end;justify-content:center;z-index:70}
@@ -298,9 +335,9 @@ label.f{display:block;font-size:12px;font-weight:700;color:var(--muted);margin:1
  .pl .av{--s:38px}.pl .cpu{top:27px}.pl .ok{right:calc(50% - 24px)}
  .qc{padding:44px 12px 14px}.qc .qq{font-size:17.5px}
  .an{min-height:52px;font-size:14px;gap:10px}.an .L{width:32px;height:32px}
- .pp .pn small{display:none}.hp{padding:0 8px 0 4px}
+ .pp .pn small{display:none}.hp{padding-inline:4px 8px}
  .md .mi{width:40px;height:40px}.md.qm .mi{width:44px;height:44px}
- .chip{font-size:11.5px;padding:7px 8px}
+ .chip{font-size:11.5px;padding-block:7px;padding-inline:8px 24px}
  .pod .av{--s:50px}.pod .p1 .av{--s:62px}
 }
 @media (max-height:640px){.qc{margin-top:42px}.pls{margin-top:8px;padding-top:12px}.an{min-height:48px}.ans{gap:7px}}
@@ -347,7 +384,10 @@ const BOLI_QUICK=[30,20,10];              /* Quick Match: 1st, 2nd, 3rd */
 const BOLI_DAILY_PERFECT=10;              /* Daily quiz: 1 per right answer, plus this for a perfect round */
 /* four levels (owner, Sept 2026). A right answer scores the level's base points plus up to half again for speed:
    the full bonus in the first second, none at the buzzer. */
-const LEVELS=[[1,'Easy'],[2,'Medium'],[3,'Hard'],[4,'Raajje Master']],LVNAME=Object.fromEntries(LEVELS),LVDV={4:'ރާއްޖެ މާސްޓަރ'};
+const LEVELS=[[1,'Easy'],[2,'Medium'],[3,'Hard'],[4,'Raajje Master']],LVNAME=Object.fromEntries(LEVELS);
+/* level names in Dhivehi (Raajje Master = ރާއްޖެ މާސްޓަރ, owner-confirmed; the other three are plain words, still to be checked) */
+const LVDV={1:'ފަސޭހަ',2:'މެދުމިން',3:'ދަތި',4:'ރާއްޖެ މާސްޓަރ'};
+const lvName=d=>lang==='dv'?(LVDV[d]||''):(LVNAME[d]||'');
 const BASE={1:500,2:650,3:800,4:1000};
 const points=(ms,d)=>{const b=BASE[d]||BASE[2];return b+Math.round(b*.5*Math.min(1,Math.max(0,(Q_MS-ms)/(Q_MS-1000))));};
 /* Quick Match and the Daily quiz ramp up through the match: Q1-3 Easy, Q4-6 Medium, Q7-8 Hard, Q9-10 Raajje Master */
@@ -368,6 +408,13 @@ const myId=(()=>{if(window.DGNet&&DGNet.local&&/^[a-z0-9_-]{2,24}$/i.test(Q.get(
 
 const TOPICS=[['history','History'],['islands','Islands & atolls'],['language','Dhivehi & Thaana'],['food','Food'],['sea','Sea life'],['sports','Sports'],['culture','Culture & pop'],['general','General knowledge']];
 const TNAME=Object.fromEntries(TOPICS),TKEYS=TOPICS.map(t=>t[0]);
+const TDV={history:'ތާރީޚު',islands:'ރަށްތަކާއި އަތޮޅުތައް',language:'ދިވެހި ބަހާއި ތާނަ',food:'ކާނާ',sea:'ކަނޑުގެ ދިރުން',sports:'ކުޅިވަރު',culture:'ސަގާފަތާއި ފަންނު',general:'އާންމު މަޢުލޫމާތު'};
+const tName=t=>lang==='dv'?(TDV[t]||''):(TNAME[t]||'');
+/* the UI language follows the question language. T(english, dhivehi); LR() keeps a number or code (3 / 10, +5, hi01)
+   as one left-to-right run inside Dhivehi text (LRI ... PDI), so it never flips side */
+const T=(en,dv)=>lang==='dv'?dv:en;
+const LRI=String.fromCharCode(0x2066),PDI=String.fromCharCode(0x2069),NBSP=String.fromCharCode(160),LR=v=>lang==='dv'?LRI+String(v).replace(/ /g,NBSP)+PDI:String(v);
+const DVMON=['ޖަނަވަރީ','ފެބުރުއަރީ','މާރިޗު','އޭޕްރީލް','މެއި','ޖޫން','ޖުލައި','އޮގަސްޓު','ސެޕްޓެމްބަރު','އޮކްޓޫބަރު','ނޮވެމްބަރު','ޑިސެމްބަރު'];
 
 /* ---------- icons ---------- */
 const sv=(d,extra)=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"${extra?' '+extra:''}>${d}</svg>`;
@@ -475,27 +522,30 @@ const rid=()=>Math.random().toString(36).slice(2,10);
 /* ---------- question banks, loaded on demand ---------- */
 const BANK={en:null,dv:null},bankP={};
 function loadBank(l){if(BANK[l])return Promise.resolve(BANK[l]);if(bankP[l])return bankP[l];
- bankP[l]=fetch('questions-'+l+'.json?v=1',{cache:'no-cache'}).then(r=>{if(!r.ok)throw new Error('HTTP '+r.status);return r.json();}).then(d=>{
+ bankP[l]=fetch('questions-'+l+'.json?v=2',{cache:'no-cache'}).then(r=>{if(!r.ok)throw new Error('HTTP '+r.status);return r.json();}).then(d=>{
   const ok=q=>q&&typeof q.id==='string'&&typeof q.q==='string'&&Array.isArray(q.a)&&q.a.length===4;
   if(l==='en')BANK.en={q:(d.q||[]).filter(q=>ok(q)&&TKEYS.includes(q.t)),pool:new Set(Array.isArray(d.testPool)?d.testPool:[])};
   else{const by={};(d.q||[]).forEach(q=>{if(ok(q))by[q.id]=q;});BANK.dv={by,n:Object.keys(by).length};}
   return BANK[l];}).catch(e=>{bankP[l]=null;throw e;});return bankP[l];}
 function loadBoth(){return Promise.all([loadBank('en'),loadBank('dv').catch(()=>null)]);}
 const hasDv=id=>!!(BANK.dv&&BANK.dv.by[id]);
-/* a question as it travels in the match: both languages, answers shuffled the same way, c = index of the right one */
+/* a question as it travels in the match: both languages, answers shuffled the same way, c = index of the right one.
+   dv.f is the Dhivehi "Did you know?" fact, dv.ok = checked by a native speaker (dvChecked) */
 function mkQ(q,r){const order=shuffle([0,1,2,3],r),dv=BANK.dv&&BANK.dv.by[q.id];
- return{id:q.id,t:q.t,d:q.d|0||2,f:q.f||'',en:{q:q.q,a:order.map(i=>q.a[i])},dv:dv?{q:dv.q,a:order.map(i=>dv.a[i])}:null,c:order.indexOf(0)};}
+ return{id:q.id,t:q.t,d:q.d|0||2,f:q.f||'',en:{q:q.q,a:order.map(i=>q.a[i])},dv:dv?{q:dv.q,a:order.map(i=>dv.a[i]),f:typeof dv.f==='string'?dv.f:'',ok:dv.dvChecked===true}:null,c:order.indexOf(0)};}
 /* this device's recent questions (never repeat until the bank runs short) */
 const RECENT_KEY='quiz-recent',RECENT_MAX=160;
 function recent(){try{const a=JSON.parse(ls.get(RECENT_KEY)||'[]');return Array.isArray(a)?a.filter(x=>typeof x==='string'):[];}catch(e){return[];}}
 function markSeen(id){if(!id)return;const a=recent().filter(x=>x!==id);a.push(id);ls.set(RECENT_KEY,JSON.stringify(a.slice(-RECENT_MAX)));}
 /* n questions from these topics: never-seen first (random order), then the ones seen longest ago; topics kept mixed */
 /* lv: one level for every question, or a list (the ramp). A level that runs short borrows from the nearest level. */
-/* the questions in play: the 100-question test pool while TEST_POOL is on (plus the Dhivehi ones in Dhivehi mode;
-   the Daily quiz stays the same for everyone, so it uses the pool only), else the whole bank */
+/* the questions in play: the 100-question test pool while TEST_POOL is on (every one has a Dhivehi version), else the whole bank */
 const poolOn=()=>window.TEST_POOL===true&&!!BANK.en&&BANK.en.pool&&BANK.en.pool.size>0;
-function bankQs(daily){if(!poolOn())return BANK.en.q;const P=BANK.en.pool;return BANK.en.q.filter(q=>P.has(q.id)||(!daily&&lang==='dv'&&hasDv(q.id)));}
-function pickQs(n,topics,preferDv,lv){const all=bankQs().filter(q=>topics.includes(q.t)),r=recent(),pos=new Map(r.map((id,i)=>[id,i]));
+function bankQs(){if(!poolOn())return BANK.en.q;const P=BANK.en.pool;return BANK.en.q.filter(q=>P.has(q.id));}
+/* preferDv (Dhivehi mode): every question comes from the Dhivehi bank; only when these topics have too few Dhivehi
+   questions do English ones fill in (they show with a small "English" tag) */
+function pickQs(n,topics,preferDv,lv){let all=bankQs().filter(q=>topics.includes(q.t));const r=recent(),pos=new Map(r.map((id,i)=>[id,i]));
+ if(preferDv){const d=all.filter(q=>hasDv(q.id));if(d.length>=n)all=d;}
  let fresh=shuffle(all.filter(q=>!pos.has(q.id)));if(preferDv)fresh=fresh.filter(q=>hasDv(q.id)).concat(fresh.filter(q=>!hasDv(q.id)));
  const pool=fresh.concat(all.filter(q=>pos.has(q.id)).sort((a,b)=>pos.get(a.id)-pos.get(b.id)));
  const want=Array.isArray(lv)?lv.slice(0,n):Array(n).fill(lv||2);
@@ -508,19 +558,25 @@ function fillSlots(want,pool,cap){const used=new Set(),per={},out=[];
 
 /* ---------- the Daily quiz: the same 10 questions for everyone, chosen from the date (Maldives time, UTC+5) ---------- */
 const mvDay=()=>new Date(Date.now()+5*3600e3).toISOString().slice(0,10);
-function dailyQs(day){const r=seeded('dhivehi-quiz|'+day),sorted=bankQs(true).slice().sort((a,b)=>a.id<b.id?-1:a.id>b.id?1:0);
+function dailyQs(day){const r=seeded('dhivehi-quiz|'+day),sorted=bankQs().slice().sort((a,b)=>a.id<b.id?-1:a.id>b.id?1:0);
  return fillSlots(RAMP,shuffle(sorted,r),2).map(q=>mkQ(q,r));}
 const DAILY_KEY='quiz-daily';
 function dailyRec(){try{const d=JSON.parse(ls.get(DAILY_KEY)||'null');if(d&&d.day===mvDay())return d;}catch(e){}return null;}
 function dailySave(o){ls.set(DAILY_KEY,JSON.stringify(Object.assign({day:mvDay()},o)));}
-function dailyLine(){const d=dailyRec();if(!d)return '10 questions, one try';return d.done||d.started?`Done today · ${d.right|0}/${d.n||NQ}`:'10 questions, one try';}
+function dailyLine(){const d=dailyRec(),one=T('10 questions, one try',`${LR(10)} ސުވާލު، އެއް ފުރުޞަތު`);if(!d)return one;return d.done||d.started?T('Done today',`މިއަދު ކުޅެވިއްޖެ`)+` · ${LR((d.right|0)+'/'+(d.n||NQ))}`:one;}
 
 /* ---------- question language (display only; every player picks their own) ---------- */
 let lang=ls.get('quiz-lang')==='dv'?'dv':'en';
-function setLang(v){lang=v==='dv'?'dv':'en';ls.set('quiz-lang',lang);if(lang==='dv')loadBank('dv').then(()=>{if(screen==='home')dvNote();}).catch(()=>{});}
+function setLang(v){lang=v==='dv'?'dv':'en';ls.set('quiz-lang',lang);if(lang==='dv')loadBank('dv').then(()=>{if(screen==='home')dvNote();else{lastRender='';render();}}).catch(()=>{});}
 const qView=q=>lang==='dv'&&q.dv?q.dv:q.en;
-/* Dhivehi text: numbers such as +960 or 1978 are isolated left-to-right runs, so a sign or separator never flips side */
-const tx=(t,rtl)=>rtl?esc(t).replace(/[+\-−]?\d[\d.,:]*/g,m=>`<span dir="ltr" class="num">${m}</span>`):esc(t);
+const qRtl=q=>lang==='dv'&&!!q.dv;
+const qFact=q=>qRtl(q)&&q.dv.f?q.dv.f:q.f;
+/* Dhivehi text: numbers (+960, 1978, 1-0) and Latin words (SAFF, UTC+5, .mv) are isolated left-to-right runs, so a sign
+   or separator never flips side. Matched on the raw text, then escaped (so entities such as &#39; stay whole). */
+const LTR_RE=/[.+\-−]?[A-Za-z0-9](?:[A-Za-z0-9.,:+\-−–°%]*[A-Za-z0-9%°])?/g;
+const tx=(t,rtl)=>{t=String(t==null?'':t);if(!rtl)return esc(t);let o='',i=0;t.replace(LTR_RE,(m,k)=>{o+=esc(t.slice(i,k))+`<span dir="ltr" class="num">${esc(m)}</span>`;i=k+m.length;return m;});return o+esc(t.slice(i));};
+/* the language attributes of a question's text: Dhivehi runs right to left; English inside the Dhivehi page runs left to right */
+const qAttr=rtl=>rtl?' dir="rtl" lang="dv"':lang==='dv'?' dir="ltr" lang="en"':'';
 let topicsSel=(()=>{try{const a=JSON.parse(ls.get('quiz-topics')||'null');if(Array.isArray(a)){const b=a.filter(x=>TKEYS.includes(x));if(b.length)return b;}}catch(e){}return TKEYS.slice();})();
 
 /* =====================================================================
@@ -582,11 +638,14 @@ function answer(i){if(!S||S.phase!=='q'||meIdx()<0||me().gone)return;const qi=S.
  else{NET.send({t:'ans',q:qi,pick:i,ms});render();}}
 
 /* ---------- solo modes ---------- */
-function openLevels(){sheet(`<div class="grab"></div><h2>Practice</h2><p class="muted" style="margin:4px 0 0;font-size:13px">Choose a level. ${topicsSel.length===TKEYS.length?'All topics':topicsSel.length+' of 8 topics'} · 10 questions against 3 computer players.</p>
-<div class="lvls">${LEVELS.map(([k,n])=>`<button class="lvb l${k}" data-a="practiceGo" data-lv="${k}" aria-pressed="${k===levelSel}"><span class="lvl l${k}">${esc(n)}</span><small>${BASE[k]} points a right answer${WIN_BONUS[k]?` · win for +${WIN_BONUS[k]} Boli`:''}</small></button>`).join('')}</div>
-<p class="muted" style="font-size:12px;margin:10px 2px 0">Raajje Master in Dhivehi: <span lang="dv" dir="rtl">${LVDV[4]}</span></p>`);}
-function soloStart(kind,lv){if(kind==='daily'){const d=dailyRec();if(d&&(d.done||d.started)){renderHome();toast('You’ve played today’s quiz. A new one comes at midnight, Maldives time.',4200);return;}}
- toast('Loading questions…',1600);const tok=++startTok;
+function openLevels(){const all=topicsSel.length===TKEYS.length;
+ sheet(`<div class="grab"></div><h2>${T('Practice','ޕްރެކްޓިސް')}</h2><p class="muted" style="margin:4px 0 0;font-size:13px">${T(`Choose a level. ${all?'All topics':topicsSel.length+' of 8 topics'} · 10 questions against 3 computer players.`,
+  `ލެވެލެއް ހޮވާ. ${all?'ހުރިހާ މައުޟޫޢެއް':`${LR(8)} މައުޟޫޢުގެ ތެރެއިން ${LR(topicsSel.length)}`} · ކޮމްޕިއުޓަރު ${LR(3)} ކުޅުންތެރިއަކާ ދެކޮޅަށް ${LR(10)} ސުވާލު.`)}</p>
+<div class="lvls">${LEVELS.map(([k])=>`<button class="lvb l${k}" data-a="practiceGo" data-lv="${k}" aria-pressed="${k===levelSel}">${lvlBadge(k)}<small>${T(`${BASE[k]} points a right answer${WIN_BONUS[k]?` · win for +${WIN_BONUS[k]} Boli`:''}`,
+  `ރަނގަޅު ޖަވާބަކަށް ${LR(BASE[k])} ޕޮއިންޓް${WIN_BONUS[k]?` · ކާމިޔާބުވެއްޖެނަމަ ${LR('+'+WIN_BONUS[k])} ބޮލި`:''}`)}</small></button>`).join('')}</div>
+${lang==='dv'?'':`<p class="muted" style="font-size:12px;margin:10px 2px 0">Raajje Master in Dhivehi: <span lang="dv" dir="rtl">${LVDV[4]}</span></p>`}`);}
+function soloStart(kind,lv){if(kind==='daily'){const d=dailyRec();if(d&&(d.done||d.started)){renderHome();toast(T('You’ve played today’s quiz. A new one comes at midnight, Maldives time.','މިއަދުގެ ކުއިޒް ކުޅެވިއްޖެ. އާ ކުއިޒެއް އަންނާނީ ދިވެހިރާއްޖޭގެ ގަޑިން ރޭގަނޑު 12 ޖަހާއިރުއެވެ.'),4200);return;}}
+ toast(T('Loading questions…','ސުވާލުތައް ލޯޑުވަނީ…'),1600);const tok=++startTok;
  loadBoth().then(()=>{closeToast();if(tok!==startTok||online())return;
   const me0=meP();let players=[me0],qs;
   if(kind==='daily'){const day=mvDay();qs=dailyQs(day);dailySave({started:1,done:0,right:0,score:0,n:qs.length});S=newMatch('daily',players,qs,{day});}
@@ -594,7 +653,7 @@ function soloStart(kind,lv){if(kind==='daily'){const d=dailyRec();if(d&&(d.done|
    players=players.concat(bots.map((n,i)=>({id:'cpu'+i,name:n,cpu:1,sk:(rnd()-.5)*.16,ch:cpuChar(n),score:0,right:0,streak:0,fast:0})));
    const level=lv||levelSel;qs=pickQs(NQ,topicsSel.length?topicsSel:TKEYS,lang==='dv',level);S=newMatch('practice',players,qs,{level});}
   mode=kind;myPicks={};qShown={};buildMatch();commit();hostSched();
- }).catch(()=>{toast('Couldn’t load the questions. Check your connection and try again.',4500);});}
+ }).catch(()=>{toast(T('Couldn’t load the questions. Check your connection and try again.','ސުވާލުތައް ލޯޑެއް ނުވި. ކަނެކްޝަން ޗެކްކޮށްލާފައި އަލުން މަސައްކަތްކުރޭ.'),4500);});}
 let startTok=0;
 function soloQuit(){clearHost();pausedAt=0;if(mode==='daily'&&S&&S.phase!=='over'){const m=me();dailySave({started:1,done:1,right:m?m.right:0,score:m?m.score:0,n:S.n,quit:1});}
  S=null;mode=null;closeSheet();renderHome();}
@@ -608,7 +667,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden){AU.sleep()
    ONLINE (shared/net.js DGNet v5)
    ===================================================================== */
 function viewFor(pid){if(!S)return null;const d=clone(S),hide=d.phase==='q'||d.phase==='intro';
- d.qs=d.qs.slice(0,Math.max(0,d.qi+1)).map((q,i)=>{if(i===d.qi&&hide){delete q.c;q.f='';}return q;});
+ d.qs=d.qs.slice(0,Math.max(0,d.qi+1)).map((q,i)=>{if(i===d.qi&&hide){delete q.c;q.f='';if(q.dv)q.dv.f='';}return q;});
  if(d.phase==='q'){const pk={};Object.keys(d.picks).forEach(id=>{pk[id]=id===pid?d.picks[id]:{p:-1};});d.picks=pk;}
  return d;}
 function seatFrom(s,i){const ch=s.id===myId?myChar():lookCh(s.look);
@@ -619,7 +678,7 @@ function netStart(seats,opts,info){mode='online';clearHost();myPicks={};qShown={
  const level=quick?0:([1,2,3,4].includes(+opts.level)?+opts.level:2);
  S=newMatch('online',seats.map(seatFrom),[],{quick,n,level});closeSheet();buildMatch();commit();brk(true);
  loadBoth().then(()=>{if(!S||!online()||!NET.isHost())return;S.qs=pickQs(n,topic==='all'?TKEYS:[topic],lang==='dv',quick?rampFor(n):level);S.n=S.qs.length||n;commit();hostSched();})
-  .catch(()=>{toast('Couldn’t load the questions. Check your connection.',4500);});
+  .catch(()=>{toast(T('Couldn’t load the questions. Check your connection.','ސުވާލުތައް ލޯޑެއް ނުވި. ކަނެކްޝަން ޗެކްކޮށްލާ.'),4500);});
  hostSched();}
 function netAction(pid,a){if(!S||!a||typeof a!=='object'||!hostOn())return;
  if(a.t==='ans'){if((a.q|0)!==S.qi||S.phase!=='q')return;const pl=S.players.find(p=>p.id===pid);if(!pl||pl.cpu||pl.gone)return;
@@ -644,7 +703,7 @@ function netMigrate(o){mode='online';clearHost();const b=o.backup;
  if(S.phase==='q'){S.at=Date.now();S.picks={};planCpus();}else if(S.phase!=='over')S.at=Date.now();
  if(S.phase==='over'){render();NET.matchOver();return;}
  if(S.phase==='rev'||S.phase==='stand'||S.phase==='intro')brk(true);
- commit();hostSched();toast('The host left, so you run the match now.',3500);}
+ commit();hostSched();toast(T('The host left, so you run the match now.','ހޯސްޓު ދިޔައީމާ، މިހާރު މެޗު ހިންގަނީ ތިބާ.'),3500);}
 function netLobby(){wasSpec=null;clearHost();S=null;closeSheet();if(screen==='match')renderHome();}
 function netEnd(){wasSpec=null;clearHost();mode=null;S=null;closeSheet();renderHome();}
 function cpuSeat(i,taken){const t=new Set((taken||[]).map(x=>String(x).toLowerCase()));const n=shuffle(CPUS).find(x=>!t.has(x.toLowerCase()));if(!n)return null;const ch=cpuChar(n);return{name:n,look:ch?{ch}:null};}
@@ -657,7 +716,8 @@ function initNet(){if(!window.DGNet)return;NET=DGNet.create({game:'quiz',title:'
   {k:'topic',label:'Topics',def:'all',choices:[['all','All topics']].concat(TOPICS)}],
  rulesNote:'2 to 6 players. Everyone gets the same question and 15 seconds to answer. A right answer scores 500, plus up to 500 more for speed. Miss 2 questions in a row and you are marked away.',
  listInfo:m=>S&&m.status!=='lobby'?'Question '+Math.max(1,S.qi+1)+' of '+S.n:m.quick?'Easy to Raajje Master':(LVNAME[m.opts&&m.opts.level]||'Medium')+' · '+((m.opts&&m.opts.count)||10)+' questions',
- dropText:(nm,why)=>nm+(why==='afk'?' is away':why==='left'?' left':' lost connection')+'. Their points stay on the board.',
+ dropText:(nm,why)=>T(nm+(why==='afk'?' is away':why==='left'?' left':' lost connection')+'. Their points stay on the board.',
+  nm+(why==='afk'?' ދުރުގައި':why==='left'?' ދޫކޮށްފި':' ގެ ކަނެކްޝަން ކެނޑިއްޖެ')+'. ލިބުނު ޕޮއިންޓްތައް ބޯޑުގައި ހުންނާނެ.'),
  afkText:'You missed 2 questions in a row, so you were marked away. You can’t rejoin this match.',
  hostAfkText:'You missed 2 questions in a row, so you are marked away. You’ll leave the table when this match ends.',
  onStart:netStart,view:pid=>viewFor(pid),backup:()=>S,onAction:netAction,onDrop:netDrop,onState:netState,onLobby:netLobby,onMigrate:netMigrate,onEnd:netEnd,
@@ -669,70 +729,84 @@ function initNet(){if(!window.DGNet)return;NET=DGNet.create({game:'quiz',title:'
    UI
    ===================================================================== */
 let spCtl=null,liveN=0;
-function liveText(){return liveN>0?liveN+' playing now':'Be the first to play';}
+function liveText(){return liveN>0?T(liveN+' playing now',`މިހާރު ${LR(liveN)} މީހުން ކުޅެނީ`):T('Be the first to play','އެންމެ ފުރަތަމަ ކުޅެލާ');}
 function offHome(){if(spCtl){try{spCtl.destroy();}catch(e){}spCtl=null;}}
-const hp=()=>`<a class="hp" href="../" aria-label="Back to Dhivehi Games">${I.back}${pcMark()}</a>`;
-const checking=sm=>REVIEWED?'':`<p class="chk${sm?' sm':''}">${I.info}<span>Questions being checked${sm?'':': a few answers may still change'}</span></p>`;
+/* the page (and our sheets and toasts) run right to left in Dhivehi */
+const pgAttr=()=>lang==='dv'?' dir="rtl" lang="dv"':'';
+const hp=()=>`<a class="hp" href="../" aria-label="${T('Back to Dhivehi Games','ދިވެހި ގޭމްސްއަށް')}">${I.back}${pcMark()}</a>`;
+const checking=sm=>REVIEWED?'':`<p class="chk${sm?' sm':''}">${I.info}<span>${T('Questions being checked','ސުވާލުތައް ޗެކްކުރަމުން ދަނީ')}${sm?'':T(': a few answers may still change','، ބައެއް ޖަވާބު ބަދަލުވެދާނެ')}</span></p>`;
+/* Dhivehi being checked: a small friendly note while any Dhivehi text in play is not yet checked (dvChecked:false) */
+const DVCHK='ދިވެހި ބަސް ޗެކްކުރަނީ · ކުށެއް ފެނިއްޖެނަމަ ރިޕޯޓް ކޮށްދީ';
+const langBtns=()=>`<div class="lang" role="group" aria-label="${T('Language','ބަސް')}"><button data-a="lang" data-v="en" lang="en" aria-pressed="${lang==='en'}">${I.check}English</button><button class="dvb" data-a="lang" data-v="dv" lang="dv" aria-pressed="${lang==='dv'}">${I.check}ދިވެހި</button></div>`;
 function renderHome(){screen='home';clearInterval(tickT);tickT=0;offHome();document.documentElement.dataset.scr='home';
- const nm=myName(),p=meP();
- app.innerHTML=`<main class="page home">
-<div class="qt">${hp()}<button class="pp" data-a="name" aria-label="Your name: ${esc(nm||'not set')}. Change">${avHTML(p,38)}<span class="pn"><b>${nm?esc(nm):'Player'}</b><small>${isReg()?'Your username':nm?'Tap to rename':'Set your name'}</small></span></button><a class="bp" href="../digu/?open=boli" aria-label="${shells()} Boli">${BOLI_IMG}<span>${compact(shells())}</span></a></div>
-<div class="hero">${ICON}<h1>Dhivehi Quiz</h1><span class="dv" lang="dv" dir="rtl">ދިވެހި ކުއިޒް</span><p class="tag">The Maldives quiz. Fastest right answer wins.</p></div>
-<div class="lang">Questions in <span class="seg" role="group" aria-label="Question language"><button data-a="lang" data-v="en" aria-pressed="${lang==='en'}">English</button><button class="dvb" data-a="lang" data-v="dv" lang="dv" aria-pressed="${lang==='dv'}">ދިވެހި</button></span></div>
+ const nm=myName(),p=meP(),all=topicsSel.length===TKEYS.length;
+ app.innerHTML=`<main class="page home"${pgAttr()}>
+<div class="qt">${hp()}<button class="pp" data-a="name" aria-label="${T('Your name','ތިބާގެ ނަން')}: ${esc(nm||T('not set','ނެތް'))}. ${T('Change','ބަދަލުކުރޭ')}">${avHTML(p,38)}<span class="pn"><b dir="auto">${nm?esc(nm):T('Player','ކުޅުންތެރިޔާ')}</b><small>${isReg()?T('Your username','ތިބާގެ ޔޫޒަރނޭމް'):nm?T('Tap to rename','ނަން ބަދަލުކުރަން ފިތާ'):T('Set your name','ނަން ލިޔޭ')}</small></span></button><a class="bp" href="../digu/?open=boli" aria-label="${shells()} ${T('Boli','ބޮލި')}">${BOLI_IMG}<span class="num">${compact(shells())}</span></a></div>
+<div class="hero">${ICON}<h1 lang="en" dir="ltr">Dhivehi Quiz</h1><span class="dv" lang="dv" dir="rtl">ދިވެހި ކުއިޒް</span><p class="tag">${T('The Maldives quiz. Fastest right answer wins.','ދިވެހިރާއްޖޭގެ ކުއިޒް. އެންމެ އަވަހަށް ރަނގަޅު ޖަވާބު ދޭ މީހާ ކާމިޔާބު.')}</p></div>
+${langBtns()}
 <p class="dvnote" id="dvnote" hidden></p>
-<section class="modes" aria-label="Play">
- <button class="md qm" data-a="quick"><span class="mi">${I.bolt}</span><span class="mt"><b>Quick Match</b><small>2–6 players, the same question for all</small><span class="live" id="qmLive"><i></i><span>${liveText()}</span></span></span></button>
- <button class="md" data-a="friends"><span class="mi">${I.friends}</span><span class="mt"><b>Play with Friends</b><small>Create a table, or use a code</small></span>${I.chev}</button>
- <div class="md solo"><div class="row"><span class="mi">${I.cal}</span><span class="mt"><b>On your own</b><small>The daily quiz, or practise against the computer</small></span></div>
-  <div class="two"><button data-a="daily" class="${dailyRec()?'done':''}">Daily quiz<small>${dailyLine()}</small></button><button data-a="practice">Practice<small>vs computer · pick a level</small></button></div></div>
+<section class="modes" aria-label="${T('Play','ކުޅޭ')}">
+ <button class="md qm" data-a="quick"><span class="mi">${I.bolt}</span><span class="mt"><b>${T('Quick Match','ކުއިކް މެޗް')}</b><small>${T('2–6 players, the same question for all',`${LR(2)} އިން ${LR(6)} އަށް ކުޅުންތެރިން، އެންމެންނަށް އެއް ސުވާލު`)}</small><span class="live" id="qmLive"><i></i><span>${liveText()}</span></span></span></button>
+ <button class="md" data-a="friends"><span class="mi">${I.friends}</span><span class="mt"><b>${T('Play with Friends','ރަޙްމަތްތެރިންނާ އެކު ކުޅޭ')}</b><small>${T('Create a table, or use a code','މޭޒެއް ހަދާ، ނުވަތަ ކޯޑަކުން ވަދޭ')}</small></span>${I.chev}</button>
+ <div class="md solo"><div class="row"><span class="mi">${I.cal}</span><span class="mt"><b>${T('On your own','އެކަނި ކުޅޭ')}</b><small>${T('The daily quiz, or practise against the computer','ދުވަހުގެ ކުއިޒް، ނުވަތަ ކޮމްޕިއުޓަރާ ދެކޮޅަށް ޕްރެކްޓިސް')}</small></span></div>
+  <div class="two"><button data-a="daily" class="${dailyRec()?'done':''}">${T('Daily quiz','ދުވަހުގެ ކުއިޒް')}<small>${dailyLine()}</small></button><button data-a="practice">${T('Practice','ޕްރެކްޓިސް')}<small>${T('vs computer · pick a level','ކޮމްޕިއުޓަރާ ދެކޮޅަށް · ލެވެލް ހޮވާ')}</small></button></div></div>
 </section>
-<div class="topics"><h4>Practice topics <span id="tcount">${topicsSel.length===TKEYS.length?'All':topicsSel.length+' of 8'}</span></h4><div class="chips">${TOPICS.map(([k,n])=>`<button class="chip" data-a="topic" data-v="${k}" aria-pressed="${topicsSel.includes(k)}">${I[k]}<span>${esc(n)}</span></button>`).join('')}</div></div>
-<div class="rew">${BOLI_IMG.replace('width="22" height="22"','width="28" height="28"')}<span><b>Win Boli.</b> Quick Match: ${BOLI_QUICK.join(' / ')} for the top three. Daily quiz: 1 per right answer, ${BOLI_DAILY_PERFECT} extra for a perfect round. Win Practice on Hard (+${WIN_BONUS[3]}) or Raajje Master (+${WIN_BONUS[4]}). Every game gives XP.</span></div>
+<div class="topics"><h4>${T('Practice topics','ޕްރެކްޓިސް މައުޟޫޢުތައް')} <span id="tcount">${tCount()}</span></h4><div class="chips">${TOPICS.map(([k])=>`<button class="chip" data-a="topic" data-v="${k}" aria-pressed="${topicsSel.includes(k)}">${I[k]}<span>${esc(tName(k))}</span></button>`).join('')}</div></div>
+<div class="rew">${BOLI_IMG.replace('width="22" height="22"','width="28" height="28"')}<span>${T(`<b>Win Boli.</b> Quick Match: ${BOLI_QUICK.join(' / ')} for the top three. Daily quiz: 1 per right answer, ${BOLI_DAILY_PERFECT} extra for a perfect round. Win Practice on Hard (+${WIN_BONUS[3]}) or Raajje Master (+${WIN_BONUS[4]}). Every game gives XP.`,
+  `<b>ބޮލި ހޯދާ.</b> ކުއިކް މެޗް: އެންމެ މަތީ ތިން ކުޅުންތެރިންނަށް ${LR(BOLI_QUICK.join(' / '))}. ދުވަހުގެ ކުއިޒް: ކޮންމެ ރަނގަޅު ޖަވާބަކަށް ${LR(1)}، ފުރިހަމަ ބުރަކަށް ${LR(BOLI_DAILY_PERFECT)} އިތުރަށް. ޕްރެކްޓިސް ކާމިޔާބުކުރޭ ދަތި (${LR('+'+WIN_BONUS[3])}) ނުވަތަ ރާއްޖެ މާސްޓަރ (${LR('+'+WIN_BONUS[4])}) ލެވެލުން. ކޮންމެ ގޭމަކުން XP ލިބޭނެ.`)}</span></div>
 ${checking()}
-<button class="howlink" data-a="howto">${I.book}How to play</button>
+<button class="howlink" data-a="howto">${I.book}${T('How to play','ކުޅޭނެ ގޮތް')}</button>
 <div class="spbox" id="spbox"></div>
-<p class="snote">Part of <a href="../">Dhivehi Games</a>. Boli you earn here spend in the Digu store.</p>
+<p class="snote">${T('Part of <a href="../">Dhivehi Games</a>. Boli you earn here spend in the Digu store.','<a href="../">ދިވެހި ގޭމްސް</a> ގެ ބައެއް. މިތަނުން ލިބޭ ބޮލި ޚަރަދުކުރެވޭނީ ޑިގުގެ ސްޓޯރުގައެވެ.')}</p>
 </main>`;
  const el=$('#spbox');if(el&&window.DGSponsors){try{spCtl=DGSponsors.box(el);}catch(e){}}
  if(NET&&NET.playing){try{NET.playing(n=>{liveN=n|0;const l=$('#qmLive span');if(l)l.textContent=liveText();});}catch(e){}}
  dvNote();}
+const tCount=()=>topicsSel.length===TKEYS.length?T('All','ހުރިހާ'):LR(topicsSel.length+' / 8');
+/* Dhivehi mode on the home: the "being checked" note, and how many questions in play still show in English */
 function dvNote(){const e=$('#dvnote');if(!e)return;if(lang!=='dv'){e.hidden=true;return;}
- const n=BANK.dv?BANK.dv.n:null,t=BANK.en?BANK.en.q.length:null;e.hidden=false;
- e.textContent=(n!=null&&t?`${n} of ${t} questions are in Dhivehi so far; the rest show in English. `:'')+'More Dhivehi questions coming soon.';
- if(n==null)loadBank('dv').then(()=>loadBank('en')).then(()=>{if(screen==='home')dvNote();}).catch(()=>{});}
-
+ if(!BANK.dv||!BANK.en){e.hidden=true;loadBoth().then(()=>{if(screen==='home'&&BANK.en)dvNote();}).catch(()=>{});return;}
+ const qs=bankQs(),miss=qs.filter(q=>!hasDv(q.id)).length,unchk=qs.some(q=>hasDv(q.id)&&BANK.dv.by[q.id].dvChecked!==true);
+ const parts=[];if(unchk)parts.push(DVCHK);if(miss)parts.push(`${LR(qs.length)} ސުވާލުގެ ތެރެއިން ${LR(miss)} ސުވާލު އަދި ދައްކަނީ އިނގިރޭސިން`);
+ e.hidden=!parts.length;e.textContent=parts.join(' · ');}
 /* ---------- match screen: a fixed frame (top bar, player strip, stage, dock) whose parts update in place ---------- */
 function buildMatch(){screen='match';offHome();document.documentElement.dataset.scr='match';lastRender='';lastStrip='';
- app.innerHTML=`<main class="page match" id="match">
-<div class="qt"><button class="hp mb" data-a="menu" aria-label="Menu">${I.menu}</button><div class="qhead" id="qhead"></div>
- <span class="mini" role="group" aria-label="Question language"><button data-a="lang" data-v="en" aria-pressed="${lang==='en'}">EN</button><button class="dv" data-a="lang" data-v="dv" lang="dv" aria-pressed="${lang==='dv'}">ދިވެހި</button></span></div>
-<div class="pls" id="strip" aria-label="Players"></div>
+ app.innerHTML=`<main class="page match" id="match"${pgAttr()}>
+<div class="qt"><button class="hp mb" data-a="menu" aria-label="${T('Menu','މެނޫ')}">${I.menu}</button><div class="qhead" id="qhead"></div>
+ <span class="mini" role="group" aria-label="${T('Question language','ސުވާލުގެ ބަސް')}"><button data-a="lang" data-v="en" lang="en" aria-pressed="${lang==='en'}">EN</button><button class="dv" data-a="lang" data-v="dv" lang="dv" aria-pressed="${lang==='dv'}">ދިވެހި</button></span></div>
+<div class="pls" id="strip" aria-label="${T('Players','ކުޅުންތެރިން')}"></div>
 <div class="stage" id="stage"></div>
 <div class="dock" id="dock"><span class="dh" id="dockHost"></span><span class="ds" id="dstat"></span></div>
 </main>`;
  if(online()&&NET)NET.updDock();
  clearInterval(tickT);tickT=setInterval(tick,100);}
-const topicChip=t=>`<span class="topic">${I[t]||''}${esc(TNAME[t]||'')}</span>`;
-const lvlBadge=d=>d?`<span class="lvl l${d}"${lang==='dv'&&LVDV[d]?' lang="dv" dir="rtl"':''}>${esc(lang==='dv'&&LVDV[d]?LVDV[d]:LVNAME[d])}</span>`:'';
-const levelLine=()=>S.level?LVNAME[S.level]:'Easy to Raajje Master';
+const topicChip=t=>`<span class="topic">${I[t]||''}${esc(tName(t))}</span>`;
+const lvlBadge=d=>d?`<span class="lvl l${d}"${lang==='dv'?' lang="dv"':''}>${esc(lvName(d))}</span>`:'';
+const levelLine=()=>S.level?lvName(S.level):T('Easy to Raajje Master','ފަސޭހައިން ފެށިގެން ރާއްޖެ މާސްޓަރއަށް');
+/* the small "Dhivehi being checked" note, while this question's Dhivehi text is not yet checked */
+const dvChk=q=>lang==='dv'&&q&&q.dv&&!q.dv.ok?`<p class="dvchk">${DVCHK}</p>`:'';
 function ringHTML(left){const sec=Math.max(0,Math.ceil(left/1000));return `<div class="ring${sec<=5?' low':''}" id="ring"><svg viewBox="0 0 64 64"><circle class="tk" cx="32" cy="32" r="29"/><circle class="pr" cx="32" cy="32" r="29" stroke-dasharray="${RC.toFixed(1)}" stroke-dashoffset="${(RC*(1-left/Q_MS)).toFixed(1)}"/></svg><b>${sec}</b></div>`;}
 const qLeft=()=>S?Math.max(0,Math.min(Q_MS,Q_MS-(Date.now()-S.at))):0;
 let lastStrip='';
+const youName=p=>T('You','ތިބާ');
 function stripHTML(){const rev=S.phase==='rev',k0=meIdx();
  return S.players.map((p,k)=>{const pk=S.picks[p.id]||(p.id===myId&&myPicks[S.qi]!=null&&S.phase==='q'?{p:myPicks[S.qi]}:null);
   const ex=rev&&!p.gone?(p.gain>=900?'laugh':p.gain>0?'happy':'sad'):'';
-  return `<div class="pl${k===k0?' me':''}${p.gone?' gone':''}" data-pid="${esc(p.id)}">${rev&&p.gain!=null?`<span class="gain${p.gain?'':' z'}">+${p.gain}</span>`:''}${avHTML(p,44,ex,k)}${p.cpu?'<span class="cpu">CPU</span>':''}${S.phase==='q'&&pk?`<span class="ok" aria-label="Answered">${I.check}</span>`:''}<span class="n">${esc(k===k0?'You':p.name)}</span><span class="s">${p.gone?(p.afk?'Away':'Left'):p.score.toLocaleString('en')}</span></div>`;}).join('');}
+  return `<div class="pl${k===k0?' me':''}${p.gone?' gone':''}" data-pid="${esc(p.id)}">${rev&&p.gain!=null?`<span class="gain${p.gain?'':' z'}" dir="ltr">+${p.gain}</span>`:''}${avHTML(p,44,ex,k)}${p.cpu?'<span class="cpu" lang="en">CPU</span>':''}${S.phase==='q'&&pk?`<span class="ok" aria-label="${T('Answered','ޖަވާބު ދީފި')}">${I.check}</span>`:''}<span class="n" dir="auto">${esc(k===k0?youName(p):p.name)}</span><span class="s">${p.gone?(p.afk?T('Away','ދުރުގައި'):T('Left','ދޫކޮށްފި')):p.score.toLocaleString('en')}</span></div>`;}).join('');}
 function render(){if(screen!=='match'||!S)return;const st=$('#stage');if(!st)return;
  const k0=meIdx(),spec=k0<0,daily=S.kind==='daily';
  document.getElementById('match').classList.toggle('watching',online()&&!!NET&&NET.isSpectator());
  /* top bar: question counter */
- const qn=Math.max(1,S.qi+1);$('#qhead').innerHTML=S.phase==='over'?'<b>Match over</b>':S.phase==='intro'?`<b>${daily?'Daily quiz':'Get ready'}</b>`:`<b>Question ${qn} / ${S.n}</b><div class="bar"><i style="width:${qn/S.n*100}%"></i></div>`;
+ const qn=Math.max(1,S.qi+1);$('#qhead').innerHTML=S.phase==='over'?`<b>${T('Match over','މެޗު ނިމުނީ')}</b>`:S.phase==='intro'?`<b>${daily?T('Daily quiz','ދުވަހުގެ ކުއިޒް'):T('Get ready','ތައްޔާރުވޭ')}</b>`:`<b>${T('Question','ސުވާލު')} ${LR(qn+' / '+S.n)}</b><div class="bar"><i style="width:${qn/S.n*100}%"></i></div>`;
  document.querySelectorAll('#match .mini button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.v===lang)));
  /* player strip (not in the Daily quiz, and not on the standings / podium, which show everyone anyway) */
  const strip=$('#strip'),showStrip=!daily&&(S.phase==='q'||S.phase==='rev');strip.hidden=!showStrip;
  if(showStrip){const h=stripHTML();if(h!==lastStrip){lastStrip=h;strip.innerHTML=h;}}else lastStrip='';
  /* dock line */
- $('#dstat').innerHTML=online()?`${S.quick?'Quick Match':'Friends table'} · ${active().length} player${active().length===1?'':'s'}${spec?'<br>watching':''}`:daily?`Daily quiz · ${esc(fmtDay(S.day))}`:'Practice · '+(LVNAME[S.level]||'')+(WIN_BONUS[S.level]?' · win for +'+WIN_BONUS[S.level]+' Boli':' · no Boli');
+ const na=active().length;
+ $('#dstat').innerHTML=online()?`${S.quick?T('Quick Match','ކުއިކް މެޗް'):T('Friends table','ރަޙްމަތްތެރިންގެ މޭޒު')} · ${T(`${na} player${na===1?'':'s'}`,`${LR(na)} ކުޅުންތެރިން`)}${spec?'<br>'+T('watching','ބަލަނީ'):''}`
+  :daily?`${T('Daily quiz','ދުވަހުގެ ކުއިޒް')} · ${esc(fmtDay(S.day))}`
+  :T('Practice','ޕްރެކްޓިސް')+' · '+lvName(S.level)+(WIN_BONUS[S.level]?T(' · win for +'+WIN_BONUS[S.level]+' Boli',` · ކާމިޔާބުވެއްޖެނަމަ ${LR('+'+WIN_BONUS[S.level])} ބޮލި`):T(' · no Boli',' · ބޮލި ނުލިބޭ'));
  const key=[S.gid,S.phase,S.qi,lang,JSON.stringify(S.picks),myPicks[S.qi],S.players.map(p=>p.id+p.score+(p.gone?'g':'')).join(),spec].join('|');
  if(key===lastRender)return;lastRender=key;
  if(S.phase==='intro')st.innerHTML=introHTML();
@@ -746,42 +820,49 @@ function render(){if(screen!=='match'||!S)return;const st=$('#stage');if(!st)ret
  if(S.phase==='over')overFx();
  if(online()&&NET)NET.updDock();}
 let revSnd='';
-const fmtDay=d=>{try{return new Date(d+'T12:00:00Z').toLocaleDateString('en-GB',{day:'numeric',month:'short'});}catch(e){return d;}};
+const fmtDay=d=>{if(lang==='dv'&&/^\d{4}-\d\d-\d\d$/.test(d||''))return LR(+d.slice(8,10))+' '+DVMON[+d.slice(5,7)-1];
+ try{return new Date(d+'T12:00:00Z').toLocaleDateString('en-GB',{day:'numeric',month:'short'});}catch(e){return d;}};
+const nQs=n=>T(n+' questions',`${LR(n)} ސުވާލު`);
 function introHTML(){const daily=S.kind==='daily',left=Math.max(0,INTRO_MS-(Date.now()-S.at));
- return `<div class="intro"><p class="st">${daily?'The same 10 questions for everyone today · one try':S.kind==='practice'?'Practice · '+S.n+' questions':(S.quick?'Quick Match':'Friends table')+' · '+S.n+' questions'}</p><p class="st"><b>${esc(levelLine())}</b>${S.level?'':' · the questions get harder as you go'}</p>
- <div class="big" id="icd">${Math.max(1,Math.ceil(left/1000))}</div><p class="ttl2" style="margin-top:0">Get ready</p><p class="st">15 seconds a question. A faster right answer scores more.</p>
- ${daily?'':`<div class="ipl">${S.players.map((p,k)=>`<span data-pid="${esc(p.id)}">${avHTML(p,46,'',k)}</span>`).join('')}</div>`}${checking(true)}</div>`;}
-function qHTML(){const q=S.qs[S.qi];if(!q)return '<p class="waitline">Loading the question…</p>';const v=qView(q),rtl=lang==='dv'&&!!q.dv,k0=meIdx(),spec=k0<0||(me()&&me().gone);
+ const kind=daily?T('The same 10 questions for everyone today · one try',`މިއަދު އެންމެންނަށް އެއް ${LR(10)} ސުވާލު · އެއް ފުރުޞަތު`)
+  :S.kind==='practice'?T('Practice','ޕްރެކްޓިސް')+' · '+nQs(S.n):(S.quick?T('Quick Match','ކުއިކް މެޗް'):T('Friends table','ރަޙްމަތްތެރިންގެ މޭޒު'))+' · '+nQs(S.n);
+ return `<div class="intro"><p class="st">${kind}</p><p class="st"><b>${esc(levelLine())}</b>${S.level?'':T(' · the questions get harder as you go',' · ކުރިއަށް ދާވަރަކަށް ސުވާލު ދަތިވާނެ')}</p>
+ <div class="big" id="icd">${Math.max(1,Math.ceil(left/1000))}</div><p class="ttl2" style="margin-top:0">${T('Get ready','ތައްޔާރުވޭ')}</p><p class="st">${T('15 seconds a question. A faster right answer scores more.',`ކޮންމެ ސުވާލަކަށް ${LR(15)} ސިކުންތު. އަވަހަށް ދޭ ރަނގަޅު ޖަވާބަށް ޕޮއިންޓް ގިނަ.`)}</p>
+ ${daily?'':`<div class="ipl">${S.players.map((p,k)=>`<span data-pid="${esc(p.id)}">${avHTML(p,46,'',k)}</span>`).join('')}</div>`}${checking(true)}${lang==='dv'&&(S.qs||[]).some(q=>q&&q.dv&&!q.dv.ok)?`<p class="dvchk">${DVCHK}</p>`:''}</div>`;}
+/* answer labels: A B C D, or ހ ށ ނ ރ on a Dhivehi question (reports always use A-D) */
+const LDV='ހށނރ';
+function qHTML(){const q=S.qs[S.qi];if(!q)return `<p class="waitline">${T('Loading the question…','ސުވާލު ލޯޑުވަނީ…')}</p>`;const v=qView(q),rtl=qRtl(q),k0=meIdx(),spec=k0<0||(me()&&me().gone),LB=rtl?LDV:L;
  const mine=S.picks[myId]?S.picks[myId].p:myPicks[S.qi];const locked=mine!=null||spec;
- return `${S.kind==='daily'?soloScore():''}<div class="qc">${ringHTML(qLeft())}<div class="tags">${topicChip(q.t)}${lvlBadge(q.d)}</div><p class="qq"${rtl?' dir="rtl" lang="dv"':''}>${tx(v.q,rtl)}</p></div>
- ${lang==='dv'&&!q.dv?'<div class="dvnote">Not in Dhivehi yet: shown in English.</div>':''}
- <div class="ans${locked?' locked':''}"${rtl?' dir="rtl" lang="dv"':''}>${v.a.map((a,i)=>`<button class="an${mine===i?' mine':''}" data-a="ans" data-i="${i}"${locked?' disabled':''} aria-label="${L[i]}: ${esc(a)}"><span class="L">${L[i]}</span><span class="tx">${tx(a,rtl)}</span></button>`).join('')}</div>
- ${spec?`<p class="watchnote">${me()&&me().gone?'You were marked away: watching the rest of this match.':'You are watching this match.'}</p>`:mine!=null?'<p class="watchnote">Answer locked in. Waiting for the others…</p>':''}`;}
-function soloScore(){const m=me();if(!m)return '';return `<div class="solo-score">${avHTML(m,40)}<span><b>You</b><small>${S.kind==='daily'?'Daily quiz':'Practice'} · ${m.right} right so far</small></span><span class="pts">${m.score.toLocaleString('en')}</span></div>`;}
-function revHTML(){const q=S.qs[S.qi];if(!q)return '';const v=qView(q),rtl=lang==='dv'&&!!q.dv,m=me(),mp=S.picks[myId];
+ return `${S.kind==='daily'?soloScore():''}<div class="qc">${ringHTML(qLeft())}<div class="tags">${topicChip(q.t)}${lvlBadge(q.d)}${lang==='dv'&&!q.dv?'<span class="entag" lang="en">English</span>':''}</div><p class="qq"${qAttr(rtl)}>${tx(v.q,rtl)}</p></div>
+ <div class="ans${locked?' locked':''}"${qAttr(rtl)}>${v.a.map((a,i)=>`<button class="an${mine===i?' mine':''}" data-a="ans" data-i="${i}"${locked?' disabled':''} aria-label="${LB[i]}: ${esc(a)}"><span class="L">${LB[i]}</span><span class="tx">${tx(a,rtl)}</span></button>`).join('')}</div>
+ ${spec?`<p class="watchnote">${me()&&me().gone?T('You were marked away: watching the rest of this match.','ތިބާ ދުރުގައިވާ ކަމަށް ފާހަގަކުރެވިއްޖެ: މި މެޗުގެ ބާކީ ބައި ބަލަނީ.'):T('You are watching this match.','ތިބާ މި މެޗު ބަލަނީ.')}</p>`:mine!=null?`<p class="watchnote">${T('Answer locked in. Waiting for the others…','ޖަވާބު ލޮކްވެއްޖެ. އެހެން މީހުންނަށް މަޑުކުރަނީ…')}</p>`:''}${dvChk(q)}`;}
+function soloScore(){const m=me();if(!m)return '';return `<div class="solo-score">${avHTML(m,40)}<span><b>${T('You','ތިބާ')}</b><small>${S.kind==='daily'?T('Daily quiz','ދުވަހުގެ ކުއިޒް'):T('Practice','ޕްރެކްޓިސް')} · ${T(m.right+' right so far',`މިހާތަނަށް ${LR(m.right)} ރަނގަޅު`)}</small></span><span class="pts">${m.score.toLocaleString('en')}</span></div>`;}
+function revHTML(){const q=S.qs[S.qi];if(!q)return '';const v=qView(q),rtl=qRtl(q),m=me(),mp=S.picks[myId],LB=rtl?LDV:L;
  const res=!m||m.gone?'':mp?(mp.p===q.c?'':' no'):' to';
  const icon=res===''&&m&&!m.gone?sv('<path d="M5 12.5l4.5 4.5L19 7.5"/>','class="ic" stroke-width="3"'):res===' to'?sv('<circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/>','class="ic" stroke-width="2.6"'):sv('<path d="M6 6l12 12M18 6 6 18"/>','class="ic" stroke-width="3"');
  const by={};Object.keys(S.picks).forEach(id=>{const p=S.picks[id].p;(by[p]=by[p]||[]).push(id);});
- const head=!m||m.gone?'Did you know?':mp&&mp.p===q.c?'Right! +'+(m.gain||0):mp?'Not this time':'Time is up';
+ const head=!m||m.gone?T('Did you know?','ތިޔަ ދަންނަވާތޯ؟'):mp&&mp.p===q.c?T('Right! +'+(m.gain||0),`ރަނގަޅު! ${LR('+'+(m.gain||0))}`):mp?T('Not this time','މިފަހަރު ނުވި'):T('Time is up','ވަގުތު ހަމަވެއްޖެ');
  const cls=!m||m.gone?'':mp&&mp.p===q.c?'ok':'no';
- const solo=mode==='practice'||mode==='daily';
- return `${S.kind==='daily'?soloScore():''}<div class="qc"><div class="ring res${m&&!m.gone?res:''}">${m&&!m.gone?icon:sv('<path d="M5 12.5l4.5 4.5L19 7.5"/>','class="ic" stroke-width="3"')}</div><div class="tags">${topicChip(q.t)}${lvlBadge(q.d)}</div><p class="qq"${rtl?' dir="rtl" lang="dv"':''}>${tx(v.q,rtl)}</p></div>
- <div class="ans"${rtl?' dir="rtl" lang="dv"':''}>${v.a.map((a,i)=>{const c=i===q.c?'right':(mp&&mp.p===i?'wrong':'dim');
+ const solo=mode==='practice'||mode==='daily',frtl=rtl&&!!q.dv.f;
+ return `${S.kind==='daily'?soloScore():''}<div class="qc"><div class="ring res${m&&!m.gone?res:''}">${m&&!m.gone?icon:sv('<path d="M5 12.5l4.5 4.5L19 7.5"/>','class="ic" stroke-width="3"')}</div><div class="tags">${topicChip(q.t)}${lvlBadge(q.d)}${lang==='dv'&&!q.dv?'<span class="entag" lang="en">English</span>':''}</div><p class="qq"${qAttr(rtl)}>${tx(v.q,rtl)}</p></div>
+ <div class="ans"${qAttr(rtl)}>${v.a.map((a,i)=>{const c=i===q.c?'right':(mp&&mp.p===i?'wrong':'dim');
   const who=(by[i]||[]).map(id=>{const k=S.players.findIndex(p=>p.id===id);return k<0?'':avHTML(S.players[k],24,'',k);}).join('');
-  return `<div class="an ${c}"><span class="L">${L[i]}</span><span class="tx">${tx(a,rtl)}</span>${S.kind==='daily'?'':`<span class="who">${who}</span>`}${i===q.c?I.check.replace('<svg','<svg class="mark"'):c==='wrong'?I.x.replace('<svg','<svg class="mark"'):''}</div>`;}).join('')}</div>
- <div class="fact"><b class="${cls}">${esc(head)}</b>${esc(q.f)}</div>
- <div class="qrepw">${reported(q.id)?`<span class="qrep done">${I.flag}Reported</span>`:`<button class="qrep" data-a="qreport" aria-label="Report this question">${I.flag}Report</button>`}</div>
- ${solo?`<button class="bt pri nextb" data-a="next">${S.qi+1<S.n?(S.kind==='daily'?'Next question':'Standings'):'See the result'}</button>`:''}`;}
+  return `<div class="an ${c}"><span class="L">${LB[i]}</span><span class="tx">${tx(a,rtl)}</span>${S.kind==='daily'?'':`<span class="who">${who}</span>`}${i===q.c?I.check.replace('<svg','<svg class="mark"'):c==='wrong'?I.x.replace('<svg','<svg class="mark"'):''}</div>`;}).join('')}</div>
+ <div class="fact"><b class="${cls}">${esc(head)}</b><span class="ft"${qAttr(frtl)}>${tx(qFact(q),frtl)}</span></div>
+ ${dvChk(q)}<div class="qrepw">${reported(q.id)?`<span class="qrep done">${I.flag}${T('Reported','ރިޕޯޓްކުރެވިއްޖެ')}</span>`:`<button class="qrep" data-a="qreport" aria-label="${T('Report this question','މި ސުވާލު ރިޕޯޓްކުރޭ')}">${I.flag}${T('Report','ރިޕޯޓް')}</button>`}</div>
+ ${solo?`<button class="bt pri nextb" data-a="next">${S.qi+1<S.n?(S.kind==='daily'?T('Next question','ދެން އޮތް ސުވާލު'):T('Standings','ޕޮއިންޓް ޓޭބަލް')):T('See the result','ނަތީޖާ ބަލާ')}</button>`:''}`;}
 function standHTML(){const ids=rankIds(S),prev=S.prev||ids,k0=meIdx(),left=Math.max(0,STAND_MS-(Date.now()-S.at));
  const q=S.qs[S.qi],fastest=(()=>{let b=null;Object.keys(S.picks).forEach(id=>{const pk=S.picks[id];if(q&&pk.p===q.c&&(!b||pk.ms<b.ms))b={id,ms:pk.ms};});return b;})();
  const rows=ids.map((id,r)=>{const k=S.players.findIndex(p=>p.id===id),p=S.players[k],pr=prev.indexOf(id),mv=pr<0||pr===r?I.eq:pr>r?I.up:I.dn;
-  const pk=S.picks[id],note=fastest&&fastest.id===id?`Fastest this round, ${(fastest.ms/1000).toFixed(1)} s`:p.streak>=3?`${p.streak} right in a row`:p.gain>0?`+${p.gain.toLocaleString('en')} this round`:p.cpu?'Computer player':pk?'Not this time':'No answer';
-  return `<li class="${k===k0?'me':''}" data-pid="${esc(id)}"><span class="rk">${r+1}</span>${avHTML(p,40,'',k)}<span class="nn"><b>${esc(k===k0?'You':p.name)}</b><small>${esc(note)}</small></span><span class="pt">${p.score.toLocaleString('en')}</span>${mv}</li>`;}).join('');
- const gone=S.players.filter(p=>p.gone).map(p=>`<li class="gone" data-pid="${esc(p.id)}"><span class="rk">–</span>${avHTML(p,40)}<span class="nn"><b>${esc(p.name)}</b><small>${p.afk?'Away':'Left the match'}</small></span><span class="pt">${p.score.toLocaleString('en')}</span></li>`).join('');
+  const pk=S.picks[id],fs=fastest?(fastest.ms/1000).toFixed(1):'';
+  const note=fastest&&fastest.id===id?T(`Fastest this round, ${fs} s`,`މި ބުރުގައި އެންމެ އަވަސް، ${LR(fs)} ސިކުންތު`):p.streak>=3?T(`${p.streak} right in a row`,`ފަހަތުން ފަހަތަށް ${LR(p.streak)} ރަނގަޅު`)
+   :p.gain>0?T(`+${p.gain.toLocaleString('en')} this round`,`މި ބުރުން ${LR('+'+p.gain.toLocaleString('en'))}`):p.cpu?T('Computer player','ކޮމްޕިއުޓަރު ކުޅުންތެރިޔާ'):pk?T('Not this time','މިފަހަރު ނުވި'):T('No answer','ޖަވާބެއް ނުދޭ');
+  return `<li class="${k===k0?'me':''}" data-pid="${esc(id)}"><span class="rk">${r+1}</span>${avHTML(p,40,'',k)}<span class="nn"><b dir="auto">${esc(k===k0?youName(p):p.name)}</b><small>${esc(note)}</small></span><span class="pt">${p.score.toLocaleString('en')}</span>${mv}</li>`;}).join('');
+ const gone=S.players.filter(p=>p.gone).map(p=>`<li class="gone" data-pid="${esc(p.id)}"><span class="rk">–</span>${avHTML(p,40)}<span class="nn"><b dir="auto">${esc(p.name)}</b><small>${p.afk?T('Away','ދުރުގައި'):T('Left the match','މެޗު ދޫކޮށްފި')}</small></span><span class="pt">${p.score.toLocaleString('en')}</span></li>`).join('');
  const solo=mode==='practice';
- return `<p class="ttl2">Standings</p><p class="st">After question ${S.qi+1} of ${S.n}</p><ol class="stand">${rows}${gone}</ol>
- <div class="nextbar">Question ${S.qi+2} of ${S.n} next<span class="cd" id="ncd">${Math.max(1,Math.ceil(left/1000))}</span></div>
- ${solo?'<button class="bt pri nextb" data-a="next">Next question</button>':''}`;}
+ return `<p class="ttl2">${T('Standings','ޕޮއިންޓް ޓޭބަލް')}</p><p class="st">${T(`After question ${S.qi+1} of ${S.n}`,`ސުވާލު ${LR((S.qi+1)+' / '+S.n)} ނިމުނުއިރު`)}</p><ol class="stand">${rows}${gone}</ol>
+ <div class="nextbar">${T(`Question ${S.qi+2} of ${S.n} next`,`ދެން: ސުވާލު ${LR((S.qi+2)+' / '+S.n)}`)}<span class="cd" id="ncd">${Math.max(1,Math.ceil(left/1000))}</span></div>
+ ${solo?`<button class="bt pri nextb" data-a="next">${T('Next question','ދެން އޮތް ސުވާލު')}</button>`:''}`;}
 /* final results: podium, Boli */
 let overKey='',overAw=null;
 function place(){const ids=rankIds(S);return ids.indexOf(myId);}
@@ -791,30 +872,31 @@ function overAward(){const k=S.gid;if(overKey===k)return overAw;overKey=k;overAw
  else if(S.kind==='practice'){const b=place()===0?WIN_BONUS[S.level]||0:0;overAw=award('quiz:'+S.gid,b,xp)||{sh:0,xp:0};if(!b)Object.assign(overAw,{none:1,practice:1});}
  else{overAw=award('quiz:'+S.gid,0,xp)||{sh:0,xp:0};Object.assign(overAw,{none:1,friends:1});}
  overAw.lv=S.level;return overAw;}
-function earnHTML(aw){if(!aw)return '';const x=aw.xp>0?`<p class="earn xp">+${aw.xp} XP</p>`:'';return x+earnBoli(aw);}
-function earnBoli(aw){const wb='Win on Hard (+'+WIN_BONUS[3]+') or Raajje Master (+'+WIN_BONUS[4]+') for Boli.';
- if(aw.none&&aw.practice)return `<p class="earn muted">${WIN_BONUS[aw.lv]?'No win bonus this time.':'Practice gives no Boli. '+wb}</p>`;
- if(aw.none&&aw.friends)return '<p class="earn muted">Friends tables give no Boli.</p>';if(aw.sh>0)return `<p class="earn">+${aw.sh} ${BOLI_IMG} Boli${aw.capped?' (daily limit reached)':''}</p>`;
- if(aw.capped)return '<p class="earn muted">Daily Boli limit reached.</p>';return '';}
+function earnHTML(aw){if(!aw)return '';const x=aw.xp>0?`<p class="earn xp" dir="ltr">+${aw.xp} XP</p>`:'';return x+earnBoli(aw);}
+function earnBoli(aw){const wb=T('Win on Hard (+'+WIN_BONUS[3]+') or Raajje Master (+'+WIN_BONUS[4]+') for Boli.',`ބޮލި ހޯދަން ދަތި (${LR('+'+WIN_BONUS[3])}) ނުވަތަ ރާއްޖެ މާސްޓަރ (${LR('+'+WIN_BONUS[4])}) ލެވެލުން ކާމިޔާބުކުރޭ.`);
+ if(aw.none&&aw.practice)return `<p class="earn muted">${WIN_BONUS[aw.lv]?T('No win bonus this time.','މިފަހަރު ކާމިޔާބީގެ ބޯނަހެއް ނުލިބުނު.'):T('Practice gives no Boli. ','ޕްރެކްޓިސްއިން ބޮލި ނުލިބޭ. ')+wb}</p>`;
+ if(aw.none&&aw.friends)return `<p class="earn muted">${T('Friends tables give no Boli.','ރަޙްމަތްތެރިންގެ މޭޒުތަކުން ބޮލި ނުލިބޭ.')}</p>`;
+ if(aw.sh>0)return `<p class="earn">${T(`+${aw.sh} ${BOLI_IMG} Boli${aw.capped?' (daily limit reached)':''}`,`${LR('+'+aw.sh)} ${BOLI_IMG} ބޮލި${aw.capped?' (ދުވަހުގެ ލިމިޓަށް ފޯރައިފި)':''}`)}</p>`;
+ if(aw.capped)return `<p class="earn muted">${T('Daily Boli limit reached.','ދުވަހުގެ ބޮލި ލިމިޓަށް ފޯރައިފި.')}</p>`;return '';}
 let overFxK='';
 function overFx(){if(overFxK===S.gid)return;overFxK=S.gid;const pl=place();if(pl===0&&S.kind!=='daily')SFX.win();else if(S.kind==='daily'&&me()&&me().right>=7)SFX.win();}
 function overHTML(){const aw=overAward(),k0=meIdx(),m=me();
- if(S.kind==='daily'){const r=m?m.right:0;return `<p class="ttl2">${r===S.n?'Perfect!':r>=7?'Great quiz!':r>=4?'Nice try!':'Better luck tomorrow!'}</p><p class="st">Daily quiz · ${esc(fmtDay(S.day))}</p>
-  <div class="big-res">${r} / ${S.n}</div><p class="st">right answers</p>
-  <div class="solo-score">${avHTML(m||meP(),40,r>=7?'laugh':r>=4?'happy':'sad')}<span><b>You</b><small>${(m?m.score:0).toLocaleString('en')} points</small></span><span class="pts">${r}/${S.n}</span></div>
-  ${earnHTML(aw)}<p class="waitline">A new daily quiz comes at midnight, Maldives time.</p>
-  <div class="btns one"><button class="bt pri" data-a="home">Back to the quiz home</button></div>`;}
+ if(S.kind==='daily'){const r=m?m.right:0,sc=(m?m.score:0).toLocaleString('en');return `<p class="ttl2">${r===S.n?T('Perfect!','ފުރިހަމަ!'):r>=7?T('Great quiz!','ވަރަށް ރަނގަޅު!'):r>=4?T('Nice try!','ރަނގަޅު މަސައްކަތެއް!'):T('Better luck tomorrow!','މާދަމާ އިތުރަށް ރަނގަޅުވާނެ!')}</p><p class="st">${T('Daily quiz','ދުވަހުގެ ކުއިޒް')} · ${esc(fmtDay(S.day))}</p>
+  <div class="big-res" dir="ltr">${r} / ${S.n}</div><p class="st">${T('right answers','ރަނގަޅު ޖަވާބު')}</p>
+  <div class="solo-score">${avHTML(m||meP(),40,r>=7?'laugh':r>=4?'happy':'sad')}<span><b>${T('You','ތިބާ')}</b><small>${T(sc+' points',`${LR(sc)} ޕޮއިންޓް`)}</small></span><span class="pts" dir="ltr">${r}/${S.n}</span></div>
+  ${earnHTML(aw)}<p class="waitline">${T('A new daily quiz comes at midnight, Maldives time.',`އާ ދުވަހުގެ ކުއިޒް އަންނާނީ ދިވެހިރާއްޖޭގެ ގަޑިން ރޭގަނޑު ${LR(12)} ޖަހާއިރުއެވެ.`)}</p>
+  <div class="btns one"><button class="bt pri" data-a="home">${T('Back to the quiz home','ކުއިޒްގެ ހޯމަށް')}</button></div>`;}
  const ids=rankIds(S),P=ids.map(id=>S.players.find(p=>p.id===id)),ki=p=>S.players.indexOf(p);
- const bo=r=>S.kind==='online'&&S.quick&&BOLI_QUICK[r]?`<span class="bo">${BOLI_IMG.replace('width="22" height="22"','width="16" height="16"')}+${BOLI_QUICK[r]}</span>`:'';
- const podium=(p,r)=>p?`<div class="p p${r+1}" data-pid="${esc(p.id)}">${r===0?I.crown:''}${avHTML(p,r===0?74:58,r===0?'laugh':'happy',ki(p))}<span class="nm2">${esc(ki(p)===k0?'You':p.name)}</span><span class="ps">${p.score.toLocaleString('en')}</span>${bo(r)}<div class="blk">${r+1}</div></div>`:'<div class="p"></div>';
- const win=P[0],head=!win?'Match over':ki(win)===k0?'You win!':esc(win.name)+' wins!';
- const rest=P.slice(3).map((p,i)=>`<li class="${ki(p)===k0?'me':''}" data-pid="${esc(p.id)}"><span class="rk">${i+4}</span>${avHTML(p,40,'',ki(p))}<span class="nn"><b>${esc(ki(p)===k0?'You':p.name)}</b><small>${p.cpu?'Computer player':p.right+' of '+S.n+' right'}</small></span><span class="pt">${p.score.toLocaleString('en')}</span></li>`).join('')
-  +S.players.filter(p=>p.gone).map(p=>`<li class="gone" data-pid="${esc(p.id)}"><span class="rk">–</span>${avHTML(p,40)}<span class="nn"><b>${esc(p.name)}</b><small>${p.afk?'Away':'Left the match'}</small></span><span class="pt">${p.score.toLocaleString('en')}</span></li>`).join('');
+ const bo=r=>S.kind==='online'&&S.quick&&BOLI_QUICK[r]?`<span class="bo" dir="ltr">${BOLI_IMG.replace('width="22" height="22"','width="16" height="16"')}+${BOLI_QUICK[r]}</span>`:'';
+ const podium=(p,r)=>p?`<div class="p p${r+1}" data-pid="${esc(p.id)}">${r===0?I.crown:''}${avHTML(p,r===0?74:58,r===0?'laugh':'happy',ki(p))}<span class="nm2" dir="auto">${esc(ki(p)===k0?youName(p):p.name)}</span><span class="ps">${p.score.toLocaleString('en')}</span>${bo(r)}<div class="blk">${r+1}</div></div>`:'<div class="p"></div>';
+ const win=P[0],head=!win?T('Match over','މެޗު ނިމުނީ'):ki(win)===k0?T('You win!','ތިބާ ކާމިޔާބު!'):esc(win.name)+T(' wins!',' ކާމިޔާބު!');
+ const rest=P.slice(3).map((p,i)=>`<li class="${ki(p)===k0?'me':''}" data-pid="${esc(p.id)}"><span class="rk">${i+4}</span>${avHTML(p,40,'',ki(p))}<span class="nn"><b dir="auto">${esc(ki(p)===k0?youName(p):p.name)}</b><small>${p.cpu?T('Computer player','ކޮމްޕިއުޓަރު ކުޅުންތެރިޔާ'):T(p.right+' of '+S.n+' right',`${LR(S.n)} ސުވާލުން ${LR(p.right)} ރަނގަޅު`)}</small></span><span class="pt">${p.score.toLocaleString('en')}</span></li>`).join('')
+  +S.players.filter(p=>p.gone).map(p=>`<li class="gone" data-pid="${esc(p.id)}"><span class="rk">–</span>${avHTML(p,40)}<span class="nn"><b dir="auto">${esc(p.name)}</b><small>${p.afk?T('Away','ދުރުގައި'):T('Left the match','މެޗު ދޫކޮށްފި')}</small></span><span class="pt">${p.score.toLocaleString('en')}</span></li>`).join('');
  const host=online()&&NET&&NET.isHost();
- const btns=mode==='practice'?'<div class="btns"><button class="bt pri" data-a="again">Play again</button><button class="bt" data-a="home">Home</button></div>'
-  :host?'<div class="btns"><button class="bt pri" data-a="netAgain">Play again</button><button class="bt" data-a="netLeave">Leave</button></div>'
-  :`<p class="waitline">${k0<0?'The next match starts soon.':'Waiting for the host to start the next match…'}</p><div class="btns one"><button class="bt" data-a="netLeave">Leave table</button></div>`;
- return `<p class="ttl2">${head}</p><p class="st">${S.n} questions · ${S.players.length} players${m?' · '+m.right+' right':''}</p>
+ const btns=mode==='practice'?`<div class="btns"><button class="bt pri" data-a="again">${T('Play again','އަލުން ކުޅޭ')}</button><button class="bt" data-a="home">${T('Home','ހޯމް')}</button></div>`
+  :host?`<div class="btns"><button class="bt pri" data-a="netAgain">${T('Play again','އަލުން ކުޅޭ')}</button><button class="bt" data-a="netLeave">${T('Leave','ދޫކޮށްލާ')}</button></div>`
+  :`<p class="waitline">${k0<0?T('The next match starts soon.','ދެން އޮތް މެޗު ވަރަށް އަވަހަށް ފެށޭނެ.'):T('Waiting for the host to start the next match…','ދެން އޮތް މެޗު ފެށުމަށް ހޯސްޓަށް މަޑުކުރަނީ…')}</p><div class="btns one"><button class="bt" data-a="netLeave">${T('Leave table','މޭޒު ދޫކޮށްލާ')}</button></div>`;
+ return `<p class="ttl2">${head}</p><p class="st">${T(`${S.n} questions · ${S.players.length} players${m?' · '+m.right+' right':''}`,`${LR(S.n)} ސުވާލު · ${LR(S.players.length)} ކުޅުންތެރިން${m?` · ${LR(m.right)} ރަނގަޅު`:''}`)}</p>
  <div class="pod">${podium(P[1],1)}${podium(P[0],0)}${podium(P[2],2)}</div>${rest?`<ol class="stand" start="4">${rest}</ol>`:''}${earnHTML(aw)}${btns}`;}
 /* 10 times a second: the timer ring, countdowns, the last-5-seconds tick */
 function tick(){if(screen!=='match'||!S)return;
@@ -831,17 +913,22 @@ function planAuto(){if(!AUTO||!S||S.phase!=='q'||meIdx()<0||myPicks[S.qi]!=null|
    (the admin Inbox) with the same shape and sign-in as shared/net.js reports. On localhost it goes to dd-report-queue
    (Digu sends that queue when it is next online), and so does a report that can't be sent right now. ---------- */
 const QREASONS=['Wrong answer','Spelling / Dhivehi text','Question unclear','Other'],REP_KEY='quiz-reported';
+/* the same reasons in Dhivehi (the report itself always carries the English reason, for the admin Inbox) */
+const QREASONS_DV=['ޖަވާބު ނުބައި','އިމްލާ / ދިވެހި ލިޔުން','ސުވާލު ސާފެއް ނޫން','އެހެން ކަމެއް'];
 function reportedList(){try{const a=JSON.parse(ls.get(REP_KEY)||'[]');return Array.isArray(a)?a:[];}catch(e){return[];}}
 const reported=id=>reportedList().includes(id);
 let repCtx=null;
-function openQReport(){if(!S)return;const q=S.qs[S.qi];if(!q||q.c==null)return;if(reported(q.id)){toast('You already reported this question. Thank you!');return;}
+/* repCtx.lang is 'dv' when the player saw this question in Dhivehi: the report then carries the Dhivehi text, so the
+   owner can find the exact string (question id + dv) */
+function openQReport(){if(!S)return;const q=S.qs[S.qi];if(!q||q.c==null)return;if(reported(q.id)){toast(T('You already reported this question. Thank you!','މި ސުވާލު ކުރިން ރިޕޯޓްކުރެވިފައިވޭ. ޝުކުރިއްޔާ!'));return;}
  const v=qView(q),mp=S.picks[myId];
- repCtx={id:q.id,d:q.d|0,lang:lang==='dv'&&q.dv?'dv':'en',picked:mp&&mp.p>=0?L[mp.p]:'none',q:v.q,right:v.a[q.c],pickedText:mp&&mp.p>=0?v.a[mp.p]:''};
+ repCtx={id:q.id,d:q.d|0,lang:qRtl(q)?'dv':'en',picked:mp&&mp.p>=0?L[mp.p]:'none',q:v.q,right:v.a[q.c],pickedText:mp&&mp.p>=0?v.a[mp.p]:''};
  if(!pausedAt){pauseSolo();repPaused=!!pausedAt;}
- sheet(`<div class="grab"></div><h2>Report this question</h2><p class="muted" style="margin:4px 0 0;font-size:13px">What’s wrong with it? Question <b>${esc(q.id)}</b> · ${esc(LVNAME[q.d]||'')}</p>
-<div class="rr" role="radiogroup" aria-label="Reason">${QREASONS.map((r,i)=>`<label><input type="radio" name="qrr" value="${i}"${i?'':' checked'}>${esc(r)}</label>`).join('')}</div>
-<label class="f" for="qrn">Note (optional)</label><textarea class="in" id="qrn" maxlength="200" rows="3" placeholder="What should it say?"></textarea>
-<div class="row"><button class="bt" data-a="close">Cancel</button><button class="bt pri" data-a="sendQReport">Send</button></div>`);}
+ const R=lang==='dv'?QREASONS_DV:QREASONS;
+ sheet(`<div class="grab"></div><h2>${T('Report this question','މި ސުވާލު ރިޕޯޓްކުރޭ')}</h2><p class="muted" style="margin:4px 0 0;font-size:13px">${T('What’s wrong with it? Question','ކޮން ކުށެއް؟ ސުވާލު')} <b dir="ltr">${esc(q.id)}</b> · ${esc(lvName(q.d))}</p>
+<div class="rr" role="radiogroup" aria-label="${T('Reason','ސަބަބު')}">${R.map((r,i)=>`<label><input type="radio" name="qrr" value="${i}"${i?'':' checked'}>${esc(r)}</label>`).join('')}</div>
+<label class="f" for="qrn">${T('Note (optional)','ނޯޓް (ބޭނުންނަމަ)')}</label><textarea class="in" id="qrn" maxlength="200" rows="3" dir="auto" placeholder="${T('What should it say?','ލިޔަންވީ ކިހިނެއް؟')}"></textarea>
+<div class="row"><button class="bt" data-a="close">${T('Cancel','ކެންސަލް')}</button><button class="bt pri" data-a="sendQReport">${T('Send','ފޮނުވާ')}</button></div>`);}
 const FBV='https://www.gstatic.com/firebasejs/12.19.0/';
 const FBCFG={apiKey:'AIzaSyCl9Xz5r80755hYX0ww2GRaB6TZTH6sayE',authDomain:'dhivehi-digu.firebaseapp.com',projectId:'dhivehi-digu',storageBucket:'dhivehi-digu.firebasestorage.app',messagingSenderId:'778464006205',appId:'1:778464006205:web:7dce5d63707c6b2d0eda54'};
 async function fbReport(rep){const [A,F,U]=await Promise.all([import(FBV+'firebase-app.js'),import(FBV+'firebase-firestore.js'),import(FBV+'firebase-auth.js')]);
@@ -857,14 +944,16 @@ async function sendQReport(){const c=repCtx;if(!c)return;repCtx=null;const sel=d
  ls.set(REP_KEY,JSON.stringify(reportedList().concat(c.id).slice(-500)));closeSheet();lastRender='';render();
  let ok=false;if(!LOCAL){try{await fbReport(rep);ok=true;}catch(e){}}
  if(!ok){let q=[];try{q=JSON.parse(ls.get('dd-report-queue')||'[]');if(!Array.isArray(q))q=[];}catch(e){}q.push(rep);ls.set('dd-report-queue',JSON.stringify(q.slice(-20)));}
- toast(ok?'Thanks! Sent to the Dhivehi Games team.':'Thanks! Saved, and sent to the Dhivehi Games team when you’re next online.',4000);}
+ toast(ok?T('Thanks! Sent to the Dhivehi Games team.','ޝުކުރިއްޔާ! ދިވެހި ގޭމްސް ޓީމަށް ފޮނުވިއްޖެ.'):T('Thanks! Saved, and sent to the Dhivehi Games team when you’re next online.','ޝުކުރިއްޔާ! ސޭވްކުރެވިއްޖެ. ދެން އޮންލައިން ވުމުން ދިވެހި ގޭމްސް ޓީމަށް ފޮނުވޭނެ.'),4000);}
 
 /* ---------- sheets, menu, toasts ---------- */
-function sheet(h){$('#sheetB').innerHTML=h;$('#sheet').classList.add('open');}
+/* our sheets and toasts follow the UI language (net.js has its own sheets, in English) */
+const dirTo=e=>{if(lang==='dv'){e.setAttribute('dir','rtl');e.setAttribute('lang','dv');}else{e.removeAttribute('dir');e.removeAttribute('lang');}};
+function sheet(h){const b=$('#sheetB');dirTo(b);b.innerHTML=h;$('#sheet').classList.add('open');}
 function closeSheet(){$('#sheet').classList.remove('open');if(repPaused){repPaused=false;if(!document.hidden)resumeSolo();}}
-let toastT=0;function toast(t,ms){const e=$('#toast');e.textContent=t;e.classList.remove('show');void e.offsetWidth;e.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>e.classList.remove('show'),ms||2600);}
+let toastT=0;function toast(t,ms){const e=$('#toast');dirTo(e);e.textContent=t;e.classList.remove('show');void e.offsetWidth;e.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>e.classList.remove('show'),ms||2600);}
 function closeToast(){clearTimeout(toastT);$('#toast').classList.remove('show');}
-function howHTML(){return `<div class="rules">
+function howHTML(){if(lang==='dv')return howDV();return `<div class="rules">
 <p><b>Dhivehi Quiz</b> asks questions about the Maldives: history, islands and atolls, Dhivehi and Thaana, food, sea life, sports, culture and general knowledge.</p>
 <p>A match is <b>10 questions</b>. Each has four answers and <b>15 seconds</b> on the clock. A wrong answer or no answer scores nothing.</p>
 <h3>Levels</h3>
@@ -882,34 +971,58 @@ function howHTML(){return `<div class="rules">
 <h3>Online</h3>
 <p>Voice chat is on at online tables (your mic stays off until you tap it). Miss 2 questions in a row and you are marked away.</p>
 <h3>Languages</h3>
-<p>Switch the questions between English and ދިވެހި at any time with the EN / ދިވެހި buttons. Questions without a Dhivehi version yet show in English.</p>
+<p>Choose <b>English</b> or <b lang="dv">ދިވެހި</b> with the big buttons on the quiz home, or with EN / <span lang="dv">ދިވެހި</span> during a match. The whole game then shows in that language. In Dhivehi every question comes in Dhivehi; one without a Dhivehi version yet shows in English, with a small “English” tag.</p>
 ${REVIEWED?'':'<p class="muted" style="font-size:12.5px">The questions are still being checked, so a few answers may change.</p>'}</div>`;}
-function openHowTo(){sheet(`<div class="grab"></div><h2>How to play</h2>${howHTML()}<div class="row"><button class="bt pri" data-a="close">Got it</button></div>`);}
-function openName(){const nm=myName();if(isReg()){sheet(`<div class="grab"></div><h2>Your name</h2><p class="muted" style="margin:6px 0 0">You play as your username, <b>${esc(nm)}</b>. Change your character in Digu.</p><div class="row"><button class="bt" data-a="close">Close</button><a class="bt pri" style="display:grid;place-items:center;text-decoration:none" href="../digu/?open=profile">Edit character</a></div>`);return;}
- sheet(`<div class="grab"></div><h2>Your name</h2><p class="muted" style="margin:4px 0 0;font-size:13px">Shown to other players. Your character comes from your Digu profile.</p>
-<label class="f" for="pnm">Name</label><input class="in" id="pnm" maxlength="14" value="${esc(nm)}" autocomplete="nickname" enterkeyhint="done">
-<div class="row"><button class="bt" data-a="close">Cancel</button><button class="bt pri" data-a="saveName">Save</button></div>
-<a class="bt wide" style="display:grid;place-items:center;margin-top:10px;text-decoration:none" href="../digu/?open=profile">Edit character in Digu</a>`);setTimeout(()=>{const i=$('#pnm');i&&i.focus();},250);}
-function saveName(){const v=(($('#pnm')||{}).value||'').replace(/[\u0000-\u001f<>]/g,'').trim().slice(0,14);if(!v){toast('Enter a name first.');return;}ls.set('lg-name',v);closeSheet();renderHome();}
+function howDV(){return `<div class="rules">
+<p><b>ދިވެހި ކުއިޒް</b> އަކީ ދިވެހިރާއްޖެއާ ބެހޭ ސުވާލުތަކުގެ ކުއިޒެކެވެ: ތާރީޚު، ރަށްތަކާއި އަތޮޅުތައް، ދިވެހި ބަހާއި ތާނަ، ކާނާ، ކަނޑުގެ ދިރުން، ކުޅިވަރު، ސަގާފަތާއި ފަންނު، އަދި އާންމު މަޢުލޫމާތު.</p>
+<p>މެޗެއްގައި <b>${LR(10)} ސުވާލު</b> ހުންނާނެ. ކޮންމެ ސުވާލަކަށް ހަތަރު ޖަވާބާއި <b>${LR(15)} ސިކުންތު</b> ލިބޭނެ. ނުބައި ޖަވާބަކަށް، ނުވަތަ ޖަވާބު ނުދީފިނަމަ، ޕޮއިންޓެއް ނުލިބޭނެ.</p>
+<h3>ލެވެލްތައް</h3>
+<p>ލެވެލް ހަތަރެއް އެބައޮތް: <b>ފަސޭހަ</b> (ރަނގަޅު ޖަވާބަކަށް ${LR(500)} ޕޮއިންޓް)، <b>މެދުމިން</b> (${LR(650)})، <b>ދަތި</b> (${LR(800)}) އަދި <b>ރާއްޖެ މާސްޓަރ</b> (${LR(1000)}). އަވަހަށް ޖަވާބު ދީފިނަމަ، އެ ޕޮއިންޓްގެ ދެބައިކުޅަ އެއްބައި ހަމައަށް އިތުރަށް ލިބޭނެ: ފުރަތަމަ ސިކުންތުގައި ފުރިހަމަ ބޯނަސް، ވަގުތު ހަމަވާއިރު އެއްވެސް ބޯނަހެއް ނުލިބޭ. ކޮންމެ ސުވާލެއްގައި އޭގެ ލެވެލް ފެންނާނެ.</p>
+<p><b>ޕްރެކްޓިސް</b> ގައި ލެވެލް ހޮވަނީ ތިބާއެވެ؛ <b>ރަޙްމަތްތެރިންގެ މޭޒު</b> ގައި ހޮވަނީ ހޯސްޓެވެ. <b>ކުއިކް މެޗް</b> އާއި <b>ދުވަހުގެ ކުއިޒް</b> ކުރިއަށް ދާވަރަކަށް ދަތިވާނެ: ސުވާލު ${LR('1–3')} ފަސޭހަ، ${LR('4–6')} މެދުމިން، ${LR('7–8')} ދަތި، ${LR('9–10')} ރާއްޖެ މާސްޓަރ.</p>
+<p>ކޮންމެ ޖަވާބަކަށް ފަހު ރަނގަޅު ޖަވާބާއި، ކުރު <b>ތިޔަ ދަންނަވާތޯ؟</b> މަޢުލޫމާތެއް ފެންނާނެ. ކޮންމެ ސުވާލަކަށް ފަހު ޕޮއިންޓް ޓޭބަލް ފެންނާނެ، އަދި އެންމެ މަތީ ތިން ކުޅުންތެރިން ޕޯޑިއަމަށް އަރާނެ.</p>
+<h3>ކުޅޭނެ ގޮތްތައް</h3>
+<p><b>ކުއިކް މެޗް</b>: ${LR(2)} އިން ${LR(6)} އަށް ކުޅުންތެރިން، ހުރިހާ މައުޟޫޢެއް. އެހެން މީހަކު ނެތްނަމަ ކޮމްޕިއުޓަރު ކުޅުންތެރިން ގޮނޑިތަކުގައި އިށީނދޭނެ؛ ފަހުން އަންނަ މީހަކު، ސުވާލުތަކުގެ ދެމެދު ކޮމްޕިއުޓަރެއްގެ ގޮނޑި ނަގައި، އޭގެ ޕޮއިންޓްތައް ލިބޭނެ.</p>
+<p><b>ރަޙްމަތްތެރިންނާ އެކު ކުޅޭ</b>: މޭޒެއް ހަދާ، ނުވަތަ ކޯޑަކުން ވަދޭ. ލެވެލާއި، ސުވާލުގެ އަދަދާއި، މައުޟޫޢުތައް ހޮވަނީ ހޯސްޓެވެ.</p>
+<p><b>ދުވަހުގެ ކުއިޒް</b>: އެ ދުވަހަކު އެންމެންނަށް އެއް ${LR(10)} ސުވާލު (ދިވެހިރާއްޖޭގެ ގަޑިން)، އެއް ފުރުޞަތު. <b>ޕްރެކްޓިސް</b>: މައުޟޫޢުތަކާއި ލެވެލް ހޮވައި ކޮމްޕިއުޓަރާ ދެކޮޅަށް ކުޅޭ.</p>
+<h3>ބޮލި</h3>
+<p>ކުއިކް މެޗް: ފުރަތަމަ ${LR(BOLI_QUICK[0])}، ދެވަނަ ${LR(BOLI_QUICK[1])}، ތިންވަނަ ${LR(BOLI_QUICK[2])}. ދުވަހުގެ ކުއިޒް: ކޮންމެ ރަނގަޅު ޖަވާބަކަށް ${LR(1)}، ފުރިހަމަ ބުރަކަށް ${LR(BOLI_DAILY_PERFECT)} އިތުރަށް. ޕްރެކްޓިސް ދަތި ލެވެލުން ކާމިޔާބުކޮށްފިނަމަ ${LR('+'+WIN_BONUS[3])}، ރާއްޖެ މާސްޓަރ ލެވެލުން ${LR('+'+WIN_BONUS[4])}؛ އޭގެ ފިޔަވައި ޕްރެކްޓިސްއިން ބޮލި ނުލިބޭ. ރަޙްމަތްތެރިންގެ މޭޒުތަކުން ބޮލި ނުލިބޭ. އާދައިގެ ދުވަހުގެ ބޮލި ލިމިޓް ހިނގާނެ.</p>
+<h3>XP</h3>
+<p>ކޮންމެ ގޭމަކުން ދިވެހި ގޭމްސްގެ ލެވެލަށް XP ލިބޭނެ، ރަޙްމަތްތެރިންގެ މޭޒާއި ޕްރެކްޓިސްއިންވެސް: ކުޅުމަށް ${LR(5)}، ކޮންމެ ރަނގަޅު ޖަވާބަކަށް ${LR(1)} އިން ${LR(4)} އަށް (ފަސޭހައިން ރާއްޖެ މާސްޓަރއަށް)، އަދި ފުރަތަމަ، ދެވަނަ ނުވަތަ ތިންވަނަ ހޯދުމުން، ލެވެލާއެކު ބޮޑުވާ ބޯނަހެއް.</p>
+<h3>އޮންލައިން</h3>
+<p>އޮންލައިން މޭޒުތަކުގައި ވޮއިސް ޗެޓް ހުޅުވިފައި ހުންނާނެ (މައިކް ހުޅުވޭނީ ތިބާ ފިތާލުމުންނެވެ). ފަހަތުން ފަހަތަށް ${LR(2)} ސުވާލަށް ޖަވާބު ނުދީފިނަމަ، ތިބާ ދުރުގައިވާ ކަމަށް ފާހަގަކުރެވޭނެ.</p>
+<h3>ބަސް</h3>
+<p>ކުއިޒްގެ ހޯމުގައިވާ ބޮޑު ބަޓަނުން <span lang="en" dir="ltr">English</span> ނުވަތަ ދިވެހި ހޮވޭ. މެޗުގެ ތެރޭގައި <span lang="en" dir="ltr">EN</span> / ދިވެހި ބަޓަނުން ބަދަލުކުރެވޭނެ. ދިވެހި ހޮވައިފިނަމަ މުޅި ގޭމް ފެންނާނީ ދިވެހިން، އަދި ހުރިހާ ސުވާލެއް އަންނާނީ ދިވެހި ބަހުން؛ ދިވެހި ނުސްޚާއެއް އަދި ނެތް ސުވާލެއް ފެންނާނީ ކުޑަ <span lang="en" dir="ltr">English</span> ލޭބަލަކާއެކު އިނގިރޭސިން.</p>
+<p>ދިވެހި ލިޔުން އަދި ޗެކްކުރަމުން ދަނީ. ކުށެއް ފެނިއްޖެނަމަ ސުވާލުގެ <b>ރިޕޯޓް</b> ބަޓަނުން "އިމްލާ / ދިވެހި ލިޔުން" ހޮވާފައި ފޮނުއްވާ. ޝުކުރިއްޔާ!</p>
+${REVIEWED?'':'<p class="muted" style="font-size:13px">ސުވާލުތައް އަދިވެސް ޗެކްކުރަމުން ދަނީ، އެހެންކަމުން ބައެއް ޖަވާބު ބަދަލުވެދާނެ.</p>'}</div>`;}
+function openHowTo(){sheet(`<div class="grab"></div><h2>${T('How to play','ކުޅޭނެ ގޮތް')}</h2>${howHTML()}<div class="row"><button class="bt pri" data-a="close">${T('Got it','ރަނގަޅު')}</button></div>`);}
+function openName(){const nm=myName();if(isReg()){sheet(`<div class="grab"></div><h2>${T('Your name','ތިބާގެ ނަން')}</h2><p class="muted" style="margin:6px 0 0">${T(`You play as your username, <b>${esc(nm)}</b>. Change your character in Digu.`,`ތިބާ ކުޅެނީ ތިބާގެ ޔޫޒަރނޭމް، <b dir="auto">${esc(nm)}</b> ގެ ނަމުގައެވެ. ކެރެކްޓަރު ބަދަލުކުރެވޭނީ ޑިގުންނެވެ.`)}</p><div class="row"><button class="bt" data-a="close">${T('Close','ބަންދުކުރޭ')}</button><a class="bt pri" style="display:grid;place-items:center;text-decoration:none" href="../digu/?open=profile">${T('Edit character','ކެރެކްޓަރު ބަދަލުކުރޭ')}</a></div>`);return;}
+ sheet(`<div class="grab"></div><h2>${T('Your name','ތިބާގެ ނަން')}</h2><p class="muted" style="margin:4px 0 0;font-size:13px">${T('Shown to other players. Your character comes from your Digu profile.','އެހެން ކުޅުންތެރިންނަށް ފެންނާނެ. ތިބާގެ ކެރެކްޓަރު އަންނަނީ ޑިގު ޕްރޮފައިލުންނެވެ.')}</p>
+<label class="f" for="pnm">${T('Name','ނަން')}</label><input class="in" id="pnm" maxlength="14" value="${esc(nm)}" dir="auto" autocomplete="nickname" enterkeyhint="done">
+<div class="row"><button class="bt" data-a="close">${T('Cancel','ކެންސަލް')}</button><button class="bt pri" data-a="saveName">${T('Save','ސޭވްކުރޭ')}</button></div>
+<a class="bt wide" style="display:grid;place-items:center;margin-top:10px;text-decoration:none" href="../digu/?open=profile">${T('Edit character in Digu','ޑިގުގައި ކެރެކްޓަރު ބަދަލުކުރޭ')}</a>`);setTimeout(()=>{const i=$('#pnm');i&&i.focus();},250);}
+function saveName(){const v=(($('#pnm')||{}).value||'').replace(/[\u0000-\u001f<>]/g,'').trim().slice(0,14);if(!v){toast(T('Enter a name first.','ފުރަތަމަ ނަމެއް ލިޔޭ.'));return;}ls.set('lg-name',v);closeSheet();renderHome();}
+const onOff=v=>v?T('On','ހުޅުވާ'):T('Off','ބަންދު');
+const sfxLabel=()=>T('Sound: ','އަޑު: ')+onOff(sfxOn()),smoothLabel=()=>T('Smooth mode: ','ސްމޫތް މޯޑް: ')+onOff(isSmooth());
 function openMenu(){if(!S)return;const solo=mode==='practice'||mode==='daily';
- sheet(`<div class="grab"></div><h2>Dhivehi Quiz</h2><p class="muted" style="margin:4px 0 0">${S.kind==='daily'?'Daily quiz':S.kind==='practice'?'Practice':S.quick?'Quick Match':'Friends table'} · ${S.phase==='intro'?S.n+' questions':'question '+Math.max(1,S.qi+1)+' of '+S.n}</p>
-<div class="mlist"><button class="bt wide" data-a="howto">How to play</button><button class="bt wide" data-a="sfx" aria-pressed="${sfxOn()}">Sound: ${sfxOn()?'On':'Off'}</button><button class="bt wide" data-a="smooth" aria-pressed="${isSmooth()}">Smooth mode: ${isSmooth()?'On':'Off'}</button>
-${solo?'<button class="bt danger wide" data-a="quitAsk">Quit to lobby</button>':'<button class="bt danger wide" data-a="netLeave">Leave table</button>'}</div>`);}
+ const kind=S.kind==='daily'?T('Daily quiz','ދުވަހުގެ ކުއިޒް'):S.kind==='practice'?T('Practice','ޕްރެކްޓިސް'):S.quick?T('Quick Match','ކުއިކް މެޗް'):T('Friends table','ރަޙްމަތްތެރިންގެ މޭޒު');
+ sheet(`<div class="grab"></div><h2>${T('Dhivehi Quiz','ދިވެހި ކުއިޒް')}</h2><p class="muted" style="margin:4px 0 0">${kind} · ${S.phase==='intro'?nQs(S.n):T('question '+Math.max(1,S.qi+1)+' of '+S.n,`ސުވާލު ${LR(Math.max(1,S.qi+1)+' / '+S.n)}`)}</p>
+<div class="mlist"><button class="bt wide" data-a="howto">${T('How to play','ކުޅޭނެ ގޮތް')}</button><button class="bt wide" data-a="sfx" aria-pressed="${sfxOn()}">${sfxLabel()}</button><button class="bt wide" data-a="smooth" aria-pressed="${isSmooth()}">${smoothLabel()}</button>
+${solo?`<button class="bt danger wide" data-a="quitAsk">${T('Quit to lobby','ކުޅުން ނިންމާ')}</button>`:`<button class="bt danger wide" data-a="netLeave">${T('Leave table','މޭޒު ދޫކޮށްލާ')}</button>`}</div>`);}
 function openQuit(){if(!S)return;const d=S.kind==='daily'&&S.phase!=='over';
- sheet(`<div class="grab"></div><h2>Quit to lobby?</h2><p class="muted" style="margin:6px 0 0">${d?'Your daily quiz ends here and counts as today’s try.':S.phase==='over'?'You’ll go back to the quiz home.':'This practice round ends and won’t be saved.'}</p>
-<div class="row"><button class="bt" data-a="close">Stay</button><button class="bt danger" data-a="quitYes">Quit to lobby</button></div>`);}
-function toggleSfx(){ls.set('dd-sfx',sfxOn()?'0':'1');document.querySelectorAll('[data-a="sfx"]').forEach(b=>{b.setAttribute('aria-pressed',String(sfxOn()));b.textContent='Sound: '+(sfxOn()?'On':'Off');});if(sfxOn()){AU.unlock();SFX.pick();}}
-function toggleSmooth(){ls.set('dd-smooth',isSmooth()?'0':'1');liteSync();document.querySelectorAll('[data-a="smooth"]').forEach(b=>{b.setAttribute('aria-pressed',String(isSmooth()));b.textContent='Smooth mode: '+(isSmooth()?'On':'Off');});lastStrip='';lastRender='';render();}
-
+ sheet(`<div class="grab"></div><h2>${T('Quit to lobby?','ކުޅުން ނިންމަންތޯ؟')}</h2><p class="muted" style="margin:6px 0 0">${d?T('Your daily quiz ends here and counts as today’s try.','ތިބާގެ ދުވަހުގެ ކުއިޒް މިތާ ނިމި، މިއަދުގެ ފުރުޞަތަކަށް ގުނޭނެ.'):S.phase==='over'?T('You’ll go back to the quiz home.','ކުއިޒްގެ ހޯމަށް ދާނެ.'):T('This practice round ends and won’t be saved.','މި ޕްރެކްޓިސް ބުރު ނިމި، ސޭވެއް ނުކުރެވޭނެ.')}</p>
+<div class="row"><button class="bt" data-a="close">${T('Stay','މަޑުކުރޭ')}</button><button class="bt danger" data-a="quitYes">${T('Quit to lobby','ކުޅުން ނިންމާ')}</button></div>`);}
+function toggleSfx(){ls.set('dd-sfx',sfxOn()?'0':'1');document.querySelectorAll('[data-a="sfx"]').forEach(b=>{b.setAttribute('aria-pressed',String(sfxOn()));b.textContent=sfxLabel();});if(sfxOn()){AU.unlock();SFX.pick();}}
+function toggleSmooth(){ls.set('dd-smooth',isSmooth()?'0':'1');liteSync();document.querySelectorAll('[data-a="smooth"]').forEach(b=>{b.setAttribute('aria-pressed',String(isSmooth()));b.textContent=smoothLabel();});lastStrip='';lastRender='';render();}
 /* ---------- one click handler ---------- */
 document.addEventListener('click',e=>{const b=e.target.closest('[data-a]');if(!b||b.disabled)return;const a=b.dataset.a;
  switch(a){
-  case 'lang':setLang(b.dataset.v);document.querySelectorAll('[data-a="lang"]').forEach(x=>x.setAttribute('aria-pressed',String(x.dataset.v===lang)));if(screen==='home')dvNote();else{lastRender='';render();}break;
-  case 'topic':{const v=b.dataset.v,on=topicsSel.includes(v);if(on&&topicsSel.length===1){toast('Keep at least one topic.');break;}
+  /* the language changes the whole UI: redraw the home, or the match frame (the match itself goes on) */
+  case 'lang':{const was=lang;setLang(b.dataset.v);if(lang===was)break;if(screen==='home'){const y=window.scrollY;renderHome();window.scrollTo(0,y);}else if(S){buildMatch();render();}break;}
+  case 'topic':{const v=b.dataset.v,on=topicsSel.includes(v);if(on&&topicsSel.length===1){toast(T('Keep at least one topic.','މަދުވެގެން އެއް މައުޟޫޢު ބާއްވާ.'));break;}
    topicsSel=on?topicsSel.filter(x=>x!==v):TKEYS.filter(x=>x===v||topicsSel.includes(x));ls.set('quiz-topics',JSON.stringify(topicsSel));b.setAttribute('aria-pressed',String(!on));
-   const t=$('#tcount');if(t)t.textContent=topicsSel.length===TKEYS.length?'All':topicsSel.length+' of 8';break;}
-  case 'quick':if(NET)NET.quick();else toast('Online play needs a newer browser.');break;
-  case 'friends':if(NET)NET.friends();else toast('Online play needs a newer browser.');break;
+   const t=$('#tcount');if(t)t.textContent=tCount();break;}
+  case 'quick':if(NET)NET.quick();else toast(T('Online play needs a newer browser.','އޮންލައިންކޮށް ކުޅުމަށް އާ ބްރައުޒަރެއް ބޭނުންވޭ.'));break;
+  case 'friends':if(NET)NET.friends();else toast(T('Online play needs a newer browser.','އޮންލައިންކޮށް ކުޅުމަށް އާ ބްރައުޒަރެއް ބޭނުންވޭ.'));break;
   case 'daily':soloStart('daily');break;
   case 'practice':openLevels();break;
   case 'practiceGo':{const v=+b.dataset.lv;if(v>=1&&v<=4){levelSel=v;ls.set('quiz-level',String(v));}closeSheet();soloStart('practice',levelSel);break;}
@@ -938,7 +1051,7 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'&&$('#sheet').classLi
 /* test hooks (used by the automated checks; harmless in normal play) */
 window.__quiz={RAMP,BASE,_report:()=>openQReport(),reported,poolOn:()=>poolOn(),XP_PLACE,XP_MULT,
  /* localhost tests only: show one question by id (the clock is parked) */
- _show:id=>{if(!LOCAL||!S||!BANK.en)return false;const q=BANK.en.q.find(x=>x.id===id);if(!q)return false;clearHost();S.phase='q';S.qs[S.qi]=mkQ(q);S.at=Date.now()+1e9;S.picks={};myPicks={};lastRender='';render();return true;},
+ _show:(id,rev)=>{if(!LOCAL||!S||!BANK.en)return false;const q=BANK.en.q.find(x=>x.id===id);if(!q)return false;clearHost();S.phase=rev?'rev':'q';S.qi=Math.max(0,S.qi);S.qs[S.qi]=mkQ(q);S.at=Date.now()+1e9;S.picks={};myPicks={};lastRender='';render();return true;},
  get S(){return S;},get mode(){return mode;},get NET(){return NET;},get lang(){return lang;},answer,dailyIds:()=>loadBoth().then(()=>dailyQs(mvDay()).map(q=>q.id)),
  view:viewFor,recent,mvDay,points,bank:()=>BANK};
 
