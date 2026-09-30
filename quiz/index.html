@@ -24,16 +24,26 @@ var QUIZ_REVIEWED = false;
    extras/quiz-test-100.md; all 100 have Dhivehi versions). Set to false for the full bank. */
 var TEST_POOL = true;
 </script>
+<!-- Thaana text: Dhivehi Muraka, self-hosted (fonts/, subset: Thaana, digits, punctuation) -->
+<link rel="preload" as="font" type="font/woff2" href="fonts/dhivehi-muraka.woff2" crossorigin>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Noto+Sans+Thaana:wght@400;600;700&display=swap" onload="this.onload=null;this.rel='stylesheet'">
-<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Noto+Sans+Thaana:wght@400;600;700&display=swap"></noscript>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&display=swap"></noscript>
 <style>
+/* Thaana fonts, self-hosted subsets (SIL Open Font License 1.1, no Reserved Font Name; notices in fonts/OFL-*.txt):
+   Dhivehi Muraka, Copyright 2026 The Dhivehi Muraka Project Authors (github.com/Viennnaa/dhivehi-muraka): Thaana,
+   digits and punctuation. Noto Sans Thaana, Copyright 2022 The Noto Project Authors (github.com/notofonts/thaana):
+   only the Arabic marks Muraka lacks (U+060C , U+061B ; U+061F ?), at weight 400.
+   One regular face each, declared for every weight so the browser never draws a fake bold. */
+@font-face{font-family:'Dhivehi Muraka';src:url(fonts/dhivehi-muraka.woff2) format('woff2');font-weight:100 900;font-style:normal;font-display:swap;
+ unicode-range:U+0020-0040,U+005B-0060,U+007B-007E,U+00A0,U+00B0,U+00B7,U+2013-2014,U+2018-201D,U+2026,U+0780-07B1}
+@font-face{font-family:'Noto Sans Thaana';src:url(fonts/noto-sans-thaana-marks.woff2) format('woff2');font-weight:100 900;font-style:normal;font-display:swap;unicode-range:U+060C,U+061B,U+061F}
 /* ================= Dhivehi Quiz · PASTEL (the homepage family): a soft gradient mesh, frosted pills, coral accents ================= */
 :root{--ink:#2A1418;--muted:#7A6670;--coral:#E0405C;--coral2:#FF6F7F;--line:rgba(42,20,24,.1);--bg:#F3EEF7;--glass:rgba(255,255,255,.72);
  --good:#179E68;--goodbg:#DDF6EA;--bad:#D8324A;--badbg:#FDE3E7;--talk:#2FD47A;
  --A:#FF8A7A;--B:#A99BFF;--C:#4FC9A8;--D:#FFB547;--out:cubic-bezier(.16,1,.3,1);
- --disp:"Bricolage Grotesque",Sora,system-ui,sans-serif;--dv:"Noto Sans Thaana","MV Boli",Sora,sans-serif;
+ --disp:"Bricolage Grotesque",Sora,system-ui,sans-serif;--dv:'Dhivehi Muraka','Noto Sans Thaana',Sora,sans-serif;
  /* online (shared/net.js): light pastel sheets, coral buttons */
  --dgn-bg:#FBF8FC;--dgn-bg2:#FFFFFF;--dgn-fg:#2A1418;--dgn-muted:#7A6670;--dgn-line:rgba(42,20,24,.12);--dgn-soft:rgba(42,20,24,.06);
  --dgn-acc:#E0405C;--dgn-acc-fg:#fff;--dgn-good:#179E68;--dgn-bad:#D8324A;--dgn-scrim:rgba(42,20,40,.38);--dgn-font:Sora,system-ui,sans-serif;--dgn-head:"Bricolage Grotesque",Sora,sans-serif;
@@ -47,6 +57,8 @@ button{font:inherit;color:inherit;-webkit-appearance:none;appearance:none}
 a{color:inherit}
 [hidden]{display:none!important}
 [dir=rtl],[lang=dv]{font-family:var(--dv)}
+/* Thaana reads best regular, roomy and dark: no letter-spacing (it breaks the letters apart), a little word space */
+[lang=dv]{letter-spacing:0;word-spacing:.1em;font-style:normal}
 /* background mesh: four soft gradient layers moved with transform only */
 .mesh{position:fixed;inset:0;pointer-events:none;z-index:-1;overflow:hidden;contain:strict}
 .mesh i{position:absolute;display:block;border-radius:50%;will-change:transform;backface-visibility:hidden}
@@ -83,50 +95,64 @@ html.dg-lite .mesh i{animation:none}
 .hero{text-align:center;margin-top:14px}
 .hero .ic{width:84px;height:84px;border-radius:24px;display:block;margin:0 auto;box-shadow:0 16px 26px -14px rgba(160,30,80,.6)}
 .hero h1{font:800 clamp(34px,11vw,42px)/1 var(--disp);letter-spacing:-.04em;margin:12px 0 0}
-.hero .dv{display:block;font:700 26px/1.5 var(--dv);color:var(--coral);margin-top:2px}
+.hero .dv{display:block;font:400 30px/1.55 var(--dv);color:#B8284A;margin-top:4px}
 .hero .tag{margin:2px 0 0;font-size:13px;color:var(--muted)}
 /* language: two big buttons on the quiz home */
 .lang{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:16px 0 0}
 .lang button{display:flex;align-items:center;justify-content:center;gap:8px;min-height:54px;border:0;border-radius:18px;padding:6px 10px;cursor:pointer;background:rgba(255,255,255,.62);color:var(--muted);
  font:800 16px/1.2 Sora,system-ui,sans-serif;box-shadow:inset 0 0 0 1px rgba(255,255,255,.9),0 8px 18px -14px rgba(70,50,120,.5);transition:transform .15s,background-color .2s,color .2s}
 .lang button:active{transform:scale(.98)}
-.lang button.dvb{font:700 19px/1.5 var(--dv)}
+.lang button.dvb{font:400 22px/1.5 var(--dv)}
 .lang button[aria-pressed=true]{background:linear-gradient(135deg,#FF7A6B,#E0405C);color:#fff;box-shadow:0 12px 22px -14px rgba(224,64,92,.85)}
 .lang button svg{flex:none;width:18px;height:18px}
 .lang button[aria-pressed=false] svg{display:none}
 .dvnote{margin:10px 0 0;font-size:12px;font-weight:700;color:#8A4B00;background:#FFF1D6;border-radius:12px;padding:8px 10px;text-align:center;line-height:1.4}
-.dvchk{display:block;margin:10px auto 0;padding:4px 12px;border-radius:99px;width:max-content;max-width:100%;font:700 12px/1.6 var(--dv);color:#8A4B00;background:#FFF1D6;text-align:center}
+.dvchk{display:block;margin:10px auto 0;padding:4px 12px;border-radius:99px;width:max-content;max-width:100%;font:400 14px/1.8 var(--dv);color:#6E3A00;background:#FFF1D6;text-align:center}
 .entag{display:inline-flex;align-items:center;font:800 10.5px/1 Sora,sans-serif;letter-spacing:.04em;color:#3D2FA8;background:#E9E5FF;padding:4px 9px;border-radius:99px}
 /* Dhivehi UI: the page runs right to left (logical margins and paddings below keep the layout mirrored) */
 .page[dir=rtl] .hp svg.bk,.page[dir=rtl] .md .chev{transform:scaleX(-1)}
 .page[dir=rtl] .pp .pn b[dir=auto],.page[dir=rtl] .stand .nn b[dir=auto]{text-align:right}
 [lang=dv] .topics h4,[lang=dv] .fact b,[lang=dv] .rules h3,[lang=dv] .qc .topic,[lang=dv] .pl .cpu{letter-spacing:0;text-transform:none}
-.page[lang=dv] .md b{font-size:16.5px;line-height:1.5}.page[lang=dv] .md small{font-size:13px;line-height:1.55}
-.page[lang=dv] .md.qm b{font-size:20px}
-.page[lang=dv] .chip{font-size:13px}.page[lang=dv] .chip span{line-height:1.5}
-.page[lang=dv] .rew,.page[lang=dv] .chk,.page[lang=dv] .snote{font-size:13px;line-height:1.6}
-.page[lang=dv] .qhead b{font-size:14px;line-height:1.5}
-.page[lang=dv] .st,.page[lang=dv] .waitline,.page[lang=dv] .watchnote{font-size:13.5px;line-height:1.6}
-.page[lang=dv] .ttl2{font:700 26px/1.5 var(--dv)}
-.page[lang=dv] .intro .ttl2{font-size:24px}
-.page[lang=dv] .fact{font-size:14px;line-height:1.7}
-.page[lang=dv] .fact b{font-size:13px}
-.page[lang=dv] .qc .topic{font-size:12px}
-.page[lang=dv] .stand .nn small{font-size:12px;line-height:1.45}
-.page[lang=dv] .nextbar{font-size:14px}
-.page[lang=dv] .bt{font:700 16px/1.3 var(--dv)}
-.page[lang=dv] .md.solo .two button{font-size:14.5px;line-height:1.4}.page[lang=dv] .md.solo .two button small{font-size:12px;line-height:1.5}
-.page[lang=dv] .howlink{font-size:15px}
-.page[lang=dv] .pp .pn b{line-height:1.3}
-.sheet-b[lang=dv] h2{font:700 24px/1.5 var(--dv);letter-spacing:0}
-.sheet-b[lang=dv] .rules p,.sheet-b[lang=dv] p.muted{font-size:14px;line-height:1.75}
-.sheet-b[lang=dv] .rules h3{font-size:14px}
-.sheet-b[lang=dv] .bt{font:700 16px/1.3 var(--dv)}
-.sheet-b[lang=dv] .rr label{font-size:15px}
-.sheet-b[lang=dv] label.f{font-size:13px}
-.sheet-b[lang=dv] .lvb small{font-size:13px;line-height:1.5}
-.sheet-b[lang=dv] textarea.in{font-family:var(--dv),Sora,sans-serif}
-.toast[lang=dv]{font:700 14px/1.6 var(--dv)}
+/* Dhivehi UI (Dhivehi Muraka): regular weight, about 15-20% larger than the English sizes, line-height 1.6-1.9, darker greys */
+.page[lang=dv],.sheet-b[lang=dv]{--muted:#5A4750}
+.page[lang=dv] .md b{font:400 18.5px/1.6 var(--dv)}.page[lang=dv] .md small{font:400 14px/1.75 var(--dv)}
+.page[lang=dv] .md.qm b{font-size:22px}.page[lang=dv] .md.qm small{color:#fff}
+.page[lang=dv] .live{font:400 13px/1.6 var(--dv)}
+.page[lang=dv] .pp .pn small{font:400 12.5px/1.5 var(--dv);color:#A8304F}
+.page[lang=dv] .hero .tag{font:400 15px/1.8 var(--dv);color:#4A3840}
+.page[lang=dv] .chip{font:400 14.5px/1.5 var(--dv)}.page[lang=dv] .chip span{line-height:1.6}.page[lang=dv] .chip[aria-pressed=false]{color:#5A4750}
+.page[lang=dv] .topics h4{font:400 15px/1.6 var(--dv)}
+.page[lang=dv] .rew,.page[lang=dv] .chk,.page[lang=dv] .snote{font:400 14.5px/1.8 var(--dv)}
+.page[lang=dv] .rew b{font-weight:400;color:#2A1418}
+.page[lang=dv] .qhead b{font:400 16px/1.6 var(--dv)}
+.page[lang=dv] .st,.page[lang=dv] .waitline,.page[lang=dv] .watchnote{font:400 15.5px/1.8 var(--dv)}
+.page[lang=dv] .st b{font-weight:400;color:#2A1418}
+.page[lang=dv] .ttl2{font:400 29px/1.6 var(--dv)}
+.page[lang=dv] .intro .ttl2{font-size:27px}
+.page[lang=dv] .fact{font-size:16.5px;line-height:1.9}
+.page[lang=dv] .fact b{font:400 16px/1.7 var(--dv)}.page[lang=dv] .fact b:not(.ok):not(.no){color:#B8284A}
+.page[lang=dv] .qc .topic{font:400 14px/1.5 var(--dv);color:#B8284A}
+.page[lang=dv] .stand .nn small{font:400 14px/1.6 var(--dv)}
+.page[lang=dv] .nextbar{font:400 16px/1.6 var(--dv)}
+.page[lang=dv] .bt{font:400 18.5px/1.4 var(--dv)}
+.page[lang=dv] .md.solo .two button{font:400 17px/1.5 var(--dv)}.page[lang=dv] .md.solo .two button small{font-size:13.5px;line-height:1.6}
+.page[lang=dv] .howlink{font:400 17.5px/1.5 var(--dv)}
+.page[lang=dv] .earn.muted{font:400 15px/1.8 var(--dv)}
+.page[lang=dv] .qrep{font:400 14px/1.5 var(--dv)}
+.page[lang=dv] .dock .ds{font:400 13px/1.6 var(--dv)}
+.page[lang=dv] .pl .n{font:400 12.5px/1.4 var(--dv)}
+.page[lang=dv] .an.dim,.page[lang=dv] .ans.locked .an:not(.mine){opacity:.72}
+.page[lang=dv] .dvnote{font:400 14.5px/1.8 var(--dv);color:#6E3A00}
+.sheet-b[lang=dv] h2{font:400 28px/1.6 var(--dv);letter-spacing:0}
+.sheet-b[lang=dv] .rules p,.sheet-b[lang=dv] p.muted{font:400 16px/1.9 var(--dv)}
+.sheet-b[lang=dv] .rules p b,.sheet-b[lang=dv] p.muted b{font-weight:400;color:#2A1418}
+.sheet-b[lang=dv] .rules h3{font:400 17px/1.6 var(--dv)}
+.sheet-b[lang=dv] .bt{font:400 18.5px/1.4 var(--dv)}
+.sheet-b[lang=dv] .rr label{font:400 17px/1.6 var(--dv)}
+.sheet-b[lang=dv] label.f{font:400 15px/1.6 var(--dv)}
+.sheet-b[lang=dv] .lvb small{font:400 15px/1.7 var(--dv)}
+.sheet-b[lang=dv] textarea.in{font:400 17px/1.7 var(--dv)}
+.toast[lang=dv]{font:400 16px/1.8 var(--dv);word-spacing:.1em}
 .modes{display:grid;gap:10px;margin-top:16px}
 .md{display:flex;align-items:center;gap:12px;width:100%;border:0;text-align:start;cursor:pointer;border-radius:20px;padding:12px 14px;background:rgba(255,255,255,.72);box-shadow:inset 0 0 0 1px rgba(255,255,255,.9),0 10px 24px -16px rgba(70,50,120,.5);transition:transform .15s}
 .md:active{transform:scale(.985)}
@@ -177,7 +203,7 @@ html.dg-lite .mesh i{animation:none}
 .qhead .bar i{display:block;height:100%;border-radius:inherit;background:var(--coral);transition:width .4s var(--out)}
 .mini{flex:none;display:inline-flex;padding:3px;border-radius:99px;background:rgba(255,255,255,.72);box-shadow:inset 0 0 0 1px rgba(255,255,255,.9)}
 .mini button{border:0;background:none;height:36px;min-width:36px;padding:0 8px;border-radius:99px;font-size:11.5px;font-weight:800;color:var(--muted);cursor:pointer}
-.mini button.dv{font:700 12.5px/1 var(--dv);padding:0 10px}
+.mini button.dv{font:400 15px/1 var(--dv);padding:0 10px}
 .mini button[aria-pressed=true]{background:var(--ink);color:#fff}
 .pls{display:flex;justify-content:space-around;gap:4px;margin:14px 0 0;padding:14px 6px 8px;border-radius:20px;background:rgba(255,255,255,.5);box-shadow:inset 0 0 0 1px rgba(255,255,255,.85)}
 .pl{position:relative;flex:1 1 0;min-width:0;max-width:74px;display:flex;flex-direction:column;align-items:center;gap:3px}
@@ -199,7 +225,7 @@ html.dg-lite .mesh i{animation:none}
 .qc .topic svg{width:13px;height:13px}
 .qc .tags{display:flex;flex-wrap:wrap;justify-content:center;gap:6px}
 .lvl{display:inline-flex;align-items:center;font-size:10.5px;font-weight:800;letter-spacing:.04em;padding:4px 9px;border-radius:99px;white-space:nowrap}
-.lvl[lang=dv]{font:700 12px/1.2 var(--dv);letter-spacing:0;padding:3px 9px}
+.lvl[lang=dv]{font:400 14px/1.5 var(--dv);letter-spacing:0;padding:2px 10px}
 .lvl.l1{color:#0F6B46;background:#DDF6EA}.lvl.l2{color:#3D2FA8;background:#E9E5FF}.lvl.l3{color:#8A4B00;background:#FFE9C7}.lvl.l4{color:#fff;background:linear-gradient(135deg,#E0405C,#8A1F55)}
 .lvls{display:grid;gap:8px;margin-top:14px}
 .lvb{display:flex;flex-direction:column;align-items:flex-start;gap:4px;width:100%;border:0;border-radius:16px;padding:12px 14px;background:#fff;cursor:pointer;text-align:start;box-shadow:inset 0 0 0 1px var(--line),0 8px 18px -14px rgba(70,50,120,.5)}
@@ -207,7 +233,7 @@ html.dg-lite .mesh i{animation:none}
 .lvb small{font-size:12px;color:var(--muted);font-weight:600}
 .lvb[aria-pressed=true]{box-shadow:inset 0 0 0 2px var(--coral),0 8px 18px -14px rgba(70,50,120,.5)}
 .qc .qq{margin:10px 0 0;font:700 19px/1.35 Sora,sans-serif;letter-spacing:-.01em;overflow-wrap:anywhere}
-.qc .qq[dir=rtl]{font:700 21px/1.8 var(--dv);letter-spacing:0}
+.qc .qq[dir=rtl]{font:400 23px/1.9 var(--dv);letter-spacing:0;word-spacing:.1em}
 .ring{position:absolute;left:50%;top:-38px;width:76px;height:76px;margin-left:-38px;border-radius:50%;background:#fff;box-shadow:0 12px 24px -12px rgba(70,50,120,.6);display:grid;place-items:center}
 .ring svg{position:absolute;inset:6px;width:64px;height:64px;transform:rotate(-90deg)}
 .ring .tk{fill:none;stroke:rgba(42,20,24,.08);stroke-width:6}
@@ -225,7 +251,7 @@ html.dg-lite .mesh i{animation:none}
 .an:nth-child(1) .L{background:var(--A)}.an:nth-child(2) .L{background:var(--B)}.an:nth-child(3) .L{background:var(--C)}.an:nth-child(4) .L{background:var(--D)}
 .an .tx{flex:1;min-width:0;overflow-wrap:anywhere}
 .an .L,.num{font-family:Sora,system-ui,sans-serif;font-style:normal}
-.ans[dir=rtl] .an{font:700 17px/1.6 var(--dv)}
+.ans[dir=rtl] .an{font:400 19px/1.8 var(--dv);word-spacing:.1em}
 .an.mine{box-shadow:inset 0 0 0 2.5px var(--ink),0 8px 18px -14px rgba(70,50,120,.6)}
 .ans.locked .an:not(.mine){opacity:.55}
 .an .who{flex:none;display:flex}
@@ -242,8 +268,8 @@ html.dg-lite .mesh i{animation:none}
 .fact{margin-top:12px;padding:12px 14px;border-radius:18px;background:rgba(255,255,255,.7);font-size:13px;line-height:1.45;box-shadow:inset 0 0 0 1px rgba(255,255,255,.9)}
 .fact b{display:block;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--coral);margin-bottom:2px}
 .fact b.ok{color:var(--good)}.fact b.no{color:var(--bad)}
-.fact .ft{display:block}.fact .ft[dir=rtl]{font:500 14.5px/1.75 var(--dv)}
-.ans[dir=rtl] .an .L{font:700 18px/1 var(--dv)}
+.fact .ft{display:block}.fact .ft[dir=rtl]{font:400 16.5px/1.9 var(--dv);color:#2A1418}
+.ans[dir=rtl] .an .L{font:400 20px/1 var(--dv)}
 .qrepw{display:flex;justify-content:flex-end;margin-top:6px}
 .qrep{display:inline-flex;align-items:center;gap:5px;border:0;background:none;padding:6px 8px;border-radius:99px;font-size:11.5px;font-weight:700;color:var(--muted);cursor:pointer}
 .qrep svg{width:14px;height:14px}
