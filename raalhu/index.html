@@ -128,15 +128,19 @@ html:not([data-scr="boot"]) #boot{opacity:0;pointer-events:none}
 #weak{display:none;height:30px;padding:0 10px;border-radius:99px;font-size:11px;font-weight:800;background:rgba(242,58,86,.75);align-items:center}
 #weak.on{display:flex}
 #progBox{position:absolute;left:calc(var(--sl) + 14px);right:calc(var(--sr) + 14px);top:calc(var(--st) + 60px);height:24px;pointer-events:none}
-.abil{position:absolute;bottom:calc(var(--sb) + 6px);width:74px;height:74px;border-radius:50%;border:3px solid rgba(255,255,255,.95);color:#fff;display:grid;place-items:center;font:800 11px/1 Sora,system-ui;touch-action:none;box-shadow:0 6px 18px rgba(0,0,0,.25);padding:0;z-index:7}
-.abil .ic{display:block;width:40px;height:40px;margin:0 auto 1px;background-image:var(--sheet);background-repeat:no-repeat}
-.abil b{position:absolute;right:-5px;top:-5px;min-width:25px;height:25px;border-radius:99px;background:#fff;color:var(--ink);display:grid;place-items:center;font-size:14px;box-shadow:0 2px 6px rgba(0,0,0,.2)}
-.abil.off{opacity:.42;filter:grayscale(.7)}
-.abil:active{transform:scale(.93)}
-#bT{left:calc(var(--sl) + 2px);background:rgba(255,90,78,.9)}#bB{right:calc(var(--sr) + 2px);background:rgba(31,181,196,.9)}
-#bS{left:calc(var(--sl) + 12px);bottom:calc(var(--sb) + 92px);width:56px;height:56px;background:rgba(140,111,240,.9);font-size:9.5px}
-#bS .ic{width:28px;height:28px}
-#bS.on{box-shadow:0 0 0 4px rgba(200,190,255,.7),0 6px 18px rgba(0,0,0,.25)}
+.abil{position:absolute;bottom:calc(var(--sb) + 6px);width:74px;height:74px;border-radius:50%;border:0;background:none;color:#fff;display:block;touch-action:none;padding:0;z-index:7;-webkit-tap-highlight-color:transparent}
+/* I1 "Toon badges": each button is drawn on a canvas (dark outline, white ring, toon shading, label) */
+.abil canvas{position:absolute;left:-7px;top:-7px;width:calc(100% + 14px);height:calc(100% + 14px);pointer-events:none;transition:transform .08s}
+.abil b{position:absolute;right:-4px;top:-4px;min-width:26px;height:26px;padding:0 5px;box-sizing:border-box;border-radius:99px;background:#fff;border:2px solid #1B2433;color:#1B2433;display:grid;place-items:center;font:900 14px/1 "Bricolage Grotesque",Sora,system-ui;z-index:2}
+.abil.off b{color:#7A8794}
+.abil.press canvas,.abil:active canvas{transform:scale(.92)}
+.abil.press::after{content:"";position:absolute;inset:4px;border-radius:50%;background:radial-gradient(circle at 50% 18%,rgba(0,0,0,.34),rgba(0,0,0,.16) 55%);transform:scale(.92);pointer-events:none}
+.abil.press::before{content:"";position:absolute;inset:0;border-radius:50%;border:5px solid var(--fx,#fff);animation:abfx .45s ease-out forwards;pointer-events:none}
+@keyframes abfx{from{transform:scale(1);opacity:.9}to{transform:scale(1.55);opacity:0}}
+#bT{--fx:#FFD23F}#bB{--fx:#FFD23F}#bS{--fx:#E4DCFF}
+#bT{left:calc(var(--sl) + 6px)}#bB{right:calc(var(--sr) + 6px)}
+#bS{left:calc(var(--sl) + 14px);bottom:calc(var(--sb) + 96px);width:56px;height:56px}
+#bS.on{box-shadow:0 0 18px 6px rgba(200,185,255,.85)}
 html.watching .abil{display:none}
 /* online: the people in the race (chat bubbles and the voice ring sit on these) */
 #pstrip{position:absolute;right:calc(var(--sr) + 2px);top:calc(var(--st) + 96px);display:flex;flex-direction:column;gap:8px;z-index:6;pointer-events:none}
@@ -208,9 +212,11 @@ html.watching .watch{display:flex}
 .ht-f button{flex:1;height:48px;border-radius:15px;font-weight:800;font-size:15px}
 .og{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
 .og div{border-radius:13px;background:rgba(255,255,255,.7);text-align:center;padding:4px 2px 5px;font-size:10px;font-weight:800;line-height:1.15}
-.og canvas{display:block;width:100%;height:46px}
+.og div{min-width:0}
+.og canvas{display:block;width:100%!important;height:46px;object-fit:contain}
 .og em{display:inline-block;font-style:normal;font-size:9px;font-weight:800;padding:1px 6px;border-radius:99px;color:#fff;margin-top:2px}
-.og em.j{background:#FF6B57}.og em.s{background:#8C6FF0}.og em.m{background:#1FA7B8}
+.og em.j{background:#FF6B57}.og em.s{background:#8C6FF0}.og em.m{background:#1FA7B8}.og em.l{background:#E0861E}
+.og div.dk{background:rgba(23,32,52,.86);color:#fff}
 .gest{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .gest div{border-radius:14px;background:rgba(255,255,255,.72);padding:8px;display:flex;align-items:center;gap:8px;font-size:12px;font-weight:800;line-height:1.2}
 .gest svg{width:34px;height:34px;flex:none}
@@ -301,9 +307,9 @@ html.watching .watch{display:flex}
  <div id="toast" class="glass"></div>
  <div id="hint" class="glass" style="opacity:0">Swipe ← → to change lane · ↑ jump · ↓ slide</div>
  <div id="cd"></div><div id="fin"></div>
- <button class="abil" id="bT" aria-label="Throw a coconut"><span><i class="ic" data-spr="ico_throw"></i>Throw</span><b id="nT">1</b></button>
- <button class="abil" id="bS" aria-label="Shell shield"><span><i class="ic" data-spr="ico_shield"></i>Shield</span><b id="nS">0</b></button>
- <button class="abil" id="bB" aria-label="Bump"><span><i class="ic" data-spr="ico_bump"></i>Bump</span><b id="nB">1</b></button>
+ <button class="abil" id="bT" aria-label="Throw a coconut"><canvas aria-hidden="true"></canvas><b id="nT">1</b></button>
+ <button class="abil" id="bS" aria-label="Shell shield"><canvas aria-hidden="true"></canvas><b id="nS">0</b></button>
+ <button class="abil" id="bB" aria-label="Bump"><canvas aria-hidden="true"></canvas><b id="nB">1</b></button>
  <div class="watch glass" id="watchBar"><span id="watchTx">Watching</span><button class="btn-coral" data-a="leave">Leave</button></div>
 </section>
 
@@ -327,9 +333,9 @@ html.watching .watch{display:flex}
 <script src="../shared/avatar.js?v=10"></script>
 <script src="../shared/sponsors.js?v=6"></script>
 <script src="../shared/net.js?v=5"></script>
-<script src="engine.js?v=2"></script>
-<script src="art/atlas.js?v=2"></script>
-<script src="render.js?v=2"></script>
+<script src="engine.js?v=3"></script>
+<script src="art/atlas.js?v=3"></script>
+<script src="render.js?v=3"></script>
 <script>
 (function(){
 'use strict';
@@ -394,15 +400,42 @@ const AU=(()=>{let ctx=null,out=null,nb=null,amb=null;
   g.gain.setValueAtTime(.0001,s);g.gain.exponentialRampToValueAtTime(vol||.2,s+.008);g.gain.exponentialRampToValueAtTime(.0001,s+dur);o.connect(g);g.connect(out);o.start(s);o.stop(s+dur+.03);}
  function nz(dur,f,vol,q,f2,delay){const t=ready();if(t==null)return;const s=t+(delay||0),b=ctx.createBufferSource(),fl=ctx.createBiquadFilter(),g=ctx.createGain();b.buffer=nb;fl.type='bandpass';fl.frequency.setValueAtTime(f,s);if(f2)fl.frequency.exponentialRampToValueAtTime(f2,s+dur);fl.Q.value=q||1;
   g.gain.setValueAtTime(.0001,s);g.gain.exponentialRampToValueAtTime(vol||.3,s+.01);g.gain.exponentialRampToValueAtTime(.0001,s+dur);b.connect(fl);fl.connect(g);g.connect(out);b.start(s,Math.random());b.stop(s+dur+.03);}
- function ambient(on){if(on&&sfxOn()&&!amb&&ready()!=null){const s=ctx.createBufferSource(),f=ctx.createBiquadFilter(),g=ctx.createGain(),l=ctx.createOscillator(),lg=ctx.createGain();s.buffer=nb;s.loop=true;f.type='lowpass';f.frequency.value=480;g.gain.value=.07;l.frequency.value=.12;lg.gain.value=.05;l.connect(lg);lg.connect(g.gain);s.connect(f);f.connect(g);g.connect(out);s.start();l.start();amb={s,l};}
-  else if((!on||!sfxOn())&&amb){try{amb.s.stop();amb.l.stop();}catch(e){}amb=null;}}
- return{get,unlock,sleep,tn,nz,ambient};})();
+ function ambient(on){if(on&&sfxOn()&&!amb&&ready()!=null){const s=ctx.createBufferSource(),f=ctx.createBiquadFilter(),g=ctx.createGain(),l=ctx.createOscillator(),lg=ctx.createGain(),wg=ctx.createGain();s.buffer=nb;s.loop=true;f.type='lowpass';f.frequency.value=480;g.gain.value=.07;l.frequency.value=.12;lg.gain.value=.05;l.connect(lg);lg.connect(g.gain);s.connect(f);f.connect(g);g.connect(wg);wg.connect(out);s.start();l.start();amb={s,l,wg};}
+  else if((!on||!sfxOn())&&amb){try{amb.s.stop();amb.l.stop();}catch(e){}amb=null;if(rain){try{rain.s.stop();}catch(e){}rain=null;}}}
+ /* the journey: soft rain (a looping filtered noise), thunder with a distance delay, birds at sunrise, and at night crickets,
+    an owl now and then and a very soft heartbeat. Everything goes through ready(): muted = silent. */
+ let rain=null,nCr=0,nOwl=0,nHb=0,nBird=0;
+ function lpn(dur,f,vol,delay,att,q){const t=ready();if(t==null)return;const s=t+(delay||0),b=ctx.createBufferSource(),fl=ctx.createBiquadFilter(),g=ctx.createGain();b.buffer=nb;fl.type='lowpass';fl.frequency.value=f;fl.Q.value=q||.7;
+  g.gain.setValueAtTime(.0001,s);g.gain.exponentialRampToValueAtTime(vol,s+(att||.02));g.gain.exponentialRampToValueAtTime(vol*.35,s+dur*.45);g.gain.exponentialRampToValueAtTime(.0001,s+dur);b.connect(fl);fl.connect(g);g.connect(out);b.start(s,Math.random());b.stop(s+dur+.05);}
+ function thunder(delay,vol){lpn(2.4,170,vol,delay,.12,1.2);lpn(1.6,420,vol*.45,(delay||0)+.08,.05);lpn(1.9,110,vol*.7,(delay||0)+.5,.3);}
+ function wx(lv){if(!amb||ready()==null){return;}const now=ctx.currentTime;
+  if(!rain&&lv.rain>.01){const s=ctx.createBufferSource(),h=ctx.createBiquadFilter(),l=ctx.createBiquadFilter(),g=ctx.createGain();s.buffer=nb;s.loop=true;h.type='highpass';h.frequency.value=900;l.type='lowpass';l.frequency.value=5200;g.gain.value=.0001;s.connect(h);h.connect(l);l.connect(g);g.connect(out);s.start();rain={s,g};}
+  if(rain)rain.g.gain.setTargetAtTime(Math.max(.0001,lv.rain*.075),now,.5);
+  amb.wg.gain.setTargetAtTime(1-lv.forest*.85,now,.6);
+  if(lv.night>.25&&now>nCr){nCr=now+.8+Math.random()*1.7;const f=4100+Math.random()*900,n=3+(Math.random()*3|0),v=.01*lv.night;for(let i=0;i<n;i++)tn(f,.035,'sine',v,null,i*.075);}
+  if(lv.night>.5&&now>nOwl){if(!nOwl)nOwl=now+4+Math.random()*4;else{nOwl=now+10+Math.random()*9;tn(410,.34,'sine',.028,370);tn(400,.5,'sine',.024,350,.48);}}
+  /* sunrise: birds wake up (short sweeping chirps); the waves come back as the trees open onto the beach */
+  if((lv.dawn>.25||lv.sun>.3)&&now>nBird){nBird=now+.7+Math.random()*1.8;const f=2400+Math.random()*1400,v=.016*Math.max(lv.dawn,lv.sun*.6);tn(f,.07,'sine',v,f*1.45);tn(f*1.2,.06,'sine',v*.8,f*1.7,.1);if(Math.random()<.5)tn(f*1.1,.09,'sine',v*.7,f*.8,.24);}
+  if(lv.night>.6&&now>nHb){nHb=now+1.05;tn(54,.11,'sine',.04*lv.night,40);tn(50,.12,'sine',.028*lv.night,38,.2);}}
+ /* a tone through a band-pass filter (the creak) */
+ function tf(f,dur,type,vol,f2,delay,bp,q){const t=ready();if(t==null)return;const s=t+(delay||0),o=ctx.createOscillator(),fl=ctx.createBiquadFilter(),g=ctx.createGain();o.type=type||'sawtooth';o.frequency.setValueAtTime(f,s);if(f2)o.frequency.linearRampToValueAtTime(f2,s+dur*.6);o.frequency.linearRampToValueAtTime(f*1.2,s+dur);
+  fl.type='bandpass';fl.frequency.value=bp||700;fl.Q.value=q||4;g.gain.setValueAtTime(.0001,s);g.gain.linearRampToValueAtTime(vol,s+.08);g.gain.linearRampToValueAtTime(.0001,s+dur);o.connect(fl);fl.connect(g);g.connect(out);o.start(s);o.stop(s+dur+.03);}
+ return{get,unlock,sleep,tn,nz,ambient,wx,thunder,tf};})();
 const SFX={jump(){AU.nz(.2,500,.16,1.2,1800);},slide(){AU.nz(.28,1400,.14,.8,400);},lane(){AU.nz(.07,2500,.05,2);},
  hit(){AU.tn(160,.25,'triangle',.32,60);AU.nz(.15,300,.22,1);},bonk(){AU.tn(700,.12,'square',.1,300);},splash(){AU.nz(.7,900,.36,.6,200);AU.nz(.3,3000,.1,1.5);},
  throw(){AU.tn(900,.22,'sine',.1,1800);},bump(){AU.tn(110,.18,'sine',.36,55);AU.nz(.1,600,.18,1);},crate(){AU.tn(880,.09,'triangle',.16);AU.tn(1320,.14,'triangle',.16,null,.08);},
  shield(){AU.tn(520,.3,'sine',.1,1040);AU.tn(780,.25,'triangle',.06,1560,.05);},block(){AU.tn(1320,.25,'triangle',.08);AU.tn(1980,.18,'sine',.05);},
  beep(go){AU.tn(go?988:659,go?.35:.14,'square',.1);},sel(){AU.tn(660,.05,'triangle',.05);},
  thud(){AU.tn(95,.32,'sine',.4,38);AU.nz(.28,380,.24,.9,160);AU.nz(.12,2400,.06,2,null,.03);},
+ zapWarn(){AU.nz(.8,5200,.03,5,7000);AU.tn(118,.75,'square',.01,140);},
+ crack(){AU.nz(.08,3400,.42,.6);AU.nz(.32,1500,.24,.5,420,.02);AU.tn(72,.45,'sawtooth',.06,38);},thunder(d,v){AU.thunder(d,v);},
+ batWarn(){AU.tn(4800,.05,'sine',.03,6800);AU.tn(5300,.05,'sine',.025,7400,.09);},
+ batSwoop(){for(let i=0;i<7;i++)AU.nz(.035,700+i*40,.07,1.2,null,i*.045);AU.tn(5600,.06,'sine',.03,4200,.12);},
+ /* the falling coconut: a soft rustle of leaves and a creak of the palm as the warning, then a woody "tok" with a small
+    hollow coconut ring, and two light bounce taps */
+ nutWarn(){for(let i=0;i<5;i++)AU.nz(.12,4200+i*300,.04,.8,null,i*.11+Math.random()*.04);AU.tf(92,.6,'sawtooth',.03,140,.45,720,4);},
+ tok(v){v=v||1;const k=(d,a)=>{AU.tn(215,.1,'sine',.34*a,92,d);AU.nz(.035,1900,.2*a,2.5,null,d);AU.tn(72,.16,'sine',.16*a,46,d);AU.tn(560,.3,'sine',.05*a,null,d+.005);AU.tn(842,.22,'sine',.03*a,null,d+.005);AU.tn(1130,.12,'triangle',.014*a,null,d+.01);};
+  k(0,v);k(.3,v*.42);k(.49,v*.2);},
  win(){[523,659,784,1047,1319].forEach((f,i)=>AU.tn(f,.4,'triangle',.08,null,i*.09));},lose(){[523,466,392,330].forEach((f,i)=>AU.tn(f,.35,'triangle',.07,null,i*.15));}};
 function sfxBtn(){$$('[data-a="sfx"]').forEach(b=>b.setAttribute('aria-pressed',String(sfxOn())));}
 
@@ -462,7 +495,7 @@ function startSolo(o){o=o||{};const n=clamp(o.n||SET.n,2,6),diff=o.diff||SET.dif
  G={mode:'solo',race,me:race.runners[0],n,diff,seed,mid:'s'+seed+'-'+Date.now(),endAt:0,done:false};
  enterRace();}
 function enterRace(){show('race');closeSheet();$('#howto').classList.remove('open');document.documentElement.classList.toggle('watching',!G.me);
- HC={};cdn=4;finShown=false;$('#fin').className='';AU.ambient(true);hud(true);
+ HC={};cdn=4;finShown=false;$('#fin').className='';AU.ambient(true);hud(true);drawBadges(true);
  if(G.me){const h=$('#hint');h.style.opacity=1;clearTimeout(h._t);h._t=setTimeout(()=>{h.style.opacity=0;},4600);}
  frames.length=0;wT=0;progRect();pstrip();}
 /* online: one avatar per person in the race, for chat bubbles, the speaking ring and a muted badge */
@@ -473,7 +506,7 @@ setInterval(()=>{if(!G||G.mode!=='online'||!NET)return;$$('#pstrip .pa').forEach
  try{m=typeof NET.isMuted==='function'?!!NET.isMuted(id):typeof NET.muted==='function'?!!NET.muted(id):false;}catch(e){}p.classList.toggle('muted',m);p.classList.toggle('gone',!!(r&&r.afk));});},1000);
 /* ---------- input: swipes, buttons, keys ---------- */
 let sw=null;
-$('#app').addEventListener('pointerdown',e=>{AU.unlock();if(document.documentElement.dataset.scr!=='race'||e.target.closest('button,a,.card,.sheet,.dgn-root'))return;sw={x:e.clientX,y:e.clientY,id:e.pointerId,done:false,t:performance.now()};},{passive:true});
+$('#app').addEventListener('pointerdown',e=>{AU.unlock();if(document.documentElement.dataset.scr!=='race'||e.target.closest('button,a,.card,.sheet,.dgn,.dgn-dock,#pstrip'))return;sw={x:e.clientX,y:e.clientY,id:e.pointerId,done:false,t:performance.now()};},{passive:true});
 addEventListener('pointermove',e=>{if(!sw||sw.done||e.pointerId!==sw.id)return;const dx=e.clientX-sw.x,dy=e.clientY-sw.y;if(Math.abs(dx)<18&&Math.abs(dy)<18)return;sw.done=true;
  if(Math.abs(dx)>Math.abs(dy))act(dx<0?'left':'right');else act(dy<0?'up':'down');},{passive:true});
 addEventListener('pointerup',()=>{sw=null;});addEventListener('pointercancel',()=>{sw=null;});
@@ -483,7 +516,40 @@ function act(a){if(!G||!G.me||G.me.ctl!=='me'||document.documentElement.dataset.
  else if(a==='bump'){if(!race.bump(me))toast(me.ch.bump<=0?'No bumps. Grab a blue crate':race.t<0?'Wait for GO':'');}
  else if(a==='shield'){if(me.sh>0)return;if(!race.shield(me))toast(me.ch.shield<=0?'No shells. Grab a purple crate':race.t<0?'Wait for GO':'');}
  hud();}
-['bT','bB','bS'].forEach(id=>$('#'+id).addEventListener('pointerdown',e=>{e.preventDefault();AU.unlock();act({bT:'throw',bB:'bump',bS:'shield'}[id]);}));
+['bT','bB','bS'].forEach(id=>$('#'+id).addEventListener('pointerdown',e=>{e.preventDefault();AU.unlock();const b=$('#'+id);if(!b.classList.contains('off')){b.classList.remove('press');void b.offsetWidth;b.classList.add('press');clearTimeout(b._pt);b._pt=setTimeout(()=>b.classList.remove('press'),180);}act({bT:'throw',bB:'bump',bS:'shield'}[id]);}));
+/* ---------- ability buttons: I1 "Toon badges" (from design-mockups/raalhu-handi.html), drawn once per state ---------- */
+const BCOL={throw:['#FF5A4E','#C9362C'],bump:['#1FB5C4','#0F7F8B'],shield:['#8C6FF0','#5A41C0']},BLAB={throw:'Throw',bump:'Bump',shield:'Shield'},BOL='#1B2433';
+function brr(c,x,y,w,h,r){c.beginPath();c.moveTo(x+r,y);c.arcTo(x+w,y,x+w,y+h,r);c.arcTo(x+w,y+h,x,y+h,r);c.arcTo(x,y+h,x,y,r);c.arcTo(x,y,x+w,y,r);c.closePath();}
+function bIcon(c,kind,R,pal){const ol=BOL,lw=Math.max(1.4,R*.06);
+ if(kind==='throw'){const nx=R*.14,ny=-R*.06,rn=R*.3;c.save();c.lineCap='round';c.setLineDash([R*.1,R*.09]);c.strokeStyle='#fff';c.lineWidth=R*.08;c.beginPath();c.moveTo(-R*.62,R*.46);c.quadraticCurveTo(-R*.5,-R*.32,nx-rn*.9,ny-rn*.2);c.stroke();c.setLineDash([]);
+   /* small size: no speed lines */
+   if(R>30){c.strokeStyle='rgba(255,255,255,.85)';c.lineWidth=R*.06;for(let i=0;i<2;i++){c.beginPath();c.moveTo(nx+rn*.9+R*.08,ny-rn*.9+i*R*.16-R*.05);c.lineTo(nx+rn*.9+R*.24,ny-rn*1.05+i*R*.16-R*.05);c.stroke();}}c.restore();
+  c.save();c.translate(nx,ny);c.fillStyle='#7A4A26';c.strokeStyle=ol;c.lineWidth=lw;c.beginPath();c.arc(0,0,rn,0,7);c.fill();c.save();c.clip();c.fillStyle='#55311A';c.beginPath();c.arc(rn*.35,rn*.45,rn,0,7);c.fill();c.fillStyle='#A8703F';c.beginPath();c.ellipse(-rn*.35,-rn*.4,rn*.45,rn*.28,-.5,0,7);c.fill();c.restore();c.beginPath();c.arc(0,0,rn,0,7);c.stroke();
+  c.fillStyle=ol;[[-.2,-.45],[.18,-.45],[0,-.14]].forEach(e=>{c.beginPath();c.arc(e[0]*rn,e[1]*rn,rn*.13,0,7);c.fill();});c.restore();}
+ else if(kind==='bump'){const bx=R*.3,by=-R*.08;c.beginPath();for(let i=0;i<16;i++){const a=.2+i*Math.PI/8,q=i%2?R*.2:R*.36;c.lineTo(bx+Math.cos(a)*q,by+Math.sin(a)*q);}c.closePath();c.fillStyle='#FFD23F';c.fill();c.strokeStyle=ol;c.lineWidth=lw;c.lineJoin='round';c.stroke();
+  c.save();c.translate(-R*.12,R*.06);c.rotate(.42);c.fillStyle='#fff';c.strokeStyle=ol;c.lineWidth=lw;brr(c,-R*.19,-R*.2,R*.36,R*.54,R*.16);c.fill();c.stroke();c.beginPath();c.arc(R*.02,-R*.38,R*.15,0,7);c.fill();c.stroke();c.fillStyle=pal[1];brr(c,R*.02,-R*.12,R*.2,R*.16,R*.08);c.fill();c.stroke();c.restore();
+  c.save();c.strokeStyle='rgba(255,255,255,.9)';c.lineWidth=R*.07;c.lineCap='round';for(let i=0;i<(R>30?3:2);i++){const yy=-R*.2+i*R*.2,x0=-R*.72+(i===1?0:R*.08);c.beginPath();c.moveTo(x0,yy);c.lineTo(x0+R*.2,yy);c.stroke();}c.restore();}
+ else{const gl=c.createRadialGradient(0,0,R*.2,0,0,R*.62);gl.addColorStop(0,'rgba(255,255,255,.6)');gl.addColorStop(1,'rgba(255,255,255,0)');c.fillStyle=gl;c.beginPath();c.arc(0,0,R*.62,0,7);c.fill();
+  c.save();c.strokeStyle='rgba(255,255,255,.9)';c.lineWidth=R*.06;c.lineCap='round';c.beginPath();c.arc(0,0,R*.54,-2.5,-.64);c.stroke();c.beginPath();c.arc(0,0,R*.54,.64,2.5);c.stroke();c.restore();
+  const sr=R*.36;c.save();c.translate(0,R*.02);const shell=()=>{c.beginPath();c.moveTo(sr*.95,sr*.55);c.bezierCurveTo(sr*1.15,-sr*.2,sr*.6,-sr*1.05,-sr*.15,-sr*.98);c.bezierCurveTo(-sr*.95,-sr*.9,-sr*1.15,sr*.15,-sr*.7,sr*.7);c.bezierCurveTo(-sr*.3,sr*1.1,sr*.45,sr*1.05,sr*.95,sr*.55);c.closePath();};
+  c.fillStyle='#FFF1D6';c.strokeStyle=ol;c.lineWidth=lw;shell();c.fill();c.save();shell();c.clip();c.fillStyle='#F3CF9F';c.beginPath();c.arc(sr*.5,sr*.6,sr*.9,0,7);c.fill();c.restore();shell();c.stroke();
+  c.strokeStyle='#C07A4A';c.lineWidth=lw*.9;c.beginPath();const n=40,turns=R>30?2.1:1.6;for(let i=0;i<=n;i++){const th=i/n*turns*6.283,r=sr*.8*Math.pow(i/n,1.25);c.lineTo(-sr*.05+Math.cos(th+2.2)*r,-sr*.05+Math.sin(th+2.2)*r);}c.stroke();
+  if(R>30){c.fillStyle='#F7A8B8';c.strokeStyle=ol;c.lineWidth=lw*.8;c.beginPath();c.ellipse(sr*.62,sr*.5,sr*.28,sr*.18,-.6,0,7);c.fill();c.stroke();}c.restore();}}
+function badge(cv,kind,empty){const box=cv.parentNode,size=box.offsetWidth||(kind==='shield'?56:74),pad=7,d=Math.min(3,Math.max(2,devicePixelRatio||1)),W=size+pad*2;
+ if(cv.width!==Math.round(W*d)){cv.width=Math.round(W*d);cv.height=Math.round(W*d);}const c=cv.getContext('2d'),R=size/2-1,pal=BCOL[kind];
+ c.setTransform(d,0,0,d,0,0);c.clearRect(0,0,W,W);c.translate(W/2,W/2);
+ c.fillStyle='rgba(0,0,0,.28)';c.beginPath();c.ellipse(0,R*.1,R,R,0,0,7);c.fill();
+ c.fillStyle=BOL;c.beginPath();c.arc(0,0,R,0,7);c.fill();c.fillStyle='#fff';c.beginPath();c.arc(0,0,R*.93,0,7);c.fill();
+ c.fillStyle=pal[1];c.beginPath();c.arc(0,0,R*.8,0,7);c.fill();c.save();c.beginPath();c.arc(0,0,R*.8,0,7);c.clip();c.fillStyle=pal[0];c.beginPath();c.arc(-R*.06,-R*.1,R*.78,0,7);c.fill();c.restore();
+ c.strokeStyle='rgba(255,255,255,.55)';c.lineWidth=R*.07;c.lineCap='round';c.beginPath();c.arc(0,0,R*.66,3.5,4.4);c.stroke();
+ c.save();c.translate(0,-R*.12);c.scale(.82,.82);bIcon(c,kind,R,pal);c.restore();
+ c.save();c.font='900 '+Math.round(R*.27)+'px "Bricolage Grotesque",Sora,system-ui,sans-serif';c.textAlign='center';c.textBaseline='middle';c.lineJoin='round';c.lineWidth=R*.08;c.strokeStyle='rgba(20,30,45,.75)';c.strokeText(BLAB[kind],0,R*.56);c.fillStyle='#fff';c.fillText(BLAB[kind],0,R*.56);c.restore();
+ /* empty: greyed (desaturated and dimmed); the 0 badge is the DOM <b> */
+ if(empty){c.save();c.beginPath();c.arc(0,0,R*1.01,0,7);c.clip();c.globalCompositeOperation='saturation';c.fillStyle='#808080';c.fillRect(-R,-R,2*R,2*R);c.globalCompositeOperation='source-over';c.fillStyle='rgba(30,40,52,.38)';c.fillRect(-R,-R,2*R,2*R);c.restore();}}
+let BST='';
+function drawBadges(force){const m=G&&G.me,c=m?m.ch:{throw:1,bump:1,shield:0},k=[c.throw>0,c.bump>0,c.shield>0||(m&&m.sh>0)].join()+(force?Math.random():'');if(k===BST)return;BST=k;
+ badge($('#bT canvas'),'throw',c.throw<=0);badge($('#bB canvas'),'bump',c.bump<=0);badge($('#bS canvas'),'shield',c.shield<=0&&!(m&&m.sh>0));}
+drawBadges(true);try{document.fonts&&document.fonts.ready.then(()=>drawBadges(true));}catch(e){}
 addEventListener('keydown',e=>{if(e.target&&e.target.closest&&e.target.closest('input'))return;const k=e.key.toLowerCase(),m={arrowleft:'left',a:'left',arrowright:'right',d:'right',arrowup:'up',w:'up',' ':'up',arrowdown:'down',s:'down',z:'throw',j:'throw',x:'bump',k:'bump',c:'shield',l:'shield'}[k];
  if(e.key==='Escape'){if($('#sheet').classList.contains('open'))closeSheet();else if($('#howto').classList.contains('open'))$('#howto').classList.remove('open');return;}
  if(e.key==='Enter'&&e.target&&e.target.id==='pnm'){saveName();return;}
@@ -494,7 +560,7 @@ function hud(force){if(!G)return;if(force)HC={};const race=G.race,me=G.me||G.cam
  put('plc',$('#plc'),me.place+`<small>${['th','st','nd','rd'][(me.place%10<4&&(me.place<11||me.place>13))?me.place%10:0]||'th'} / ${race.runners.length}</small>`,1);
  const s=Math.max(0,me.fin?me.finT:race.t);put('tim',$('#tim'),Math.floor(s/60)+':'+String(Math.floor(s%60)).padStart(2,'0'));
  if(G.me){const c=G.me.ch;put('nT',$('#nT'),String(c.throw));put('nB',$('#nB'),String(c.bump));put('nS',$('#nS'),String(c.shield));
-  const k=(c.throw>0?1:0)+(c.bump>0?2:0)+(c.shield>0?4:0)+(G.me.sh>0?8:0);if(HC.ab!==k){HC.ab=k;$('#bT').classList.toggle('off',c.throw<=0);$('#bB').classList.toggle('off',c.bump<=0);$('#bS').classList.toggle('off',c.shield<=0&&G.me.sh<=0);$('#bS').classList.toggle('on',G.me.sh>0);}}}
+  const k=(c.throw>0?1:0)+(c.bump>0?2:0)+(c.shield>0?4:0)+(G.me.sh>0?8:0);if(HC.ab!==k){HC.ab=k;$('#bT').classList.toggle('off',c.throw<=0);$('#bB').classList.toggle('off',c.bump<=0);$('#bS').classList.toggle('off',c.shield<=0&&G.me.sh<=0);$('#bS').classList.toggle('on',G.me.sh>0);drawBadges();}}}
 let tT=0;function toast(m,ms){if(!m)return;const t=$('#toast');t.textContent=m;t.classList.add('on');clearTimeout(tT);tT=setTimeout(()=>t.classList.remove('on'),ms||1400);}
 let gT=0;function toastG(t,ms){const el=$('#toastG');el.textContent=t;el.className='';void el.offsetWidth;el.className='show';clearTimeout(gT);gT=setTimeout(()=>{el.className='';},ms||2600);}
 let shakeT=0;function shake(){if(!reduce)shakeT=.3;}
@@ -502,33 +568,44 @@ let cdn=4,finShown=false;
 function cdShow(v){const el=$('#cd');el.textContent=v;el.classList.remove('on');void el.offsetWidth;el.classList.add('on');}
 /* ---------- engine events: sound, messages, effects ---------- */
 function nameOf(r){return r?r.name:'';}
+/* the journey's hazards (no runner attached): warnings, strikes, swoops, heard where the camera is */
+window.__rrHz=[];
+function hazEvent(race,e){const cam=G.me||G.cam;if(!cam)return;const T=race.track,cz=cam.rz!=null?cam.rz:cam.z,sp=Math.max(6,cam.speed||0);
+ if(LOCAL&&(e.t==='bolt'||e.t==='bat'||e.t==='zapWarn'||e.t==='batWarn'||e.t==='nut'||e.t==='nutWarn')){window.__rrHz.push({k:e.t,i:e.h.i,lane:e.h.lane,rt:+race.t.toFixed(3),h:Math.round(now2()),t0:G.t0||0,hits:(e.hits||[]).length});if(window.__rrHz.length>400)window.__rrHz.shift();}
+ if(e.t==='zapWarn'){if(E.inZap(T,cz+sp*E.WZ)||E.inZap(T,cz))SFX.zapWarn();}
+ else if(e.t==='bolt'){if(E.inZap(T,cz)){SFX.crack();SFX.thunder(.2,.5);buzz(20);}else if(view&&view.wx&&view.wx.storm>.15)SFX.thunder(.9+Math.random()*.9,.22);}
+ else if(e.t==='batWarn'){if(E.inBat(T,cz+sp*E.WB)||E.inBat(T,cz))SFX.batWarn();}
+ else if(e.t==='bat'){if(E.inBat(T,cz))SFX.batSwoop();}
+ else if(e.t==='nutWarn'){if(E.inNut(T,cz+sp*E.WN)||E.inNut(T,cz))SFX.nutWarn();}
+ else if(e.t==='nut'){if(E.inNut(T,cz)){const lx=(e.h.lane-1)*E.LANE;SFX.tok(Math.abs((cam.rx!=null?cam.rx:cam.x)-lx)<.8?1:.55);}}}
 function onEvents(race,list){const me=G.me;
- for(const e of list){const r=e.r,mine=r===me,near=me?Math.abs(r.z-me.z)<25:true;
+ for(const e of list){if(!e.r){hazEvent(race,e);continue;}const r=e.r,mine=r===me,near=me?Math.abs(r.z-me.z)<25:true;
   switch(e.t){
    case 'jump':if(mine)SFX.jump();break;case 'slide':if(mine)SFX.slide();break;case 'lane':if(mine)SFX.lane();break;
-   case 'hit':if(mine){SFX.hit();buzz(35);shake();const by=e.by!=null?race.runners[e.by]:null;toast(e.why==='coco'?(by?by.name+' hit you with a coconut!':'Coconut!'):e.why==='bump'?(by?by.name+' bumped you!':'Bumped!'):'Ouch! '+(E.OB[e.why]?E.OB[e.why].label:''),1300);}
+   case 'hit':if(mine){SFX.hit();buzz(35);shake();const by=e.by!=null?race.runners[e.by]:null;toast(e.why==='coco'?(by?by.name+' hit you with a coconut!':'Coconut!'):e.why==='bump'?(by?by.name+' bumped you!':'Bumped!'):e.why==='bolt'?'Zapped! Dodge the glowing mark':e.why==='bat'?'A bat! Change lane or slide':e.why==='nut'?'Bonk! A coconut fell on you':'Ouch! '+(E.OB[e.why]?E.OB[e.why].label:''),1300);}
     else{if(near)SFX.bonk();if(me&&e.by===me.id)toast(e.why==='coco'?'Your coconut hit '+r.name+'!':'You bumped '+r.name+'!',1200);}
     race.fx.push({t:'bonk',x:r.x,z:r.z,life:.6});break;
    case 'splash':race.fx.push({t:'splash',x:e.x,z:e.z,life:.9});if(mine){SFX.splash();buzz([30,40,30]);shake();toast('Splash! Back in a moment…',1500);}else{if(near)SFX.splash();if(me&&e.by===me.id)toast('You bumped '+r.name+' into the sea!',1500);}break;
    case 'throw':if(mine||near)SFX.throw();break;
    case 'bump':case 'bumpReq':if(mine||near)SFX.bump();if(mine&&e.t==='bump'&&!e.tg)toast('Dash!',700);break;
    case 'shield':if(mine||near)SFX.shield();if(mine)toast('Shell shield up',900);break;
-   case 'block':if(mine||near)SFX.block();if(mine)toast('Your shell blocked it!',1100);else if(me&&e.by===me.id)toast(r.name+'’s shell blocked you',1100);break;
+   case 'block':if(mine||near)SFX.block();if(mine)toast(e.why==='bolt'?'Your shell took the lightning!':e.why==='bat'?'Your shell stopped the bat!':e.why==='nut'?'Your shell bounced the coconut off!':'Your shell blocked it!',1100);else if(me&&e.by===me.id)toast(r.name+'’s shell blocked you',1100);break;
    case 'crate':if(mine){SFX.crate();toast('+'+e.n+' '+(e.k==='throw'?'coconut':e.k==='bump'?'bump':'shell')+(e.n>1?'s':'')+(e.dbl?' · double for catching up':''),1100);}break;
    case 'finish':if(mine){SFX.beep(true);const f=$('#fin');f.textContent=ord(r.place)+'!';f.className='';void f.offsetWidth;f.className='on';G.endAt=performance.now()+1900;}break;}}}
 
 /* =====================================================================
    LOOP
    ===================================================================== */
-let last=performance.now(),raf=0,frames=[],wT=0,hudT=0;
+let last=performance.now(),raf=0,frames=[],wT=0,hudT=0,wxT=0;
 function loop(now){raf=requestAnimationFrame(loop);if(document.hidden)return;const w0=performance.now();let raw=now-last;last=now;if(raw>250)raw=16;const dt=Math.min(.05,raw/1000);
  const scr=document.documentElement.dataset.scr;
  if(G&&(scr==='race'||scr==='results')){
   if(G.mode==='solo')stepSolo(dt,now);else stepOnline(dt,now);
   const cam=G.me||followCam();view.tags=true;view.noMe=!G.me;if(cam)view.draw(G.race,cam,now/1000);
   hudT-=dt;if(hudT<=0){hudT=.12;hud();}
+  wxT-=dt;if(wxT<=0){wxT=.25;if(view.wx&&scr==='race')AU.wx(view.wx);}
   if(G&&G.race.t>2&&scr==='race'){frames.push(raw);wT+=raw;if(wT>2500){const s=frames.slice().sort((a,b)=>a-b),med=s[s.length>>1];if(med>21)goLite();frames.length=0;wT=0;}}
- }else if(DEMO&&view){const d=DEMO.race;d.update(dt);d.ev.length=0;const c=DEMO.cam;if(c.z>d.len-8)newDemo();view.tags=false;view.noMe=true;view.draw(DEMO.race,DEMO.cam,now/1000);}
+ }else if(DEMO&&view){const d=DEMO.race;d.update(dt);d.ev.length=0;const c=DEMO.cam;if(c.z>Math.min(d.len-8,d.track.acts.s0-15))newDemo();view.tags=false;view.noMe=true;view.draw(DEMO.race,DEMO.cam,now/1000);}
  if(shakeT>0){shakeT-=dt;const k=shakeT*16;cvEl.style.transform=shakeT>0?`translate(${((Math.random()-.5)*k).toFixed(1)}px,${((Math.random()-.5)*k).toFixed(1)}px)`:'';}
  if(window.__rrPerf){window.__rrPerf.push(raw);window.__rrWork.push(performance.now()-w0);}}
 function countdown(race){const c=Math.ceil(-race.t);if(race.t<0&&c!==cdn&&c<=3&&c>=1){cdn=c;cdShow(c);SFX.beep(false);}if(race.t>=0&&cdn>0){cdn=0;cdShow('GO!');SFX.beep(true);}}
@@ -557,23 +634,31 @@ function showResults(){if(!G)return;G.done=true;const race=G.race;AU.ambient(fal
 /* =====================================================================
    HOW TO PLAY
    ===================================================================== */
-const HT=[['Controls','Run, dodge, jump'],['Obstacles','What’s on the beach'],['Abilities','Throw, bump, shield'],['Crates','Crates and catching up'],['Online','Racing online']];
+const HT=[['Controls','Run, dodge, jump'],['Obstacles','What’s on the way'],['Abilities','Throw, bump, shield'],['Crates','Crates and catching up'],['Online','Racing online']];
 let htI=0;
 function sprCanvas(key,w,h){const c=document.createElement('canvas'),d=Math.min(2,devicePixelRatio||1);c.width=w*d;c.height=h*d;c.style.width=w+'px';c.style.height=h+'px';const x=c.getContext('2d');const r=V.sprR(key);if(!r)return c;
- const k=Math.min(w*d/r.fw,h*d/r.fh)*.95;V.blit(x,V.IMG.sprites,r,(w*d-r.fw*k)/2,(h*d-r.fh*k)/2,r.fw*k,r.fh*k);return c;}
+ const k=Math.min(w*d/r.fw,h*d/r.fh)*.95;V.blit(x,V.imOf(r),r,(w*d-r.fw*k)/2,(h*d-r.fh*k)/2,r.fw*k,r.fh*k);return c;}
+/* how-to tile: the falling coconut over its growing shadow */
+function nutPic(){const c=document.createElement('canvas'),d=Math.min(2,devicePixelRatio||1);c.width=72*d;c.height=46*d;c.style.width='72px';c.style.height='46px';const x=c.getContext('2d');x.scale(d,d);
+ const g=x.createRadialGradient(36,38,0,36,38,18);g.addColorStop(0,'rgba(0,0,0,.6)');g.addColorStop(.75,'rgba(0,0,0,.45)');g.addColorStop(1,'rgba(0,0,0,0)');x.save();x.translate(36,38);x.scale(1,.36);x.translate(-36,-38);x.fillStyle=g;x.beginPath();x.arc(36,38,18,0,6.3);x.fill();
+ x.strokeStyle='rgba(255,214,140,.7)';x.lineWidth=2/.36*.5;x.beginPath();x.arc(36,38,19,0,6.3);x.stroke();x.restore();
+ x.strokeStyle='rgba(255,255,255,.55)';x.lineWidth=1.4;[-5,0,5].forEach(o=>{x.beginPath();x.moveTo(36+o,4);x.lineTo(36+o,10);x.stroke();});V.drawNut(x,36,19,8.5,.4);return c;}
+/* how-to tile: the glowing warning mark with the bolt coming down on it */
+function boltPic(){const c=document.createElement('canvas'),d=Math.min(2,devicePixelRatio||1);c.width=72*d;c.height=46*d;c.style.width='72px';c.style.height='46px';const x=c.getContext('2d');x.scale(d,d);
+ const m=V.sprR('mark0'),b=V.sprR('bolt0');if(m)V.blit(x,V.imOf(m),m,10,30,52,20);if(b){x.globalCompositeOperation='lighter';V.blit(x,V.imOf(b),b,27,-2,18,42);}return c;}
 function htBody(i){
  if(i===0)return `<div class="ht-pic"><div class="gest">${[['←  →','Change lane','Swipe left or right','M20 12H4M9 7l-5 5 5 5M28 12h-8'],['↑','Jump','Swipe up','M12 20V4M7 9l5-5 5 5'],['↓','Slide','Swipe down','M12 4v16M7 15l5 5 5-5'],['⌨','Keyboard','Arrows or WASD, Z X C','M3 7h18v10H3zM7 11h.01M11 11h.01M15 11h.01M8 14h8']].map(g=>`<div><svg viewBox="0 0 24 24" fill="none" stroke="#17202B" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="${g[3]}"/></svg><span>${g[1]}<small>${g[2]}</small></span></div>`).join('')}</div></div>
-  <h3>Run, dodge, jump</h3><p>Everyone runs forward on their own. You steer: three lanes, one straight beach run of about <b>60 seconds</b>. First under the finish arch wins.</p>
+  <h3>Run, dodge, jump</h3><p>Everyone runs forward on their own. You steer: three lanes, one run of about <b>100 seconds</b> that becomes a journey: a sunny beach, then a storm rolls in, then the track goes into the forest as night falls, and at sunrise you run out of the trees onto a bright beach. First under the finish arch on the sand wins.</p>
   <ul><li><b>Swipe left or right</b> to change lane.</li><li><b>Swipe up</b> to jump over low things.</li><li><b>Swipe down</b> to slide under the fishing net.</li><li>On a computer: arrow keys or WASD, <b>Z</b> throw, <b>X</b> bump, <b>C</b> shield.</li></ul>`;
- if(i===1)return `<div class="ht-pic"><div class="og" id="ogGrid"></div></div><h3>What’s on the beach</h3><ul><li><b>Jump</b> crabs, coconuts, sun loungers and the gaps in the jetty.</li><li><b>Falling palms:</b> a palm beside the track starts to tip, then crashes down across all three lanes. <b>Jump</b> the trunk.</li><li><b>Slide</b> under the fishing nets.</li><li><b>Change lane</b> around the beached dhonis: they are too tall to jump.</li><li>Hit something and you stumble for a moment. Fall through a jetty gap and you splash into the sea, then climb back after about 1.5 seconds. Nobody is ever knocked out.</li></ul>`;
+ if(i===1)return `<div class="ht-pic"><div class="og" id="ogGrid"></div></div><h3>What’s on the way</h3><ul><li><b>Sunny beach:</b> the obstacles below. <b>The storm:</b> rain, and lightning. <b>The forest at night:</b> bats, and eyes watching from the dark (they’re harmless). <b>Sunrise:</b> out of the trees, back on the beach with its obstacles, to the finish on the sand.</li><li><b>Lightning:</b> a glowing, crackling mark appears on the ground in a lane, and a second later the bolt strikes there. <b>Change lane</b> before it hits. Jumping doesn’t help.</li><li><b>Falling coconuts</b> (in the forest): a shadow grows on the path in one lane, with a rustle and a creak above. <b>Change lane</b> before it drops. Get bonked and you stumble.</li><li><b>Bats</b> swoop down a lane at head height (you’ll see a small bat far ahead and hear a squeak). <b>Change lane or slide</b> under them. <b>Slide</b> under the low branches too.</li><li><b>Jump</b> crabs, coconuts, sun loungers and the gaps in the jetty.</li><li><b>Falling palms:</b> a palm beside the track starts to tip, then crashes down across all three lanes. <b>Jump</b> the trunk.</li><li><b>Slide</b> under the fishing nets.</li><li><b>Change lane</b> around the beached dhonis: they are too tall to jump.</li><li>Hit something and you stumble for a moment. Fall through a jetty gap and you splash into the sea, then climb back after about 1.5 seconds. Nobody is ever knocked out.</li></ul>`;
  if(i===2)return `<div class="ht-pic"><div class="ab3" id="abGrid"></div></div><h3>Throw, bump, shield</h3><ul><li>Everyone starts with <b>1 coconut</b> and <b>1 bump</b>. You can carry up to 3 of each.</li><li><b>Coconut throw</b> rolls down your lane and hits the first runner ahead in it. They can jump it or change lane.</li><li><b>Bump</b> shoulder-charges a runner right beside you and knocks them a lane over. Next to the water, it throws them into the sea. With nobody beside you, it’s a quick dash.</li><li><b>Shell shield</b> (from purple crates) blocks the next coconut, bump or crash within 5 seconds. It doesn’t help over a jetty gap.</li></ul>`;
  if(i===3)return `<div class="ht-pic"><div class="og" id="crGrid" style="grid-template-columns:repeat(3,1fr)"></div></div><h3>Crates and catching up</h3><ul><li>Run through a crate to pick it up: <b>red</b> = coconut, <b>blue</b> = bump, <b>purple</b> = shell shield. Everyone can take every crate once.</li><li>Runners behind the leader run up to <b>10% faster</b>, so nobody falls far behind.</li><li>The <b>last two runners get double</b> from every crate.</li><li>Boli: the winner gets the most, everyone gets something (500 a day at most).</li></ul>`;
- return `<div class="ht-pic" style="display:grid;place-items:center;min-height:120px"><div style="font:800 15px Sora;color:#17202B;text-align:center">2 to 6 runners · computer fills empty places</div></div><h3>Racing online</h3><ul><li><b>Quick Match</b> puts you in a race with whoever is looking. If nobody comes within about 12 seconds, computer runners fill the places, and people who arrive before the start take them. <b>Play with Friends</b> makes a table with a code to share.</li><li>Voice chat: your mic starts off, tap it to talk, and you can mute anyone. Quick chat works everywhere.</li><li>Your own runner moves on your phone with no delay. Other runners are shown a split second behind, smoothly.</li><li>The host’s phone decides every coconut hit and bump, and the finish order.</li><li>If you leave, lose connection or stop playing for about 15 seconds, the computer runs for you until the end. If the host leaves, the next player takes over.</li><li>Others can watch a public race without running.</li></ul>`;}
+ return `<div class="ht-pic" style="display:grid;place-items:center;min-height:120px"><div style="font:800 15px Sora;color:#17202B;text-align:center">2 to 6 runners · computer fills empty places</div></div><h3>Racing online</h3><ul><li><b>Quick Match</b> puts you in a race with whoever is looking. If nobody comes within about 12 seconds, you can start with computer runners (it also starts by itself). People who arrive before the start take a computer’s place; people who arrive during a race watch, then take a computer’s place for the next race. <b>Play with Friends</b> makes a table with a code to share.</li><li>Voice chat, also at Quick Match: tap the mic button (top right in the race, or in the waiting room). Your mic starts off; you can mute or report anyone. Quick chat works everywhere.</li><li>Your own runner moves on your phone with no delay. Other runners are shown a split second behind, smoothly.</li><li>The host’s phone decides every coconut hit and bump, and the finish order.</li><li>If you leave, lose connection or stop playing for about 15 seconds, the computer runs for you until the end. If the host leaves, the next player takes over.</li><li>Others can watch a public race without running.</li></ul>`;}
 function openHowto(i){htI=clamp(i|0,0,HT.length-1);$('#howto').classList.add('open');renderHT();}
 function renderHT(){$('#htTabs').innerHTML=HT.map((h,j)=>`<button data-a="htTab" data-v="${j}" aria-pressed="${j===htI}">${h[0]}</button>`).join('');$('#htTitle').textContent=HT[htI][1];
  $('#htB').innerHTML=htBody(htI);$('#htB').scrollTop=0;$('#htNext').textContent=htI===HT.length-1?'Done':'Next';
- const og=$('#ogGrid');if(og)[['crab0','Crab','j'],['coco','Coconuts','j'],['lounger','Sun lounger','j'],['palmfall','Falling palm','j'],['gap','Jetty gap','j'],['net','Fishing net','s'],['dhoni','Beached dhoni','m']].forEach(o=>{const d=document.createElement('div');
-  d.appendChild(o[0]==='gap'?gapPic():sprCanvas(o[0],72,46));d.insertAdjacentHTML('beforeend',`${o[1]}<br><em class="${o[2]}">${o[2]==='j'?'Jump':o[2]==='s'?'Slide':'Change lane'}</em>`);og.appendChild(d);});
+ const og=$('#ogGrid');if(og)[['crab0','Crab','j'],['coco','Coconuts','j'],['lounger','Sun lounger','j'],['palmfall','Falling palm','j'],['gap','Jetty gap','j'],['net','Fishing net','s'],['dhoni','Beached dhoni','m'],['mark0','Lightning','m',1],['bat0','Bats','l',1],['nutfall','Falling coconut','m',1],['branch','Low branch','s',1]].forEach(o=>{const d=document.createElement('div');if(o[3])d.className='dk';
+  d.appendChild(o[0]==='gap'?gapPic():o[0]==='mark0'?boltPic():o[0]==='nutfall'?nutPic():sprCanvas(o[0],72,46));d.insertAdjacentHTML('beforeend',`${o[1]}<br><em class="${o[2]}">${o[2]==='j'?'Jump':o[2]==='s'?'Slide':o[2]==='l'?'Lane or slide':'Change lane'}</em>`);og.appendChild(d);});
  const ab=$('#abGrid');if(ab)[['ico_throw','Coconut throw','Hits the first runner ahead in your lane.'],['ico_bump','Bump','Knocks a runner beside you a lane over, or into the sea.'],['ico_shield','Shell shield','Blocks the next hit for up to 5 seconds.']].forEach(o=>{const d=document.createElement('div');d.appendChild(sprCanvas(o[0],44,44));d.insertAdjacentHTML('beforeend',`<span><b>${o[1]}</b>${o[2]}</span>`);ab.appendChild(d);});
  const cr=$('#crGrid');if(cr)[['crate_throw','Coconut'],['crate_bump','Bump'],['crate_shield','Shell shield']].forEach(o=>{const d=document.createElement('div');d.appendChild(sprCanvas(o[0],72,56));d.insertAdjacentHTML('beforeend',o[1]);cr.appendChild(d);});}
 function gapPic(){const c=document.createElement('canvas'),d=Math.min(2,devicePixelRatio||1);c.width=72*d;c.height=46*d;c.style.width='72px';c.style.height='46px';const x=c.getContext('2d');x.scale(d,d);
@@ -633,21 +718,20 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden){AU.sleep()
    also for spectators). Rivals are drawn ~0.15 s behind with interpolation.
    The host decides every coconut hit, bump and the finish order.
    ===================================================================== */
-let NET=null,qmKey='',qmAt=0;
-/* Quick Match alone: after QM_WAIT s offer computer runners, start by itself QM_CD s later.
-   shared/net.js v4 needs 2 seats to start, so a placeholder computer seat is added just for the start
-   and removed again in netStart (v5 adds real permanent computer seats). */
-const QM_WAIT=12,QM_CD=6;
-function quickFill(){const T=NET&&NET.meta();if(!T||!NET.isHost()||T.status!=='lobby')return;if(T.players.filter(p=>!p.gone).length<2&&!T.players.some(p=>p.id==='cpu-fill'))T.players.push({id:'cpu-fill',name:'Computer runner',look:null});NET.start();}
-setInterval(()=>{if(!NET||!NET.isHost())return;const T=NET.meta();if(!T||T.status!=='lobby'||!T.quick)return;NET.sync();
- if(T.players.length<2&&qmAt&&(Date.now()-qmAt)/1000>=QM_WAIT+QM_CD)quickFill();},1000);
+let NET=null;
+/* Quick Match uses shared/net.js v5 computer seats (cpu:true, quickSize 4): a 12 s search, then "Start with computer
+   players" (it also starts by itself). The computer runners are real seats at the table (cpuSeat gives them a
+   runner name and look). Someone who arrives during a race watches, then takes a computer's seat at the break
+   between races (NET.handBreak() at the finish -> onSeatSwap) and keeps that runner's table points. */
+function cpuSeat(i,taken){const t=new Set((taken||[]).map(x=>String(x).toLowerCase()));const M=NET&&NET.meta(),sd=(TP.seed||((M&&M.code||'').split('').reduce((a,c)=>a*31+c.charCodeAt(0),7)))>>>0;
+ for(let k=0;k<24;k++){const b=botLook(i+k,sd);if(b&&b.name&&!t.has(String(b.name).toLowerCase()))return{name:b.name,look:b.ch?{ch:b.ch}:null};}return null;}
 /* "N playing now" on the Quick Match button: people on public tables right now (from the live table list) */
 function playingNow(){if(!NET)return 0;try{if(typeof NET.playingNow==='function')return NET.playingNow()|0;const L=NET.lists();return[...L.open,...L.live].reduce((s,t)=>s+(t.n|0),0);}catch(e){return 0;}}
 function qmSub(){const n=playingNow(),el=$('#qmSub');const h=n>0?`<i></i>${n} playing now`:'Race runners from anywhere';if(el._h!==h){el._h=h;el.innerHTML=h;}}
 setInterval(()=>{if(document.documentElement.dataset.scr==='home'&&!document.hidden)qmSub();},3000);
 const TICK_MS=100,REP_MS=100,SYNC_MS=400,DELAY=150,SPEC_DELAY=450,IDLE_S=15,STALE_MS=2500;
 const now2=()=>NET&&NET.isOnline()?NET.hostNow():Date.now();
-function pack(r){let f=0;if(r.slide>0)f|=1;if(r.stum>0)f|=2;if(r.fall>0)f|=4;if(r.water)f|=8;if(r.fin)f|=16;if(r.sh>0)f|=32;if(r.dash>0)f|=64;if(r.face>0&&r.faceK==='hit')f|=128;if(r.face>0&&r.faceK==='win')f|=256;if(r.inv>0)f|=512;if(r.fallX>0)f|=1024;if(r.ctl==='ai'&&!r.bot)f|=2048;
+function pack(r){let f=0;if(r.slide>0)f|=1;if(r.stum>0)f|=2;if(r.fall>0)f|=4;if(r.water)f|=8;if(r.fin)f|=16;if(r.sh>0)f|=32;if(r.dash>0)f|=64;if(r.face>0&&r.faceK==='hit')f|=128;if(r.face>0&&r.faceK==='win')f|=256;if(r.inv>0)f|=512;if(r.fallX>0)f|=1024;if(r.ctl==='ai'&&!r.bot)f|=2048;if(r.zap>0)f|=4096;
  return[r.id,Math.round(r.z*100),Math.round(r.x*100),Math.round(r.y*100),Math.round((r.speed||0)*10),f,r.lane,r.fin?Math.round(r.finT*100):0,r.hits,r.dunks];}
 function lookOfSeat(l){const A=DGA();try{if(A&&l&&l.ch)return A.normalize(l.ch);}catch(e){}return null;}
 /* host: start a match */
@@ -657,11 +741,13 @@ function lookOfSeat(l){const A=DGA();try{if(A&&l&&l.ch)return A.normalize(l.ch);
 const PTS=[10,8,6,4,3,2];
 let TP={code:'',seed:0,pts:{},prev:[]};
 function addPoints(){if(!G||!G.over)return;G.over.forEach((o,i)=>{const r=G.race.runners[o[0]];if(r)TP.pts[r.pid]=(TP.pts[r.pid]||0)+(PTS[i]||1);});}
-function seatSwap(a,b){const from=a&&typeof a==='object'?(a.from||a.fromId):a,to=a&&typeof a==='object'?(a.to||a.toId):b;if(!from||!to)return;TP.pts[to]=(TP.pts[to]||0)+(TP.pts[from]||0);delete TP.pts[from];}
+function seatSwap(a,b){const from=a&&typeof a==='object'?(a.from||a.fromId):a,to=a&&typeof a==='object'?(a.to||a.toId):b&&typeof b==='object'?b.id:b;if(!from||!to)return;TP.pts[to]=(TP.pts[to]||0)+(TP.pts[from]||0);delete TP.pts[from];}
+/* v5: a newcomer takes computer seat cpuId. Only between races (a runner can't change hands mid-race). */
+function netSeatSwap(cpuId,pl){if(G&&G.host&&!G.over&&G.race.t>-4&&!G.done)return false;seatSwap(cpuId,pl);return true;}
 function netStart(seats,opts,info){const seed=((Math.random()*4294967295)>>>0)||9,cpu=clamp(+opts.cpu||0,0,4);
  const M=NET.meta()||{},code=M.code||'';if(TP.code!==code)TP={code,seed,pts:{},prev:[]};
- if(Array.isArray(M.players))M.players=M.players.filter(p=>p.id!=='cpu-fill');seats=seats.filter(s=>s.id!=='cpu-fill');
- const P=seats.map(s=>({pid:s.id,name:s.name||'Player',ch:s.id===myId?MYCH:lookOfSeat(s.look),bot:false}));
+ /* computer seats (v5) come in as seats with cpu:1: they run as computer runners with their own name and look */
+ const P=seats.map(s=>s.cpu?{pid:s.id,name:s.name||'Computer',ch:lookOfSeat(s.look),bot:true}:{pid:s.id,name:s.name||'Player',ch:s.id===myId?MYCH:lookOfSeat(s.look),bot:false});
  /* Quick Match: computer runners fill up to 4 runners; friends tables add what the host chose */
  const want=info&&info.quick?Math.max(seats.length,4):Math.max(2,Math.min(6,seats.length+cpu));
  while(P.length<want){const b=botLook(P.length,TP.seed);P.push({pid:'cpu'+P.length,name:b.name,ch:b.ch,bot:true});}
@@ -731,7 +817,7 @@ function interp(r,rt){const b=r.buf;if(!b||!b.length)return;let a=b[0],c=null;
  let z,x,y;if(c&&c.t>a.t){const k=clamp((rt-a.t)/(c.t-a.t),0,1);z=lerp(a.z,c.z,k);x=lerp(a.x,c.x,k);y=lerp(a.y,c.y,k);}
  else{const ex=clamp((rt-a.t)/1000,0,.35);z=a.z+((a.f&4)?0:a.sp*ex);x=a.x;y=a.y;}
  const f=(c&&rt-a.t>(c.t-a.t)*.5)?c.f:a.f;
- r.rz=z;r.rx=x;r.ry=Math.max(0,y);r.slide=f&1?.3:0;r.stum=f&2?.3:0;r.fall=f&4?1:0;r.water=f&8?1:0;r.sh=f&32?1:0;r.dash=f&64?.2:0;r.inv=f&512?.2:0;r.fallX=f&1024?1:-1;r.speed=a.sp;
+ r.rz=z;r.rx=x;r.ry=Math.max(0,y);r.slide=f&1?.3:0;r.stum=f&2?.3:0;r.fall=f&4?1:0;r.water=f&8?1:0;r.sh=f&32?1:0;r.dash=f&64?.2:0;r.inv=f&512?.2:0;r.fallX=f&1024?1:-1;r.speed=a.sp;r.zap=f&4096?.6:0;
  if(f&128&&!(r._pf&128)){r.face=1.1;r.faceK='hit';}if(f&256&&!(r._pf&256)){r.face=2.2;r.faceK='win';}r._pf=f;}
 function followCam(){if(!G)return null;const rs=G.race.runners;let best=G.cam;const lead=rs.slice().sort((a,b)=>a.place-b.place)[0];if(!best||best.place>2)best=lead;G.cam=best;best.got=best.got||{};return best;}
 function stepOnline(dt,now){const race=G.race,hostNow=now2(),tt=(hostNow-G.t0)/1000;race.t=tt-dt;
@@ -792,24 +878,16 @@ function netEnd(){G=null;AU.ambient(false);document.documentElement.classList.re
 function initNet(){if(!window.DGNet)return;
  NET=DGNet.create({game:'raalhu',v:2,title:'Raalhu Rumble',min:1,max:6,id:myId,
   /* Quick Match waiting room: after ~12 s alone, offer to start with computer runners (it also starts on its own) */
-  roomList:(T,c)=>{if(!T.quick)return null;const k=T.code+'|'+T.mid;if(qmKey!==k){qmKey=k;qmAt=Date.now();}const alone=T.players.length<2,el=(Date.now()-qmAt)/1000;
-   const li=T.players.map(p=>`<li data-pid="${esc(p.id)}"><span class="av">${c.avatar(p,38)}</span><span class="nm">${esc(p.name)}${p.id===T.hostId?'<span class="dgn-tag">Host</span>':''}${p.id===c.me?'<span class="dgn-tag you">You</span>':''}</span></li>`).join('');
-   const left=Math.max(0,Math.ceil(QM_WAIT+QM_CD-el));
-   const box=!alone?`<li class="rq"><b>${T.players.length} runners here</b>Computer runners fill any empty places up to 4. More people can still join until the race starts.</li>`
-    :el<QM_WAIT?`<li class="rq"><b>Looking for runners…</b>Anyone who taps Quick Match now joins your race.</li>`
-    :`<li class="rq"><b>No one else yet · starting in ${left} s</b>Computer runners fill the empty places. Anyone who arrives before the start takes one of them.${c.host?'<button class="dgn-btn pri w" data-dgn="x" data-x="cpu">Start with computer runners</button>':''}</li>`;
-   return li+box+Array.from({length:Math.max(0,4-T.players.length)},()=>'<li class="empty"><span class="seat"></span><span>Computer runner (if no one joins)</span></li>').join('');},
-  roomClick:d=>{if(d.x==='cpu'&&NET.isHost())quickFill();},
   me:()=>({name:myName(),look:{ch:MYCH}}),setName:v=>{if(regName())return;ls.set('lg-name',v);if(document.documentElement.dataset.scr==='home')renderHome();},
   avatar:(seat,size)=>`<span style="display:block;width:${size}px;height:${size}px;border-radius:50%;overflow:hidden">${avSVG(lookOfSeat(seat.look),size)}</span>`,
   options:[{k:'cpu',label:'Computer runners (friends tables)',def:1,choices:[[0,'None'],[1,'+1'],[2,'+2'],[3,'+3'],[4,'+4']]}],
   phrases:['Nice throw!','Oops!','Splash!','Watch out!','Hehe','Good luck!','Well run!','Rematch?','GG','Bye!','Hello!','Wait for me!'],
-  rulesNote:'2 to 6 runners, about 60 seconds, one beach run. Swipe to dodge, jump and slide. Leave, lose connection or stop playing and the computer runs for you until the end.',
+  rulesNote:'2 to 6 runners, about 100 seconds: beach, storm, the forest at night, then sunrise on the beach to the finish. Swipe to dodge, jump and slide. Leave, lose connection or stop playing and the computer runs for you until the end.',
   listInfo:m=>m.status!=='lobby'&&G?'Racing · '+G.race.runners.length+' runners':'Beach race',
   dropText:(nm,why)=>nm+(why==='afk'?' is away':why==='left'?' left':' lost connection')+'. The computer runs for them now.',
   afkText:'You stopped playing for a while, so the computer is running for you until this race ends. You can’t rejoin this race.',
   hostAfkText:'You stopped playing for a while, so the computer is running for you. You’ll leave the table when this race ends.',
-  onSeatSwap:(a,b)=>{seatSwap(a,b);},
+  cpu:true,quickSize:4,cpuSeat:cpuSeat,onSeatSwap:netSeatSwap,
   onStart:netStart,view:viewFor,onAction:netAction,onDrop:netDrop,onState:netState,onLobby:netLobby,onMigrate:netMigrate,onEnd:netEnd,onTell:netTell,
   backup:()=>G?viewFor(myId):null,toast:(t,ms)=>toastG(t,ms),
   dockHost:()=>document.documentElement.dataset.scr==='race'||document.documentElement.dataset.scr==='results'?$('#tools'):null,
@@ -826,6 +904,7 @@ liteSync();sfxBtn();
 V.load('art/',p=>{$('#ldBar').style.width=Math.round(p*100)+'%';$('#ldTx').textContent='Loading the beach… '+Math.round(p*100)+'%';}).then(()=>{
  view=new V.View(cvEl,{dpr:1.5,lite});
  view.onThud=()=>{if(document.documentElement.dataset.scr==='race'){SFX.thud();buzz(15);}};
+ view.onDistant=d=>{if(document.documentElement.dataset.scr==='race')SFX.thunder(d,.2);};
  $$('[data-spr]').forEach(el=>{const c=sprCanvas(el.dataset.spr,el.offsetWidth||40,el.offsetHeight||40);c.style.width='100%';c.style.height='100%';el.appendChild(c);});
  initNet();last=performance.now();requestAnimationFrame(loop);
  if(NET&&/^[A-Z]{4}$/i.test(Q.get('t')||'')){renderHome();NET.boot();}
