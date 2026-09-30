@@ -372,6 +372,97 @@ button:disabled{cursor:default}
 @media (max-width:350px){.ab{font-size:10.5px}.rs small{font-size:9.5px}.mode b{font-size:12px}.mode small{font-size:10.5px}#prompt .btn{padding:0 11px}}
 @media (min-width:700px){#bot{left:50%;right:auto;width:540px;transform:translateX(-50%)}#pls{max-width:560px;margin:0 auto}}
 @media (prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important}}
+/* ---------------- trading: ask the table (compose, live answers, confirm), the banner for the people asked, bank, trade log */
+.rsw{position:relative;display:inline-block;flex:none;width:var(--s,34px);height:var(--s,34px);border-radius:50%;background-size:cover;background-position:center;box-shadow:0 0 0 2px #fff,0 2px 6px rgba(0,0,0,.25);vertical-align:middle}
+.rsw svg{position:absolute;inset:0;width:100%;height:100%}
+.rc{display:inline-flex;align-items:center;gap:4px;white-space:nowrap;font-weight:700;vertical-align:middle}
+.rc .rsw{box-shadow:0 0 0 1.5px #fff,0 1px 3px rgba(0,0,0,.3)}
+.rc b{font-weight:800}
+.ab.hot{box-shadow:0 0 0 2.5px #ffcc00,0 10px 30px -10px rgba(0,30,50,.45);animation:hot 1.8s ease-in-out infinite}
+@keyframes hot{50%{box-shadow:0 0 0 4px rgba(255,204,0,.55),0 10px 30px -10px rgba(0,30,50,.45)}}
+.ab.dice .roll{font:700 11px/1 Inter;opacity:.8}
+.sh .shb{display:flex;gap:6px}
+.tiles{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:5px}
+.tile{position:relative;display:flex;flex-direction:column;align-items:center;gap:4px;padding:9px 2px 8px;border-radius:14px;background:rgba(13,27,36,.05);border:2px solid transparent;min-width:0;transition:border-color .15s,background .15s,transform .15s var(--spring)}
+.tile:active{transform:scale(.96)}
+.tile small{font:700 11.5px/1 Inter;color:var(--ink);white-space:nowrap}
+.tile em{font:600 10px/1 Inter;color:var(--muted);font-style:normal;white-space:nowrap}
+.tile .q{position:absolute;top:3px;right:3px;min-width:22px;height:22px;border-radius:11px;background:var(--ink);color:#fff;font:800 12px/22px Inter;text-align:center;padding:0 5px;display:none}
+.tile.on .q{display:block}
+.tile.want.on{border-color:#1f9d57;background:#e6f5ec}.tile.want.on .q{background:#1f9d57}
+.tile.give.on{border-color:var(--red);background:#fbeceb}.tile.give.on .q{background:var(--red)}
+.tile:disabled{opacity:.38}
+.tile .minus{position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:11px;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.2);font:800 15px/21px Inter;color:var(--ink);display:none;text-align:center}
+.tile.on .minus{display:block}
+.tile .trt{position:absolute;top:3px;left:50%;transform:translateX(-50%);font:800 10px/1 Inter;background:var(--ink);color:#fff;border-radius:6px;padding:3px 5px}
+.tile.bank{padding-top:20px}
+.preview{margin:12px 0 10px;padding:11px 12px;border-radius:14px;background:#fff;border:1px solid var(--line);font:600 14px/1.45 Inter;display:flex;flex-wrap:wrap;align-items:center;gap:4px 6px}
+.preview.empty{color:var(--muted)}
+.asksl{display:flex;align-items:center;justify-content:center;gap:6px;margin-top:8px;font:600 12.5px/1 Inter;color:var(--muted)}
+.asksl i{width:9px;height:9px;border-radius:50%;background:var(--ink)}.asksl i.u{background:#cfd8de}
+.tlink{display:block;margin:8px auto 0;min-height:40px;padding:0 12px;font:700 13.5px/40px Inter;color:#0a6aa8;text-decoration:underline;text-underline-offset:3px}
+.askh{display:flex;align-items:center;gap:10px;padding:10px;border-radius:16px;background:#fff;border:1px solid var(--line)}
+.askh .t{flex:1;min-width:0;font:600 13.5px/1.55 Inter}
+.askh .t small{display:block;color:var(--muted);font-size:12px;line-height:1.4}
+.tring{position:relative;width:46px;height:46px;flex:none}
+.tring svg{width:46px;height:46px;transform:rotate(-90deg);display:block}
+.tring b{position:absolute;inset:0;display:grid;place-items:center;font:800 14px/1 Inter}
+.resp .go{flex:none;height:44px;min-width:72px;border-radius:12px;background:var(--ink);color:#fff;font:800 13.5px/1 Inter;padding:0 14px}
+.resp .go:disabled{background:#c7d0d6}
+.tchip{display:inline-flex;align-items:center;flex-wrap:wrap;gap:4px;margin-top:4px;padding:5px 9px;border-radius:10px;font:700 12.5px/1.35 Inter;background:rgba(13,27,36,.06);color:var(--muted)}
+.tchip.yes{background:#e3f4ea;color:#136b3a}.tchip.ctr{background:#fff1d6;color:#7a4a00}.tchip.no{background:#f7e7e6;color:#9a4a45}.tchip.none{color:#7b8a93}
+.tchip svg{width:14px;height:14px;flex:none}
+.tchip .d{display:inline-flex;gap:3px}.tchip .d i{width:5px;height:5px;border-radius:50%;background:currentColor;animation:tbl 1s infinite}
+.tchip .d i:nth-child(2){animation-delay:.15s}.tchip .d i:nth-child(3){animation-delay:.3s}
+@keyframes tbl{0%,100%{opacity:.25}50%{opacity:1}}
+.tchip.arrive{animation:tpop .45s var(--spring)}
+@keyframes tpop{0%{transform:scale(.6);opacity:0}100%{transform:none;opacity:1}}
+.deal{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;gap:6px;margin:10px 0;background:rgba(13,27,36,.05);border-radius:16px;padding:10px 8px}
+.deal .side{display:flex;flex-direction:column;align-items:center;gap:5px;text-align:center;min-width:0}
+.deal .side small{font:700 10.5px/1 Inter;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.deal .it{display:flex;gap:4px;flex-wrap:wrap;justify-content:center}
+.deal .lab{font:800 14px/1.2 Inter}
+.deal .arr{color:var(--muted)}.deal .arr svg{width:22px;height:22px;display:block}
+.deal .open{font:700 13px/1.3 Inter;color:var(--muted);padding:12px 4px;border:2px dashed #cfd8de;border-radius:12px}
+.btn.grn{background:#1f9d57}.btn.warn{background:#fff3dc;color:#7a4a00}
+.ban2{position:relative;overflow:hidden;border-radius:20px;padding:12px;background:rgba(255,255,255,.96);box-shadow:0 0 0 .5px rgba(0,0,0,.08),0 18px 40px -12px rgba(0,30,50,.55)}
+.ban2.enter{animation:tin .35s var(--out)}
+.ban2 .tmr{position:absolute;left:0;top:0;height:4px;width:100%;background:var(--red);transform-origin:left}
+.ban2 .bh{display:flex;align-items:center;gap:10px}
+.ban2 .bh .av svg{width:40px;height:40px;display:block;border-radius:50%}
+.ban2 .bh .t{flex:1;min-width:0;font:600 14px/1.3 Inter}.ban2 .bh .t b{font-weight:800}.ban2 .muted{color:var(--muted)}
+.ban2 .secs{flex:none;font:800 12px/1 Inter;color:var(--muted);background:rgba(13,27,36,.06);border-radius:99px;padding:6px 8px}
+.ban2 .deal{margin:8px 0}
+.ban2 .bb3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px}
+.ban2 .btn{min-height:48px;font-size:14.5px;border-radius:14px;padding:0 6px;font-weight:800}
+.ban2 .btn small{display:block;margin-top:2px}
+.others{display:flex;flex-wrap:wrap;gap:5px;margin-top:9px;font:600 11.5px/1 Inter;color:var(--muted);align-items:center}
+.omini{display:inline-flex;align-items:center;gap:5px;padding:3px 8px 3px 3px;border-radius:99px;background:rgba(13,27,36,.06);white-space:nowrap}
+.omini .av svg{width:18px;height:18px;display:block;border-radius:50%}
+.bnote{margin-top:8px;font:700 13px/1.4 Inter;text-align:center;color:var(--ink)}
+.bnote .muted{font-weight:600}
+.quick{display:flex;flex-wrap:wrap;gap:6px}
+.qk{display:inline-flex;align-items:center;gap:6px;padding:5px 10px 5px 5px;border-radius:99px;background:rgba(13,27,36,.05);font:700 13px/1 Inter;border:2px solid transparent;min-height:44px}
+.qk.on{border-color:#1f9d57;background:#e6f5ec}
+#mdim{position:fixed;inset:0;z-index:32;background:rgba(3,18,30,.3);animation:fd .2s}
+#modal{position:fixed;left:12px;right:12px;top:50%;z-index:33;max-width:420px;margin:0 auto;background:#fff;border-radius:24px;padding:16px;box-shadow:0 30px 60px -20px rgba(0,0,0,.6);transform:translateY(-50%);animation:mup .3s var(--spring)}
+@keyframes mup{from{transform:translateY(-44%) scale(.94);opacity:0}}
+#modal h3{font:800 19px/1.25 Inter;text-align:center;margin:0 0 4px;display:flex;align-items:center;justify-content:center;gap:8px}
+#modal h3 .av svg{width:30px;height:30px;display:block;border-radius:50%}
+.tlog{list-style:none;margin:0;padding:0}
+.tlog li{display:flex;gap:9px;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--line);font:600 13.5px/1.6 Inter}
+.tlog li:last-child{border-bottom:0}
+.tlog .av svg{width:28px;height:28px;display:block;border-radius:50%;margin-top:1px}
+.tlog small{display:block;color:var(--muted);font:600 11.5px/1.2 Inter;margin-top:2px}
+.tbk{flex:none;width:28px;height:28px;border-radius:50%;display:grid;place-items:center;background:var(--ink);color:#fff}.tbk svg{width:16px;height:16px}
+.askh .tbk{width:40px;height:40px}.askh .tbk svg{width:22px;height:22px}
+#logBtn{position:absolute;left:6px;z-index:5;width:44px;height:44px;display:grid;place-items:center}
+#logBtn span{width:32px;height:32px;border-radius:50%;display:grid;place-items:center;color:var(--ink)}#logBtn svg{width:16px;height:16px}
+/* thrown dice (shared/dice.js): over the visible board (layoutView sets top / height), under the bars */
+#dtray{position:absolute;left:0;right:0;top:0;height:0;z-index:5}
+@media (max-width:360px){.tile small{font-size:10.5px}.ban2 .btn{font-size:13.5px}.tchip{font-size:12px}}
+/* short screens (a phone on its side): the banner keeps the sentence and the buttons, without the picture of the deal */
+@media (max-height:520px){.ban2 .deal{display:none}.ban2 .bb3{margin-top:10px}.ban2 .btn{min-height:44px}}
 /* online (shared/net.js): drone-view white glass, ink buttons */
 :root{--dgn-bg:#F3F7F9;--dgn-bg2:#FFFFFF;--dgn-fg:#0d1b24;--dgn-muted:#56666f;--dgn-line:rgba(13,27,36,.12);--dgn-soft:rgba(13,27,36,.07);--dgn-acc:#0d1b24;--dgn-acc-fg:#fff;
  --dgn-good:#1f9d62;--dgn-bad:#e0352b;--dgn-scrim:rgba(3,18,30,.42);--dgn-font:Inter,system-ui,sans-serif;--dgn-head:Inter,system-ui,sans-serif;--dgn-talk:rgba(10,132,255,.85);
@@ -432,12 +523,14 @@ button:disabled{cursor:default}
  <div id="pls"></div>
  <div id="tele" class="tele" aria-hidden="true"></div>
  <button id="keyBtn" type="button" aria-label="Resources key" aria-expanded="false"><span class="wg">?</span></button>
+ <button id="logBtn" type="button" aria-label="Trade log"><span class="wg"></span></button>
  <div id="mm" class="wg" hidden><canvas width="176" height="176" aria-label="Mini-map. Tap to move the camera."></canvas><small id="mmTx"></small></div>
  <div id="bot">
   <div id="prompt" class="wg" hidden></div>
   <div id="acts"></div>
   <div id="hand" class="wg"></div>
  </div>
+ <div id="dtray" class="dtray" aria-hidden="true"></div>
 </section>
 <div id="loading" hidden><span class="tele" style="display:block"><span><b></b>Surveying the atoll…</span></span><span class="lbar"><i id="lprog"></i></span></div>
 <div id="banner"></div>
@@ -448,6 +541,7 @@ button:disabled{cursor:default}
 <script src="../shared/avatar.js?v=10"></script>
 <script src="../shared/sponsors.js?v=6"></script>
 <script src="../shared/net.js?v=5"></script>
+<script src="../shared/dice.js?v=1"></script>
 
 <script>
 'use strict';
@@ -658,7 +752,7 @@ const E=(()=>{
    players:o.players.map(p=>({name:p.name,human:!!p.human,av:p.av||null,col:p.col,hand:{wood:0,brick:0,sheep:0,wheat:0,ore:0},cards:[],knights:0,left:{route:15,sea:M.hop?15:0,village:5,capital:4},disc:[]})),
    bank:{wood:M.bank,brick:M.bank,sheep:M.bank,wheat:M.bank,ore:M.bank},deck:[],vb:[],eb:[],pirate:-1,
    phase:'setup',step:'place',turn:0,first:0,round:0,turnNo:0,setup:null,dice:[0,0],dd:null,discard:{},free:0,ret:null,devPlayed:false,
-   longest:{p:-1,n:0},army:{p:-1,n:0},hm:{p:-1,n:0},offer:null,sbp:null,log:[],over:null,seq:0,rolls:Array(13).fill(0),vpn:0};
+   longest:{p:-1,n:0},army:{p:-1,n:0},hm:{p:-1,n:0},offer:null,ask:null,tlog:[],sbp:null,log:[],over:null,seq:0,rolls:Array(13).fill(0),vpn:0};
   G=g;GR=buildGraph(map);GRmap=map;g.vb=GR.V.map(()=>null);g.eb=GR.E.map(()=>null);
   g.pirate=map.hexes.findIndex(h=>h.t==='sand'&&(!M.hop||h.isl===map.home));
   const d=M.deck;g.deck=bag({knight:d.knight,road:d.road,plenty:d.plenty,mono:d.mono,vp:d.vp});for(let i=g.deck.length-1;i>0;i--){const j=(rnd()*(i+1))|0;const x=g.deck[i];g.deck[i]=g.deck[j];g.deck[j]=x;}
@@ -682,6 +776,16 @@ const E=(()=>{
  function checkWin(){if(G.phase!=='play')return;const p=G.turn;if(pts(p)>=G.opts.target){G.phase='over';G.step='over';G.offer=null;G.over={winner:p,rank:rankList(),round:G.round};emit({t:'win',p});log(`${nm(p)} ${P(p).human?'win':'wins'} with ${pts(p)} points!`);}}
  function giveUpRoads(){if(G.step==='roads'&&(G.free<=0||!anyRouteSpot(G.turn))){G.step=G.ret||'main';G.ret=null;G.free=0;}}
  const clean=o=>{const r={};let n=0;RES.forEach(k=>{const v=Math.max(0,(o&&o[k])|0);if(v){r[k]=v;n+=v;}});return n?r:null;};
+ /* trading ("ask the table"): the player on turn asks everyone for `get`, optionally offering `give` (empty = open to offers).
+    Each other player answers once: yes (has the cards; not on an open ask), counter {give,get} (seen from the ASKER: what the
+    asker would give / get), or no (why: lack:<res> | need:<res> | lead | worth | expired). The asker picks one (accept).
+    Limits, checked here on the host: 3 asks a turn, one open ask at a time (a new ask replaces it), 2 s between a person's asks.
+    OFFER_MS to answer (the host's clock: t0 = a.now, the host's Date.now()); at the end the host answers no for the rest
+    ({expired:true}, which is not an AFK strike). The last 12 trades are public in G.tlog. */
+ const OFFER_MS=20000,ASKS=3,WHY=/^(lack:(wood|brick|sheep|wheat|ore)|need:(wood|brick|sheep|wheat|ore)|lead|worth|expired)$/;
+ function tlog(e){G.tlog=G.tlog||[];G.tlog.push(Object.assign({round:G.round},e));if(G.tlog.length>12)G.tlog.shift();}
+ const txt=o=>RES.filter(r=>o&&o[r]).map(r=>o[r]+' '+RNAME[r]).join(' + ');
+ function closeOffer(p){if(G.offer){emit({t:'cancel',p:G.offer.from,id:G.offer.id});G.offer=null;}}
  /* ---------- actions ---------- */
  const A={
   place(p,a){if(G.phase!=='setup'||G.setup.need!=='v'||cur()!==p)return 'not now';const v=a.v|0;if(!canVillage(p,v,true))return 'illegal';
@@ -725,19 +829,24 @@ const E=(()=>{
    if(k==='road'){emit({t:'play',p,k});log(`${nm(p)} ${P(p).human?'play':'plays'} Route building`);const L=P(p).left;G.free=Math.min(2,L.route+L.sea);G.ret=G.step;G.step='roads';giveUpRoads();return null;}
    return 'bad card';},
   bank(p,a){if(G.step!=='main'||p!==G.turn)return 'not now';const g=a.give,w=a.get;if(!RES.includes(g)||!RES.includes(w)||g===w)return 'bad';const rt=rates(p)[g];
-   if(hand(p)[g]<rt)return 'cost';if(G.bank[w]<1)return 'bank short';hand(p)[g]-=rt;G.bank[g]+=rt;gain(p,w,1);emit({t:'bank',p,give:g,n:rt,get:w});log(`${nm(p)} ${P(p).human?'trade':'trades'} ${rt} ${RNAME[g]} for 1 ${RNAME[w]}`);return null;},
-  offer(p,a){if(G.step!=='main'||p!==G.turn)return 'not now';const give=clean(a.give),get=clean(a.get);if(!give||!get)return 'empty';if(RES.some(r=>give[r]&&get[r]))return 'same';if(!has(p,give))return 'cost';
+   if(hand(p)[g]<rt)return 'cost';if(G.bank[w]<1)return 'bank short';hand(p)[g]-=rt;G.bank[g]+=rt;gain(p,w,1);emit({t:'bank',p,give:g,n:rt,get:w});tlog({a:p,b:-1,give:{[g]:rt},get:{[w]:1},via:rt<4?'harbour':'bank'});log(`${nm(p)} traded ${rt} ${RNAME[g]} → the ${rt<4?'harbour':'bank'} for 1 ${RNAME[w]}`);return null;},
+  offer(p,a){if(G.step!=='main'||p!==G.turn)return 'not now';const give=clean(a.give)||{},get=clean(a.get);if(!get)return 'empty';if(RES.some(r=>give[r]&&get[r]))return 'same';if(!has(p,give))return 'cost';
+   const k=G.ask&&G.ask.t===G.turnNo?G.ask:{t:G.turnNo,n:0,at:0};if(k.n>=ASKS)return 'no asks';
+   const now=+a.now||0;if(now&&k.at&&now-k.at<2000&&P(p).human)return 'too soon';
    const to=(a.to&&a.to.length?a.to:G.players.map((_,i)=>i)).filter(i=>i!==p&&i>=0&&i<G.players.length);if(!to.length)return 'nobody';
-   G.offer={from:p,give,get,to,rep:{},id:(G.seq|0)+1};emit({t:'offer',p,give,get,to});return null;},
-  reply(p,a){const o=G.offer;if(!o||!o.to.includes(p))return 'not now';if(a.ans==='yes'){if(!has(p,o.get))return 'cost';o.rep[p]='yes';}
+   closeOffer(p);k.n++;k.at=now;G.ask=k;
+   G.offer={from:p,give,get,to,rep:{},why:{},id:(G.seq|0)+1,t0:now,dur:OFFER_MS};emit({t:'offer',p,give,get,to,id:G.offer.id});return null;},
+  reply(p,a){const o=G.offer;if(!o||!o.to.includes(p)||(a.id!=null&&+a.id!==o.id))return 'closed';if(o.rep[p]!=null)return 'answered';const open=!cnt(o.give);
+   if(a.ans==='yes'){if(open)return 'bad';if(!has(p,o.get))return 'cost';o.rep[p]='yes';}
    else if(a.ans==='counter'){const give=clean(a.give),get=clean(a.get);if(!give||!get||RES.some(r=>give[r]&&get[r]))return 'bad';if(!has(p,get))return 'cost';o.rep[p]={give,get};}
-   else o.rep[p]='no';emit({t:'reply',p,ans:a.ans,rep:o.rep[p]});return null;},
-  accept(p,a){const o=G.offer;if(!o||o.from!==p||p!==G.turn||G.step!=='main')return 'not now';const w=a.with|0,r=o.rep[w];if(!r||r==='no')return 'no deal';
-   const give=r==='yes'?o.give:r.give,get=r==='yes'?o.get:r.get;if(!has(p,give)||!has(w,get)){o.rep[w]='no';return 'cost';}
-   RES.forEach(k=>{const a1=give[k]|0,b1=get[k]|0;hand(p)[k]+=b1-a1;hand(w)[k]+=a1-b1;});G.offer=null;emit({t:'trade',a:p,b:w,give,get});
-   log(`${nm(p)} and ${nm(w)} trade`);return null;},
-  cancel(p){const o=G.offer;if(!o||o.from!==p)return 'not now';G.offer=null;emit({t:'cancel',p});return null;},
-  end(p){if(G.phase!=='play'||G.step!=='main'||p!==G.turn)return 'not now';G.offer=null;
+   else{o.rep[p]='no';const w=a.expired?'expired':String(a.why||'');if(WHY.test(w)){o.why=o.why||{};o.why[p]=w;}}
+   emit({t:'reply',p,ans:a.ans==='yes'||a.ans==='counter'?a.ans:'no',rep:o.rep[p],id:o.id,why:o.why&&o.why[p]||''});return null;},
+  accept(p,a){const o=G.offer;if(!o||o.from!==p||p!==G.turn||G.step!=='main')return 'not now';if(a.id!=null&&+a.id!==o.id)return 'closed';const w=a.with|0,r=o.rep[w];if(!r||r==='no')return 'no deal';
+   const give=r==='yes'?o.give:r.give,get=r==='yes'?o.get:r.get;if(!cnt(give)||!cnt(get))return 'no deal';if(!has(p,give)||!has(w,get)){o.rep[w]='no';return 'cost';}
+   RES.forEach(k=>{const a1=give[k]|0,b1=get[k]|0;hand(p)[k]+=b1-a1;hand(w)[k]+=a1-b1;});const id=o.id;G.offer=null;emit({t:'trade',a:p,b:w,give,get,id});
+   tlog({a:p,b:w,give,get});log(`${nm(p)} traded ${txt(give)} → ${nm(w)} for ${txt(get)}`);return null;},
+  cancel(p,a){const o=G.offer;if(!o||o.from!==p)return 'not now';if(a&&a.id!=null&&+a.id!==o.id)return 'closed';G.offer=null;emit({t:'cancel',p,id:o.id});return null;},
+  end(p){if(G.phase!=='play'||G.step!=='main'||p!==G.turn)return 'not now';closeOffer(p);
    if(Mo().sbp){const n=G.players.length,q=[];for(let k=1;k<n;k++)q.push((G.turn+k)%n);G.sbp={q,i:0};G.step='sbp';emit({t:'sbp',p:q[0]});return null;}
    nextTurn();return null;},
   done(p){if(G.step!=='sbp'||sbpP()!==p)return 'not now';G.sbp.i++;if(G.sbp.i>=G.sbp.q.length){G.sbp=null;nextTurn();}else emit({t:'sbp',p:sbpP()});return null;}
@@ -750,14 +859,14 @@ const E=(()=>{
  function replaceWithAI(g,p){use(g);const pl=G&&G.players[p];if(!pl)return 'no player';if(pl.afk)return null;pl.human=false;pl.afk=true;pl.strikes=0;emit({t:'afk',p});log(`${pl.name} is away. The computer plays this seat to the end.`);return null;}
  function act(g,p,a){use(g);if(!G)return 'no game';if(G.phase==='over')return 'over';const f=a&&A[a.t];if(!f)return 'bad action';
   if(G.players[p]&&G.players[p].afk&&!a.bot)return 'afk';
-  if(a.t!=='reply'&&a.t!=='discard'&&G.offer&&G.offer.from===p&&!['accept','cancel','offer'].includes(a.t))G.offer=null;
-  const err=f(p,a);if(!err){G.seq=(G.seq|0)+1;const pl=G.players[p];if(pl){if(a.auto){pl.strikes=(pl.strikes|0)+1;if(pl.strikes>=2&&!pl.afk)replaceWithAI(G,p);}else if(!a.bot)pl.strikes=0;}if(G.phase==='play'&&a.t!=='reply')checkWin();}return err||null;}
+  if(a.t!=='reply'&&a.t!=='discard'&&G.offer&&G.offer.from===p&&!['accept','cancel','offer','bank'].includes(a.t))closeOffer(p);
+  const err=f(p,a);if(!err){G.seq=(G.seq|0)+1;const pl=G.players[p];if(pl){if(a.auto){pl.strikes=(pl.strikes|0)+1;if(pl.strikes>=2&&!pl.afk)replaceWithAI(G,p);}else if(!a.bot&&!a.expired)pl.strikes=0;}if(G.phase==='play'&&a.t!=='reply')checkWin();}return err||null;}
  function actors(){if(!G||G.phase==='over')return [];if(G.phase==='setup')return [cur()];
   if(G.step==='discard')return Object.keys(G.discard).map(Number);
   if(G.offer){const w=G.offer.to.filter(i=>G.offer.rep[i]==null);return w.length?w:[G.offer.from];}
   if(G.step==='sbp')return [sbpP()];return [G.turn];}
  function drain(){const e=EV;EV=[];return e;}
- return {create,act,use,drain,actors,replaceWithAI,cur,sbpP,pts,pubPts,vpCards,discPts,cnt,has,rates,harbPts,routeLen:p=>routeLen(p),routePath,canVillage,canRoute,routeSpots,villageSpots,setupSpots,capitalSpots,
+ return {OFFER_MS,ASKS,create,act,use,drain,actors,replaceWithAI,cur,sbpP,pts,pubPts,vpCards,discPts,cnt,has,rates,harbPts,routeLen:p=>routeLen(p),routePath,canVillage,canRoute,routeSpots,villageSpots,setupSpots,capitalSpots,
   evlog:()=>LOG,get lid(){return LID;},seedLid(n){if(n>LID)LID=n|0;},
   pirateSpots,victimsAt,touching,protectedP,anyRouteSpot,HOP,get G(){return G;},get GR(){return gr();},Mo};
 })();
@@ -853,22 +962,33 @@ const g=G(),gr=GR(),L=g.players[p].left,h=g.players[p].hand;
   const rt=E.rates(p);let possible=0;RES.forEach(s=>{const x=extra(s);if(x>0)possible+=Math.floor(x/rt[s]);});const needU=miss.reduce((a,r)=>a+((c[r]|0)-h[r]),0);
   if(possible>=needU&&m.banks<4){const s=RES.filter(x=>extra(x)>=rt[x]).sort((a,b)=>rt[a]-rt[b]||extra(b)-extra(a))[0];const r=miss.find(x=>g.bank[x]>0);if(s&&r){m.banks++;return {t:'bank',give:s,get:r};}}
   return null;}
- function resolveOffer(p){const g=G(),o=g.offer,gl=goal(p),v=val(p,gl);const ids=Object.keys(o.rep).map(Number);let best=null,bs=0;
-  const score=(give,get)=>RES.reduce((s,r)=>s+(get[r]|0)*v[r]-(give[r]|0)*v[r],0);
-  for(const i of ids){const r=o.rep[i];if(r==='no')continue;const give=r==='yes'?o.give:r.give,get=r==='yes'?o.get:r.get;if(!E.has(p,give))continue;
-   let s=score(give,get)+0.3-(E.pubPts(i)>=g.opts.target-2?1.5:0)-E.pubPts(i)*0.02;if(r==='yes')s+=0.4;if(s>bs){bs=s;best=i;}}
-  return best!=null?{t:'accept',with:best}:{t:'cancel'};}
- function reply(p){const g=G(),o=g.offer,gl=goal(p),v=val(p,gl),h=g.players[p].hand;
-  const gain=RES.reduce((s,r)=>s+(o.give[r]|0)*v[r],0),loss=RES.reduce((s,r)=>s+(o.get[r]|0)*v[r],0);
-  const danger=E.pubPts(o.from)>=g.opts.target-2;
-  if(danger&&gain<loss*2.2)return {t:'reply',ans:'no'};
-  if(E.has(p,o.get)&&gain>=loss+0.15)return {t:'reply',ans:'yes'};
-  if(R()<.4){ // counter-offer
-   const giveR=RES.filter(r=>o.give[r]);const want=giveR.length?giveR[0]:null;
-   if(!E.has(p,o.get)||gain<loss+0.15){const surplus=RES.filter(r=>!o.give[r]&&!o.get[r]&&h[r]>((gl.c||{})[r]|0)).sort((a,b)=>v[a]-v[b]);
-    if(surplus.length&&want){const s=surplus[0];if(v[s]<=v[want]+0.2)return {t:'reply',ans:'counter',give:{[want]:1},get:{[s]:1}};}
-    if(E.has(p,o.get)&&gain>=loss-0.9){const extra=RES.filter(r=>!o.get[r]).sort((a,b)=>v[b]-v[a])[0];const give=Object.assign({},o.give);give[extra]=(give[extra]|0)+1;return {t:'reply',ans:'counter',give,get:Object.assign({},o.get)};}}}
-  return {t:'reply',ans:'no'};}
+ /* trade values: 1 each, +0.7 if short of it for the next build, -0.3 per spare card (up to 3), times how rare it is on this map */
+ function tvals(p){const gl=goal(p),n=gl.c||{},h=G().players[p].hand,sc=scarcity(),v={};
+  RES.forEach(r=>{const short=(n[r]|0)-h[r];v[r]=(1+(short>0?.7:0)-(short<0?Math.min(3,-short)*.3:0))*sc[r];});return v;}
+ const worthOf=(o,v)=>RES.reduce((s,r)=>s+((o&&o[r])|0)*v[r],0);
+ /* the asker (a computer) picks when everyone has answered or the time is up: an accept counts a little more than a counter,
+    never a player close to winning, and it never gives more than it gains + 0.6 */
+ function resolveOffer(p){const g=G(),o=g.offer,v=tvals(p);let best=null,bs=-1e9;
+  for(const i of Object.keys(o.rep).map(Number)){const r=o.rep[i];if(r==null||r==='no')continue;const give=r==='yes'?o.give:r.give,get=r==='yes'?o.get:r.get;
+   if(!E.cnt(give)||!E.has(p,give))continue;if(E.pubPts(i)>=g.opts.target-2)continue;
+   const s=worthOf(get,v)-worthOf(give,v)+(r==='yes'?.4:0);if(s>=-.6&&s>bs){bs=s;best=i;}}
+  return best!=null?{t:'accept',with:best,id:o.id}:{t:'cancel',id:o.id};}
+ /* a computer answers an ask. o.get = what the asker wants (p would give it), o.give = what p would get (may be empty).
+    No if it hasn't got it, needs it for its next build, or the asker is 2 points or less from winning (unless the deal is
+    about twice as good); yes if what it gets is worth a bit more; a counter if it is close; an open ask always gets a counter
+    for the resource it needs most (1 card, or 2 if what is asked is worth more to it). Counters are sent as the ASKER sees them. */
+ function reply(p){const g=G(),o=g.offer,gl=goal(p),n=gl.c||{},h=g.players[p].hand,v=tvals(p),id=o.id,no=why=>({t:'reply',id,ans:'no',why});
+  const lacks=RES.find(r=>(o.get[r]|0)>h[r]);if(lacks)return no('lack:'+lacks);
+  const needs=RES.find(r=>o.get[r]&&h[r]-(o.get[r]|0)<(n[r]|0)&&h[r]<=1);if(needs)return no('need:'+needs);
+  const loss=worthOf(o.get,v);
+  if(E.pubPts(o.from)>=g.opts.target-2&&worthOf(o.give,v)<loss*2.2)return no('lead');
+  const want=RES.filter(r=>!o.get[r]).sort((a,b)=>v[b]-v[a])[0];
+  if(E.cnt(o.give)){const gain=worthOf(o.give,v);if(gain>=loss+.15)return {t:'reply',id,ans:'yes'};
+   if(gain>=loss-.9){if(want&&!o.give[want]&&v[want]>Math.max(...RES.filter(r=>o.give[r]).map(r=>v[r])))return {t:'reply',id,ans:'counter',give:{[want]:1},get:Object.assign({},o.get)};
+    const top=RES.filter(r=>o.give[r])[0],g2=Object.assign({},o.give);g2[top]++;return {t:'reply',id,ans:'counter',give:g2,get:Object.assign({},o.get)};}
+   return no('worth');}
+  if(!want)return no('worth');
+  return {t:'reply',id,ans:'counter',give:{[want]:loss>v[want]*1.25?2:1},get:Object.assign({},o.get)};}
  function choosePirate(p){const g=G(),gr=GR(),spots=E.pirateSpots(p);let lead=-1,lp=-1;g.players.forEach((_,i)=>{if(i===p)return;const x=E.pubPts(i)+E.cnt(g.players[i].hand)*0.05;if(x>lp){lp=x;lead=i;}});
   let best=spots[0],bs=-1e9;for(const h of spots){const H=g.map.hexes[h];let s=0;
    if(H.t==='sea'){for(const e of gr.he[h]){const x=g.eb[e];if(x&&x.k==='s')s+=x.p===p?-3:(x.p===lead?1.2:.5);}}
@@ -912,7 +1032,7 @@ const g=G(),gr=GR(),L=g.players[p].left,h=g.players[p].hand;
    case 'roads':{const rc=routeChoice(p,true);return rc?{t:'build',k:rc.k,at:rc.e}:null;}
    case 'main':return mainMove(p);}
   return null;}
- return {next,reply,vval,prodPips,goal,bestTarget,chooseDiscard,choosePirate};
+ return {next,reply,resolveOffer,tvals,vval,prodPips,goal,bestTarget,chooseDiscard,choosePirate};
 })();
 
 /* ---------------------------------------------------------------- simulation + invariants (used by tests) */
@@ -1230,7 +1350,13 @@ const IC={
  anchor:'<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="11" fill="#1f9d57"/><g fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="6.5" r="1.8"/><path d="M12 8.5v10M8.5 11h7M6 14q.6 4.5 6 4.5t6-4.5"/></g></svg>',
  star:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l2.6 5.6 6.1.7-4.5 4.2 1.2 6L12 16.5 6.6 19.5l1.2-6-4.5-4.2 6.1-.7z" fill="#f2b21f" stroke="#0d1b24" stroke-width="1" stroke-linejoin="round"/></svg>',
  flag:'<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="11" fill="#bf5af2"/><path d="M8 19V5M8 5.5h8l-2 3 2 3H8" fill="#fff" stroke="#fff" stroke-width="1.6" stroke-linejoin="round"/></svg>',
- sound:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10v4h4l5 4V6L8 10z" fill="currentColor"/><path d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12"/></svg>'};
+ sound:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10v4h4l5 4V6L8 10z" fill="currentColor"/><path d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12"/></svg>',
+ check:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7"/></svg>',
+ ctr:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9h13l-3-3M20 15H7l3 3"/></svg>',
+ no:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" aria-hidden="true"><path d="M7 7l10 10M17 7L7 17"/></svg>',
+ arrow:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9h13l-3-3M20 15H7l3 3"/></svg>',
+ bank:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10l9-6 9 6M5 10v8M9.5 10v8M14.5 10v8M19 10v8M3 20h18"/></svg>',
+ log:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 6h12M8 12h12M8 18h12"/><circle cx="4" cy="6" r="1.2" fill="currentColor"/><circle cx="4" cy="12" r="1.2" fill="currentColor"/><circle cx="4" cy="18" r="1.2" fill="currentColor"/></svg>'};
 const PIPS={1:[[12,12]],2:[[7.5,7.5],[16.5,16.5]],3:[[7,7],[12,12],[17,17]],4:[[7.5,7.5],[16.5,7.5],[7.5,16.5],[16.5,16.5]],5:[[7,7],[17,7],[12,12],[7,17],[17,17]],6:[[7.5,6.5],[16.5,6.5],[7.5,12],[16.5,12],[7.5,17.5],[16.5,17.5]]};
 const dieSVG=n=>`<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="2" width="20" height="20" rx="5" fill="#fff" stroke="#0d1b24" stroke-opacity=".2"/>${(PIPS[n]||PIPS[1]).map(([x,y])=>`<circle cx="${x}" cy="${y}" r="2" fill="${n===1?'#e0352b':'#0d1b24'}"/>`).join('')}</svg>`;
 /* map-style pieces (drone view), all drawn centred on 0,0 */
@@ -1291,9 +1417,10 @@ function harbPos(k){const hb=G.map.harb[k],[cx,cy]=hxy(hb.h),a=hb.e*Math.PI/3,ap
 function boardBB(){let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;G.map.hexes.forEach((h,i)=>{const [x,y]=hxy(i);x0=Math.min(x0,x-S*S3/2);x1=Math.max(x1,x+S*S3/2);y0=Math.min(y0,y-S);y1=Math.max(y1,y+S);});
  if(!E.HOP()){x0-=S*.95;x1+=S*.95;y0-=S*.95;y1+=S*.95;}return {x0,y0,x1,y1};}
 function layoutView(){const W=innerWidth,H=innerHeight;const pl=$('#pls').getBoundingClientRect(),bt=$('#bot').getBoundingClientRect();let t=pl.bottom+8;const tele=$('#tele');
- if(!tele.hidden){tele.style.top=(pl.bottom+6)+'px';t+=16;}const mm=$('#mm');if(!mm.hidden)mm.style.top=(t+2)+'px';$('#keyBtn').style.top=(t-4)+'px';
+ if(!tele.hidden){tele.style.top=(pl.bottom+6)+'px';t+=16;}const mm=$('#mm');if(!mm.hidden)mm.style.top=(t+2)+'px';$('#keyBtn').style.top=(t-4)+'px';$('#logBtn').style.top=(t+42)+'px';
  const ts=$('#toasts');ts.style.top='auto';ts.style.bottom=(H-bt.top+10+($('#prompt').hidden?0:0))+'px';
  VIEW={l:0,t,r:W,b:bt.top-6-($('#prompt').hidden&&$('#acts').hidden?62:0)};   /* the bar holds either the action row or the prompt */CAM.ox=W/2;CAM.oy=(VIEW.t+VIEW.b)/2;
+ const dt=$('#dtray');if(dt){dt.style.top=VIEW.t+'px';dt.style.height=Math.max(0,VIEW.b-VIEW.t)+'px';}
  const vw=VIEW.r-VIEW.l-12,vh=Math.max(120,VIEW.b-VIEW.t-4);const bw=BB.x1-BB.x0,bh=BB.y1-BB.y0;
  ZFIT=Math.min(vw/bw,vh/bh);const sw=5*S3*S+1.9*S,shh=8*S+1.9*S;ZSTD=Math.min(vw/sw,vh/shh,1.9);}
 function zLimits(){return [Math.min(ZFIT,ZSTD)*.92,ZSTD*2.5];}
@@ -1472,6 +1599,7 @@ const setupNth=()=>['first','second','third'][Math.min(2,Math.floor(G.setup.i/G.
 function turnText(){if(G.phase==='over')return {i:G.over.winner,t:`<b>${esc(nameOf(G.over.winner))}</b> ${verb(G.over.winner,'win','wins')}!`};
  if(G.phase==='setup'){const p=E.cur(),s=G.setup;return {i:p,t:p===ME&&!AUTO?`<b>You</b> · place your ${s.need==='v'?setupNth()+' village':'route'}`:`<b>${esc(G.players[p].name)}</b> is placing`};}
  const p=G.turn,me=p===ME&&!AUTO,nm=me?'Your turn':esc(G.players[p].name),sum=G.dice[0]+G.dice[1];
+ if(ROLLING)return {i:p,t:`<b>${nm}</b> · rolling…`};
  if(G.offer&&G.offer.from!==ME)return {i:G.offer.from,t:`<b>${esc(nameOf(G.offer.from))}</b> is trading`};
  switch(G.step){case 'roll':return {i:p,t:`<b>${nm}</b>${me?' · roll the dice':' · rolling'}`};
   case 'discard':return {i:p,t:`<b style="color:#e0352b">Pirates!</b> · ${G.discard[ME]?'throw half your cards':'players discard'}`};
@@ -1491,12 +1619,13 @@ function myMove(){if(!G||AUTO||G.phase!=='play'||BUSY)return false;return G.turn
 /* only the buttons that matter right now: Roll alone before the roll; Build, Trade and End turn after it;
    Build and Done in the extra build phase; otherwise just the last roll. The layout follows whose turn it is
    (not BUSY), so the row does not flicker while your own moves animate. */
-function renderActs(){const me=myMove(),st=G.step,sbpMe=G.step==='sbp'&&E.sbpP()===ME&&!AUTO;const d=G.dice[0]?G.dice:[3,4];
+function renderActs(){const me=myMove(),st=G.step,sbpMe=G.step==='sbp'&&E.sbpP()===ME&&!AUTO;const d=ROLLING?(PREVD||[3,4]):G.dice[0]?G.dice:[3,4];
  const roll=me&&st==='roll',main=me&&st==='main';
- const mine=!AUTO&&G.phase==='play'&&G.turn===ME&&!(G.offer&&G.offer.from!==ME),showMain=mine&&st==='main',showRoll=mine&&st==='roll';
+ const mine=!AUTO&&G.phase==='play'&&G.turn===ME&&!(G.offer&&G.offer.from!==ME),showMain=!ROLLING&&mine&&st==='main',showRoll=mine&&st==='roll';   /* while the dice roll the row stays as it was: nothing hints at a 7 */
  const el=$('#acts');el.className=showMain||sbpMe?'':'solo';
- const dice=`<button class="ab dice wg${roll?' go':''}" id="rollBtn" type="button" ${roll?'':'disabled'} aria-label="${roll?'Roll the dice':'Last roll '+(d[0]+d[1])}"><span class="dd">${dieSVG(d[0])}${dieSVG(d[1])}</span><span>${showRoll?'<small>Roll the dice</small>':G.dice[0]?(showMain||sbpMe?'':'<small>Last roll</small>')+(d[0]+d[1]):''}</span></button>`;
- if(showMain)el.innerHTML=`${dice}<button class="ab wg" id="buildBtn" type="button" ${main?'':'disabled'}>${IC.build}Build</button><button class="ab wg" id="tradeBtn" type="button" ${main?'':'disabled'}>${IC.trade}Trade</button><button class="ab go" id="endBtn" type="button" ${main?'':'disabled'}>${IC.end}End turn</button>`;
+ const dice=`<button class="ab dice wg${roll?' go':''}" id="rollBtn" type="button" ${roll?'':'disabled'} aria-label="${roll?'Roll the dice':'Last roll '+(d[0]+d[1])}"><span class="dd">${dieSVG(d[0])}${dieSVG(d[1])}</span><span>${ROLLING?'<small class="roll">Rolling…</small>':showRoll?'<small>Roll the dice</small>':G.dice[0]?(showMain||sbpMe?'':'<small>Last roll</small>')+(d[0]+d[1]):''}</span></button>`;
+ const hot=main&&!ROLLING&&TRSEEN!==G.id+':'+G.turnNo&&!G.offer;
+ if(showMain)el.innerHTML=`${dice}<button class="ab wg" id="buildBtn" type="button" ${main?'':'disabled'}>${IC.build}Build</button><button class="ab wg${hot?' hot':''}" id="tradeBtn" type="button" ${main?'':'disabled'}>${IC.trade}Trade</button><button class="ab go" id="endBtn" type="button" ${main?'':'disabled'}>${IC.end}End turn</button>`;
  else if(sbpMe)el.innerHTML=`${dice}<button class="ab wg" id="buildBtn" type="button">${IC.build}Build</button><button class="ab go" id="doneBtn" type="button">${IC.done}Done</button>`;
  else el.innerHTML=dice;}
 function renderPrompt(){const el=$('#prompt');if(!G){el.hidden=true;return;}
@@ -1518,8 +1647,8 @@ const TMR={on:false,t0:0,key:'',ms:20000,
  arm(key){if(!G||!G.opts.timer||AUTO){this.on=false;this.key='';return;}this.on=true;if(this.key!==key){this.key=key;this.t0=Date.now();}},
  stop(){this.key='';}};
 setInterval(()=>{if(!TMR.on||!TMR.key||SCREEN!=='game'||!G||BUSY)return;TMR.paint();if(Date.now()-TMR.t0>TMR.ms){const k=TMR.key;TMR.key='';timeout(k);}},200);
-async function timeout(){if(!G||G.phase==='over'||netGuest())return;closeSheet(true);SEL=null;drawSpots();renderPrompt();toast('Time is up',true);
- let a=null;if(G.step==='main'&&G.turn===ME)a={t:'end'};else if(G.step==='sbp'&&E.sbpP()===ME)a={t:'done'};else a=AI.next(ME);
+async function timeout(){if(!G||G.phase==='over'||netGuest())return;closeSheet(true);closeConfirm();SEL=null;drawSpots();renderPrompt();toast('Time is up',true);
+ let a=null;if(G.offer&&G.offer.from===ME)a={t:'cancel',id:G.offer.id};else if(G.step==='main'&&G.turn===ME)a={t:'end'};else if(G.step==='sbp'&&E.sbpP()===ME)a={t:'done'};else a=AI.next(ME);
  /* online: a timed-out move counts toward the AFK rule (2 in a row and the computer keeps the seat) */
  if(a){if(ONLINE)a=Object.assign({auto:true},a);await run(ME,a);}}
 
@@ -1527,11 +1656,15 @@ async function timeout(){if(!G||G.phase==='over'||netGuest())return;closeSheet(t
 async function run(p,a){if(!G)return 'no game';
  /* online guest: the host plays the move and sends back the new state (or an error) */
  if(netGuest()){if(p!==ME||ME<0)return 'not you';NET.send(a);return null;}
- const g=G;if(a&&G.players[p]&&G.players[p].afk)a=Object.assign({bot:true},a);const err=E.act(G,p,a);if(err){if(p===ME&&!isBot(p)){SND.err();toast(errText(err),true);}return err;}
+ const g=G;if(a&&a.t==='offer')a=Object.assign({},a,{now:Date.now()});if(a&&G.players[p]&&G.players[p].afk)a=Object.assign({bot:true},a);const err=E.act(G,p,a);if(err){if(p===ME&&!isBot(p)){SND.err();toast(errText(err),true);}return err;}
  const evs=E.drain();if(netHost()){hostEvents(evs);NET.sync();}BUSY=true;renderActs();try{await animate(evs);}catch(e){console.error(e);}BUSY=false;if(G!==g)return null;renderAll();save();kick();return null;}
-function errText(e){return ({cost:'Not enough resources','none left':'No pieces left',illegal:"You can't build there",'not now':'Not now','one per turn':'One Raajje card per turn','bank short':'The bank has run out of that',empty:'No Raajje cards left'})[e]||e;}
+function errText(e){return ({closed:'That ask has closed',answered:'You already answered','no asks':'No asks left this turn','too soon':'Wait a moment before asking again','no deal':'That answer is not a deal',same:'Pick different resources to give and get',bad:'That offer does not work',cost:'Not enough resources','none left':'No pieces left',illegal:"You can't build there",'not now':'Not now','one per turn':'One Raajje card per turn','bank short':'The bank has run out of that',empty:'No Raajje cards left'})[e]||e;}
 function kick(ms){clearTimeout(PUMPT);PUMPT=setTimeout(pump,ms==null?40:ms);}
-let OFFER_T0=0;const OFFER_MS=15000;
+/* computer players answer an ask 1 to 4 s after it opens, one at a time, like people answering */
+let BOTDUE={id:0,t:{}};
+function botDue(o,p){if(BOTDUE.id!==o.id){BOTDUE={id:o.id,t:{}};const bots=o.to.filter(isBot),ts=bots.map(()=>1000+Math.random()*3000).sort((a,b)=>a-b);
+  for(let k=1;k<ts.length;k++)ts[k]=Math.max(ts[k],ts[k-1]+450);bots.forEach((b,k)=>BOTDUE.t[b]=o.t0+ts[k]*SPEEDF);}
+ if(BOTDUE.t[p]==null)BOTDUE.t[p]=Date.now()+(600+Math.random()*900)*SPEEDF;return BOTDUE.t[p];}
 function botDelay(){const s=G.step;if(G.phase==='setup')return 650;if(s==='roll')return 600;if(s==='steal')return 450;if(s==='sbp')return 420;if(s==='discard')return 250;return 720;}
 async function pump(){if(!G||SCREEN!=='game')return;if(BUSY){kick(120);return;}
  if(G.phase==='over'){onOver();return;}const g=G,seq=G.seq;
@@ -1539,12 +1672,14 @@ async function pump(){if(!G||SCREEN!=='game')return;if(BUSY){kick(120);return;}
  if(netGuest()){renderBanner();humanTurn();return;}
  const o=G.offer;
  if(o){const pend=o.to.filter(i=>o.rep[i]==null),bp=pend.filter(isBot);
-  if(bp.length){await sleep(380+Math.random()*420);if(G!==g||G.seq!==seq||BUSY){kick();return;}await run(bp[0],AI.next(bp[0]));return;}
-  /* trade offers have their own reply timer: players who don't answer in time say no (it is not an AFK strike) */
-  if(pend.length){renderBanner();if(!OFFER_T0)OFFER_T0=Date.now();if(Date.now()-OFFER_T0>OFFER_MS){OFFER_T0=0;for(const i of pend){if(G!==g||!G.offer)break;await run(i,{t:'reply',ans:'no'});}return;}kick(300);return;}
-  OFFER_T0=0;if(isBot(o.from)){await sleep(650);if(G!==g||G.seq!==seq){kick();return;}await run(o.from,AI.next(o.from));return;}
+  if(!o.t0)o.t0=Date.now();const now=Date.now();let next=1e12;
+  if(bp.length){const t=bp.map(p=>[p,botDue(o,p)]).sort((a,b)=>a[1]-b[1])[0];if(FAST||now>=t[1]){const err=await run(t[0],AI.next(t[0])||{t:'reply',ans:'no',id:o.id});if(err){await run(t[0],{t:'reply',ans:'no',id:o.id});kick();}return;}next=t[1];}
+  /* the ask has its own 20 s (the host's clock): whoever has not answered by then says No (expired: never an AFK strike) */
+  if(pend.length){renderBanner();if(offerLeft(o)<=0){for(const i of pend){if(G!==g||!G.offer||G.offer.id!==o.id)break;if(G.offer.rep[i]==null)await run(i,{t:'reply',ans:'no',id:o.id,expired:true});}kick();return;}
+   kick(Math.max(40,Math.min(300,next-now)));return;}
+  if(isBot(o.from)){await sleep(650);if(G!==g||G.seq!==seq){kick();return;}const err=await run(o.from,AI.next(o.from)||{t:'cancel'});if(err){await run(o.from,{t:'cancel'});kick();}return;}
   if(SHEET==='trade')renderTradeSheet();return;}
- OFFER_T0=0;const who=E.actors();if(!who.length)return;
+ const who=E.actors();if(!who.length)return;
  if(G.step==='discard'){const b=who.find(isBot);if(b!=null){await sleep(260);if(G!==g||G.seq!==seq){kick();return;}await run(b,AI.next(b));return;}humanTurn();return;}
  const p=who[0];
  /* Quick Match: someone waiting takes this computer seat now, at the start of its turn (checked again after the pause) */
@@ -1561,7 +1696,7 @@ function humanTurn(){if(!G||BUSY)return;renderAll();const st=G.step;let key='';
  else if(st==='pirate'&&G.turn===ME){key='pirate'+G.seq;if(!SEL||SEL.kind!=='pirate'){startSel({key,kind:'pirate',spots:E.pirateSpots(ME).map(h=>({id:'h'+h,type:'h',h})),title:'Move the pirate dhoni',sub:'Tap a tile. It stops paying until the pirate leaves.',ok:'Sail here',cancel:false,go:(sp)=>run(ME,{t:'pirate',h:sp.h})});}}
  else if(st==='steal'&&G.turn===ME){key='steal'+G.seq;if(SHEET!=='steal')openSteal();}
  else if(st==='roads'&&G.turn===ME){key='roads'+G.free;const spots=routeSpotsFor(ME,true);if(!SEL||SEL.key!==key)startSel({key,kind:'route',spots,title:`Route building · ${G.free} free`,sub:'Tap where the free route goes',ok:'Build',cancel:false,go:(sp,k)=>run(ME,{t:'build',k:k||sp.k,at:sp.e})});}
- else if(G.offer&&G.offer.to.includes(ME)&&G.offer.rep[ME]==null){key='offer'+G.offer.id;}
+ else if(G.offer&&G.offer.to.includes(ME)&&G.offer.rep[ME]==null){key='';}   /* the banner has its own 20 s; running out is a No, not a missed turn */
  else if(st==='sbp'&&E.sbpP()===ME)key='sbp'+G.seq;
  else if(G.phase==='play'&&G.turn===ME&&(st==='roll'||st==='main'))key=st+G.seq;
  if(key)TMR.arm(key);else TMR.stop();
@@ -1578,8 +1713,8 @@ async function animate(evs){for(const ev of evs){switch(ev.t){
   drawPieces();if(ev.k==='capital'||ev.k==='village')drawHarbours();DH.rebuild();MM.draw();renderPlayers();
   if(ev.k==='capital'){SND.capital();react(ev.p,'smug',1800);if(ev.p===ME&&!AUTO&&!RM.matches&&!FAST){const [x,y]=vxy(ev.at),c0={x:CAM.x,y:CAM.y,z:CAM.z};await camTo(x,y,Math.min(zLimits()[1],CAM.z*1.7),520);bigmsg('Atoll capital built','It now collects 2 cards from each tile around it',1300);await wait(1300);await camTo(c0.x,c0.y,c0.z,520);}else await sleep(380);}
   else{SND.build();if(G.phase==='setup'&&isBot(ev.p))await sleep(250);else await sleep(bot?300:120);}break;}
- case 'roll':{SND.dice();const b=$('#rollBtn');renderActs();const bb=$('#rollBtn');if(bb&&!RM.matches&&!FAST){bb.classList.remove('tumble');void bb.offsetWidth;bb.classList.add('tumble');}
-  renderTurn();const s=ev.d[0]+ev.d[1];await wait(FAST?0:700);if(s!==7){const hs=[];G.map.hexes.forEach((h,i)=>{if(h.n===s&&!h.fog&&isRes(h.t))hs.push(i);});drawHi(hs);}break;}
+ case 'roll':{drawHi([]);ROLLING=true;renderActs();renderTurn();try{await throwDice(ev);}finally{ROLLING=false;}PREVD=ev.d.slice();renderActs();renderTurn();
+  const s=ev.d[0]+ev.d[1];if(s!==7){const hs=[];G.map.hexes.forEach((h,i)=>{if(h.n===s&&!h.fog&&isRes(h.t))hs.push(i);});drawHi(hs);}break;}
  case 'prod':{if(!ev.gains.length){if(!ev.setup){await sleep(150);}break;}await flights(ev.gains);const got=new Set(ev.gains.map(g=>g.p));got.forEach(p=>react(p,'happy',1400));if(got.has(ME))SND.gain();renderPlayers();renderHand();
   if(ev.short&&ev.short.length)toast('The bank is short of '+ev.short.map(r=>RNAME[r]).join(' and '));await sleep(250);break;}
  case 'seven':{drawHi([]);SND.storm();$('#storm').classList.add('on');GLR.setDim(.55);Object.keys(ev.discard).forEach(p=>react(+p,'shocked',1800));
@@ -1596,18 +1731,26 @@ async function animate(evs){for(const ev of evs){switch(ev.t){
   else if(ev.k==='plenty')await bigmsg(`${esc(nameOf(ev.p))}: Good catch`,ev.res.map(r=>RNAME[r]).join(' + ')+' from the bank',1100);
   else if(isBot(ev.p)||AUTO)await bigmsg(`${esc(nameOf(ev.p))} ${verb(ev.p,'play','plays')} ${nmc}`,ev.k==='knight'?'The coast guard chases the pirate':'',1000);renderPlayers();renderHand();break;}
  case 'award':{SND.award();const tag={longest:'Longest sea route',army:'Strongest Coast Guard',hm:'Harbour Master'}[ev.k];if(ev.p>=0){react(ev.p,'laugh',1800);if(ev.prev>=0)react(ev.prev,'sad',1600);if(ev.k==='longest'){const m=LR.show(ev.p);if(m)follow(m[0],m[1]);}await bigmsg(tag,`${esc(nameOf(ev.p))} +2 points`,1300);}else if(ev.prev>=0)toast(`${tag}: nobody holds it now`);renderPlayers();break;}
- case 'offer':if(ev.p===ME&&!AUTO){if(SHEET==='trade')renderTradeSheet();}else if(ev.to.includes(ME)&&!AUTO){OFFER_T0=Date.now();SND.trade();renderBanner();}renderTurn();break;
- case 'reply':if(SHEET==='trade')renderTradeSheet();break;
- case 'cancel':clearBanner();if(SHEET==='trade')renderTradeSheet();break;
+ case 'offer':closeConfirm();if(ev.p===ME&&!AUTO){TR.sent=0;if(SHEET==='trade')renderTradeSheet();}else if(ev.to.includes(ME)&&!AUTO&&ME>=0){MYANS=null;SND.trade();renderBanner();}renderTurn();renderActs();break;
+ case 'reply':if(SHEET==='trade')renderTradeSheet();renderBanner();break;
+ case 'cancel':closeConfirm();tradeResult(ev);if(CP&&CP.id===ev.id){if(SHEET==='counter')closeSheet(true);CP=null;}if(SHEET==='trade')renderTradeSheet();renderBanner();renderActs();break;
  case 'afk':toast(`${esc(G.players[ev.p].name)} is away. The computer plays this seat to the end.`,true);renderPlayers();break;
- case 'trade':{SND.trade();clearBanner();const a=ev.a,b=ev.b;toast(`${esc(nameOf(a))} ${rr(ev.give)} ⇄ ${rr(ev.get)} ${esc(nameOf(b))}`);react(a,'happy',1200);react(b,'happy',1200);renderPlayers();renderHand();if(SHEET==='trade'&&(a===ME||b===ME))renderTradeSheet();await sleep(350);break;}
- case 'bank':if(ev.p!==ME||AUTO)toast(`${esc(nameOf(ev.p))} ${verb(ev.p,'trade','trades')} ${ev.n} ${RNAME[ev.give]} with the ${ev.n===4?'bank':'harbour'} for ${RNAME[ev.get]}`);else SND.trade();renderHand();renderPlayers();if(SHEET==='trade')renderTradeSheet();break;
+ case 'trade':{SND.trade();closeConfirm();tradeResult(ev);if(CP&&CP.id===ev.id){if(SHEET==='counter')closeSheet(true);CP=null;}const a=ev.a,b=ev.b;renderBanner();await flyTrade(a,b,ev.give,ev.get);
+  toast(logLine({a,b,give:ev.give,get:ev.get}));react(a,'happy',1200);react(b,'happy',1200);renderPlayers();renderHand();if(SHEET==='trade')renderTradeSheet();if(SHEET==='tlog')openLog();renderActs();await sleep(250);break;}
+ case 'bank':{SND.trade();const give={[ev.give]:ev.n},get={[ev.get]:1};await flyTrade(ev.p,-1,give,get);toast(logLine({a:ev.p,b:-1,give,get,via:ev.n<4?'harbour':'bank'}));renderHand();renderPlayers();if(SHEET==='trade')renderTradeSheet();if(SHEET==='tlog')openLog();break;}
  case 'reveal':{SND.reveal();GLR.boost(1800);const f=$(`#L_fog [data-h="${ev.h}"]`);if(f){f.style.opacity='0';setTimeout(()=>drawFog(),1300);}drawTokens();const H=G.map.hexes[ev.h];
   toast(`Discovered: ${isRes(H.t)?`<span class="rr">${swI(H.t)}</span> `:''}${RNAME[H.t]}${H.n?' '+H.n:''}${ev.r?` · ${esc(nameOf(ev.p))} ${verb(ev.p,'get','gets')} 1 ${RNAME[ev.r]}`:''}`);MM.draw();await sleep(300);break;}
  case 'disc':SND.award();react(ev.p,'laugh',1600);await bigmsg('Discovery!',`${esc(nameOf(ev.p))} settled a new island · +${E.discPts()} point${E.discPts()>1?'s':''}`,1300);renderPlayers();break;
  case 'turn':case 'setupturn':drawHi([]);if(ev.p===ME&&!AUTO){SND.turn();}renderAll();if(bigBoard()&&G.phase==='play'&&isBot(ev.p))focusPlayer(ev.p);break;
  case 'sbp':if(ev.p===ME&&!AUTO)SND.turn();renderAll();break;
  case 'win':renderAll();break;}}}
+/* the dice are thrown onto the visible board (shared/dice.js): the result shows only once they land. Computer players
+   throw a little faster; a tap on the board plays the rest fast; reduced motion: the result at once, with one knock. */
+let ROLLING=false,PREVD=null;
+function diceOpt(p){return {size:[28,54],k:.12,lite:isSmooth(),speed:p===ME&&!AUTO?1:1.25,tapHosts:[ov,$('#acts'),$('#hand')]};}
+async function throwDice(ev){if(FAST)return;const tray=$('#dtray');
+ if(!window.DGDice||!tray){SND.dice();await wait(RM.matches?0:600);return;}
+ try{await DGDice.roll(tray,ev.d,diceOpt(ev.p));}catch(e){console.error(e);}}
 function drawPirateAt(p){const g=$('#pirG');if(g)g.setAttribute('transform',`translate(${f1(p[0])} ${f1(p[1])})`);}
 function focusPlayer(p){let x=0,y=0,n=0;G.vb.forEach((b,v)=>{if(b&&b.p===p){const q=vxy(v);x+=q[0];y+=q[1];n++;}});if(n)follow(x/n,y/n);}
 async function flights(gains){if(FAST||RM.matches){return;}const fx=$('#fx');let delay=0;const ps=[];
@@ -1627,7 +1770,7 @@ const X='<button class="x" type="button" data-close="1" aria-label="Close">'+IC.
 $('#dim').addEventListener('click',()=>closeSheet());
 /* a sheet that covers (nearly) the whole board holds the water still until it closes; sized by a ResizeObserver, so no layout reads */
 if(window.ResizeObserver){const s=$('#sheet');new ResizeObserver(es=>{const h=es[es.length-1].contentRect.height;GLR.hold(!s.hidden&&h+40>=innerHeight*.8);}).observe(s);}
-document.addEventListener('keydown',e=>{if(e.key==='Escape'){if($('.reveal')){$('.reveal').remove();return;}if(SEL&&SEL.cancel){endSel();return;}closeSheet();}});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){if($('#modal')){closeConfirm();return;}if($('.reveal')){$('.reveal').remove();return;}if(SEL&&SEL.cancel){endSel();return;}closeSheet();}});
 function costHTML(c,p){const h=p!=null?G.players[p].hand:null,out=[];RES.forEach(r=>{let have=h?h[r]:99;for(let i=0;i<(c[r]|0);i++){out.push(`<i style="background-image:${SW[r]}" class="${have>0?'':'miss'}" title="${RNAME[r]}"></i>`);have--;}});return `<div class="cost">${out.join('')}</div>`;}
 function needTxt(c){const h=G.players[ME].hand,m=[];RES.forEach(r=>{const k=(c[r]|0)-h[r];if(k>0)m.push(k+' '+RNAME[r]);});return m.length?'Need '+m.join(', '):'';}
 function pieceIcon(k){const c=G.players[ME].col;if(k==='route')return `<svg viewBox="-17 -17 34 34">${routeSVG([-12,8],[12,-8],c,false)}</svg>`;if(k==='sea')return `<svg viewBox="-17 -17 34 34">${routeSVG([-13,8],[13,-8],c,true)}</svg>`;
@@ -1648,31 +1791,113 @@ function startBuild(k){closeSheet();if(k==='card'){run(ME,{t:'buy'});return;}
  else if(k==='village')spots=E.villageSpots(ME).map(v=>({id:'v'+v,type:'v',v}));else spots=E.capitalSpots(ME).map(v=>({id:'v'+v,type:'v',v}));
  const nm={route:'Dhoni route',sea:'Sea route',village:'Village',capital:'Atoll capital'}[k];
  startSel({key:'b'+k,kind:k,spots,title:`Build a ${nm.toLowerCase()}`,sub:k==='capital'?'Tap one of your villages to upgrade it':'Tap a glowing spot',ok:'Build',cancel:true,go:(sp)=>run(ME,{t:'build',k,at:k==='village'||k==='capital'?sp.v:sp.e})});}
-/* ---------- trade ---------- */
-let TR={tab:'players',give:{},get:{},bg:null,bw:null};
-function openTrade(){TR={tab:'players',give:{},get:{},bg:null,bw:null};renderTradeSheet(true);}
-function pickerHTML(side,sel,max){return `<div class="pick">${RES.map(r=>{const v=sel[r]|0,mx=max?max[r]:9;return `<div class="pk ${side}${v?' on':''}"><div class="sw" style="background-image:${SW[r]}">${glyph(r)}</div><small>${RNAME[r]}${max?' · '+max[r]:''}</small><div class="ct"><button type="button" data-t="${side}-" data-r="${r}" aria-label="Less ${RNAME[r]}" ${v?'':'disabled'}>−</button><b>${v}</b><button type="button" data-t="${side}+" data-r="${r}" aria-label="More ${RNAME[r]}" ${v<mx?'':'disabled'}>+</button></div></div>`;}).join('')}</div>`;}
-function renderTradeSheet(open){if(!G)return;const me=G.players[ME],h=me.hand,rt=E.rates(ME);let body='';
- if(TR.tab==='players'){const o=G.offer&&G.offer.from===ME?G.offer:null;const gn=cnt(TR.give),wn=cnt(TR.get);const same=RES.some(r=>TR.give[r]&&TR.get[r]);
-  body+=`<div class="lbl">You give <span>tap + to add</span></div>${pickerHTML('give',TR.give,h)}<div class="lbl">You get</div>${pickerHTML('get',TR.get)}`;
-  body+=`<div style="margin-top:10px"><button class="btn" type="button" data-t="send" ${gn&&wn&&!same?'':'disabled'}>${o?'Send new offer':'Offer to everyone'}</button></div>`;
-  if(o){body+=`<div class="lbl" style="margin-top:12px">Replies <span>${Object.keys(o.rep).length} of ${o.to.length}</span></div>`;
-   body+=o.to.map(i=>{const r=o.rep[i];let st='<small>Thinking…</small>',btn='';
-    if(r==='yes'){st='<small class="ok">Accepts your offer</small>';btn=`<button class="mini" type="button" data-t="deal" data-w="${i}">Deal</button>`;}
-    else if(r==='no')st='<small class="nope">No thanks</small>';
-    else if(r){const can=E.has(ME,r.give);st=`<small class="ctr">Counter: gives ${rr(r.get)} · wants ${rr(r.give)}</small>`;btn=`<button class="mini" type="button" data-t="deal" data-w="${i}" ${can?'':'disabled'}>${can?'Accept':'Can\'t'}</button>`;}
-    return `<div class="resp"><span class="av">${avHTML(i,38)}</span><div class="rt"><b>${esc(nameOf(i))}</b>${st}</div>${btn}</div>`;}).join('')+`<div style="margin-top:8px"><button class="btn alt sm" type="button" data-t="cancel">Cancel offer</button></div>`;}}
- else{const own=G.map.harb.map((hb,k)=>k).filter(k=>{const hb=G.map.harb[k],ed=E.GR.E[E.GR.he[hb.h][hb.e]];return [ed.a,ed.b].some(v=>G.vb[v]&&G.vb[v].p===ME);});
-  const has3=own.some(k=>G.map.harb[k].type==='any'),two=own.map(k=>G.map.harb[k].type).filter(t=>t!=='any');
-  body+=`<div class="lbl">Your rates</div><div class="rates"><div class="rate${!has3&&!two.length?' on':''}"><div class="ri">${['wood','wheat','ore'].map(r=>swI(r)).join('')}</div><b>4:1</b>Bank<br>any resource</div>
-   <div class="rate${has3?' on':''}"><div class="ri">${IC.anchor.replace('<svg','<svg style="width:18px;height:18px"')}</div><b>3:1</b>${has3?'Harbour<br>yours':'Harbour<br>build to unlock'}</div>
-   <div class="rate${two.length?' on':''}"><div class="ri">${two.length?two.map(r=>swI(r)).join(''):RES.slice(0,3).map(r=>swI(r)).join('')}</div><b>2:1</b>${two.length?two.map(r=>RNAME[r]).join(', '):'Resource harbour<br>build to unlock'}</div></div>`;
-  body+=`<div class="lbl">Give <span>best rate is picked for you</span></div><div class="pick">${RES.map(r=>{const ok=h[r]>=rt[r];return `<button type="button" class="pk${TR.bg===r?' on':''}" data-t="bg" data-r="${r}" ${ok?'':'disabled'} style="${ok?'':'opacity:.4'}"><div class="sw" style="background-image:${SW[r]}">${glyph(r)}</div><small>${rt[r]}:1 · ${h[r]}</small></button>`;}).join('')}</div>`;
-  body+=`<div class="lbl">Get</div><div class="pick">${RES.map(r=>`<button type="button" class="pk get${TR.bw===r?' on':''}" data-t="bw" data-r="${r}" ${r===TR.bg||!G.bank[r]?'disabled style="opacity:.4"':''}><div class="sw" style="background-image:${SW[r]}">${glyph(r)}</div><small>${RNAME[r]}</small></button>`).join('')}</div>`;
-  const ok=TR.bg&&TR.bw&&TR.bg!==TR.bw&&h[TR.bg]>=rt[TR.bg];
-  body+=`<div style="margin-top:12px"><button class="btn" type="button" data-t="bank" ${ok?'':'disabled'}>${ok?`Trade ${rt[TR.bg]} ${RNAME[TR.bg]} → 1 ${RNAME[TR.bw]}`:'Pick what to give and get'}</button></div>`;}
- const html=`<div class="grab"></div><div class="sh"><h2 id="sheetTitle">Trade</h2>${X}</div><div class="tabs" role="tablist"><button role="tab" type="button" data-t="tab" data-v="players" aria-selected="${TR.tab==='players'}">Players</button><button role="tab" type="button" data-t="tab" data-v="bank" aria-selected="${TR.tab==='bank'}">Harbour &amp; bank</button></div>${body}`;
+/* ---------- trade: ask the table ----------
+   Tap Trade (it glows after your roll), pick what you WANT and, if you like, what you GIVE (empty = open to offers), then
+   "Ask everyone". Every other player answers at once: Accept, Counter or No, within 20 s (the host's clock; views carry the
+   ms left). The answers come in live; tap one, confirm, and the cards fly. 3 asks a turn. Harbour & bank is its own tab.
+   The trade log (button under "?", the trade sheet, the menu) keeps the last 12 trades for everyone. */
+let TR={tab:'ask',give:{},get:{},bg:null,bw:null,sent:0,gone:0},TRSEEN='',CP=null;
+let OFFER_RX={id:0,ms:0,at:0};   /* client: the host's time left on the open ask, and when we got it */
+const rsw=(r,s)=>`<span class="rsw" style="--s:${s||34}px;background-image:${SW[r]}" aria-hidden="true">${glyph(r)}</span>`;
+function rc(o,s){const a=RES.filter(r=>o&&o[r]);if(!a.length)return '<span style="color:var(--muted)">nothing</span>';return a.map(r=>`<span class="rc">${rsw(r,s||20)}<b>${o[r]}</b> ${RNAME[r]}</span>`).join(' + ');}
+const rcTxt=o=>RES.filter(r=>o&&o[r]).map(r=>o[r]+' '+RNAME[r]).join(' + ');
+const items=(o,s)=>RES.filter(r=>o&&o[r]).map(r=>Array.from({length:Math.min(6,o[r])},()=>rsw(r,s||34)).join('')).join('');
+const unitList=o=>{const a=[];RES.forEach(r=>{for(let i=0;i<((o&&o[r])|0);i++)a.push(r);});return a;};
+const normRes=o=>{const y={};RES.forEach(r=>{if(o&&o[r])y[r]=o[r];});return y;};
+function whyTxt(w){if(!w)return '';const [k,r]=String(w).split(':');return k==='lack'?`has no spare ${RNAME[r]||''}`:k==='need'?`needs the ${RNAME[r]||''}`:k==='lead'?'you are close to winning':k==='worth'?'not worth it':'';}
+function asksLeft(){if(!G)return 0;const k=G.ask;return Math.max(0,E.ASKS-(k&&k.t===G.turnNo?k.n|0:0));}
+function offerLeft(o){o=o||(G&&G.offer);if(!o)return 0;const dur=o.dur||E.OFFER_MS;
+ if(netGuest())return OFFER_RX.id===o.id?Math.max(0,OFFER_RX.ms-(Date.now()-OFFER_RX.at)):Math.max(0,o.ms!=null?o.ms:dur);
+ return o.t0?Math.max(0,dur-(Date.now()-o.t0)):dur;}
+function myOffer(){const o=G&&G.offer;return o&&o.from===ME&&o.id!==TR.gone?o:null;}
+function openTrade(tab){if(!G||ME<0)return;TRSEEN=G.id+':'+G.turnNo;TR={tab:tab||'ask',give:{},get:{},bg:null,bw:null,sent:0,gone:0};renderTradeSheet(true);renderActs();}
+const trHead=t=>`<div class="grab"></div><div class="sh"><h2 id="sheetTitle">${t}</h2><span class="shb"><button class="x" type="button" data-tr="log" aria-label="Trade log">${IC.log}</button>${X}</span></div>`;
+const trTabs=()=>`<div class="tabs" role="tablist"><button role="tab" type="button" data-tr="tab" data-v="ask" aria-selected="${TR.tab!=='bank'}">Ask players</button><button role="tab" type="button" data-tr="tab" data-v="bank" aria-selected="${TR.tab==='bank'}">Harbour &amp; bank</button></div>`;
+function asksHTML(){const n=asksLeft();return `<div class="asksl" aria-label="${n} of ${E.ASKS} asks left this turn">${[0,1,2].map(i=>`<i class="${i<n?'':'u'}"></i>`).join('')}<span>${n} of ${E.ASKS} asks left this turn</span></div>`;}
+function tilesHTML(side){const h=G.players[ME].hand,c=TR[side];
+ return `<div class="tiles">${RES.map(r=>{const v=c[r]|0,dis=side==='give'&&!h[r];
+  return `<button type="button" class="tile ${side==='get'?'want':'give'}${v?' on':''}" data-tr="${side}" data-r="${r}" ${dis?'disabled':''} aria-label="${side==='get'?'Want':'Give'} ${RNAME[r]}${v?', '+v+' picked':''}">${rsw(r,34)}<span class="q">${v}</span><span class="minus" data-tr="${side}-" data-r="${r}" role="button" aria-label="One less ${RNAME[r]}">−</span><small>${RNAME[r]}</small>${side==='give'?`<em>${h[r]} in hand</em>`:''}</button>`;}).join('')}</div>`;}
+function composeHTML(){const g=cnt(TR.get),o=cnt(TR.give),n=asksLeft(),mine=myMove()&&G.step==='main',wait=TR.sent&&Date.now()-TR.sent<6000;
+ const pv=g?`<span>You ask for ${rc(TR.get)}</span><span>·</span>${o?`<span>you give ${rc(TR.give)}</span>`:'<span style="color:var(--muted)">open to offers</span>'}`:'Pick what you want first';
+ return `<div class="lbl">1 · I want <span>tap to add</span></div>${tilesHTML('get')}
+ <div class="lbl" style="margin-top:12px">2 · I'll give <span>optional</span></div>${tilesHTML('give')}
+ <div class="preview${g?'':' empty'}" aria-live="polite">${pv}</div>
+ <button class="btn" type="button" data-tr="send" ${g&&n>0&&mine&&!wait?'':'disabled'}>${wait?'Asking…':n>0?'Ask everyone':'No asks left this turn'}</button>${asksHTML()}
+ ${n>0?'':'<button class="tlink" type="button" data-tr="tab" data-v="bank">Trade with the bank or a harbour</button>'}`;}
+function ringHTML(o){const ms=offerLeft(o),dur=o.dur||E.OFFER_MS,f=Math.max(0,Math.min(1,ms/dur)),C=2*Math.PI*19,sec=Math.ceil(ms/1000);
+ return `<div class="tring" aria-label="${sec} seconds left"><svg viewBox="0 0 46 46" aria-hidden="true"><circle cx="23" cy="23" r="19" fill="none" stroke="#e3e9ed" stroke-width="5"/><circle cx="23" cy="23" r="19" fill="none" stroke="${f<.25?'#e0352b':'#1f9d57'}" stroke-width="5" stroke-linecap="round" stroke-dasharray="${C.toFixed(1)}" stroke-dashoffset="${(C*(1-f)).toFixed(1)}"/></svg><b>${sec}</b></div>`;}
+const SEEN=new Set();   /* answers already shown (a new one pops in) */
+function chipHTML(o,p){const r=o.rep[p],why=o.why&&o.why[p],k=o.id+':'+p,arr=r!=null&&!SEEN.has(k)?' arrive':'';if(r!=null)SEEN.add(k);
+ if(r==null)return '<span class="tchip think">Thinking <span class="d"><i></i><i></i><i></i></span></span>';
+ if(r==='yes')return `<span class="tchip yes${arr}">${IC.check}Accepts</span>`;
+ if(r==='no')return why==='expired'?`<span class="tchip none${arr}">No answer</span>`:`<span class="tchip no${arr}">${IC.no}No${whyTxt(why)?' · '+esc(whyTxt(why)):''}</span>`;
+ return `<span class="tchip ctr${arr}">${IC.ctr}Counter: gives ${rc(r.get)} for ${rc(r.give)}</span>`;}
+/* a player's answer as the deal the asker would make: {give, get} seen from the asker */
+function dealOf(o,p){const r=o.rep[p];if(!r||r==='no')return null;return r==='yes'?{give:o.give,get:o.get}:{give:r.give,get:r.get};}
+function respRow(o,p){const d=dealOf(o,p),can=!!d&&cnt(d.give)>0&&E.has(ME,d.give);
+ const btn=d?`<button class="go" type="button" data-tr="pick" data-p="${p}" ${can?'':'disabled'} aria-label="Trade with ${esc(nameOf(p))}">${can?'Trade':'Can’t'}</button>`:'';
+ return `<div class="resp" data-rp="${p}"><span class="av">${avHTML(p,38)}</span><div class="rt"><b>${esc(nameOf(p))}</b>${chipHTML(o,p)}</div>${btn}</div>`;}
+function askStatus(o){const all=o.to.every(p=>o.rep[p]!=null),any=o.to.some(p=>dealOf(o,p));return all&&!any?'Nobody can trade this. Change the ask, or cancel it.':all?'Everyone has answered. Pick one.':offerLeft(o)<=0?'Answers closed. Pick one, or cancel.':'Answers come in live. Tap Trade to pick one.';}
+function answersHTML(o){return `<div class="askh"><span id="ringBox">${ringHTML(o)}</span><div class="t">You want ${rc(o.get)}<br>${cnt(o.give)?`You give ${rc(o.give)}`:'<span style="color:var(--muted)">Open to offers</span>'}<small id="askSt">${askStatus(o)}</small></div></div>
+ <div aria-live="polite">${o.to.map(p=>respRow(o,p)).join('')}</div>
+ <div class="row2" style="margin-top:12px"><button class="btn alt sm" type="button" data-tr="cancel">Cancel ask</button><button class="btn alt sm" type="button" data-tr="change" ${asksLeft()>0?'':'disabled'}>Change ask</button></div>${asksHTML()}`;}
+function bankHTML(){const h=G.players[ME].hand,rt=E.rates(ME),mine=myMove()&&G.step==='main',ok=!!(TR.bg&&TR.bw&&TR.bg!==TR.bw&&h[TR.bg]>=rt[TR.bg]&&G.bank[TR.bw]>0);
+ const three=RES.every(r=>rt[r]<=3),two=RES.filter(r=>rt[r]===2);
+ const note=`Bank 4:1${three?' · your harbour 3:1 on anything':''}${two.map(r=>` · ${RNAME[r]} harbour 2:1`).join('')}. The best rate is used for you. No limit per turn.`;
+ return `<div class="askh"><span class="tbk" id="bankIcon">${IC.bank}</span><div class="t">Your rates<small>${note}</small></div></div>
+ <div class="lbl" style="margin-top:12px">Give</div><div class="tiles">${RES.map(r=>{const can=h[r]>=rt[r];return `<button type="button" class="tile give bank${TR.bg===r?' on':''}" data-tr="bg" data-r="${r}" ${can?'':'disabled'} aria-label="Give ${rt[r]} ${RNAME[r]}"><span class="trt">${rt[r]}:1</span>${rsw(r,34)}<small>${RNAME[r]}</small><em>${h[r]} in hand</em></button>`;}).join('')}</div>
+ <div class="lbl" style="margin-top:12px">Get 1</div><div class="tiles">${RES.map(r=>`<button type="button" class="tile want${TR.bw===r?' on':''}" data-tr="bw" data-r="${r}" ${r===TR.bg||!G.bank[r]?'disabled':''} aria-label="Get ${RNAME[r]}">${rsw(r,34)}<small>${RNAME[r]}</small>${G.bank[r]?'':'<em>none left</em>'}</button>`).join('')}</div>
+ <div class="preview${ok?'':' empty'}">${ok?`<span>You give ${rc({[TR.bg]:rt[TR.bg]})}</span><span>→ ${rt[TR.bg]<4?'harbour':'bank'}, you get ${rc({[TR.bw]:1})}</span>`:'Pick what to give and what to get'}</div>
+ <button class="btn" type="button" data-tr="bank" ${ok&&mine?'':'disabled'}>${ok?`Trade ${rt[TR.bg]} ${RNAME[TR.bg]} → 1 ${RNAME[TR.bw]}`:'Trade'}</button>`;}
+function renderTradeSheet(open){if(!G||ME<0||!G.players[ME])return;const o=myOffer();if(o)TR.sent=0;
+ let html;if(TR.tab==='bank')html=trHead('Trade')+trTabs()+bankHTML();else if(o)html=trHead('Your ask')+answersHTML(o);else html=trHead('Trade')+trTabs()+composeHTML();
  if(open||SHEET!=='trade')openSheet('trade',html);else{const s=$('#sheet'),y=s.scrollTop;s.innerHTML=html;s.scrollTop=y;}}
+/* confirm: nothing changes hands until the asker taps Confirm */
+function openConfirm(p){const o=myOffer();if(!o)return;const d=dealOf(o,p);if(!d)return;closeConfirm();
+ const m=document.createElement('div');m.id='mdim';document.body.appendChild(m);m.addEventListener('click',closeConfirm);
+ const c=document.createElement('div');c.id='modal';c.setAttribute('role','dialog');c.setAttribute('aria-modal','true');c.setAttribute('aria-label','Confirm trade');
+ c.innerHTML=`<h3><span class="av">${avHTML(p,30)}</span>Trade with ${esc(nameOf(p))}?</h3><div class="deal"><div class="side"><small>You give</small><div class="it">${items(d.give)}</div><span class="lab">${rcTxt(d.give)}</span></div><span class="arr">${IC.arrow}</span><div class="side"><small>You get</small><div class="it">${items(d.get)}</div><span class="lab">${rcTxt(d.get)}</span></div></div>
+ <div class="row2"><button class="btn alt" type="button" data-m2="back">Back</button><button class="btn grn" type="button" data-m2="ok" data-p="${p}" data-id="${o.id}">${IC.check}Confirm</button></div>`;
+ document.body.appendChild(c);
+ c.addEventListener('click',async e=>{const b=e.target.closest('[data-m2]');if(!b)return;SND.tick();if(b.dataset.m2==='back'){closeConfirm();return;}
+  const w=+b.dataset.p,id=+b.dataset.id;closeConfirm();closeSheet();await run(ME,{t:'accept',with:w,id});});
+ try{c.querySelector('[data-m2=ok]').focus({preventScroll:true});}catch(e){}}
+function closeConfirm(){const a=$('#modal'),b=$('#mdim');if(a)a.remove();if(b)b.remove();}
+/* counter / "make an offer" for the person asked: quick picks (what you need most first) or your own */
+function openCounter(){const o=G&&G.offer;if(!o||o.from===ME||!o.to.includes(ME)||o.rep[ME]!=null||ME<0)return;const h=G.players[ME].hand,g={};
+ RES.forEach(r=>{const n=Math.min(o.get[r]|0,h[r]|0);if(n)g[r]=n;});CP={id:o.id,give:g,get:{},qs:[]};renderCounter(true);}
+function quickPicks(o){const h=G.players[ME].hand;let c={};try{c=(AI.goal(ME)||{}).c||{};}catch(e){}
+ const need=RES.filter(r=>!CP.give[r]).sort((a,b)=>(((c[b]|0)-h[b])-((c[a]|0)-h[a]))||(h[a]-h[b]));const out=[];
+ const add=x=>{x=normRes(x);const k=JSON.stringify(x);if(cnt(x)&&!RES.some(r=>x[r]&&CP.give[r])&&!out.some(y=>JSON.stringify(y)===k))out.push(x);};
+ if(cnt(o.give)){const top=RES.filter(r=>o.give[r])[0];add(Object.assign({},o.give,{[top]:o.give[top]+1}));}
+ const [a,b]=need;if(a)add({[a]:1});if(a&&!cnt(o.give))add({[a]:2});if(b)add({[b]:1});if(a&&b)add({[a]:1,[b]:1});return out.slice(0,4);}
+function counterHTML(){const o=G.offer,h=G.players[ME].hand,who=esc(nameOf(o.from)),open=!cnt(o.give),qs=CP.qs=quickPicks(o);
+ const same=x=>RES.every(r=>(x[r]|0)===(CP.get[r]|0)),both=cnt(CP.get)&&cnt(CP.give),ok=both&&E.has(ME,CP.give);
+ return `<div class="grab"></div><div class="sh"><h2 id="sheetTitle">${open?'Offer to '+who:'Counter '+who}</h2>${X}</div>
+ <div class="lbl">You give <span>${who} asked for ${esc(rcTxt(o.get))}</span></div>
+ <div class="tiles">${RES.map(r=>{const v=CP.give[r]|0;return `<button type="button" class="tile give${v?' on':''}" data-tr="cg" data-r="${r}" ${h[r]?'':'disabled'} aria-label="Give ${RNAME[r]}">${rsw(r,34)}<span class="q">${v}</span><span class="minus" data-tr="cg-" data-r="${r}" role="button" aria-label="One less ${RNAME[r]}">−</span><small>${RNAME[r]}</small><em>${h[r]} in hand</em></button>`;}).join('')}</div>
+ <div class="lbl" style="margin-top:12px">You want <span>quick picks</span></div>
+ <div class="quick">${qs.map((x,i)=>`<button type="button" class="qk${same(x)?' on':''}" data-tr="qk" data-i="${i}">${RES.filter(r=>x[r]).map(r=>rsw(r,26)).join('')}${esc(rcTxt(x))}</button>`).join('')}</div>
+ <div class="lbl" style="margin-top:12px">Or pick <span>tap to add</span></div>
+ <div class="tiles">${RES.map(r=>{const v=CP.get[r]|0;return `<button type="button" class="tile want${v?' on':''}" data-tr="cw" data-r="${r}" aria-label="Want ${RNAME[r]}">${rsw(r,34)}<span class="q">${v}</span><span class="minus" data-tr="cw-" data-r="${r}" role="button" aria-label="One less ${RNAME[r]}">−</span><small>${RNAME[r]}</small></button>`;}).join('')}</div>
+ <div class="preview${both?'':' empty'}">${both?`<span>I'll give ${rc(CP.give)}</span><span>for ${rc(CP.get)}</span>`:'Pick what you want back'}</div>
+ <button class="btn" type="button" data-tr="sendCtr" ${ok?'':'disabled'}>${both?`Send: ${esc(rcTxt(CP.give))} for ${esc(rcTxt(CP.get))}`:'Send counter'}</button>`;}
+function renderCounter(open){if(!CP||!G||!G.offer||G.offer.id!==CP.id||G.offer.rep[ME]!=null){if(SHEET==='counter')closeSheet(true);CP=null;renderBanner();return;}
+ const html=counterHTML();if(open||SHEET!=='counter')openSheet('counter',html);else{const s=$('#sheet'),y=s.scrollTop;s.innerHTML=html;s.scrollTop=y;}renderBanner();}
+/* trade log: plain lines, newest first, the same for everyone */
+function logLine(e){const to=e.b<0?(e.via==='harbour'?'the harbour':'the bank'):e.b===ME&&!AUTO?'you':esc(nameOf(e.b));return `<b>${esc(nameOf(e.a))}</b> traded ${rc(e.give)} → ${to} for ${rc(e.get)}`;}
+function openLog(){if(!G)return;const L=(G.tlog||[]).slice().reverse();
+ openSheet('tlog',`<div class="grab"></div><div class="sh"><h2 id="sheetTitle">Trade log</h2>${X}</div><p style="margin:0 0 6px;font-size:13px;color:var(--muted)">Every trade at the table, newest first. Everyone sees the same list.</p>${L.length?`<ul class="tlog">${L.map(e=>`<li><span class="av">${avHTML(e.a,28)}</span><div>${logLine(e)}<small>Round ${Math.max(1,e.round|0)}</small></div></li>`).join('')}</ul>`:'<p>No trades yet in this game.</p>'}`);}
+/* cards fly between a hand (yours) or a player chip, and the other side (a chip, or the bank) */
+function tradeSpot(p,r){let el=null;if(p<0){el=$('#bankIcon');if(!el||!el.offsetParent){const t=$('#turn').getBoundingClientRect();return [t.left+t.width/2,t.bottom+40];}}
+ else{if(p===ME&&!AUTO)el=$(`#hand .rs[data-r="${r}"] .sw`);if(!el||!el.offsetParent)el=$(`#pls [data-pl="${p}"] .av`);}if(!el)return null;const q=el.getBoundingClientRect();return [q.left+q.width/2,q.top+q.height/2];}
+async function flyTrade(a,b,give,get){if(FAST||RM.matches||SCREEN!=='game')return;const fx=$('#fx'),ps=[];let k=0;
+ const one=(r,from,to,delay)=>{if(!from||!to)return;const d=document.createElement('div');d.className='fly';d.style.backgroundImage=SW[r];fx.appendChild(d);const [x0,y0]=from,[x1,y1]=to,mx=(x0+x1)/2,my=Math.max(20,Math.min(y0,y1)-60);
+  const tf=(x,y,s)=>`translate(${x.toFixed(1)}px,${y.toFixed(1)}px) scale(${s})`;
+  const an=d.animate([{transform:tf(x0,y0,.6),opacity:0},{transform:tf(x0,y0,1),opacity:1,offset:.12},{transform:tf(mx,my,1.15),offset:.55},{transform:tf(x1,y1,.7),opacity:1,offset:.92},{transform:tf(x1,y1,.5),opacity:0}],{duration:900*SPEEDF+200,delay,easing:'cubic-bezier(.45,.05,.35,1)',fill:'both'});
+  ps.push(an.finished.then(()=>d.remove()).catch(()=>d.remove()));};
+ unitList(give).forEach(r=>{one(r,tradeSpot(a,r),tradeSpot(b,r),k*110);k++;});unitList(get).forEach(r=>{one(r,tradeSpot(b,r),tradeSpot(a,r),k*110+120);k++;});
+ await Promise.all(ps);}
 /* ---------- Raajje cards ---------- */
 function openCards(){const me=G.players[ME];const groups={};me.cards.forEach(c=>{const k=c.k;(groups[k]=groups[k]||[]).push(c);});
  const can=k=>canPlayAny()&&me.cards.some(c=>c.k===k&&c.t<G.turnNo);
@@ -1710,7 +1935,7 @@ function openScore(){const n=G.players.length,tgt=G.opts.target;const who=k=>G[k
 function openMenu(){openSheet('menu',`<div class="grab"></div><div class="sh"><h2 id="sheetTitle">Menu</h2>${X}</div>
  <button class="tg" type="button" role="switch" aria-checked="${SND.on}" data-m="sound"><span class="tt"><b>Sound</b><small>Soft effects for dice, building and trades</small></span><span class="sw2"></span></button>
  <button class="tg" type="button" role="switch" aria-checked="${SPEEDF<1}" data-m="speed"><span class="tt"><b>Fast computer players</b><small>Shorter pauses between their moves</small></span><span class="sw2"></span></button>
- <div style="display:grid;gap:8px;margin-top:12px"><button class="btn alt" type="button" data-m="score">Scoreboard</button><button class="btn alt" type="button" data-m="rules">How to play</button>
+ <div style="display:grid;gap:8px;margin-top:12px"><button class="btn alt" type="button" data-m="score">Scoreboard</button><button class="btn alt" type="button" data-m="tlog">Trade log</button><button class="btn alt" type="button" data-m="rules">How to play</button>
  <button class="btn alt" type="button" data-m="legend">Resources key</button>${ONLINE?`<button class="btn red" type="button" data-m="leave">Leave table</button>${ME>=0&&G&&G.phase!=='over'?'<p style="font:500 12px/1.4 Inter;color:var(--muted);margin:2px 2px 0">If you leave, the computer plays your seat to the end of the game.</p>':''}`:'<button class="btn alt" type="button" data-m="home">Save &amp; quit</button><button class="btn red" type="button" data-m="quit">Quit to lobby</button>'}</div>`);}
 /* vs Computer: quit without saving, after a confirm (the themed sheet from net.js, or a second tap without it) */
 async function quitAsk(t){let ok=false;if(NET&&NET.ask){closeSheet(true);ok=await NET.ask({title:'Quit this game?',text:'This game ends and is not saved. You go back to the lobby.',ok:'Quit to lobby',cancel:'Keep playing'});}
@@ -1723,30 +1948,69 @@ function revealCard(k,nm){return new Promise(res=>{if(FAST){res();return;}const 
  d.innerHTML=`<div class="rays"></div><div class="rcard"><div class="art">${cardArt(k)}</div><div class="kind">Raajje card</div><h3>${k==='vp'?esc(nm||'Victory point'):CARD[k].n}</h3><p>${k==='vp'?'Worth 1 point. Kept hidden until it wins you the game.':CARD[k].d}</p></div>
  <div class="note">${k==='vp'?'Counts straight away.':'You can play it from your next turn.'}</div><button class="btn" type="button" style="background:#fff;color:#0d1b24">Add to hand</button>`;
  document.body.appendChild(d);const b=d.querySelector('button');b.focus({preventScroll:true});const done=()=>{d.remove();res();};b.addEventListener('click',done);if(AUTO)setTimeout(done,300);});}
-/* ---------- incoming offer banner ---------- */
-function renderBanner(){const el=$('#banner');const o=G&&G.offer;if(!o||AUTO||o.from===ME||!o.to.includes(ME)||o.rep[ME]!=null||SCREEN!=='game'){el.innerHTML='';return;}
- const can=E.has(ME,o.get);const left=Math.max(0,1-(Date.now()-OFFER_T0)/OFFER_MS);
- el.innerHTML=`<div class="ban wg" role="alertdialog" aria-label="Trade offer"><i class="tmr" style="transform:scaleX(${left.toFixed(3)})"></i><div class="bt"><span class="av">${avHTML(o.from,38)}</span><span><b>${esc(nameOf(o.from))}</b> offers ${rr(o.give)} for your ${rr(o.get)}</span></div>
- <div class="bb"><button class="btn sm" type="button" data-o="yes" ${can?'':'disabled'}>${can?'Accept':needTxt(o.get)||'Accept'}</button><button class="btn alt sm" type="button" data-o="no">No thanks</button></div></div>`;}
-function clearBanner(){$('#banner').innerHTML='';}
-$('#banner').addEventListener('click',e=>{const b=e.target.closest('[data-o]');if(!b||!G||!G.offer)return;SND.tick();run(ME,{t:'reply',ans:b.dataset.o});clearBanner();});
+/* ---------- someone asks the table: the banner on every other phone ----------
+   "X wants 1 Wood → offers 1 Sheep" with the 20 s bar; Accept (only with the cards: "No Wood"), Counter, No; an open ask gets
+   "Make an offer" / No. Below: what the others said. After answering: "Waiting for X…", then "X picked you." or
+   "X traded with Y instead." Running out of time counts as No (never as a missed turn). */
+let MYANS=null,BRES=null,LASTOFF=null,BANKEY='',BANID=0;
+function myAnswer(o){const r=o.rep[ME];if(r!=null)return r==='yes'?{ans:'yes'}:r==='no'?{ans:'no',why:o.why&&o.why[ME]}:{ans:'counter',give:r.give,get:r.get};return MYANS&&MYANS.id===o.id?MYANS:null;}
+function renderBanner(){const el=$('#banner');if(!G||AUTO||ME<0||!G.players[ME]||SCREEN!=='game'||SHEET==='counter'){BANKEY='';el.innerHTML='';return;}
+ const o=G.offer;let q=null,res=null;
+ if(o&&o.from!==ME&&o.to.includes(ME)){q=o;LASTOFF=JSON.parse(JSON.stringify(o));}
+ else if(BRES&&Date.now()<BRES.until&&LASTOFF&&LASTOFF.id===BRES.id){q=LASTOFF;res=BRES.html;}
+ if(!q){BANKEY='';el.innerHTML='';return;}
+ const mine=myAnswer(q),key=JSON.stringify([q.id,q.rep,q.why,mine,res,G.players[ME].hand]);if(key===BANKEY&&el.firstChild)return;BANKEY=key;
+ const who=esc(nameOf(q.from)),open=!cnt(q.give),left=res?0:offerLeft(q),f=Math.max(0,Math.min(1,left/(q.dur||E.OFFER_MS))),sec=Math.ceil(left/1000);
+ let body;
+ if(mine||res){const m=mine||{ans:'no'};
+  const said=m.ans==='yes'?'You accepted.':m.ans==='counter'?`You offered ${rc(m.get)} for ${rc(m.give)}.`:m.why==='expired'?'Time ran out, so it counts as No. (Not a missed turn.)':'You said no.';
+  body=`<div class="bnote">${said}${res?'':` <span class="muted">Waiting for ${who}…</span>`}</div>${res?`<div class="bnote" style="margin-top:4px">${res}</div>`:''}`;}
+ else{const can=E.has(ME,q.get),lack=RES.find(r=>(q.get[r]|0)>(G.players[ME].hand[r]|0));
+  body=`<div class="bb3">${open?'':`<button class="btn grn" type="button" data-o="yes" ${can?'':'disabled'}><span class="col">Accept${can?'':`<small>No ${RNAME[lack]}</small>`}</span></button>`}<button class="btn warn" type="button" data-o="counter"${open?' style="grid-column:span 2"':''}>${open?'Make an offer':'Counter'}</button><button class="btn alt" type="button" data-o="no">No</button></div>`;}
+ const others=q.to.filter(p=>p!==ME).map(p=>{const r=q.rep[p],ex=q.why&&q.why[p]==='expired';const t=r==null?(res?'no answer':'thinking…'):r==='yes'?'accepts':r==='no'?(ex?'no answer':'says no'):'counters';return `<span class="omini"><span class="av">${avHTML(p,18)}</span>${esc(nameOf(p))} ${t}</span>`;}).join('');
+ const enter=BANID!==q.id;BANID=q.id;
+ el.innerHTML=`<div class="ban2${enter?' enter':''}" role="alertdialog" aria-label="Trade request from ${who}"><i class="tmr" style="transform:scaleX(${f.toFixed(3)})"></i>
+ <div class="bh"><span class="av">${avHTML(q.from,40)}</span><div class="t"><b>${who}</b> wants ${esc(rcTxt(q.get))} <span class="muted">→ ${open?'open to offers':'offers '+esc(rcTxt(q.give))}</span></div>${res?'':`<span class="secs" aria-label="${sec} seconds left">${sec} s</span>`}</div>
+ <div class="deal"><div class="side"><small>${who} wants</small><div class="it">${items(q.get,40)}</div><span class="lab">${rcTxt(q.get)}</span></div><span class="arr">${IC.arrow}</span><div class="side"><small>${who} offers</small>${open?'<div class="open">Open to offers</div>':`<div class="it">${items(q.give,40)}</div><span class="lab">${rcTxt(q.give)}</span>`}</div></div>${body}${others?`<div class="others"><span>Others:</span>${others}</div>`:''}</div>`;}
+function clearBanner(){BRES=null;BANKEY='';BANID=0;$('#banner').innerHTML='';}
+/* the asker closed the ask: the people who answered see what happened */
+function tradeResult(ev){const q=LASTOFF;if(!G||!q||q.id!==ev.id||ME<0||q.from===ME||!q.to.includes(ME))return;const mine=myAnswer(q);if(!mine)return;const who=esc(nameOf(q.from));let html;
+ if(ev.t==='trade')html=ev.b===ME?`<b>${who} picked you.</b>`:`${who} traded with ${esc(nameOf(ev.b))}${mine.ans!=='no'?' instead':''}.`;else html=`${who} cancelled the ask.`;
+ BRES={id:q.id,html,until:Date.now()+3200};BANKEY='';renderBanner();setTimeout(()=>{BANKEY='';renderBanner();},3300);}
+$('#banner').addEventListener('click',async e=>{const b=e.target.closest('[data-o]');if(!b||b.disabled||!G||!G.offer)return;const o=G.offer;SND.tick();const a=b.dataset.o;
+ if(a==='counter'){openCounter();return;}
+ MYANS={id:o.id,ans:a==='yes'?'yes':'no'};BANKEY='';renderBanner();const err=await run(ME,{t:'reply',id:o.id,ans:MYANS.ans});if(err){MYANS=null;}BANKEY='';renderBanner();});
+/* the 20 s bars and the answers ring count down between syncs (only these small parts are touched) */
+setInterval(()=>{if(!G||SCREEN!=='game')return;const o=G.offer;
+ if(SHEET==='trade'&&TR.tab!=='bank'){const mo=myOffer();if(mo){const b=$('#ringBox');if(b)b.innerHTML=ringHTML(mo);const st=$('#askSt');if(st)st.textContent=askStatus(mo);}else if(TR.sent&&Date.now()-TR.sent>6000){TR.sent=0;renderTradeSheet();}}
+ const bn=$('#banner .ban2');if(bn){if(o&&o.from!==ME&&o.to.includes(ME)){const left=offerLeft(o),t=bn.querySelector('.tmr'),s2=bn.querySelector('.secs');if(t)t.style.transform=`scaleX(${Math.max(0,Math.min(1,left/(o.dur||E.OFFER_MS))).toFixed(3)})`;if(s2)s2.textContent=Math.ceil(left/1000)+' s';}
+  else if(!(BRES&&Date.now()<BRES.until)){clearBanner();}}},200);
+
+/* ---------- trade clicks (compose, answers, bank, counter) ---------- */
+async function tradeClick(t,e){const a=t.dataset.tr,r=t.dataset.r;if(!G||ME<0)return;const h=G.players[ME].hand;
+ if(/-$/.test(a)){e.stopPropagation();const tg=a==='get-'||a==='give-'?TR[a.slice(0,-1)]:CP&&(a==='cg-'?CP.give:CP.get);if(!tg)return;tg[r]=Math.max(0,(tg[r]|0)-1);if(!tg[r])delete tg[r];if(a[0]==='c')renderCounter();else renderTradeSheet();return;}
+ SND.tick();
+ if(a==='get'||a==='give'){const c=TR[a],oth=a==='get'?'give':'get';if(a==='give'&&(c[r]|0)>=h[r])return;if(cnt(c)>=4)return;c[r]=(c[r]|0)+1;delete TR[oth][r];renderTradeSheet();return;}
+ if(a==='tab'){TR.tab=t.dataset.v==='bank'?'bank':'ask';renderTradeSheet();return;}
+ if(a==='log'){openLog();return;}
+ if(a==='send'){if(!cnt(TR.get))return;TR.sent=Date.now();TR.gone=0;renderTradeSheet();const err=await run(ME,{t:'offer',get:normRes(TR.get),give:normRes(TR.give)});if(err)TR.sent=0;if(G)renderTradeSheet();return;}
+ if(a==='cancel'||a==='change'){const o=myOffer();if(o){TR.gone=o.id;closeConfirm();await run(ME,{t:'cancel',id:o.id});}TR.tab='ask';TR.sent=0;if(G)renderTradeSheet();return;}
+ if(a==='pick'){openConfirm(+t.dataset.p);return;}
+ if(a==='bg'){TR.bg=r;if(TR.bw===r)TR.bw=null;renderTradeSheet();return;}
+ if(a==='bw'){TR.bw=r;renderTradeSheet();return;}
+ if(a==='bank'){const g=TR.bg,w=TR.bw;if(!g||!w)return;await run(ME,{t:'bank',give:g,get:w});if(G&&G.players[ME].hand[g]<E.rates(ME)[g])TR.bg=null;if(G)renderTradeSheet();return;}
+ if(!CP)return;
+ if(a==='cg'||a==='cw'){const side=a==='cg'?'give':'get',oth=a==='cg'?'get':'give',c=CP[side];if(side==='give'&&(c[r]|0)>=h[r])return;if(cnt(c)>=4)return;c[r]=(c[r]|0)+1;delete CP[oth][r];renderCounter();return;}
+ if(a==='qk'){const x=CP.qs[+t.dataset.i];if(x)CP.get=Object.assign({},x);renderCounter();return;}
+ if(a==='sendCtr'){const o=G.offer;if(!o||o.id!==CP.id)return;const id=CP.id,give=normRes(CP.get),get=normRes(CP.give);   /* sent as the asker sees it: they give what I want */
+  CP=null;closeSheet(true);MYANS={id,ans:'counter',give,get};BANKEY='';renderBanner();const err=await run(ME,{t:'reply',id,ans:'counter',give,get});if(err)MYANS=null;BANKEY='';renderBanner();return;}}
 
 /* ---------- sheet clicks ---------- */
 function showLongest(){if(!G||G.longest.p<0)return;closeSheet();SND.tick();const m=LR.show(G.longest.p,{ms:3200});if(m){userCamT=0;follow(m[0],m[1]);}}
 $('#sheet').addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&e.target.closest&&e.target.closest('[data-lr]')){e.preventDefault();showLongest();}});
-$('#sheet').addEventListener('click',async e=>{if(e.target.closest('[data-lr]')){showLongest();return;}const t=e.target.closest('button,[data-close]');if(!t)return;
+$('#sheet').addEventListener('click',async e=>{if(e.target.closest('[data-lr]')){showLongest();return;}const tr=e.target.closest('[data-tr]');if(tr){if(!tr.disabled)await tradeClick(tr,e);return;}const t=e.target.closest('button,[data-close]');if(!t)return;
  if(t.dataset.close){closeSheet();return;}
  if(t.dataset.b){startBuild(t.dataset.b);return;}
- if(t.dataset.t){const a=t.dataset.t,r=t.dataset.r;
-  if(a==='tab'){TR.tab=t.dataset.v;renderTradeSheet();return;}
-  if(a==='give+'){TR.give[r]=(TR.give[r]|0)+1;delete TR.get[r];}else if(a==='give-'){TR.give[r]=Math.max(0,(TR.give[r]|0)-1);}
-  else if(a==='get+'){TR.get[r]=(TR.get[r]|0)+1;delete TR.give[r];}else if(a==='get-'){TR.get[r]=Math.max(0,(TR.get[r]|0)-1);}
-  else if(a==='send'){SND.tick();await run(ME,{t:'offer',give:TR.give,get:TR.get});renderTradeSheet();return;}
-  else if(a==='deal'){await run(ME,{t:'accept',with:+t.dataset.w});TR.give={};TR.get={};renderTradeSheet();return;}
-  else if(a==='cancel'){await run(ME,{t:'cancel'});renderTradeSheet();return;}
-  else if(a==='bg'){TR.bg=r;if(TR.bw===r)TR.bw=null;}else if(a==='bw'){TR.bw=r;}
-  else if(a==='bank'){await run(ME,{t:'bank',give:TR.bg,get:TR.bw});if(G.players[ME].hand[TR.bg]<E.rates(ME)[TR.bg])TR.bg=null;renderTradeSheet();return;}
-  renderTradeSheet();return;}
  if(t.dataset.c){const k=t.dataset.c;if(k==='plenty'||k==='mono'){openResPick(k);return;}closeSheet();await run(ME,{t:'play',k});return;}
  if(t.dataset.rp){const v=t.dataset.rp,n=PICK.k==='plenty'?2:1;if(v==='go'){closeSheet();await run(ME,PICK.k==='plenty'?{t:'play',k:'plenty',res:PICK.sel}:{t:'play',k:'mono',res:PICK.sel[0]});return;}
   if(v==='clear')PICK.sel=[];else{if(PICK.sel.length>=n)PICK.sel.shift();PICK.sel.push(v);}SND.tick();renderResPick();return;}
@@ -1754,7 +2018,7 @@ $('#sheet').addEventListener('click',async e=>{if(e.target.closest('[data-lr]'))
   const i=+t.dataset.d,need=G.discard[ME];if(DSC.includes(i))DSC=DSC.filter(x=>x!==i);else if(DSC.length<need)DSC.push(i);SND.tick();renderDiscard();return;}
  if(t.dataset.v!=null&&SHEET==='steal'){closeSheet(true);await run(ME,{t:'steal',from:+t.dataset.v});return;}
  if(t.dataset.m){const m=t.dataset.m;if(m==='sound'){SND.set(!SND.on);openMenu();if(SND.on)SND.tick();}else if(m==='speed'){SPEEDF=SPEEDF<1?1:.5;ls.set('atolls-speed',SPEEDF<1?'fast':'normal');openMenu();}
-  else if(m==='score')openScore();else if(m==='rules')openRules();else if(m==='legend'){closeSheet();LEGEND.show();}else if(m==='home'){if(ONLINE){leaveAsk();return;}save();showHome();}else if(m==='leave'){leaveAsk();}else if(m==='quit'){if(ONLINE)return;quitAsk(t);}return;}
+  else if(m==='score')openScore();else if(m==='tlog')openLog();else if(m==='rules')openRules();else if(m==='legend'){closeSheet();LEGEND.show();}else if(m==='home'){if(ONLINE){leaveAsk();return;}save();showHome();}else if(m==='leave'){leaveAsk();}else if(m==='quit'){if(ONLINE)return;quitAsk(t);}return;}
  if(t.dataset.s)setupClick(t);
  if(t.dataset.a){if(t.dataset.a==='again'){closeSheet(true);if(ONLINE)NET.again();else newGame(LASTSETUP);}else if(t.dataset.a==='home'){if(ONLINE)leaveAsk();else{closeSheet(true);showHome();}}else if(t.dataset.a==='score')openScore();}});
 
@@ -1767,6 +2031,7 @@ $('#prompt').addEventListener('click',e=>{const b=e.target.closest('[data-p]');i
 $('#menuBtn').addEventListener('click',()=>{if(G)openMenu();});
 $('#fitBtn').addEventListener('click',()=>{if(G)fitToggle();});
 $('#fitBtn').innerHTML=IC.compass;
+$('#logBtn span').innerHTML=IC.log;$('#logBtn').addEventListener('click',()=>{if(!G)return;SND.tick();openLog();});
 
 /* ---------- resources key: behind the small "?" button on the board (gently pulsing until first opened), and in the menu ---------- */
 const LEGEND={show(){if($('#legend'))return;const d=document.createElement('div');d.id='legend';d.className='legend wg';d.setAttribute('role','dialog');d.setAttribute('aria-label','Resources key');
@@ -1787,7 +2052,7 @@ function openRules(){const pic=(inner,vb)=>`<svg viewBox="${vb||'-42 -42 84 84'}
   ['Five resources',`<span class="keyl">${RES.map(r=>`<span><i style="background-image:${SW[r]}">${glyph(r)}</i><b>${RNAME[r]}</b> ${({wood:'dark green forest',brick:'orange brick walls',sheep:'green meadow with white sheep',wheat:'golden striped fields',ore:'grey mountain peaks'})[r]}</span>`).join('')}</span>The sandbank makes nothing. Tap any tile to see its icon and what it makes, or tap ? on the board.`,pic(`${hex(-17,-14,17,'wood')}${hex(17,-14,17,'brick')}${hex(0,15,17,'sheep')}${hex(-34,15,17,'wheat')}${hex(34,15,17,'ore')}`)],
   ['Roll and collect',`Each turn starts with a roll of two dice. Every tile with that number pays 1 card to each village on its corners, and 2 to each capital. Red 6 and 8 come up most; the dots show how often.`,pic(`${hex(0,0,32,'ore')}<g>${tokenSVG(8)}</g><g transform="translate(20 -22)">${housePath('#ffcc00')}</g>`)],
   ['Build',`Dhoni route: Wood + Brick. Village: Wood + Brick + Sheep + Wheat. Atoll capital (upgrade a village): 2 Wheat + 3 Ore. Raajje card: Sheep + Wheat + Ore. New villages must touch your routes and sit at least two corners from any other village.`,pic(`${hex(0,0,32,'sheep')}${routeSVG([-28,-16],[0,-32],'#ff453a')}${routeSVG([0,-32],[28,-16],'#ff453a')}<g transform="translate(28 -16)">${housePath('#ff453a')}</g><g transform="translate(-28 -16)">${housePath('#ff453a',true)}</g>`)],
-  ['Trade',`After you roll you can offer cards to everyone. Players accept, decline or send a counter-offer. You can also trade 4 of one resource to the bank for 1 of any other. A village or capital on a harbour gives 3:1, or 2:1 for that harbour's resource.`,pic(`<g transform="scale(1.6)"><rect x="-17" y="-9" width="34" height="18" rx="9" fill="#fff"/><circle cx="-8.5" r="6.2" fill="url(#rp-sheep)"/><text x="5.5" y="3.5" text-anchor="middle" font-weight="800" font-size="9.5" fill="#0d1b24" font-family="Inter">2:1</text></g>`)],
+  ['Trade',`After you roll, tap Trade and ask the whole table for what you want. Say what you give, or leave it open to offers. Everyone answers at once within 20 seconds: accept, counter or no. You pick an answer and confirm. 3 asks a turn. You can also trade 4 of one resource to the bank for 1 of any other. A village or capital on a harbour gives 3:1, or 2:1 for that harbour's resource. The trade log shows every trade.`,pic(`<g transform="scale(1.6)"><rect x="-17" y="-9" width="34" height="18" rx="9" fill="#fff"/><circle cx="-8.5" r="6.2" fill="url(#rp-sheep)"/><text x="5.5" y="3.5" text-anchor="middle" font-weight="800" font-size="9.5" fill="#0d1b24" font-family="Inter">2:1</text></g>`)],
   ['Roll a 7: pirates',`Nobody collects. Anyone holding more than 7 cards throws half overboard. The roller moves the pirate dhoni to a new tile, which stops paying, and takes a random card from a player with a village there.`,pic(`${hex(0,4,32,'wheat')}<g transform="translate(0 6)">${pirateSVG(24)}</g>`)],
   ['Raajje cards',`Coast Guard moves the pirate and robs. Route building gives 2 free routes. Good catch takes 2 resources from the bank. Market monopoly takes every card of one resource from the others. Victory point cards stay hidden. Play one per turn, not on the turn you buy it.`,`<svg viewBox="0 0 160 160" aria-hidden="true">${cardArt('knight').replace(/<svg[^>]*>/,'<g transform="translate(0 25)">').replace('</svg>','</g>')}</svg>`],
   ['Awards: +2 each',`Longest sea route: the first to link 5 routes in a row, until someone beats it (tap it on the scoreboard to see it glow on the board).Strongest Coast Guard: the first to play 3 Coast Guards, until someone plays more. Harbour Master (option): most harbour points, at least 3 (village on a harbour 1, capital 2).`,pic(`<g transform="translate(-18 0) scale(1.4)">${IC.route.replace(/<\/?svg[^>]*>/g,'')}</g>`,'-42 -42 84 84').replace('</svg>',`<g transform="translate(4 -14) scale(1.3)">${IC.shield.replace(/<\/?svg[^>]*>/g,'')}</g></svg>`)],
@@ -1832,7 +2097,7 @@ function modeIcon(k){const rows={duel:[3,4,5,4,3],standard:[3,4,5,4,3],big:[3,4,
 function modesHTML(){return `<div class="modes" role="radiogroup" aria-label="Game mode">${['duel','standard','big','grand','hop'].map(k=>`<button class="mode" type="button" role="radio" aria-checked="${HMODE===k}" data-s="mode" data-v="${k}">${modeIcon(k)}<span><b>${MODES[k].name}</b><small>${MODES[k].sub}</small></span></button>`).join('')}</div>`;}
 /* "N playing now" on the Quick Match button (0: "Be the first to play") */
 function paintLive(n){const e=$('#qmLive');if(!e)return;n=n|0;e.innerHTML=n>0?`<i></i>${n.toLocaleString('en-US')} playing now`:'<span class="first">Be the first to play</span>';}
-function showHome(){SCREEN='home';LEGEND.hide();TMR.stop();clearTimeout(PUMPT);endSel();closeSheet(true);clearBanner();$('#game').hidden=true;$('#home').hidden=false;$('#loading').hidden=true;$('#storm').classList.remove('on');GLR.setDim(0);
+function showHome(){SCREEN='home';LEGEND.hide();TMR.stop();clearTimeout(PUMPT);endSel();closeSheet(true);clearBanner();closeConfirm();if(window.DGDice)DGDice.end();$('#game').hidden=true;$('#home').hidden=false;$('#loading').hidden=true;$('#storm').classList.remove('on');GLR.setDim(0);
  GLR.setMode('home');$('#boliN').textContent=boliCount().toLocaleString('en-US');const s=loadSave();$('#resumeBtn').hidden=!s;$('#home .vc').classList.toggle('two',!!s);
  if(NET)NET.playing(paintLive);
  if(s)$('#resumeSub').textContent=`${MODES[s.G.mode].name} · round ${Math.max(1,s.G.round)}`;
@@ -1880,7 +2145,7 @@ function newGame(o){o=o||{mode:HMODE,n:SETUP.n,opts:{target:SETUP.target,fair:SE
  LASTSETUP={mode:o.mode,n:o.n,opts:o.opts};if(!ROSTER)ROSTER=roster();
  const players=[{name:'You',human:true,av:myAvatar(),col:PCOL[0]}];ROSTER.slice(0,o.n-1).forEach((b,k)=>players.push({name:b[0],human:false,av:botAv(b),col:PCOL[k+1]}));
  OVERSHOWN=null;REWARD=null;const g=E.create({mode:o.mode,players,opts:o.opts,seed:o.seed,stamp:Date.now().toString(36)});E.drain();startWith(g,0);}
-function startWith(g,me){E.use(g);G=g;ME=me;SCREEN='game';SEL=null;BUSY=false;OFFER_T0=0;TMR.stop();for(const k in LASTH)delete LASTH[k];
+function startWith(g,me){E.use(g);G=g;ME=me;SCREEN='game';SEL=null;BUSY=false;ROLLING=false;PREVD=null;MYANS=null;BRES=null;LASTOFF=null;CP=null;TRSEEN='';closeConfirm();TMR.stop();for(const k in LASTH)delete LASTH[k];
  $('#home').hidden=true;$('#game').hidden=false;closeSheet(true);clearBanner();GLR.setMode('board');
  buildOverlay();MM.setup();renderAll();layoutView();const d=defaultCam();Object.assign(CAM,d);applyCam();renderTele();
  ov.style.opacity='0';if(GLR.ok){$('#loading').hidden=false;}LEGEND.hide();ov.style.transition='';ov.style.opacity='1';const fbL=$('#L_fb');fbL.style.opacity='1';let done=false;const g0=G;$('#loading').hidden=true;
@@ -1919,13 +2184,14 @@ async function autoFor(p){if(!G)return;let a=null;
  if(err){const fb=G.step==='main'&&G.turn===p?{t:'end',auto:true}:G.step==='sbp'&&E.sbpP()===p?{t:'done',auto:true}:null;if(fb)await run(p,fb);}kick();}
 async function netAction(pid,a,tries){if(!G||!a||typeof a!=='object'||typeof a.t!=='string')return;const i=G.players.findIndex(p=>p.id===pid);if(i<0||G.players[i].afk)return;
  if(BUSY&&(tries|0)<40){setTimeout(()=>netAction(pid,a,(tries|0)+1),150);return;}
- const b=Object.assign({},a);delete b.auto;delete b.bot;const err=await run(i,b);if(err)NET.tell(pid,{err:errText(err)});kick();}
+ const b=Object.assign({},a);delete b.auto;delete b.bot;delete b.now;delete b.expired;const err=await run(i,b);if(err)NET.tell(pid,{err:errText(err)});kick();}
 function redactEv(e,me){if(e.t==='card'&&e.p!==me)return {t:'card',p:e.p,k:'?'};if(e.t==='steal'&&e.from!==me&&e.to!==me)return {t:'steal',from:e.from,to:e.to,r:null};return e;}
 function netView(pid){if(!G)return null;const me=G.players.findIndex(p=>p.id===pid);const g=JSON.parse(JSON.stringify(G));
  g.rs=0;g.deck=g.deck.map(()=>'?');if(g.dd)g.dd=null;
  g.players.forEach((p,i)=>{if(i===me)return;const n=cnt(p.hand);p.hand={wood:n,brick:0,sheep:0,wheat:0,ore:0};p.cards=p.cards.map(c=>({k:'?',t:c.t}));});
+ if(g.offer)g.offer.ms=Math.round(offerLeft(G.offer));   /* the host's clock: each phone counts down from when it got this view */
  return{g,ev:E.evlog().slice(-80).map(x=>[x[0],redactEv(x[1],me)]),lid:E.lid};}
-function netBackup(){return G?{g:JSON.parse(JSON.stringify(G)),lid:E.lid}:null;}
+function netBackup(){if(!G)return null;const g=JSON.parse(JSON.stringify(G));if(g.offer)g.offer.ms=Math.round(offerLeft(G.offer));return {g,lid:E.lid};}
 function netStart(seats,opts){ONLINE=true;const n=seats.length;
  const mode=opts.board==='hop'&&n<=4?'hop':n<=2?'duel':n<=4?'standard':n<=6?'big':'grand';
  /* Quick Match computer seats (s.cpu) are the game's own computer players for good: never "away", never removed */
@@ -1936,6 +2202,7 @@ function netStart(seats,opts){ONLINE=true;const n=seats.length;
  const g=E.create({mode,players,opts:o,stamp:Date.now().toString(36)});g.players.forEach((p,i)=>{p.id=seats[i].id;if(seats[i].cpu)p.cpu=1;});E.drain();
  startWith(g,Math.max(0,seats.findIndex(s=>s.id===MYID)));NET.sync();}
 function netState(v){if(!v||!v.g||!Array.isArray(v.g.players))return;ONLINE=true;const g=v.g,me=g.players.findIndex(p=>p.id===MYID);
+ if(g.offer)OFFER_RX={id:g.offer.id,ms:g.offer.ms!=null?+g.offer.ms:(g.offer.dur||E.OFFER_MS),at:Date.now()};
  if(!G||SCREEN!=='game'||G.id!==g.id){closeSheet(true);OVERSHOWN=null;REWARD=null;LASTLID=v.lid|0;GQ=[];startWith(g,me);return;}
  /* keep the board graph: the map only changes by fog lifting */
  if(G.map&&g.map&&G.map.hexes.length===g.map.hexes.length){g.map.hexes.forEach((h,i)=>{G.map.hexes[i].fog=h.fog;});g.map=G.map;}
@@ -1948,6 +2215,8 @@ function netMigrate(o){ONLINE=true;const b=o.backup&&o.backup.g?o.backup:null,v=
  const g=JSON.parse(JSON.stringify(src));
  if(!b){g.rs=(Math.random()*4294967296)|0;g.deck=g.deck.map(()=>'knight');}   /* no backup reached us: fresh dice seed, a plain deck */
  E.seedLid(Math.max(b?b.lid|0:0,v?v.lid|0:0,LASTLID)+1);for(const k in RT)delete RT[k];
+ /* an open ask survives the hand-over: the new host restarts its clock from the time that was left */
+ if(g.offer){const dur=g.offer.dur||E.OFFER_MS;let ms=g.offer.ms!=null?+g.offer.ms:dur;if(OFFER_RX.id===g.offer.id)ms=Math.max(0,OFFER_RX.ms-(Date.now()-OFFER_RX.at));g.offer.t0=Date.now()-(dur-Math.min(dur,ms));BOTDUE={id:0,t:{}};}
  const me=g.players.findIndex(p=>p.id===MYID);if(SCREEN!=='game'||!G||G.id!==g.id)startWith(g,me);else{if(G.map&&g.map&&G.map.hexes.length===g.map.hexes.length)g.map=G.map;E.use(g);G=g;ME=me;renderAll();}
  kick();NET.sync();}
 function netDrop(pid,why){if(!netHost()||!G)return;const i=G.players.findIndex(p=>p.id===pid);if(i<0||G.players[i].afk||G.phase==='over')return;
@@ -1973,13 +2242,13 @@ function initNet(){if(!window.DGNet)return;NET=DGNet.create({game:'atolls',title
   {k:'target',label:'Points to win',def:10,choices:[[8,'8'],[10,'10'],[12,'12']],hint:o=>o.board==='hop'?'Island Hopping adds 2 with 3 or 4 players. With 2, Discoveries are worth 2 instead.':''},
   {k:'map',label:'Map',def:'fair',choices:[['fair','Fair'],['random','Random']]},
   {k:'hm',label:'Harbour Master',def:'off',choices:[['off','Off'],['on','On (+2)']]}],
- rulesNote:'2 to 8 players. 20 seconds per decision, then the computer moves for you. Miss 2 in a row, or leave, and the computer plays your seat to the end of the game. Trade offers wait 15 seconds for answers.',
+ rulesNote:'2 to 8 players. 20 seconds per decision, then the computer moves for you. Miss 2 in a row, or leave, and the computer plays your seat to the end of the game. A trade ask waits 20 seconds for answers; no answer counts as No, never as a missed turn.',
  listInfo:m=>{if(m.status!=='lobby'&&G)return MODES[G.mode].name+' · round '+Math.max(1,G.round);return (m.opts&&m.opts.board)==='hop'?'Island Hopping':'Classic board';},
  dropText:(nm,why)=>nm+(why==='afk'?' is away':why==='left'?' left':' lost connection')+'. The computer plays their seat to the end.',
  afkText:'You missed 2 decisions in a row, so the computer plays your seat to the end of this game. You can’t rejoin it.',
  hostAfkText:'You missed 2 decisions in a row, so the computer plays your seat to the end of this game.',
  onStart:netStart,view:pid=>netView(pid),backup:netBackup,onAction:(pid,a)=>{netAction(pid,a);},onDrop:netDrop,onState:netState,onLobby:netLobby,onMigrate:netMigrate,onEnd:netEnd,
- onTell:d=>{if(d&&d.err){SND.err();toast(esc(String(d.err)),true);}},
+ onTell:d=>{if(d&&d.err){SND.err();toast(esc(String(d.err)),true);if(TR.sent){TR.sent=0;if(SHEET==='trade')renderTradeSheet();}if(MYANS){MYANS=null;BANKEY='';renderBanner();}}},
  toast:(t,ms)=>toast(esc(t),true),
  dockHost:()=>SCREEN==='game'?$('#dgnSlot'):null,
  avatarEl:pid=>{if(!G||SCREEN!=='game')return null;const i=G.players.findIndex(p=>p.id===pid);return i<0?null:document.querySelector(`#pls [data-pl="${i}"] .av`);}});}
@@ -1990,7 +2259,7 @@ $('#onlineBtn').addEventListener('click',()=>{SND.unlock();if(NET)(NET.friends||
 initSwatches();showHome();
 initNet();if(NET){NET.boot();if(SCREEN==='home')NET.playing(paintLive);}   /* invite links: ?t=CODE */
 if(LOCAL&&Q.has('autostart')){const m=Q.get('mode');if(MODES[m])HMODE=m;SETUP.n=+(Q.get('n')||SETUP.n);newGame({mode:HMODE,n:Math.max(MODES[HMODE].min,Math.min(MODES[HMODE].max,SETUP.n)),opts:{target:MODES[HMODE].target,fair:true,hm:Q.has('hm'),fairDice:Q.has('fairdice'),friendly:Q.has('friendly'),timer:Q.has('timer'),beginner:Q.has('beginner')},seed:+(Q.get('seed')||0)||undefined});}
-if(LOCAL)window.ATOLLS={E,AI,MODES,simGame,checkInv,get G(){return G;},get ME(){return ME;},get ONLINE(){return ONLINE;},get NET(){return NET;},run,pump,newGame,CAM,camTo,
+if(LOCAL)window.ATOLLS={E,AI,MODES,simGame,checkInv,get G(){return G;},get ME(){return ME;},get ONLINE(){return ONLINE;},get NET(){return NET;},run,pump,newGame,CAM,camTo,diceOpt,offerLeft,openTrade,openLog,get SHEET(){return SHEET;},get BUSY(){return BUSY;},get ROLLING(){return ROLLING;},
  sim(o){o=o||{};const cfg=o.cfg||[['duel',2],['standard',3],['standard',4],['big',5],['big',6],['grand',7],['grand',8],['hop',2],['hop',3],['hop',4]];const optsets=[{},{fair:false},{hm:true},{friendly:true},{fairDice:true},{target:8},{target:12},{beginner:true,hm:true,fairDice:true}];
   const saveG=G;const out={};let seed=o.seed||1;for(const [m,n] of cfg){const k=m+n;out[k]={games:0,done:0,errs:[],rounds:0};for(let i=0;i<(o.games||10);i++){const op=optsets[(seed+i)%optsets.length];const r=simGame({mode:m,n,seed:seed++,opts:op,every:o.every||1});const s=out[k];s.games++;if(r.done)s.done++;if(r.errs.length)s.errs.push(r.errs[0]);s.rounds+=r.rounds;}out[k].rounds=f1(out[k].rounds/out[k].games);}
   if(saveG)E.use(saveG);return out;}};
@@ -2012,8 +2281,8 @@ if(LOCAL){const wt=ms=>new Promise(r=>setTimeout(r,ms));window.__errs=[];addEven
     if(a.t==='build'){if(stop('build'))return 'build';startBuild(a.k);await wt(80);const sp=SEL&&SEL.spots.find(s=>s.v===a.at||s.e===a.at);if(sp){const [x,y]=spotXY(sp);onTap(x,y);await wt(80);await confirmSel();}else endSel();continue;}
     if(a.t==='buy'){if(stop('buy'))return 'buy';openBuild();await wt(80);$('#sheet [data-b="card"]').click();continue;}
     if(a.t==='play'){if(stop('play'))return 'play';openCards();await wt(80);const b=$(`#sheet [data-c="${a.k}"]`);if(b&&!b.disabled){b.click();await wt(80);if(SHEET==='respick'){[].concat(a.res||[]).forEach(r=>{const x=$(`#sheet [data-rp="${r}"]`);x&&x.click();});await wt(60);$('#sheet [data-rp="go"]').click();}}else{closeSheet();await run(ME,a);}continue;}
-    if(a.t==='offer'){if(stop('trade'))return 'trade';openTrade();await wt(80);for(const r of RES){for(let i=0;i<(a.give[r]|0);i++)$(`#sheet [data-t="give+"][data-r="${r}"]`).click();for(let i=0;i<(a.get[r]|0);i++)$(`#sheet [data-t="get+"][data-r="${r}"]`).click();}await wt(60);$('#sheet [data-t="send"]').click();continue;}
-    if(a.t==='bank'){if(stop('bank'))return 'bank';openTrade();await wt(60);$('#sheet [data-t="tab"][data-v="bank"]').click();await wt(60);$(`#sheet [data-t="bg"][data-r="${a.give}"]`).click();await wt(40);$(`#sheet [data-t="bw"][data-r="${a.get}"]`).click();await wt(40);$('#sheet [data-t="bank"]').click();await wt(200);closeSheet();continue;}
+    if(a.t==='offer'){if(stop('trade'))return 'trade';openTrade();await wt(80);for(const r of RES){for(let i=0;i<(a.give[r]|0);i++)$(`#sheet [data-tr="give"][data-r="${r}"]`).click();for(let i=0;i<(a.get[r]|0);i++)$(`#sheet [data-tr="get"][data-r="${r}"]`).click();}await wt(60);$('#sheet [data-tr="send"]').click();await wt(300);continue;}
+    if(a.t==='bank'){if(stop('bank'))return 'bank';openTrade('bank');await wt(60);$(`#sheet [data-tr="bg"][data-r="${a.give}"]`).click();await wt(40);$(`#sheet [data-tr="bw"][data-r="${a.get}"]`).click();await wt(40);$('#sheet [data-tr="bank"]').click();await wt(200);closeSheet();continue;}
     closeSheet();$('#endBtn').click();continue;}
    if(G.step==='sbp'&&E.sbpP()===ME){const a=AI.next(ME);if(a&&a.t!=='done')await run(ME,a);else $('#doneBtn').click();continue;}}
   return 'timeout';};
