@@ -190,6 +190,11 @@ button:disabled{cursor:default}
 .corner.jail{background:repeating-linear-gradient(90deg,#F4E7CC 0 5px,#E8D8B6 5px 6px)}
 .corner.gojail{background:linear-gradient(160deg,#FCE6D6,#F2CDB2)}
 .corner.free{background:linear-gradient(160deg,#FFF7DD,#F3E2B5)}
+/* the board (table) has rounded corners: each corner space rounds its OUTER corner on the same curve, concentric with
+   the board edge (board radius minus the board padding), so the tile, its art and any highlight follow the curve */
+.board{--cr:calc(var(--B)*.0366)}
+.corner.go{border-bottom-right-radius:var(--cr)}.corner.jail{border-bottom-left-radius:var(--cr)}
+.corner.free{border-top-left-radius:var(--cr)}.corner.gojail{border-top-right-radius:var(--cr)}
 .ctr{grid-row:2/8;grid-column:2/8;position:relative;overflow:hidden;background:#1596AE url(ocean.webp) center/cover no-repeat;display:flex;align-items:center;justify-content:center}
 .lagoon{position:absolute;inset:0;overflow:hidden;pointer-events:none;mix-blend-mode:screen;opacity:.55}
 .lagoon i{position:absolute;left:0;top:0;width:calc(100% + var(--T2,300px)*2);height:calc(100% + var(--T2,300px)*2);background:url(caustics.webp) 0 0/var(--T,220px) var(--T,220px) repeat;will-change:transform;backface-visibility:hidden}
@@ -243,8 +248,11 @@ button:disabled{cursor:default}
 .zb{width:44px;height:44px;border-radius:14px;border:0;background:rgba(6,48,63,.72);color:#fff;display:grid;place-items:center;box-shadow:inset 0 0 0 1px rgba(255,255,255,.25);backdrop-filter:blur(4px)}
 .zb svg{width:20px;height:20px}
 /* thrown 3D dice */
-.dtray{position:absolute;inset:0;overflow:hidden;pointer-events:none;z-index:7;perspective:900px;perspective-origin:50% 40%;opacity:0}
+.dtray{position:absolute;inset:0;overflow:hidden;pointer-events:none;z-index:9;perspective:900px;perspective-origin:50% 40%;opacity:0}
 .dtray.on{opacity:1}.dtray.fade{opacity:0;transition:opacity .45s ease}
+/* doubles: a warm glow on the table under each die (transform / opacity only) */
+.dtray.dbl .d3::after{content:"";position:absolute;left:50%;top:50%;width:180%;height:180%;margin:-90% 0 0 -90%;border-radius:50%;background:radial-gradient(closest-side,rgba(255,214,110,.8),rgba(255,214,110,.3) 55%,transparent);animation:dblglow 1.1s ease-out both;pointer-events:none}
+@keyframes dblglow{0%{opacity:0;transform:scale(.5)}30%{opacity:1;transform:scale(1.05)}100%{opacity:0;transform:scale(1.3)}}
 .d3{position:absolute;left:0;top:0;width:var(--d);height:var(--d);transform-style:preserve-3d;will-change:transform}
 .d3s{position:absolute;inset:6%;border-radius:32%;background:radial-gradient(closest-side,rgba(2,24,32,.6),rgba(2,24,32,.25) 60%,transparent);will-change:transform,opacity}
 .d3c{position:absolute;inset:0;transform-style:preserve-3d;--h:calc(var(--d)/2);will-change:transform}
@@ -1515,11 +1523,12 @@ const nameOf=i=>i===ME?'You':G.players[i].name;
 const SPECP={name:'',cash:0,cards:[],out:true,sus:0,mute:false,jail:false,human:true,col:'#888',pos:0,jt:0};
 const meP=()=>(G&&G.players[ME])||SPECP;
 
-/* ---------------------------------------------------------------- sound: quiet, realistic foley (WebAudio)
-   Everything is synthesised: filtered-noise transients, short wood / metal resonances with fast envelopes, a little
-   per-hit randomness, a small room reverb and gentle compression; the output sits about 6 dB under full scale.
-   No beeps, boings or jingles. Mute: the site-wide dd-sfx key (this game's old bv-sound key is still read). */
-const SND=(()=>{let ctx=null,out=null,dry=null,wet=null,nbuf=null,lvl=.5;
+/* ---------------------------------------------------------------- sound: realistic foley (WebAudio, all original)
+   Everything is synthesised live, nothing is downloaded: filtered-noise transients (paper, skin, air), modal synthesis
+   for struck objects (a few decaying partials at a wood table's, a coin's, a steel door's, a bell's or a marimba bar's
+   mode ratios), a little per-hit randomness, a small wooden-room reverb and gentle compression; the output sits about
+   6 dB under full scale. Mute: the site-wide dd-sfx key (missing = on, '0'/'off' = off; the old bv-sound key is still read). */
+const SND=(()=>{let ctx=null,out=null,dry=null,wet=null,nbuf=null,lvl=.5,grp=null,OFF=0;
  const off=v=>v==='0'||v==='off';
  let on=(()=>{const a=ls.get('dd-sfx');return a!=null?!off(a):ls.get('bv-sound')!=='0';})();
  function ac(){if(!on)return null;try{if(!ctx){const C=window.AudioContext||window.webkitAudioContext;if(!C)return null;ctx=new C();
@@ -1530,64 +1539,99 @@ const SND=(()=>{let ctx=null,out=null,dry=null,wet=null,nbuf=null,lvl=.5;
    const cv=ctx.createConvolver();cv.buffer=ir;const lp=ctx.createBiquadFilter();lp.type='lowpass';lp.frequency.value=3600;wet=ctx.createGain();wet.gain.value=.16;wet.connect(cv);cv.connect(lp);lp.connect(comp);}
   if(ctx.state==='suspended')ctx.resume();}catch(e){return null;}return ctx;}
  const R=(a,b)=>a+Math.random()*(b-a);
- const bus=g=>{g.connect(dry);g.connect(wet);};
+ /* sounds made between begin() and end() share one gain, so a skipped dice throw can be silenced mid-way */
+ const bus=g=>{if(grp){g.connect(grp);return;}g.connect(dry);g.connect(wet);};
  /* filtered noise burst: o = {f, to, q, type, vol, a (attack s), rate} */
  function nz(dt,dur,o){const c=ac();if(!c)return;if(!nbuf){nbuf=c.createBuffer(1,c.sampleRate|0,c.sampleRate);const d=nbuf.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;}
-  const t=c.currentTime+Math.max(0,dt),s=c.createBufferSource();s.buffer=nbuf;if(o.rate)s.playbackRate.value=o.rate;
+  const t=c.currentTime+Math.max(0,dt+OFF),s=c.createBufferSource();s.buffer=nbuf;if(o.rate)s.playbackRate.value=o.rate;
   const fl=c.createBiquadFilter();fl.type=o.type||'bandpass';fl.frequency.setValueAtTime(o.f,t);if(o.to)fl.frequency.exponentialRampToValueAtTime(o.to,t+dur);fl.Q.value=o.q||1;
   const g=c.createGain(),a=o.a||.0015;g.gain.setValueAtTime(.0001,t);g.gain.linearRampToValueAtTime(o.vol,t+a);g.gain.exponentialRampToValueAtTime(.0001,t+Math.max(a+.005,dur));
   s.connect(fl);fl.connect(g);bus(g);s.start(t,Math.random()*.6);s.stop(t+dur+.05);}
- /* one decaying partial: a wood body, a metal mode or a low thud */
- function rs(dt,f,dur,vol,to){const c=ac();if(!c)return;const t=c.currentTime+Math.max(0,dt),os=c.createOscillator(),g=c.createGain();os.frequency.setValueAtTime(f,t);if(to)os.frequency.exponentialRampToValueAtTime(to,t+dur);
+ /* one decaying partial */
+ function rs(dt,f,dur,vol,to){const c=ac();if(!c)return;const t=c.currentTime+Math.max(0,dt+OFF),os=c.createOscillator(),g=c.createGain();os.frequency.setValueAtTime(f,t);if(to)os.frequency.exponentialRampToValueAtTime(to,t+dur);
   g.gain.setValueAtTime(.0001,t);g.gain.linearRampToValueAtTime(vol,t+.0015);g.gain.exponentialRampToValueAtTime(.0001,t+dur);os.connect(g);bus(g);os.start(t);os.stop(t+dur+.05);}
+ /* modal synthesis: a struck body as its modes [ratio, decay s, gain] */
+ function modal(dt,f,modes,v){modes.forEach(([k,d,a])=>rs(dt,f*k*R(.993,1.007),d*R(.85,1.15),a*v));}
+ const WOOD=[[1,.07,.11],[2.31,.045,.06],[3.9,.03,.035],[6.1,.018,.02]];/* table board / wooden block */
+ const COIN=[[1,.34,.022],[1.43,.22,.016],[2.07,.16,.012],[2.76,.1,.008],[3.61,.07,.005]];
+ const STEEL=[[1,.9,.03],[1.52,.7,.024],[2.43,.55,.018],[3.36,.42,.013],[4.62,.3,.009],[6.1,.2,.006]];
+ const BELL=[[1,1.1,.028],[2,.7,.012],[2.74,.55,.01],[5.37,.28,.005],[8.9,.14,.003]];
+ const BAR=[[1,.42,.05],[3.93,.16,.014],[9.24,.05,.005]];/* a marimba bar: the little fanfare */
  /* building blocks */
  function knock(dt,v,f){nz(dt,.03,{f:f*R(.9,1.1),q:3.2,vol:.5*v});nz(dt,.012,{type:'highpass',f:4200,q:.7,vol:.2*v});rs(dt,R(170,230),.05,.1*v);}
- function clack(dt,v){nz(dt,.02,{f:R(2800,3700),q:6,vol:.42*v});nz(dt,.01,{type:'highpass',f:5200,vol:.18*v});}
- function clink(dt,v){const b=R(2750,3350);nz(dt,.012,{type:'highpass',f:6500,vol:.16*v});[[1,.34],[1.43,.22],[2.07,.16],[2.76,.1]].forEach(([k,d])=>rs(dt,b*k*R(.99,1.01),d*R(.8,1.2),.022*v));}
+ function wood(dt,v,f){nz(dt,.018,{f:f*R(.9,1.1),q:2.5,vol:.34*v});modal(dt,R(190,240),WOOD,v);}
+ function clack(dt,v){nz(dt,.02,{f:R(2800,3700),q:6,vol:.42*v});nz(dt,.01,{type:'highpass',f:5200,vol:.18*v});rs(dt,R(5200,6400),.012,.02*v);}
+ function clink(dt,v){nz(dt,.012,{type:'highpass',f:6500,vol:.16*v});modal(dt,R(2750,3350),COIN,v);}
  function thud(dt,v){rs(dt,R(88,104),.14,.2*v,70);nz(dt,.05,{type:'lowpass',f:650,vol:.3*v});}
  function paper(dt,dur,v,f1,f2){nz(dt,dur,{f:f1,to:f2,q:.8,vol:.07*v,a:dur*.3});}
+ function swish(dt,dur,v){nz(dt,dur,{f:500,to:1900,q:.9,vol:.05*v,a:dur*.55});}
+ function ding(dt,f,v){nz(dt,.006,{type:'highpass',f:5000,vol:.05*v});modal(dt,f,BELL,v);}
+ function mallet(dt,f,v){nz(dt,.01,{f:f*2,q:2,vol:.05*v});modal(dt,f,BAR,v);}
  /* inside a tap / key press: resume, and (iOS Safari) play a silent buffer to unlock the output */
  function unlock(){if(document.hidden)return;const c=ac();if(!c||(c._primed&&c.state==='running'))return;c._primed=1;try{if(c.state!=='running'){const p=c.resume();p&&p.catch&&p.catch(()=>{});}}catch(e){}try{const b=c.createBuffer(1,1,22050),s=c.createBufferSource();s.buffer=b;s.connect(c.destination);s.start(0);}catch(e){}}
  ['pointerdown','touchstart','touchend','click','keydown'].forEach(ev=>document.addEventListener(ev,unlock,{capture:true,passive:true}));
- return {get on(){return on;},set(v){on=!!v;ls.set('bv-sound',on?'1':'0');ls.set('dd-sfx',on?'1':'0');if(on)unlock();},unlock,
+ const api={get on(){return on;},set(v){on=!!v;ls.set('bv-sound',on?'1':'0');ls.set('dd-sfx',on?'1':'0');if(on)unlock();},unlock,
   /* master volume: the home teaser plays its few foley sounds quietly */
   level(v){lvl=v;if(out)out.gain.value=v;},
-  /* two dice shaken in a cupped hand */
-  rattle(){nz(0,.26,{type:'lowpass',f:900,vol:.035,a:.06});let t=0;for(let i=0;i<6;i++){t+=R(.028,.05);nz(t,.018,{f:R(1900,2800),q:5,vol:R(.1,.18)});}},
-  /* one impact from the pre-simulated throw: t = time, s = impact speed 0..1, k = table / wall / other die */
-  hit(t,s,k){const v=.12+.88*s;if(k==='t'){knock(t,v*.9,R(1500,2300));rs(t,R(115,150),.07,.09*v);}else if(k==='w')knock(t,v*.7,R(950,1350));else clack(t,v);},
-  settle(t){knock(t,.12,2600);knock(t+.05,.06,2900);},
+  /* group the sounds made until end(): returns a handle for cut() */
+  begin(){const c=ac();if(!c)return null;grp=c.createGain();grp.connect(dry);grp.connect(wet);return grp;},end(){grp=null;},
+  cut(h){if(!h||!ctx)return;try{h.gain.setTargetAtTime(0,ctx.currentTime,.012);}catch(e){}},
+  /* two dice shaken in a cupped hand (skin and knuckle rub under quick die-on-die clicks), then the whoosh of the throw */
+  rattle(){nz(0,.22,{type:'lowpass',f:750,vol:.034,a:.05});[0,.1].forEach((t0,s)=>{const n=3+(Math.random()*2|0);for(let i=0;i<n;i++)clack(t0+i*R(.014,.03),R(.22,.4)*(1-s*.2));});swish(.12,.16,.9);},
+  /* one impact from the pre-simulated throw: t = time, s = impact speed 0..1, k = table / board rim / other die */
+  hit(t,s,k){const v=.12+.88*s;if(k==='t'){wood(t,v*.9,R(1500,2300));nz(t,.008,{type:'highpass',f:5000,vol:.1*v});rs(t,R(115,150),.07,.07*v);}else if(k==='w')wood(t,v*.7,R(900,1300));else clack(t,v);},
+  /* settling: the die rocks on an edge a couple of times, quicker and softer, then lies flat */
+  settle(t){[0,.05,.085,.105].forEach((d,i)=>wood(t+d,.14*Math.pow(.6,i),R(2300,3000)));},
   /* a throw without the animation (reduced motion): shake, a few decaying bounces, settle */
-  dice(){SND.rattle();[.3,.43,.53,.6].forEach((t,i)=>SND.hit(t,.8-i*.2,i===1?'d':'t'));SND.settle(.68);},
-  hop(){knock(0,.16,R(1700,2200));},
-  land(){knock(0,.3,R(1200,1400));rs(0,R(130,150),.09,.07);},
+  dice(){api.rattle();[.3,.43,.53,.6].forEach((t,i)=>api.hit(t,.8-i*.2,i===1?'d':'t'));api.settle(.68);},
+  /* token: a soft felt-bottomed tap per space, a firmer one where it stops */
+  hop(){nz(0,.02,{type:'lowpass',f:1800,vol:.1});modal(0,R(240,290),WOOD,.35);},
+  land(){nz(0,.03,{type:'lowpass',f:1500,vol:.16});modal(0,R(200,230),WOOD,.65);rs(0,R(120,140),.09,.06);},
   deed(){paper(0,.24,1,2600,1300);nz(.22,.03,{f:1800,q:1.2,vol:.04});},
   coin(){clink(0,1);clink(R(.07,.1),.55);},
   /* coins counted into a hand, more for bigger amounts */
   coins(amt){const n=Math.max(2,Math.min(7,Math.round(2+(amt||0)/80)));nz(0,.12+n*.07,{type:'lowpass',f:1100,vol:.03,a:.04});let t=0;for(let i=0;i<n;i++){clink(t,.9-i*.08);t+=R(.06,.1);}},
-  pay(amt){SND.coins(amt);},
-  purse(){nz(0,.16,{type:'lowpass',f:1200,vol:.05,a:.03});[.04,.09,.13,.2].forEach((t,i)=>clink(t+R(0,.02),.7-i*.1));},
-  stamp(v=1){nz(0,.03,{f:1500,q:1,vol:.12*v});thud(0,v);},
-  /* pen signature, a soft stamp, a coin */
-  buy(){for(let i=0;i<5;i++)nz(i*.075,.065,{f:R(3600,5200),to:R(2400,3800),q:4,vol:.03,a:.02});SND.stamp(.7);clink(.62,.6);},
-  build(){[0,.12,.24].forEach(t=>knock(t,.32,R(900,1200)));rs(.4,105,.14,.06);nz(.4,.09,{type:'lowpass',f:500,vol:.07});},
-  gavel(){nz(0,.06,{f:900,q:1.5,vol:.42});rs(0,R(150,170),.12,.2);rs(0,R(420,470),.05,.05);},
+  /* paying: coins scooped off the table, handed over, a last one dropped on the pile */
+  pay(amt){const n=Math.max(2,Math.min(6,Math.round(2+(amt||0)/100)));nz(0,.16,{f:900,to:2400,q:.7,vol:.04,a:.05});let t=.04;for(let i=0;i<n;i++){clink(t,.75-i*.07);t+=R(.035,.06);}
+   nz(t+.05,.14,{type:'lowpass',f:1200,vol:.035,a:.03});clink(t+.2,.8);clink(t+.26,.4);},
+  /* receiving: a small bright chime over coins landing in the purse */
+  recv(amt){api.coins(amt);ding(.02,R(2300,2400),.8);},
+  purse(){nz(0,.16,{type:'lowpass',f:1200,vol:.05,a:.03});[.04,.09,.13,.2].forEach((t,i)=>clink(t+R(0,.02),.7-i*.1));ding(.05,1568,.9);ding(.2,2093,.75);},
+  /* rubber stamp on paper: paper slap, rubber body, the table under it */
+  stamp(v=1){nz(0,.025,{type:'highpass',f:2600,vol:.08*v});nz(0,.06,{f:700,q:1.1,vol:.18*v});rs(0,R(120,140),.16,.18*v,85);modal(0,R(160,185),WOOD,.5*v);},
+  /* the deal: pen signature, the deed slid across, stamp, coins into the till drawer, the till bell, drawer shut */
+  buy(){for(let i=0;i<4;i++)nz(i*.07,.06,{f:R(3600,5200),to:R(2400,3800),q:4,vol:.028,a:.02});paper(.28,.2,1,2600,1200);
+   api._at(.5,()=>api.stamp(.6));[.72,.78,.83].forEach((t,i)=>clink(t,.75-i*.12));ding(.9,R(2150,2250),.6);wood(1.02,.35,700);thud(1.02,.2);},
+  /* scheduling helper: run f with every sound shifted by dt seconds */
+  _at(dt,f){const o=OFF;OFF+=dt;try{f();}finally{OFF=o;}},
+  build(){[0,.13,.25].forEach((t,i)=>{knock(t,.3,R(900,1200));modal(t,R(3100,3400)*(1+i*.04),[[1,.06,.012],[2.7,.03,.006]],1);});
+   [[1047,.42],[1319,.52],[1568,.62]].forEach(([f,t],i)=>mallet(t,f,i===2?1:.8));},
+  /* auction: a gavel on its sound block; each bid a light tap, SOLD a firm double tap */
+  gavel(v=1){nz(0,.03,{f:1100,q:1.4,vol:.3*v});modal(0,R(360,400),WOOD,v);rs(0,R(150,170),.12,.14*v);},
+  bid(){api.gavel(.45);},
+  sold(){api.gavel(.6);api._at(.17,()=>api.gavel(.8));},
   tick(){knock(0,.09,2600);},
-  card(){paper(0,.14,1.2,1600,4200);nz(.13,.02,{type:'highpass',f:3000,vol:.07});},
+  /* a card taken off the deck: a paper flick and snap */
+  card(){paper(0,.14,1.2,1600,4200);nz(.12,.012,{type:'highpass',f:3200,vol:.09});nz(.13,.05,{type:'lowpass',f:600,vol:.04});},
   slide(){paper(0,.18,1,2200,1100);nz(.18,.04,{type:'lowpass',f:900,vol:.05});},
   bribe(){nz(0,.34,{type:'lowpass',f:1800,to:1000,vol:.055,a:.1});nz(.3,.02,{f:2200,q:1.5,vol:.03});},
-  /* raid / bust: a firm stamp over a low thud, no alarm */
-  bust(){rs(0,64,.35,.18,46);nz(0,.12,{type:'lowpass',f:320,vol:.18});SND.stamp(1);},
-  alarm(){SND.bust();},
-  /* prison: a metal gate closing, softly */
-  jail(){const g=(dt,v,b)=>{nz(dt,.02,{type:'highpass',f:3000,vol:.1*v});[[1,.7],[1.69,.5],[2.83,.4],[3.9,.3],[5.3,.22]].forEach(([k,d])=>rs(dt,b*k*R(.99,1.01),d,.02*v));rs(dt,R(85,95),.14,.07*v);};g(0,1,R(300,330));g(.22,.55,R(340,360));},
+  /* raid / bust: kept subtle on purpose, a firm rubber stamp over a deeper thud (no siren, no alarm) */
+  bust(){rs(0,60,.38,.18,44);nz(0,.12,{type:'lowpass',f:300,vol:.18});api.stamp(1);},
+  alarm(){api.bust();},
+  /* bankrupt: the same stamp and thud, with a low breath of tension before it */
+  broke(){nz(0,.5,{type:'lowpass',f:220,to:420,q:.6,vol:.02,a:.42});rs(.02,55,.5,.015,48);api._at(.46,()=>api.bust());},
+  /* prison: a heavy steel door swung shut, then the latch */
+  jail(){nz(0,.03,{f:1200,q:1,vol:.16});nz(0,.02,{type:'highpass',f:3000,vol:.08});modal(0,R(170,190),STEEL,1);thud(0,.5);
+   nz(.26,.012,{type:'highpass',f:3500,vol:.07});modal(.26,R(900,980),STEEL,.35);},
   /* your turn: two soft knocks on the table */
   turn(){knock(0,.2,1500);knock(.14,.14,1800);},
   /* win: a warm swell of sea air and a few distant coins */
   win(){nz(0,3,{type:'lowpass',f:450,to:1100,q:.5,vol:.08,a:1.2});nz(1.2,2.6,{type:'lowpass',f:600,to:380,q:.5,vol:.05,a:1});[.9,1.15,1.5].forEach((t,i)=>clink(t,.35-i*.08));},
-  err(){rs(0,150,.08,.06);nz(0,.04,{type:'lowpass',f:600,vol:.05});}};})();
-/* the dice foley for one pre-simulated throw: shake, then every bounce at its own time and strength, then settle */
-function diceFoley(sim){SND.rattle();let last=-1;sim.dies.flatMap(x=>x.hits).sort((a,b)=>a[0]-b[0]).forEach(h=>{if(h[0]-last>.035){SND.hit(h[0],h[1],h[2]);last=h[0];}});SND.settle(sim.T);}
+  err(){rs(0,150,.08,.06);nz(0,.04,{type:'lowpass',f:600,vol:.05});}};
+ return api;})();
+/* the dice foley for one pre-simulated throw, played at rate x: shake, then every bounce at its own time and strength,
+   then settle; returns a handle so a skipped throw can be silenced */
+function diceFoley(sim,rate=1){const h=SND.begin();try{SND.rattle();let last=-1;sim.dies.flatMap(x=>x.hits).sort((a,b)=>a[0]-b[0]).forEach(x=>{if(x[0]-last>.035){SND.hit(x[0]/rate,x[1],x[2]);last=x[0];}});SND.settle(sim.T/rate);}finally{SND.end();}return h;}
 
 /* ---------------------------------------------------------------- toasts, banner */
 function toast(s,ms=2600){const t=document.createElement('div');t.className='toast';t.textContent=s;$('#toasts').appendChild(t);while($('#toasts').children.length>3)$('#toasts').firstChild.remove();setTimeout(()=>t.remove(),FAST?400:ms);}
@@ -1606,56 +1650,99 @@ function myName(){return (ls.get('bv-name')||'').trim().slice(0,14);}
 const PIPS={1:[[50,50]],2:[[28,28],[72,72]],3:[[26,26],[50,50],[74,74]],4:[[28,28],[72,28],[28,72],[72,72]],5:[[27,27],[73,27],[50,50],[27,73],[73,73]],6:[[28,24],[72,24],[28,50],[72,50],[28,76],[72,76]]};
 const dieSVG=n=>`<svg viewBox="0 0 100 100" aria-hidden="true">${PIPS[n].map(([x,y])=>`<circle cx="${x}" cy="${y}" r="9" fill="${n===1?'#C0342B':'#15241F'}"/>`).join('')}</svg>`;
 function setDice(d){const el=$$('#dice .die');el.forEach((e,k)=>{e.innerHTML=dieSVG(d[k]||1);e.style.transform='';e.classList.toggle('dbl',d[0]&&d[0]===d[1]);});}
-/* 3D dice THROWN onto the table: physics is pre-simulated (walls, bounces, die-die hits, friction),
-   then played back with transforms only. Rotation progress follows the distance travelled, so the dice
-   tumble fast, slow down with the roll and settle flat on the engine's result. */
+/* 3D dice THROWN onto the table: the ENGINE decides the result first; the throw is then pre-simulated (arc, 2-3 bounces
+   of decreasing height, board-rim hits, die-die knocks, friction) and played back with transforms only, landing flat on
+   that result. The dice roll about an axis across their travel (a rolling cube bobs as it tips over its edges), rock once
+   as they settle, and the playback is fitted to about 1.1-1.5 s (quicker and simpler in smooth mode). A tap plays the rest
+   fast. The dice stay inside the VISIBLE part of the board: the walls of the simulation are the tray clipped to the visual
+   viewport minus the notch / home-bar insets, and they take the perspective lift into account, so a die high in the air
+   (drawn bigger) is kept further in. */
 let FLICK=null,DTIMERS=[];
 const FACE_R={1:[0,0],6:[0,180],2:[0,-90],5:[0,90],3:[-90,0],4:[90,0]};
+const DPERS=900;/* the tray's perspective (px), origin at 50% 40% */
 const pipsHTML=n=>PIPS[n].map(([x,y])=>`<b style="left:${x}%;top:${y}%"${n===1?' class="r"':''}></b>`).join('');
 function cubeHTML(){const f=(n,t)=>`<div class="fc" style="transform:${t} translateZ(var(--h))">${pipsHTML(n)}</div>`;
  return `<div class="d3s"></div><div class="d3c">${f(1,'')}${f(6,'rotateY(180deg)')}${f(2,'rotateY(90deg)')}${f(5,'rotateY(-90deg)')}${f(3,'rotateX(90deg)')}${f(4,'rotateX(-90deg)')}<i class="core"></i><i class="core" style="transform:rotateY(90deg)"></i><i class="core" style="transform:rotateX(90deg)"></i></div>`;}
-function simThrow(W,H,D,vec){const R=D/2,sc=Math.max(.75,Math.min(1.5,Math.min(W,H)/360));
+/* safe-area insets (notch, rounded corners, home bar) as numbers: top, right, bottom, left */
+const SAFE=(()=>{let pr=null;return ()=>{try{if(!pr){pr=document.createElement('div');pr.setAttribute('aria-hidden','true');
+  pr.style.cssText='position:fixed;left:0;top:0;width:0;height:0;visibility:hidden;pointer-events:none;padding:env(safe-area-inset-top,0px) env(safe-area-inset-right,0px) env(safe-area-inset-bottom,0px) env(safe-area-inset-left,0px)';document.body.appendChild(pr);}
+  const cs=getComputedStyle(pr);return [cs.paddingTop,cs.paddingRight,cs.paddingBottom,cs.paddingLeft].map(v=>parseFloat(v)||0);}catch(e){return [0,0,0,0];}};})();
+/* the part of a tray the player can actually see, in the tray's own px: tray ∩ visual viewport, minus insets and a small pad */
+function diceBox(tray,pad=4){const r=tray.getBoundingClientRect(),vv=window.visualViewport,[st,sr,sb,sl]=SAFE();
+ const vx=vv?vv.offsetLeft:0,vy=vv?vv.offsetTop:0,vw=vv?vv.width:innerWidth,vh=vv?vv.height:innerHeight;
+ const L=Math.max(r.left,vx+sl)+pad,T=Math.max(r.top,vy+st)+pad,Rr=Math.min(r.right,vx+vw-sr)-pad,B=Math.min(r.bottom,vy+vh-sb)-pad;
+ return [L-r.left,T-r.top,Math.max(L+1,Rr)-r.left,Math.max(T+1,B)-r.top];}
+function simThrow(W,H,D,vec,o={}){const box=o.box||[4,4,W-4,H-4],lite=!!o.lite,P=DPERS,Ox=W/2,Oy=H*.4,E=D*.87;
+ const[bx0,by0,bx1,by1]=box,BW=Math.max(D*2,bx1-bx0),BH=Math.max(D*2,by1-by0),sc=Math.max(.7,Math.min(1.45,Math.min(BW,BH)/360));
+ /* walls for a die centred at height z: its whole projected hull (radius E, magnified by the perspective) stays in the box */
+ const lim=(z,a0,a1,O)=>{const zc=z+D*.71,kc=P/(P-zc),r=E*P/(P-(zc+E));/* zc: the centre of a die tipped on its edge (see diceDraw) */let lo=O+(a0+r-O)/kc,hi=O+(a1-r-O)/kc;if(lo>hi)lo=hi=(lo+hi)/2;return [lo,hi];};
  let ang,spd;const vs=vec?Math.hypot(vec.vx,vec.vy):0;
- if(vs>260){ang=Math.atan2(vec.vy,vec.vx);spd=Math.min(1500,Math.max(820,vs*.9));}else{ang=-Math.PI/2+(Math.random()-.5)*.7;spd=940+Math.random()*260;}
- if(Math.sin(ang)>-.35)ang=-Math.PI/2+(Math.cos(ang)>=0?.95:-.95);
- const dies=[0,1].map(k=>{const a=ang+(k?.14:-.14)+(Math.random()-.5)*.12,s=spd*sc*(.9+Math.random()*.2);
-  return {x:W*(.5+(k?.09:-.09))-Math.cos(ang)*H*.25+(Math.random()-.5)*W*.08,y:H+R+k*D*.5,z:D*(1.2+Math.random()*.5),vx:Math.cos(a)*s,vy:Math.sin(a)*s,vz:D*(4.5+Math.random()*1.5),frames:[],hits:[],inn:false};});
- const g=-D*55,dt=1/120;let t=0;
- for(let n=0;n<120*2.8;n++){t+=dt;
+ if(vs>260){ang=Math.atan2(vec.vy,vec.vx);spd=Math.min(1350,Math.max(760,vs*.85));}else{ang=-Math.PI/2+(Math.random()-.5)*.7;spd=880+Math.random()*240;}
+ if(Math.sin(ang)>-.35)ang=-Math.PI/2+(Math.cos(ang)>=0?.95:-.95);/* always thrown away from the player */
+ if(lite)spd*=.72;
+ const cx=(bx0+bx1)/2,cy=(by0+by1)/2,ca=Math.cos(ang),sa=Math.sin(ang);
+ const dies=[0,1].map(k=>{const a=ang+(k?.15:-.15)+(Math.random()-.5)*.14,s=spd*sc*(.88+Math.random()*.24),off=(k?1:-1)*D*.62,z=D*(lite?.5:1+Math.random()*.4);
+  const d={x:cx-ca*BW*.32-sa*off+(Math.random()-.5)*D*.3,y:cy-sa*BH*.32+ca*off+(Math.random()-.5)*D*.3,z,vx:Math.cos(a)*s,vy:Math.sin(a)*s,vz:D*(lite?2.2:3.6+Math.random()*1.2),frames:[],hits:[]};
+  const[lx,hx]=lim(z,bx0,bx1,Ox),[ly,hy]=lim(z,by0,by1,Oy);d.x=Math.min(hx,Math.max(lx,d.x));d.y=Math.min(hy,Math.max(ly,d.y));return d;});
+ const g=-D*55,dt=1/120,REST=lite?.3:.42,TMAX=lite?1.3:2.4;let t=0;
+ const walls=(d,t)=>{const hv=Math.min(1,Math.hypot(d.vx,d.vy)/(D*26)),[lx,hx]=lim(d.z,bx0,bx1,Ox),[ly,hy]=lim(d.z,by0,by1,Oy);
+  if(d.x<lx){d.x=lx;if(d.vx<0){d.vx=-d.vx*.5;d.hits.push([t,hv,'w']);}}else if(d.x>hx){d.x=hx;if(d.vx>0){d.vx=-d.vx*.5;d.hits.push([t,hv,'w']);}}
+  if(d.y<ly){d.y=ly;if(d.vy<0){d.vy=-d.vy*.5;d.hits.push([t,hv,'w']);}}else if(d.y>hy){d.y=hy;if(d.vy>0){d.vy=-d.vy*.5;d.hits.push([t,hv,'w']);}}};
+ for(let n=0;n<120*TMAX;n++){t+=dt;
   for(const d of dies){d.vz+=g*dt;d.z+=d.vz*dt;
-   if(d.z<=0){d.z=0;if(d.vz<-D*2.5){d.hits.push([t,Math.min(1,-d.vz/(D*9)),'t']);d.vz=-d.vz*.36;d.vx*=.84;d.vy*=.84;}else d.vz=0;}
-   const on=d.z===0&&d.vz===0,sp=Math.hypot(d.vx,d.vy);if(sp>0){const ns=Math.max(0,sp-(on?D*21:D*1.5)*dt);d.vx*=ns/sp;d.vy*=ns/sp;}
-   d.x+=d.vx*dt;d.y+=d.vy*dt;if(!d.inn&&(d.y<H-R||t>.3))d.inn=true;const s2=Math.hypot(d.vx,d.vy),hv=Math.min(1,s2/(D*26));
-   if(d.x<R){d.x=R;d.vx=Math.abs(d.vx)*.5;d.hits.push([t,hv,'w']);}else if(d.x>W-R){d.x=W-R;d.vx=-Math.abs(d.vx)*.5;d.hits.push([t,hv,'w']);}
-   if(d.y<R){d.y=R;d.vy=Math.abs(d.vy)*.5;d.hits.push([t,hv,'w']);}else if(d.inn&&d.y>H-R){d.y=H-R;d.vy=-Math.abs(d.vy)*.5;d.hits.push([t,hv,'w']);}}
+   if(d.z<=0){d.z=0;if(d.vz<-D*2.2){d.hits.push([t,Math.min(1,-d.vz/(D*9)),'t']);d.vz=-d.vz*REST;d.vx*=.82;d.vy*=.82;}else d.vz=0;}
+   const on=d.z===0&&d.vz===0,sp=Math.hypot(d.vx,d.vy);if(sp>0){const ns=Math.max(0,sp-(on?D*(lite?30:22):D*1.5)*dt);d.vx*=ns/sp;d.vy*=ns/sp;}
+   d.x+=d.vx*dt;d.y+=d.vy*dt;walls(d,t);}
   const A=dies[0],Bd=dies[1],dx=Bd.x-A.x,dy=Bd.y-A.y,dist=Math.hypot(dx,dy);
   if(dist>0&&dist<D*1.05&&Math.abs(A.z-Bd.z)<D*.8){const nx=dx/dist,ny=dy/dist,ov=(D*1.05-dist)/2;A.x-=nx*ov;A.y-=ny*ov;Bd.x+=nx*ov;Bd.y+=ny*ov;
-   const va=A.vx*nx+A.vy*ny,vb=Bd.vx*nx+Bd.vy*ny;if(va>vb){const dv=(va-vb)*.9;A.vx-=dv*nx;A.vy-=dv*ny;Bd.vx+=dv*nx;Bd.vy+=dv*ny;A.hits.push([t,Math.min(1,dv/(D*20)),'d']);}}
+   const va=A.vx*nx+A.vy*ny,vb=Bd.vx*nx+Bd.vy*ny;if(va>vb){const dv=(va-vb)*.9;A.vx-=dv*nx;A.vy-=dv*ny;Bd.vx+=dv*nx;Bd.vy+=dv*ny;A.hits.push([t,Math.min(1,dv/(D*20)),'d']);}
+   walls(A,t);walls(Bd,t);}
   for(const d of dies)d.frames.push([d.x,d.y,d.z]);
-  if(t>.6&&dies.every(d=>d.z===0&&d.vz===0&&Math.hypot(d.vx,d.vy)<D*.25))break;}
+  if(t>.5&&dies.every(d=>d.z===0&&d.vz===0&&Math.hypot(d.vx,d.vy)<D*.25))break;}
  for(const d of dies){let L=0;d.Ls=[0];for(let j=1;j<d.frames.length;j++){const p=d.frames[j-1],q=d.frames[j];L+=Math.hypot(q[0]-p[0],q[1]-p[1],(q[2]-p[2])*1.6);d.Ls.push(L);}d.L=L||1;}
- return {dies,T:t};}
+ return {dies,T:t,D,lite};}
+/* how each die tumbles onto its engine result: roll axis across its first travel, a turn that fits the distance rolled,
+   a little random yaw and wobble, and one rock as it settles */
+function diceRot(d,sim,rnd=Math.random){return d.map((n,k)=>{const[rx,ry]=FACE_R[n],dd=sim.dies[k],f0=dd.frames[0],f1=dd.frames[Math.min(14,dd.frames.length-1)];
+ let ax=-(f1[1]-f0[1]),ay=f1[0]-f0[0];const l=Math.hypot(ax,ay);if(l<1e-3){ax=1;ay=0;}else{ax/=l;ay/=l;}
+ const turns=Math.max(sim.lite?1.2:2,Math.min(sim.lite?2.5:5,dd.L/sim.D*.26));
+ return {rx,ry,yaw:(rnd()-.5)*36,ax,ay,az:(rnd()-.5)*.6,th:turns*360+(rnd()-.5)*50,rock:sim.lite?0:4+rnd()*4};});}
 /* one frame of a pre-simulated throw at time t (seconds): position, tumble and shadow of each die */
-function diceDraw(sim,rot,nodes,D){return function(t){const idx=Math.min(Math.round(t*120),1e9);sim.dies.forEach((dd,k)=>{const j=Math.max(0,Math.min(dd.frames.length-1,idx-1)),f=dd.frames[j],p=dd.Ls[j]/dd.L,q=1-p,r=rot[k],el=nodes[k];
+function diceDraw(sim,rot,nodes,D){const lite=sim.lite;return function(t){const idx=Math.round(t*120);sim.dies.forEach((dd,k)=>{const j=Math.max(0,Math.min(dd.frames.length-1,idx-1)),f=dd.frames[j],p=dd.Ls[j]/dd.L,r=rot[k],el=nodes[k];
+   let th=r.th*(1-p)*(1-p*.35);if(p>.9&&p<1)th-=r.rock*Math.sin(Math.PI*(p-.9)/.1);
+   /* a tipping cube stands on an edge: lift the centre so it never sinks into the table */
+   const ph=(Math.abs(th)%90)*Math.PI/180,lift=D/2*(Math.abs(Math.cos(ph))+Math.abs(Math.sin(ph)));
    el.style.transform=`translate3d(${(f[0]-D/2).toFixed(1)}px,${(f[1]-D/2).toFixed(1)}px,0)`;
-   el.children[1].style.transform=`translateZ(${(f[2]+D/2).toFixed(1)}px) rotateZ(${(r.yaw+r.ez*q).toFixed(1)}deg) rotateX(${(r.rx+r.ex*q).toFixed(1)}deg) rotateY(${(r.ry+r.ey*q).toFixed(1)}deg)`;
-   const z=f[2]/D;el.children[0].style.transform=`translate3d(${(z*D*.45).toFixed(1)}px,${(z*D*.6).toFixed(1)}px,0) scale(${(1+z*.3).toFixed(3)})`;el.children[0].style.opacity=Math.max(.15,.62-z*.18).toFixed(2);});};}
+   el.children[1].style.transform=`translateZ(${(f[2]+lift).toFixed(1)}px) rotate3d(${r.ax.toFixed(3)},${r.ay.toFixed(3)},${r.az.toFixed(3)},${th.toFixed(1)}deg) rotateZ(${r.yaw.toFixed(1)}deg) rotateX(${r.rx}deg) rotateY(${r.ry}deg)`;
+   const z=f[2]/D;el.children[0].style.transform=`translate3d(${(z*D*.35).toFixed(1)}px,${(z*D*.5).toFixed(1)}px,0) scale(${(1+z*.3).toFixed(3)})`;if(!lite)el.children[0].style.opacity=Math.max(.15,.62-z*.18).toFixed(2);});};}
+let DROLL=null;/* the roll playing now: {skip()} */
 function animDice(d){const els=$$('#dice .die');els.forEach(e=>e.classList.remove('dbl'));
  if(FAST){setDice(d);return Promise.resolve();}
- const tray=$('#dtray');DTIMERS.forEach(clearTimeout);DTIMERS=[];tray.classList.remove('on','fade');tray.innerHTML='';
+ const tray=$('#dtray');DTIMERS.forEach(clearTimeout);DTIMERS=[];if(DROLL)DROLL.end();tray.classList.remove('on','fade','dbl');tray.innerHTML='';
  const W=tray.clientWidth,Hh=tray.clientHeight;
  if(RM.matches||document.hidden||!W){SND.dice();setDice(d);return sleep(RM.matches?350:150);}
  $('#dice').classList.add('thrown');
- const D=Math.round(Math.max(28,Math.min(54,Math.min(W,Hh)*.10)));/* about a board tile across */tray.style.setProperty('--d',D+'px');
+ const lite=isSmooth(),box=diceBox(tray),bw=box[2]-box[0],bh=box[3]-box[1];
+ const D=Math.round(Math.max(24,Math.min(48,Math.min(bw,bh)*.095)));/* compact: about a board tile across */tray.style.setProperty('--d',D+'px');
  tray.innerHTML=`<div class="d3">${cubeHTML()}</div><div class="d3">${cubeHTML()}</div>`;tray.classList.add('on');
- const sim=simThrow(W,Hh,D,FLICK);FLICK=null;
- const rot=d.map(n=>{const[rx,ry]=FACE_R[n],sg=()=>Math.random()<.5?-1:1;return {rx,ry,ex:(2+((Math.random()*2)|0))*360*sg(),ey:(1+((Math.random()*2)|0))*360*sg(),yaw:(Math.random()-.5)*44,ez:(Math.random()-.5)*600};});
- diceFoley(sim);
- const draw=diceDraw(sim,rot,$$('.d3',tray),D);
- return new Promise(res=>{const t0=performance.now();let done=false;
-  function fr(now){if(done)return;const t=(now-t0)/1000;draw(Math.min(t,sim.T));if(t<sim.T)requestAnimationFrame(fr);else fin();}
-  function fin(){if(done)return;done=true;draw(sim.T);setDice(d);$('#dice').classList.remove('thrown');DTIMERS.push(setTimeout(res,200),setTimeout(()=>tray.classList.add('fade'),1100),setTimeout(()=>{tray.classList.remove('on','fade');tray.innerHTML='';},1600));}
-  requestAnimationFrame(fr);DTIMERS.push(setTimeout(fin,sim.T*1000+300));});}
+ const sim=simThrow(W,Hh,D,FLICK,{box,lite});FLICK=null;
+ const rot=diceRot(d,sim);
+ /* fit the playback to ~1.1-1.5 s (never slower than 0.8x; smooth mode: at most 0.8 s); the sound follows the same clock */
+ const Tp=lite?Math.min(sim.T,.8):Math.min(1.5,Math.max(sim.T,Math.min(1.1,sim.T/.8))),rate=sim.T/Tp;
+ const fx=diceFoley(sim,rate);
+ const draw=diceDraw(sim,rot,$$('.d3',tray),D);draw(0);
+ return new Promise(res=>{let t0=performance.now(),st=0,sp=rate,done=false,sk=false;
+  const simAt=now=>st+(now-t0)/1000*sp;
+  /* tap the board (or the dice) while they roll: the rest plays 4x as fast, then the dice settle with one knock */
+  const skip=e=>{if(done||sk)return;sk=true;if(e){e.stopPropagation();}const now=performance.now();st=simAt(now);t0=now;sp=rate*4;SND.cut(fx);SND.settle(Math.max(0,(sim.T-st)/sp));clearTimeout(safety);safety=setTimeout(fin,(sim.T-st)/sp*1000+300);};
+  const hosts=[$('#bview'),$('#dice')],unhook=()=>hosts.forEach(h=>h&&h.removeEventListener('pointerdown',skip,true));hosts.forEach(h=>h&&h.addEventListener('pointerdown',skip,true));
+  /* a new roll that starts before this one finished ends it cleanly */
+  const me={skip,end(){if(done)return;done=true;clearTimeout(safety);unhook();if(DROLL===me)DROLL=null;res();}};DROLL=me;
+  function fr(now){if(done)return;const t=simAt(now);draw(Math.min(t,sim.T));if(t<sim.T)requestAnimationFrame(fr);else fin();}
+  function fin(){if(done)return;done=true;clearTimeout(safety);unhook();if(DROLL===me)DROLL=null;draw(sim.T);setDice(d);$('#dice').classList.remove('thrown');
+   if(d[0]&&d[0]===d[1])tray.classList.add('dbl');
+   DTIMERS.push(setTimeout(res,200),setTimeout(()=>tray.classList.add('fade'),1100),setTimeout(()=>{tray.classList.remove('on','fade','dbl');tray.innerHTML='';},1600));}
+  let safety=setTimeout(fin,Tp*1000+300);requestAnimationFrame(fr);});}
 function canRoll(){const pe=G&&G.pend;return !!pe&&pe.p===ME&&!AUTO&&!meP().out&&(pe.t==='turn'||(pe.t==='post'&&pe.again))&&!PUMPING;}
 (function flick(){const el=$('#dice');let pts=null;
  el.addEventListener('pointerdown',e=>{if(!canRoll())return;SND.unlock();try{el.setPointerCapture(e.pointerId);}catch(x){}pts=[[e.clientX,e.clientY,performance.now()]];el.classList.add('grab');});
@@ -2292,12 +2379,12 @@ async function play(ev){const slow=ev.p!=null&&isBot(ev.p)&&!WATCH?1:1;
   case 'jail':react(ev.p,'sad',2200);VIEW.pos[ev.p]=JAIL;placeTokens(ev.p);SND.jail();if(ev.p===ME)toast('Locked up in Maafushi Prison');await sleep(450);break;
   case 'free':placeTokens();break;
   case 'land':flashCell(ev.sp);break;
-  case 'cash':VIEW.cash[ev.p]+=ev.d;renderPlayers();flyCash(ev.p,ev.d);if(ev.d<=-150)react(ev.p,'shocked');else if(ev.d>=40&&ev.d!==200)react(ev.p,'smug');if(ev.p===ME){if(ev.d===SALARY&&PASSED){PASSED=false;SND.purse();}else if(ev.d>0)SND.coins(ev.d);else SND.pay(-ev.d);}break;
+  case 'cash':VIEW.cash[ev.p]+=ev.d;renderPlayers();flyCash(ev.p,ev.d);if(ev.d<=-150)react(ev.p,'shocked');else if(ev.d>=40&&ev.d!==200)react(ev.p,'smug');if(ev.p===ME){if(ev.d===SALARY&&PASSED){PASSED=false;SND.purse();}else if(ev.d>0)SND.recv(ev.d);else SND.pay(-ev.d);}break;
   case 'drawask':if(!FAST){if(!DRAW.open||DRAW.key!==drawKey({t:'draw',p:ev.p,deck:ev.deck}))openDraw({t:'draw',p:ev.p,deck:ev.deck});await sleep(250);}break;
   case 'card':await drawReveal(ev);break;
   case 'carddone':await drawDone(ev);renderPlayers();break;
   case 'buy':SND.buy();react(ev.p,'happy');decorate();flashCell(ev.sp);if(ev.p===ME&&SP[ev.sp].k==='p')GUIDE.hook('bought',BV&&BV.cells[ev.sp]);await sleep(300);break;
-  case 'won':delete SEIZED[ev.sp];decorate();SND.gavel();if(ev.p>=0)react(ev.p,'happy');if(ev.p>=0)toast(`${nameOf(ev.p)} won ${SP[ev.sp].name} for ${fmt(ev.amt)} (price ${fmt(SP[ev.sp].price)})`);break;
+  case 'won':delete SEIZED[ev.sp];decorate();SND.sold();if(ev.p>=0)react(ev.p,'happy');if(ev.p>=0)toast(`${nameOf(ev.p)} won ${SP[ev.sp].name} for ${fmt(ev.amt)} (price ${fmt(SP[ev.sp].price)})`);break;
   case 'build':case 'loan':decorate();if(ev.t==='build'&&ev.p!==ME){SND.build();flashCell(ev.sp);}break;
   case 'audit':react(ev.p,ev.caught?'shocked':'wink',2000);renderPlayers();await showAudit(ev);break;
   case 'busted':react(ev.p,'sad',3000);renderPlayers();await showBusted(ev);break;
@@ -2307,7 +2394,7 @@ async function play(ev){const slow=ev.p!=null&&isBot(ev.p)&&!WATCH?1:1;
   case 'rent':flashCell(ev.sp);react(ev.to,'smug');if(ev.amt>=150)react(ev.p,'shocked');if((ev.p===ME||ev.to===ME)&&ME>=0){await rentPop(ev);if(ev.p===ME)GUIDE.hook('rent');}break;
   case 'sus':renderPlayers();renderActions();break;
   case 'log':ticker(ev.s);break;
-  case 'bankrupt':react(ev.p,'sad',3000);decorate();SND.bust();toast(`${nameOf(ev.p)} ${ev.p===ME?'are':'is'} bankrupt!`,3500);placeTokens();await sleep(700);if(ev.p===ME){ACTKEY='';}break;
+  case 'bankrupt':react(ev.p,'sad',3000);decorate();SND.broke();toast(`${nameOf(ev.p)} ${ev.p===ME?'are':'is'} bankrupt!`,3500);placeTokens();await sleep(700);if(ev.p===ME){ACTKEY='';}break;
   case 'offer':if(ev.from===ME||isBot(ev.to))react(ev.to,'thinking',2600);if(ev.to===ME&&!AUTO){const o=G.offers.find(x=>x.id===ev.id);if(o)banner('offer:'+ev.id,ev.from,`<b>${esc(G.players[ev.from].name)}</b> ${o.re?'counters your offer':'wants to trade'}`,'View',()=>openOffer(ev.id));SND.turn();}break;
   case 'reject':if(ev.from===ME&&!ev.cancel)toast(ev.expired?'Your offer expired':`${G.players[ev.to].name} declined your offer`);if(ev.to===ME)clearBanner('offer:'+ev.id);break;
   case 'trade':react(ev.from,'happy');react(ev.to,'happy');decorate();if(ev.from===ME||ev.to===ME){SND.buy();toast(`Deal done with ${G.players[ev.from===ME?ev.to:ev.from].name}!`);clearBanner('offer:'+ev.id);}else toast(`${G.players[ev.from].name} and ${G.players[ev.to].name} made a deal`);break;
@@ -2315,7 +2402,7 @@ async function play(ev){const slow=ev.p!=null&&isBot(ev.p)&&!WATCH?1:1;
   case 'sold':clearBanner('sale');decorate();if(ev.b>=0)toast(`${nameOf(ev.p)} sold ${SP[ev.sp].name} to ${nameOf(ev.b)} for ${fmt(ev.amt)}`);break;
   case 'salepick':break;
   case 'auction':SND.gavel();toast(`${SP[ev.sp].name} goes to auction!`);break;
-  case 'bid':SND.tick();break;
+  case 'bid':SND.bid();break;
   case 'turn':placeTokens();if(ev.p===ME&&!AUTO){SND.turn();if(!FAST)setDice(G.dice[0]?G.dice:[1,1]);}follow(ev.p);break;
   case 'final':toast("Time's up! Finishing this turn…",3500);break;
   case 'capwarn':toast(`Round ${E.C.ROUND_WARN}: the game ends after round ${E.C.ROUND_CAP}. Then the highest net worth wins.`,5000);break;
@@ -2458,8 +2545,8 @@ const TZ=(()=>{
  async function throwDice(d){const r=tr(),w=Math.round(r.w),h=Math.round(r.h);if(w<80||h<80)return;
   const tray=mk('dtray on',`<div class="d3">${cubeHTML()}</div><div class="d3">${cubeHTML()}</div>`,{x:r.x,y:r.y});tray.style.width=w+'px';tray.style.height=h+'px';tray.style.right=tray.style.bottom='auto';
   const D=Math.round(Math.max(26,Math.min(46,Math.min(w,h)*.14)));tray.style.setProperty('--d',D+'px');
-  const rnd=RNG(11),r0=Math.random;let sim;Math.random=rnd;try{sim=simThrow(w,h,D,null);}finally{Math.random=r0;}
-  const rot=d.map(n=>{const[rx,ry]=FACE_R[n],sg=()=>rnd()<.5?-1:1;return {rx,ry,ex:(2+((rnd()*2)|0))*360*sg(),ey:(1+((rnd()*2)|0))*360*sg(),yaw:(rnd()-.5)*44,ez:(rnd()-.5)*600};});
+  const rnd=RNG(11),r0=Math.random,box=diceBox(tray);let sim;Math.random=rnd;try{sim=simThrow(w,h,D,null,{box});}finally{Math.random=r0;}
+  const rot=diceRot(d,sim,rnd);
   const draw=diceDraw(sim,rot,$$('.d3',tray),D),t0=vt;draw(0);if(sndOK()){SND.level(.2);diceFoley(sim);}
   await new Promise(res=>{const f=v=>{const t=(v-t0)/1000;draw(Math.min(t,sim.T));if(t>=sim.T){frames.delete(f);res();}};frames.add(f);});
   later(700,()=>tray.classList.add('fade'));later(1200,()=>tray.remove());}
