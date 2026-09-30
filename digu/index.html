@@ -19,8 +19,8 @@
 <link rel="preconnect" href="https://cdn.jsdelivr.net">
 <link rel="dns-prefetch" href="https://broker.emqx.io">
 <link rel="dns-prefetch" href="https://broker.hivemq.com">
-<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Bricolage+Grotesque:opsz,wght@12..96,800&family=DM+Serif+Display&family=Fraunces:ital,opsz,wght@0,9..144,900;1,9..144,700&family=Caveat:wght@700&family=Roboto:wght@500&display=swap" onload="this.onload=null;this.rel='stylesheet'">
-<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Bricolage+Grotesque:opsz,wght@12..96,800&family=DM+Serif+Display&family=Fraunces:ital,opsz,wght@0,9..144,900;1,9..144,700&family=Caveat:wght@700&family=Roboto:wght@500&display=swap"></noscript>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Bricolage+Grotesque:opsz,wght@12..96,800&family=DM+Serif+Display&family=Fraunces:ital,opsz,wght@0,9..144,900;1,9..144,700&family=Caveat:wght@700&family=Roboto:wght@500&family=Noto+Sans+Thaana:wght@600;700&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Bricolage+Grotesque:opsz,wght@12..96,800&family=DM+Serif+Display&family=Fraunces:ital,opsz,wght@0,9..144,900;1,9..144,700&family=Caveat:wght@700&family=Roboto:wght@500&family=Noto+Sans+Thaana:wght@600;700&display=swap"></noscript>
 <style>
 /* ================= Digu · Island Luxe ================= */
 :root{--ink:#15241F;--muted:#6B6354;--panel:#FFFDF8;--cream:#F7F1E6;--line:rgba(21,36,31,.12);--edge:#E6D9C0;--accent:#155E43;--accent-ink:#fff;--deep:#0B3B2B;
@@ -685,6 +685,7 @@ body:before,html[data-bg="cream"] body:before{background:
 .dtitle .eb{font:800 10.5px/1 Sora,sans-serif;letter-spacing:.3em;text-transform:uppercase;color:#C0506A}
 .dtitle h1{font:800 clamp(54px,17vw,66px)/.9 'Bricolage Grotesque',Sora,sans-serif;letter-spacing:-.045em;margin:8px 0 0;color:var(--ink);text-shadow:none}
 .dtitle p{margin:8px 0 0;font:600 14px/1.2 Sora,sans-serif;color:#7A5F66}
+.dtitle .dv{display:block;margin:4px 0 -4px;font:700 clamp(27px,8.5vw,33px)/1.45 'Noto Sans Thaana','MV Boli','Faruma',sans-serif;color:#9E1B3A}
 .hplay{position:relative;display:flex;align-items:center;gap:14px;width:100%;border:0;text-align:left;margin:22px 0 0;padding:16px 18px;min-height:80px;border-radius:22px;cursor:pointer;font:inherit;color:#fff;background:linear-gradient(180deg,#FF6F7F,#EE4A64);box-shadow:0 14px 28px -14px rgba(238,74,100,.75),inset 0 1px 0 rgba(255,255,255,.25)}
 .hplay .pi{width:48px;height:48px;border-radius:50%;display:grid;place-items:center;flex:none;background:rgba(255,255,255,.96);color:#EE4A64}
 .hplay .pi svg{width:20px;height:20px;margin-left:3px}
@@ -1825,7 +1826,7 @@ screen='home';offTable();closeOv();const nm=myName(),t=BYID[equippedId('title')]
 app.innerHTML=`<main class="page">
 <div class="hometop"><a class="icon-btn dgh" href="../" aria-label="Back to Dhivehi Games">${ICON.back}<img class="dgmk" src="/icons/favicon.svg" alt="" width="24" height="24"></a><button class="profbtn" data-a="profile" aria-label="Your profile">${avatarHTML(meP(),0,'',38)}<span class="pwrap"><span class="pn">${nm?esc(nm):'Player'}</span><span class="ps">${esc(t?t.name:'Guest')}</span></span></button><button class="shellpill" data-a="goStore" aria-label="Store, ${INV.shells} Boli">${HI.shell}<span>${compactNum(INV.shells)}</span></button></div>
 ${heroFan()}
-<div class="dtitle"><div class="eb">Maldivian rummy</div><h1>Digu</h1><p>Can you dig it?</p></div>
+<div class="dtitle"><div class="eb">Maldivian rummy</div><h1>Digu</h1><span class="dv" lang="dv" dir="rtl">ޑިގު</span><p>Can you dig it?</p></div>
 <button class="qm" data-a="quick"><span class="pi">${HI.bolt}</span><span class="ptx"><b>Quick Match</b><small>Play real people now</small><span id="qlive">${liveHTML()}</span></span></button>
 <button class="fr" data-a="goFriends"><span class="oi">${HI.friends}</span><span class="rt"><b>Play with Friends</b><small>Create a table, or join with a code</small></span>${HI.chev}</button>
 <button class="vc" data-a="goComputer"><span class="oi">${HI.bot}</span><span class="rt"><b>vs Computer</b><small>1 to 5 opponents · works offline</small></span><span class="bz">Blitz at 5</span></button>
