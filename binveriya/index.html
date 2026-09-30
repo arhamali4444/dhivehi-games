@@ -657,7 +657,7 @@ button:disabled{cursor:default}
 <div id="cardpopWrap"></div>
 <div id="drawWrap"></div>
 <div id="toasts" aria-live="polite"></div>
-<script src="../shared/avatar.js?v=8"></script>
+<script src="../shared/avatar.js?v=9"></script>
 <script src="../shared/sponsors.js?v=6"></script>
 <script src="../shared/net.js?v=3"></script>
 
@@ -2619,5 +2619,6 @@ window.BINVERIYA={E,AI,get G(){return G;},get ME(){return ME;},get ONLINE(){retu
    out.push({over:!!gg.over,reason:gg.over&&gg.over.reason,rounds:gg.round,winner:gg.over&&gg.over.winner,alive:E.alive().length,bribes:gg.players.reduce((a,p)=>a+p.bribes,0),caught:gg.players.reduce((a,p)=>a+p.caught,0),trades:gg.offers.filter(o=>o.st==='done').length,offers:gg.offers.length,log:gg.log.length,ev:cnt,stuck:!gg.over?JSON.stringify(gg.pend):undefined});}
   if(save[0])E.load(save[0]);return out;}};
 </script>
+<script src="../shared/stats.js" defer></script>
 </body>
 </html>

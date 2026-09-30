@@ -414,7 +414,7 @@ button:disabled{cursor:default}
 <div id="dim" hidden></div>
 <div id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle" tabindex="-1" hidden></div>
 <div id="fx" aria-hidden="true"></div>
-<script src="../shared/avatar.js?v=8"></script>
+<script src="../shared/avatar.js?v=9"></script>
 <script src="../shared/sponsors.js?v=6"></script>
 <script src="../shared/net.js?v=3"></script>
 
@@ -1960,5 +1960,6 @@ if(LOCAL){const wt=ms=>new Promise(r=>setTimeout(r,ms));window.__errs=[];addEven
  ATOLLS.give=(o)=>{for(const r in o){const n=Math.min(o[r],G.bank[r]);G.players[ME].hand[r]+=n;G.bank[r]-=n;}renderAll();};}
 </script>
 
+<script src="../shared/stats.js" defer></script>
 </body>
 </html>

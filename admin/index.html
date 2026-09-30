@@ -1,0 +1,1076 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<meta name="googlebot" content="noindex,nofollow">
+<title>Admin · Dhivehi Games</title>
+<link rel="icon" href="/icons/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="/icons/favicon-32.png" type="image/png" sizes="32x32">
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" sizes="180x180">
+<meta name="theme-color" content="#2A1418">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Sora:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+ --bg:#FBF5F2;--bg2:#F6ECE7;--card:#FFFFFF;--ink:#2A1418;--ink2:#4A3236;--muted:#806A6D;--line:#EFE1DB;--line2:#E5D2CB;
+ --coral:#FF7254;--rose:#F23A56;--deep:#9E1B3A;--coralsoft:#FFE9E3;--ok:#1A8F63;--oksoft:#DFF4EA;--warn:#B7791F;--warnsoft:#FDF1DC;
+ --bad:#C8243F;--badsoft:#FDE4E8;--shadow:0 1px 2px rgba(42,20,24,.05),0 6px 22px rgba(42,20,24,.06);
+ --r:16px;--hd:"Bricolage Grotesque",Sora,system-ui,sans-serif;--tx:Sora,system-ui,-apple-system,"Segoe UI",sans-serif;
+ color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+ --bg:#150B0D;--bg2:#1D1013;--card:#221417;--ink:#F7ECE9;--ink2:#E2CFCB;--muted:#B09A9D;--line:#362326;--line2:#442D31;
+ --coralsoft:#3A1C1B;--oksoft:#12301F;--warnsoft:#33260F;--badsoft:#3A1520;--ok:#48C28E;--warn:#E3AA4F;--bad:#FF6B81;
+ --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.25);color-scheme:dark}}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.45 var(--tx);min-height:100vh;overflow-x:hidden}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer}
+a{color:var(--deep)}
+[hidden]{display:none!important}
+.wrap{max-width:1080px;margin:0 auto;padding:0 16px}
+.muted{color:var(--muted)}
+.small{font-size:12px}
+.mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12px}
+.nowrap{white-space:nowrap}
+.ell{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+
+/* top bar */
+.top{position:sticky;top:0;z-index:20;background:var(--ink);color:#fff;padding-top:env(safe-area-inset-top)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .top{background:#0E0708;border-bottom:1px solid var(--line)}}
+.top .wrap{display:flex;align-items:center;gap:12px;height:58px}
+.brand{display:flex;align-items:center;gap:10px;min-width:0;flex:1}
+.brand img{width:32px;height:32px;border-radius:9px;flex:none}
+.brand b{font:800 18px/1 var(--hd);letter-spacing:-.01em}
+.brand small{display:block;font-size:11px;opacity:.65;letter-spacing:.04em;text-transform:uppercase;margin-bottom:3px}
+.ibtn{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:36px;padding:0 12px;border-radius:10px;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.06);color:#fff;font-size:13px;font-weight:600}
+.ibtn:hover{background:rgba(255,255,255,.12)}
+.ibtn svg{width:16px;height:16px}
+.tabs{position:sticky;top:calc(58px + env(safe-area-inset-top));z-index:19;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.tabs .wrap{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:2px;padding-top:8px;padding-bottom:8px}
+.tab{position:relative;height:38px;border:0;border-radius:10px;background:transparent;color:var(--muted);font-weight:600;font-size:12.5px;display:flex;align-items:center;justify-content:center;gap:4px;padding:0 2px;min-width:0}
+.tab .dot{position:absolute;top:-3px;right:-2px}
+@media (min-width:420px){.tab .dot{position:static}}
+.tab[aria-selected="true"]{background:var(--card);color:var(--ink);box-shadow:var(--shadow)}
+.tab .dot{min-width:18px;height:18px;border-radius:9px;background:var(--rose);color:#fff;font-size:11px;line-height:18px;padding:0 5px;font-weight:700}
+@media (min-width:760px){.tabs .wrap{display:flex;gap:6px}.tab{padding:0 18px;font-size:13px}}
+
+/* traffic */
+.chart{width:100%;height:auto;display:block;touch-action:pan-y}
+.chart text{font:500 11px var(--tx);fill:var(--muted)}
+.chart .grid{stroke:var(--line);stroke-width:1}
+.chart .ret{fill:var(--c-ret)}
+.chart .new{fill:var(--c-new)}
+.chart .hit{fill:transparent;cursor:pointer}
+.chart .sel{fill:var(--ink);opacity:.06}
+:root{--c-new:#E8455A;--c-ret:#6E5358}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--c-new:#FF6B7F;--c-ret:#8E767A}}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--ink2)}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+.readout{margin-top:8px;padding:10px 12px;border-radius:12px;background:var(--bg);font-size:13px;min-height:40px}
+.hscroll{overflow-x:auto;-webkit-overflow-scrolling:touch;margin:0 -4px;padding:0 4px}
+.heat{border-collapse:separate;border-spacing:3px;font-size:12px;min-width:100%}
+.heat th{font-size:11px;color:var(--muted);font-weight:600;padding:4px 6px;white-space:nowrap;text-align:right}
+.heat th:first-child{text-align:left;position:sticky;left:0;background:var(--card);z-index:1}
+.heat td{padding:6px 8px;text-align:right;border-radius:6px;font-variant-numeric:tabular-nums;color:var(--ink);min-width:40px}
+.heat td.g{text-align:left;font-weight:600;white-space:nowrap;position:sticky;left:0;background:var(--card);z-index:1;padding-left:2px}
+.heat td.mo{font-weight:700;border-left:2px solid var(--line)}
+table.plain{width:100%;border-collapse:collapse;font-size:12px}
+table.plain th,table.plain td{padding:5px 6px;border-bottom:1px solid var(--line);text-align:right;font-variant-numeric:tabular-nums}
+table.plain th:first-child,table.plain td:first-child{text-align:left}
+
+main{padding:16px 0 80px}
+.sec{display:grid;gap:14px;grid-template-columns:minmax(0,1fr)}
+.sec>*,#traffic{min-width:0;display:grid;gap:14px}
+.sec>*:empty{display:none}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);padding:16px;min-width:0}
+.card h2{font:800 17px/1.2 var(--hd);margin:0;letter-spacing:-.01em}
+.card h3{font:700 14px/1.3 var(--tx);margin:0}
+.chead{display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap}
+.chead h2{flex:1;min-width:0}
+.grid2{display:grid;gap:14px}
+@media (min-width:900px){.grid2{grid-template-columns:1fr 1fr;align-items:start}}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:36px;padding:0 14px;border-radius:10px;border:1px solid var(--line2);background:var(--card);font-weight:600;font-size:13px;white-space:nowrap}
+.btn:hover{border-color:var(--muted)}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.btn.pri{background:linear-gradient(180deg,var(--coral),var(--rose));border-color:transparent;color:#fff}
+.btn.pri:hover{filter:brightness(1.05)}
+.btn.danger{background:var(--bad);border-color:transparent;color:#fff}
+.btn.ghost{background:transparent}
+.btn.sm{height:30px;padding:0 10px;font-size:12px;border-radius:8px}
+.btn svg{width:15px;height:15px}
+.pill{display:inline-flex;align-items:center;gap:5px;height:22px;padding:0 8px;border-radius:11px;font-size:11px;font-weight:700;background:var(--bg2);color:var(--ink2);white-space:nowrap}
+.pill.ok{background:var(--oksoft);color:var(--ok)}
+.pill.warn{background:var(--warnsoft);color:var(--warn)}
+.pill.bad{background:var(--badsoft);color:var(--bad)}
+.pill.co{background:var(--coralsoft);color:var(--deep)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .pill.co{color:var(--coral)}}
+.gdot{width:9px;height:9px;border-radius:50%;flex:none;display:inline-block}
+.live{width:8px;height:8px;border-radius:50%;background:var(--ok);box-shadow:0 0 0 0 rgba(26,143,99,.5);animation:pulse 2s infinite;flex:none}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(26,143,99,.45)}70%{box-shadow:0 0 0 7px rgba(26,143,99,0)}100%{box-shadow:0 0 0 0 rgba(26,143,99,0)}}
+@media (prefers-reduced-motion:reduce){.live{animation:none}}
+
+/* stats */
+.stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+@media (min-width:640px){.stats{grid-template-columns:repeat(4,minmax(0,1fr))}}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 14px;min-width:0}
+.stat .k{font-size:11px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.05em}
+.stat .v{font:800 26px/1.15 var(--hd);margin-top:4px;font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+.stat .s{font-size:11px;color:var(--muted);margin-top:2px}
+.stat.hero{background:linear-gradient(150deg,var(--coral),var(--rose) 60%,var(--deep));border-color:transparent;color:#fff}
+.stat.hero .k,.stat.hero .s{color:rgba(255,255,255,.82)}
+
+/* per-game chips */
+.gchips{display:flex;flex-wrap:wrap;gap:6px}
+.gchip{display:inline-flex;align-items:center;gap:6px;height:30px;padding:0 10px;border-radius:15px;border:1px solid var(--line);background:var(--bg);font-size:12px;font-weight:600}
+.gchip b{font-variant-numeric:tabular-nums}
+.gchip.zero{opacity:.55}
+button.gchip[aria-pressed="true"]{border-color:var(--ink);background:var(--ink);color:var(--bg)}
+
+/* lists */
+.list{display:grid;border-top:1px solid var(--line)}
+.row{display:flex;align-items:center;gap:10px;padding:10px 2px;border-bottom:1px solid var(--line);min-width:0}
+.row:last-child{border-bottom:0}
+.row .main{flex:1;min-width:0}
+.row .nm{font-weight:600;display:flex;align-items:center;gap:6px;min-width:0}
+.row .sub{font-size:12px;color:var(--muted);margin-top:1px}
+.empty{padding:22px 8px;text-align:center;color:var(--muted);font-size:13px}
+.av{width:34px;height:34px;border-radius:11px;display:grid;place-items:center;color:#fff;font-weight:700;font-size:14px;flex:none}
+
+/* tables */
+.tgrid{display:grid;gap:10px}
+@media (min-width:640px){.tgrid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (min-width:980px){.tgrid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.tcard{border:1px solid var(--line);border-radius:14px;padding:12px 14px;background:var(--card);display:grid;gap:8px;min-width:0;border-left:4px solid var(--gc,#999)}
+.tcard .l1{display:flex;align-items:center;gap:8px;min-width:0}
+.tcard .gn{font-weight:700;font-size:13px}
+.tcard .code{margin-left:auto}
+.tcard .host{font:700 16px/1.2 var(--hd);min-width:0}
+.seats{display:flex;gap:4px;flex-wrap:wrap}
+.seat{width:16px;height:16px;border-radius:5px;background:var(--bg2);border:1px solid var(--line2)}
+.seat.on{background:var(--gc,#999);border-color:transparent}
+.tmeta{display:flex;flex-wrap:wrap;gap:6px 12px;font-size:12px;color:var(--muted)}
+
+/* players */
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+.search{flex:1 1 200px;min-width:0;height:38px;border-radius:10px;border:1px solid var(--line2);background:var(--bg);padding:0 12px 0 34px;font-size:14px;
+ background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23806A6D' stroke-width='2.2' stroke-linecap='round'%3E%3Ccircle cx='11' cy='11' r='6.5'/%3E%3Cpath d='m20 20-4.2-4.2'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:10px center;background-size:16px}
+.search:focus,.inp:focus,select:focus{outline:2px solid var(--coral);outline-offset:1px}
+select.sel{height:38px;border-radius:10px;border:1px solid var(--line2);background:var(--bg);padding:0 10px;font-size:13px;font-weight:600}
+.phead,.prow{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center}
+.phead{display:none}
+.prow{padding:10px 2px;border-bottom:1px solid var(--line)}
+.prow .st{display:none}
+.prow .rt{text-align:right;font-size:12px;color:var(--muted);white-space:nowrap}
+.prow .rt b{color:var(--ink);font-size:14px;font-variant-numeric:tabular-nums}
+.prow .acts{grid-column:1/-1;display:flex;gap:6px;flex-wrap:wrap;padding-top:2px}
+.prow.open{background:var(--bg);border-radius:10px;padding-left:8px;padding-right:8px}
+.prow .pbtn{all:unset;display:block;cursor:pointer;min-width:0}
+.prow .pbtn:focus-visible{outline:2px solid var(--coral);border-radius:6px}
+@media (min-width:760px){
+ .phead,.prow{grid-template-columns:minmax(0,2.2fr) repeat(5,minmax(58px,.55fr)) minmax(84px,.8fr)}
+ .phead{display:grid;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;padding:0 2px 8px;border-bottom:1px solid var(--line)}
+ .phead span:not(:first-child),.prow .st{text-align:right}
+ .prow .st{display:block;font-variant-numeric:tabular-nums}
+ .prow .rt{display:none}
+ .prow .m-only{display:none}
+}
+.badge{display:inline-flex;align-items:center;height:18px;padding:0 6px;border-radius:6px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;flex:none}
+.badge.dup{background:var(--warnsoft);color:var(--warn)}
+.badge.test{background:var(--badsoft);color:var(--bad)}
+.badge.on{background:var(--oksoft);color:var(--ok)}
+.badge.adm{background:var(--coralsoft);color:var(--deep)}
+
+.note{display:flex;gap:10px;padding:12px 14px;border-radius:12px;background:var(--warnsoft);color:var(--ink2);font-size:13px;border:1px solid color-mix(in srgb,var(--warn) 25%,transparent)}
+.note svg{width:18px;height:18px;flex:none;color:var(--warn);margin-top:1px}
+.note.info{background:var(--bg2);border-color:var(--line)}
+.note.info svg{color:var(--muted)}
+.note b{color:var(--ink)}
+
+.dgroup{border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.dgroup+.dgroup{margin-top:10px}
+.dgroup summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:8px;padding:12px 14px;background:var(--bg)}
+.dgroup summary::-webkit-details-marker{display:none}
+.dgroup summary .chev{margin-left:auto;transition:transform .2s;color:var(--muted)}
+.dgroup[open] summary .chev{transform:rotate(180deg)}
+.dgroup .body{padding:6px 14px 14px}
+.dm{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:10px;align-items:center;padding:9px 0;border-bottom:1px dashed var(--line)}
+.dm:last-of-type{border-bottom:0}
+.dm input{width:18px;height:18px;accent-color:var(--rose);margin:0}
+.dm .inc{display:flex;align-items:center;gap:5px;font-size:12px;color:var(--muted)}
+.seg{display:inline-flex;padding:3px;border-radius:10px;background:var(--bg2);gap:2px}
+.seg button{border:0;background:transparent;height:30px;padding:0 12px;border-radius:8px;font-size:12px;font-weight:600;color:var(--muted)}
+.seg button[aria-pressed="true"]{background:var(--card);color:var(--ink);box-shadow:var(--shadow)}
+.dfoot{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:12px}
+.dfoot .sp{flex:1}
+
+/* inbox */
+.msg{border:1px solid var(--line);border-radius:14px;padding:12px 14px;display:grid;gap:8px;background:var(--card)}
+.msg.done{opacity:.62}
+.msg+.msg{margin-top:10px}
+.msg .l1{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.msg .txt{white-space:pre-wrap;word-break:break-word;font-size:14px}
+.msg .chat{background:var(--bg);border-radius:10px;padding:8px 10px;font-size:12px;display:grid;gap:3px;word-break:break-word}
+.msg .acts{display:flex;gap:6px;flex-wrap:wrap}
+.kv{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:12px;color:var(--muted)}
+.kv b{color:var(--ink2);font-weight:600}
+
+/* setup */
+details.setup summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:10px}
+details.setup summary::-webkit-details-marker{display:none}
+details.setup summary h2{flex:1}
+.uidbox{display:flex;gap:8px;align-items:center;background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:8px 8px 8px 12px;margin:12px 0}
+.uidbox code{flex:1;min-width:0;overflow-wrap:anywhere;font-size:13px;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+ol.steps{margin:8px 0 0;padding-left:20px;display:grid;gap:6px;font-size:13px}
+ol.steps code{background:var(--bg2);padding:1px 5px;border-radius:5px;font-size:12px}
+
+/* login */
+.center{min-height:calc(100vh - 58px);display:grid;place-items:center;padding:24px 16px}
+.lcard{width:100%;max-width:380px}
+.lcard .logo{display:flex;align-items:center;gap:12px;margin-bottom:18px}
+.lcard .logo img{width:48px;height:48px;border-radius:14px}
+.lcard h1{font:800 24px/1.1 var(--hd);margin:0;letter-spacing:-.01em}
+.field{display:grid;gap:6px;margin-bottom:12px}
+.field label{font-size:12px;font-weight:600;color:var(--ink2)}
+.inp{height:44px;border-radius:12px;border:1px solid var(--line2);background:var(--bg);padding:0 12px;font-size:15px;width:100%}
+.or{display:flex;align-items:center;gap:10px;color:var(--muted);font-size:12px;margin:14px 0}
+.or:before,.or:after{content:"";flex:1;height:1px;background:var(--line)}
+.gbtn{width:100%;height:44px;border-radius:12px;border:1px solid var(--line2);background:var(--card);font-weight:600;display:flex;align-items:center;justify-content:center;gap:10px}
+.gbtn svg{width:18px;height:18px}
+.err{color:var(--bad);font-size:13px;min-height:18px;margin-top:10px}
+.denied{text-align:center}
+.denied .big{font:800 28px/1.1 var(--hd);margin:6px 0 16px}
+
+/* dialog */
+dialog{border:0;padding:0;border-radius:20px;background:var(--card);color:var(--ink);width:min(560px,calc(100vw - 24px));max-height:calc(100vh - 32px);box-shadow:0 20px 60px rgba(0,0,0,.3)}
+dialog::backdrop{background:rgba(20,8,10,.55);backdrop-filter:blur(2px)}
+.dlg{display:flex;flex-direction:column;max-height:calc(100vh - 32px)}
+.dlg header{padding:18px 18px 8px}
+.dlg header h2{font:800 19px/1.2 var(--hd);margin:0}
+.dlg .db{padding:4px 18px 8px;overflow:auto;font-size:13px}
+.dlg footer{display:flex;gap:8px;justify-content:flex-end;padding:12px 18px 18px;border-top:1px solid var(--line)}
+.ctab{width:100%;border-collapse:collapse;font-size:13px;margin:8px 0}
+.ctab th,.ctab td{padding:6px 6px;border-bottom:1px solid var(--line);text-align:right;font-variant-numeric:tabular-nums}
+.ctab th:first-child,.ctab td:first-child{text-align:left}
+.ctab th{font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);font-weight:700}
+.ctab tr.chg td{font-weight:700}
+.ctab tr.chg td:last-child{color:var(--ok)}
+.dlist{margin:6px 0 0;padding:0;list-style:none;display:grid;gap:6px}
+.dlist li{background:var(--badsoft);border-radius:10px;padding:8px 10px;font-size:12px;word-break:break-word}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom));transform:translateX(-50%) translateY(20px);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:12px;font-size:13px;font-weight:600;opacity:0;pointer-events:none;transition:.25s;z-index:100;max-width:calc(100vw - 32px);text-align:center}
+.toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+.mockbar{background:repeating-linear-gradient(45deg,#FFE3A3,#FFE3A3 10px,#FFD77A 10px,#FFD77A 20px);color:#4A3200;font-size:12px;font-weight:700;text-align:center;padding:5px 16px}
+.spin{width:16px;height:16px;border:2px solid currentColor;border-right-color:transparent;border-radius:50%;animation:sp .7s linear infinite;display:inline-block}
+@keyframes sp{to{transform:rotate(360deg)}}
+.more{display:flex;justify-content:center;padding-top:12px}
+</style>
+</head>
+<body>
+<div id="mockbar" class="mockbar" hidden></div>
+<header class="top"><div class="wrap">
+ <div class="brand"><img src="/icons/favicon.svg" alt=""><div><small>Dhivehi Games</small><b>Admin</b></div></div>
+ <button class="ibtn" id="refreshBtn" data-a="refresh" hidden aria-label="Refresh all"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 4v7h-7"/></svg><span class="m-hide">Refresh</span></button>
+ <button class="ibtn" id="outBtn" data-a="signout" hidden>Sign out</button>
+</div></header>
+
+<nav class="tabs" id="tabs" hidden><div class="wrap" role="tablist">
+ <button class="tab" role="tab" data-a="tab" data-t="overview" aria-selected="true">Overview</button>
+ <button class="tab" role="tab" data-a="tab" data-t="stats" aria-selected="false">Stats</button>
+ <button class="tab" role="tab" data-a="tab" data-t="tables" aria-selected="false">Tables <span class="dot" id="tDot" hidden></span></button>
+ <button class="tab" role="tab" data-a="tab" data-t="players" aria-selected="false">Players <span class="dot" id="pDot" hidden></span></button>
+ <button class="tab" role="tab" data-a="tab" data-t="inbox" aria-selected="false">Inbox <span class="dot" id="iDot" hidden></span></button>
+</div></nav>
+
+<div id="view"></div>
+
+<dialog id="dlg"><form method="dialog" class="dlg">
+ <header><h2 id="dlgT"></h2></header>
+ <div class="db" id="dlgB"></div>
+ <footer><button class="btn ghost" value="no" id="dlgNo">Cancel</button><button class="btn pri" value="yes" id="dlgOk">OK</button></footer>
+</form></dialog>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script type="module">
+/* =====================================================================================
+   Dhivehi Games · private admin panel (not linked from anywhere, noindex).
+   Security lives in the Firestore rules (extras/firestore-rules-admin.txt): only the UID(s)
+   in isAdmin() can read the inboxes or change players. This page only hides the UI.
+   Localhost-only test switches: ?mock=1 (fake data, fake sign-in, writes stay in memory),
+   ?mock=1&live=1 (fake sign-in, REAL read-only presence/players/tables, all writes disabled),
+   &as=guest (show "Not authorised"), &rules=0 (pretend the admin rules are not published), &auto=1 (auto sign-in).
+   ===================================================================================== */
+'use strict';
+
+/* The owner's account (same as ADMIN_UID in digu/index.html). Add more UIDs here AND in the rules. */
+const ADMIN_UIDS=['mLOkxzQ7J0YC8z0auCKdv3HprJj2'];
+
+const FBCFG={apiKey:'AIzaSyCl9Xz5r80755hYX0ww2GRaB6TZTH6sayE',authDomain:'dhivehi-digu.firebaseapp.com',projectId:'dhivehi-digu',storageBucket:'dhivehi-digu.firebasestorage.app',messagingSenderId:'778464006205',appId:'1:778464006205:web:7dce5d63707c6b2d0eda54'};
+const FBV='https://www.gstatic.com/firebasejs/12.19.0/';
+const BROKERS=['wss://broker.emqx.io:8084/mqtt','wss://broker.hivemq.com:8884/mqtt'];
+const Q=new URLSearchParams(location.search);
+const LOCAL=/^(localhost|127\.\d+\.\d+\.\d+|\[::1\])$/.test(location.hostname)||/\.(localhost|test)$/.test(location.hostname);
+const MOCK=LOCAL&&Q.get('mock')==='1';
+const LIVE=MOCK&&Q.get('live')==='1';
+const MOCK_ADMIN='mockOwnerUid00000000000000a1';
+const ONLINE_MS=120000,STALE_MS=45000,PRES_EVERY=15000;
+const USER_DOMAIN='@users.dhivehidigu.invalid';
+
+/* the 11 games on the home page (colours from the home cards) */
+const GAMES={digu:{n:'Digu',c:'#2E8C69'},dhogu:{n:'Dhogu',c:'#6A4FD8'},bondi:{n:'Bondi',c:'#6B6B6B'},ranga:{n:'Ranga Bondi',c:'#9B2F3E'},
+ dhashundhama:{n:'Dhashundhama',c:'#A0783E'},binveriya:{n:'Binveriya',c:'#1BA7BF'},atolls:{n:'Atolls',c:'#1F7FA0'},
+ dhihaeh:{n:'Dhihaeh',c:'#2A7F86'},thaas:{n:'Thaas',c:'#2F4B8C'},joker:{n:'Joker',c:'#6B45B8'},juice:{n:'Juice',c:'#D2723A'}};
+/* presence keys accepted by the rules. Games check in under their own key: Ranga counts under bondi, Thaas under dhihaeh. */
+const PRES=[['digu','Digu'],['bondi','Bondi + Ranga'],['dhihaeh','Dhihaeh + Thaas'],['thaas','Thaas'],['dhashundhama','Dhashundhama'],
+ ['binveriya','Binveriya'],['atolls','Atolls'],['joker','Joker'],['juice','Juice']];
+const presColor=k=>(GAMES[k]||{c:'#999'}).c;
+/* public table listings (retained MQTT topics NS+'lobby/CODE'). Digu and Dhogu have their own formats. */
+const NETS=[{ns:'dhivehidigu/v2/',g:'digu',f:'digu',mx:6},{ns:'dhivehidhogu/v1/',g:'dhogu',f:'dhogu',mx:6}]
+ .concat(['bondi','dhashundhama','binveriya','atolls','dhihaeh','joker','juice'].map(g=>({ns:'dhivehi'+g+'/v1/',g,f:'dg',mx:5})));
+
+const RULES=`rules_version = '2';
+service cloud.firestore {
+  match /databases/{db}/documents {
+
+    // ADMIN: the owner's account. Replace OWNER_UID with the UID shown on https://dhivehi.games/admin/ after you sign in
+    // (or Firebase Console -> Authentication -> Users -> "User UID"). Keep the quotes: ['abc123...']
+    function isAdmin() { return request.auth != null && request.auth.uid in ['OWNER_UID']; }
+
+    match /players/{uid} {
+      allow read: if true;
+      // ranked = registered: no guests, and the name must be the writer's own reserved username (any capitalisation)
+      allow create, update: if request.auth != null
+        && request.auth.uid == uid
+        && request.auth.token.firebase.sign_in_provider != 'anonymous'
+        && request.resource.data.keys().hasOnly(['name','xp','shells','games','wins','hands','gins','big','online','best','updatedAt'])
+        && request.resource.data.name is string
+        && request.resource.data.name.size() <= 20
+        && exists(/databases/$(db)/documents/usernames/$(request.resource.data.name.lower()))
+        && get(/databases/$(db)/documents/usernames/$(request.resource.data.name.lower())).data.uid == request.auth.uid
+        && request.resource.data.wins <= request.resource.data.games
+        && request.resource.data.games <= request.resource.data.hands
+        && request.resource.data.gins <= request.resource.data.hands
+        && request.resource.data.big <= request.resource.data.gins
+        && request.resource.data.shells <= 1000000
+        && (resource == null || request.resource.data.wins >= resource.data.wins);
+      allow delete: if request.auth != null && request.auth.uid == uid;
+      // admin: rename and merge (same fields only), and delete
+      allow update: if isAdmin()
+        && request.resource.data.keys().hasOnly(['name','xp','shells','games','wins','hands','gins','big','online','best','updatedAt'])
+        && request.resource.data.name is string
+        && request.resource.data.name.size() > 0
+        && request.resource.data.name.size() <= 20;
+      allow delete: if isAdmin();
+    }
+
+    // usernames stay reserved even after an account switches to a recovery email
+    match /usernames/{name} {
+      allow read: if true;
+      allow create: if request.auth != null
+        && request.resource.data.keys().hasOnly(['uid'])
+        && request.resource.data.uid == request.auth.uid
+        && request.auth.token.email == name + '@users.dhivehidigu.invalid';
+      allow update: if false;
+      allow delete: if request.auth != null && resource.data.uid == request.auth.uid;
+    }
+
+    // live "playing now" counts: one tiny check-in per player per game, holding only the time
+    match /presence/{game}/users/{uid} {
+      allow read: if true;
+      allow create, update: if request.auth != null
+        && request.auth.uid == uid
+        && game in ['digu', 'bondi', 'thaas', 'dhashundhama', 'binveriya', 'atolls', 'dhihaeh', 'joker', 'juice']
+        && request.resource.data.keys().hasOnly(['t'])
+        && request.resource.data.t == request.time;
+      allow delete: if request.auth != null && request.auth.uid == uid;
+      // admin: clear old check-ins
+      allow delete: if isAdmin();
+    }
+
+    match /reports/{id} {
+      allow create: if request.auth != null
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.reason is string && request.resource.data.reason.size() <= 40
+        && request.resource.data.note is string && request.resource.data.note.size() <= 300
+        && request.resource.data.chat is list && request.resource.data.chat.size() <= 10;
+      allow read, delete: if isAdmin();
+      allow update: if false;
+    }
+
+    match /support/{id} {
+      allow create: if request.auth != null
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.msg is string && request.resource.data.msg.size() <= 600;
+      allow read, delete: if isAdmin();
+      allow update: if false;
+    }
+
+    // admin-only notes, e.g. which reports and support messages are handled
+    match /adminNotes/{id} {
+      allow read, write: if isAdmin();
+    }
+
+    // visitor counts (shared/stats.js): one tiny doc per device per day ("day-YYYYMMDD") and per month ("month-YYYYMM"),
+    // written by that device's own (anonymous) account, holding only the time, the games opened and a first-visit flag.
+    // Only the admin can read them.
+    match /stats/{period}/visitors/{id} {
+      allow read, delete: if isAdmin();
+      allow create: if request.auth != null
+        && request.auth.uid == id
+        && period.matches('^(day-[0-9]{8}|month-[0-9]{6})$')
+        && request.resource.data.keys().hasOnly(['t','g','n'])
+        && request.resource.data.keys().hasAll(['t','g','n'])
+        && request.resource.data.t == request.time
+        && request.resource.data.n is bool
+        && request.resource.data.g is list
+        && request.resource.data.g.size() <= 13
+        && request.resource.data.g.hasOnly(['home','digu','dhogu','bondi','ranga','dhashundhama','binveriya','atolls','dhihaeh','thaas','joker','juice','raalhu']);
+      allow update: if request.auth != null
+        && request.auth.uid == id
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['g'])
+        && request.resource.data.g is list
+        && request.resource.data.g.size() <= 13
+        && request.resource.data.g.hasOnly(['home','digu','dhogu','bondi','ranga','dhashundhama','binveriya','atolls','dhihaeh','thaas','joker','juice','raalhu']);
+    }
+  }
+}
+`;
+
+/* ---------------- helpers ---------------- */
+const $=s=>document.querySelector(s);
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const num=v=>{v=Number(v);return isFinite(v)?v:0;};
+const fmt=n=>num(n).toLocaleString('en-US');
+const clampInt=(v,a,b)=>Math.max(a,Math.min(b,v|0));
+const cleanName=v=>String(v||'').replace(/[\u0000-\u001f<>]/g,'').trim().slice(0,20);
+const normKey=v=>String(v||'').trim().toLowerCase();
+const shortId=id=>String(id||'').slice(0,8);
+function ago(ms){if(!ms)return '—';const s=Math.max(0,Math.round((Date.now()-ms)/1000));if(s<60)return s+' s';const m=Math.round(s/60);if(m<60)return m+' min';const h=Math.round(m/60);if(h<48)return h+' h';const d=Math.round(h/24);if(d<60)return d+' d';return Math.round(d/30)+' mo';}
+function when(ms){if(!ms)return '—';const d=new Date(ms);return d.toLocaleString('en-GB',{day:'numeric',month:'short',year:d.getFullYear()!==new Date().getFullYear()?'numeric':undefined,hour:'2-digit',minute:'2-digit'});}
+function initial(n){const c=String(n||'?').trim()[0]||'?';return esc(c.toUpperCase());}
+function hue(s){let h=0;s=String(s||'');for(let i=0;i<s.length;i++)h=(h*31+s.charCodeAt(i))%360;return `hsl(${h} 45% 45%)`;}
+let toastT=0;function toast(t,ms){const el=$('#toast');el.textContent=t;el.classList.add('on');clearTimeout(toastT);toastT=setTimeout(()=>el.classList.remove('on'),ms||2600);}
+async function copy(t){try{await navigator.clipboard.writeText(t);toast('Copied');}catch(e){const ta=document.createElement('textarea');ta.value=t;document.body.appendChild(ta);ta.select();try{document.execCommand('copy');toast('Copied');}catch(x){toast('Copy failed');}ta.remove();}}
+const IC={
+ warn:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 2 20h20L12 3z"/><path d="M12 10v4M12 17.5v.01"/></svg>',
+ info:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 7.5v.01"/></svg>',
+ chev:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>',
+ copy:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>',
+ google:'<svg viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>'
+};
+
+/* ---------------- confirm dialog ---------------- */
+function ask({title,html,ok='Confirm',danger=false,input=null}){return new Promise(res=>{
+ const d=$('#dlg');$('#dlgT').textContent=title;$('#dlgB').innerHTML=html+(input?`<div class="field" style="margin-top:12px"><label for="dlgIn">${esc(input.label)}</label><input class="inp" id="dlgIn" maxlength="${input.max||60}" value="${esc(input.value||'')}" autocomplete="off"></div>`:'');
+ const okb=$('#dlgOk');okb.textContent=ok;okb.className='btn '+(danger?'danger':'pri');
+ const done=()=>{d.removeEventListener('close',done);const v=d.returnValue==='yes';res(input?(v?($('#dlgIn')||{}).value:null):v);};
+ d.returnValue='';d.addEventListener('close',done);d.showModal();
+ if(input)setTimeout(()=>{const i=$('#dlgIn');i&&i.focus();i&&i.select();},30);else setTimeout(()=>$('#dlgNo').focus(),30);});}
+
+/* =====================================================================================
+   DATA LAYER. Real = Firebase (auth + Firestore). Mock = in-memory (localhost ?mock=1 only).
+   ===================================================================================== */
+let FB=null;
+async function fbInit(){if(FB)return FB;
+ const [A,U,F]=await Promise.all([import(FBV+'firebase-app.js'),import(FBV+'firebase-auth.js'),import(FBV+'firebase-firestore.js')]);
+ /* a separate app name keeps the admin sign-in apart from the games' own session on this site */
+ const app=A.getApps().find(a=>a.name==='dg-admin')||A.initializeApp(FBCFG,'dg-admin');
+ FB={A,U,F,app,auth:U.getAuth(app),db:F.getFirestore(app)};return FB;}
+const tsMs=v=>v&&typeof v.toMillis==='function'?v.toMillis():typeof v==='number'?v:v&&v.seconds?v.seconds*1000:0;
+
+/* Firestore REST value → JS (for the public players list, which also gives each doc's createTime) */
+function rv(v){if(!v)return null;if('integerValue' in v)return +v.integerValue;if('doubleValue' in v)return +v.doubleValue;if('stringValue' in v)return v.stringValue;
+ if('booleanValue' in v)return v.booleanValue;if('nullValue' in v)return null;if('timestampValue' in v)return Date.parse(v.timestampValue);
+ if('arrayValue' in v)return (v.arrayValue.values||[]).map(rv);if('mapValue' in v){const o={};Object.entries(v.mapValue.fields||{}).forEach(([k,x])=>o[k]=rv(x));return o;}return null;}
+function normPlayer(id,d,created,updTime){d=d||{};return{id,name:typeof d.name==='string'?d.name:'',xp:num(d.xp),shells:num(d.shells),games:num(d.games),wins:num(d.wins),hands:num(d.hands),
+ gins:num(d.gins),big:num(d.big),online:num(d.online),best:d.best==null?null:num(d.best),updatedAt:num(d.updatedAt)||updTime||0,created:created||0};}
+
+const Real={
+ name:'live',
+ async init(){await fbInit();try{await FB.auth.authStateReady();}catch(e){}try{await FB.U.getRedirectResult(FB.auth);}catch(e){authErr=authMsg(e);}},
+ current(){return FB.auth.currentUser;},
+ onAuth(cb){FB.U.onAuthStateChanged(FB.auth,cb);},
+ async signInEmail(email,pass){await FB.U.signInWithEmailAndPassword(FB.auth,email,pass);},
+ async signInGoogle(){const p=new FB.U.GoogleAuthProvider();p.setCustomParameters({prompt:'select_account'});
+  try{await FB.U.signInWithPopup(FB.auth,p);}catch(e){if(e&&(e.code==='auth/popup-blocked'||e.code==='auth/operation-not-supported-in-this-environment')){await FB.U.signInWithRedirect(FB.auth,p);return;}throw e;}},
+ async signOut(){await FB.U.signOut(FB.auth);},
+ /* can this session read an admin-only collection? (only true once the admin rules are published) */
+ async probe(){await fbInit();const F=FB.F;try{await F.getDocs(F.query(F.collection(FB.db,'adminNotes'),F.limit(1)));return true;}catch(e){if(e&&e.code==='permission-denied')return false;throw e;}},
+ async players(){await fbInit();
+  try{const out=[];let tok='';for(let i=0;i<60;i++){
+    const u=`https://firestore.googleapis.com/v1/projects/${FBCFG.projectId}/databases/(default)/documents/players?pageSize=300&key=${FBCFG.apiKey}`+(tok?'&pageToken='+encodeURIComponent(tok):'');
+    const h={};const cu=FB.auth.currentUser;if(cu){try{h.Authorization='Bearer '+await cu.getIdToken();}catch(e){}}
+    const r=await fetch(u,{headers:h});if(!r.ok)throw new Error('REST '+r.status);const j=await r.json();
+    (j.documents||[]).forEach(d=>{const f={};Object.entries(d.fields||{}).forEach(([k,v])=>f[k]=rv(v));out.push(normPlayer(d.name.split('/').pop(),f,Date.parse(d.createTime),Date.parse(d.updateTime)));});
+    tok=j.nextPageToken;if(!tok)break;}
+   playersSrc='rest';return out;
+  }catch(e){console.warn('REST players list failed, using the SDK (no creation dates)',e);
+   const F=FB.F,s=await F.getDocs(F.collection(FB.db,'players'));playersSrc='sdk';return s.docs.map(d=>normPlayer(d.id,d.data(),0,0));}},
+ async player(uid){await fbInit();const F=FB.F;const s=await F.getDoc(F.doc(FB.db,'players',uid));return s.exists()?normPlayer(uid,s.data(),0,0):null;},
+ async presence(){await fbInit();const F=FB.F,since=F.Timestamp.fromMillis(Date.now()-ONLINE_MS),out=[];
+  await Promise.all(PRES.map(async([g])=>{const s=await F.getDocs(F.query(F.collection(FB.db,'presence',g,'users'),F.where('t','>',since)));s.docs.forEach(d=>out.push({g,uid:d.id,t:tsMs(d.data().t)}));}));return out;},
+ async oldPresence(cutoff){await fbInit();const F=FB.F,out=[];
+  await Promise.all(PRES.map(async([g])=>{const s=await F.getDocs(F.query(F.collection(FB.db,'presence',g,'users'),F.where('t','<',F.Timestamp.fromMillis(cutoff))));s.docs.forEach(d=>out.push({g,uid:d.id,t:tsMs(d.data().t)}));}));return out;},
+ async inbox(coll){await fbInit();const F=FB.F;const s=await F.getDocs(F.query(F.collection(FB.db,coll),F.limit(500)));
+  return s.docs.map(d=>{const x=d.data();return Object.assign({},x,{id:d.id,time:num(x.t)||tsMs(x.at)});});},
+ async notes(){await fbInit();const F=FB.F;const s=await F.getDocs(F.collection(FB.db,'adminNotes'));const m=new Map();s.docs.forEach(d=>m.set(d.id,d.data()));return m;},
+ async setNote(id,data){const F=FB.F;await F.setDoc(F.doc(FB.db,'adminNotes',id),data);},
+ async delNote(id){const F=FB.F;await F.deleteDoc(F.doc(FB.db,'adminNotes',id));},
+ async delInbox(coll,id,noteId){const F=FB.F,b=F.writeBatch(FB.db);b.delete(F.doc(FB.db,coll,id));if(noteId)b.delete(F.doc(FB.db,'adminNotes',noteId));await b.commit();},
+ /* merge = one atomic batch: update the kept doc, delete the others */
+ async merge(targetId,data,delIds){const F=FB.F,b=F.writeBatch(FB.db);b.update(F.doc(FB.db,'players',targetId),data);delIds.forEach(id=>b.delete(F.doc(FB.db,'players',id)));await b.commit();},
+ async rename(id,name){const F=FB.F;await F.updateDoc(F.doc(FB.db,'players',id),{name});},
+ async delPlayer(id){const F=FB.F;await F.deleteDoc(F.doc(FB.db,'players',id));},
+ async delPresence(list){const F=FB.F;for(let i=0;i<list.length;i+=400){const b=F.writeBatch(FB.db);list.slice(i,i+400).forEach(x=>b.delete(F.doc(FB.db,'presence',x.g,'users',x.uid)));await b.commit();}},
+ /* visitor counts: aggregation count = 1 read per 1,000 docs counted (min 1) */
+ async count(period,f){await fbInit();const F=FB.F;let q=F.collection(FB.db,'stats',period,'visitors');
+  if(f&&f.n)q=F.query(q,F.where('n','==',true));if(f&&f.g)q=F.query(q,F.where('g','array-contains',f.g));
+  const r=await F.getCountFromServer(q);return r.data().count|0;}
+};
+
+/* ---------- mock (localhost only) ---------- */
+function makeMock(){
+ const now=Date.now(),H=3600e3,D=24*H;let seed=7;const rnd=()=>(seed=(seed*16807)%2147483647)/2147483647;
+ const P=[];const add=(name,o)=>{const games=o.games,wins=Math.min(games,o.wins|0),hands=Math.max(games,o.hands||games*3),gins=Math.min(hands,o.gins||Math.round(hands*.2)),big=Math.min(gins,o.big||Math.round(gins*.3));
+  P.push({id:o.id||('u'+Math.floor(rnd()*1e12).toString(36)+Math.floor(rnd()*1e12).toString(36)).slice(0,28).padEnd(28,'x'),name,xp:o.xp!=null?o.xp:games*37+wins*80,shells:o.shells!=null?o.shells:500+Math.round(rnd()*4000),
+   games,wins,hands,gins,big,online:o.online!=null?o.online:Math.round(games*.4),best:o.best!=null?o.best:(games?Math.round(rnd()*300):null),updatedAt:now-o.upd,created:now-o.cr});};
+ add('dangerous',{id:MOCK_ADMIN,games:120,wins:61,upd:.2*H,cr:40*D,xp:9800});
+ [['Hassan',88,40],['aishath',64,22],['Moosa_07',51,19],['Ibu',40,11],['Shifa',33,15],['Nizam',30,9],['raaniya',27,12],['Zaki',25,6],['Mohamed K',21,9],['Fathun',18,4],
+  ['Yoosuf',17,8],['Lamya',15,7],['Riza',12,3],['Hawwa',11,5],['Anil',9,2],['Nadhu',8,4],['Shaaz',7,1],['Mimmi',6,3],['Ahmed',5,2],['Sana',4,1],['Digu Player',2,0]]
+  .forEach(([n,g,w],i)=>add(n,{games:g,wins:w,upd:(i*5+1)*H*rnd()*3,cr:(10+i*2)*D}));
+ add('strudel',{games:14,wins:6,upd:2*H,cr:20*D,xp:900,best:210});
+ add('strudel',{games:3,wins:1,upd:5*D,cr:25*D,xp:1200,best:260});
+ add('Strudel ',{games:6,wins:4,upd:30*D,cr:31*D,xp:400,best:null});
+ add('ibu',{games:2,wins:1,upd:9*D,cr:12*D});
+ add('Bob',{games:0,wins:0,upd:3*H,cr:1*D,xp:0});add('Cara',{games:1,wins:0,upd:4*H,cr:1*D});add('Newbee',{games:0,wins:0,upd:6*H,cr:2*D,xp:0});
+ add('Hosty',{games:1,wins:1,upd:7*H,cr:2*D});add('Dee',{games:0,wins:0,upd:20*H,cr:3*D,xp:0});add('Bob',{games:0,wins:0,upd:2*D,cr:2*D,xp:0});
+ add('Nadhu',{games:3,wins:3,upd:12*H,cr:.4*D});
+ const R=[
+  {id:'rep1',reason:'Abusive chat',note:'Kept insulting everyone after losing.',targetId:'pk3j2l1a',targetName:'Zaki',byId:'p8ha72kd',byName:'Shifa',table:'KQTR',mode:'p2p',chat:['you all are trash','learn to play','lol'],t:now-40*60e3,uid:P[5].id},
+  {id:'rep2',reason:'Offensive name',note:'',targetId:'p00x71ab',targetName:'xx_rude_xx',byId:'p1122aa',byName:'Hassan',table:'MXPA',mode:'p2p',chat:[],t:now-5*H,uid:P[1].id},
+  {id:'rep3',reason:'Cheating or unfair play',note:'Always seems to know my cards?',targetId:'pz9z9',targetName:'Riza',byId:'paa91',byName:'Lamya',table:'BHWZ',mode:'p2p',chat:['gg'],t:now-3*D,uid:P[12].id}];
+ const S=[
+  {id:'sup1',msg:'I lost my progress after changing phone. Username was ibu, can you help?',byId:'pqq12',byName:'ibu',user:'ibu',uid:P[4].id,ua:'Mozilla/5.0 (iPhone; CPU iPhone OS 18_1 like Mac OS X) AppleWebKit/605.1.15 Version/18.1 Mobile Safari',t:now-2*H},
+  {id:'sup2',msg:'Love the game! Please add a Thaas tutorial.',byId:'pww88',byName:'Lamya',user:'',uid:P[12].id,ua:'Mozilla/5.0 (Linux; Android 15) Chrome/140 Mobile',t:now-2*D}];
+ const N=new Map([['s_sup2',{kind:'support',ref:'sup2',handled:true,at:now-D,by:MOCK_ADMIN}]]);
+ const pres=[['digu',1],['digu',2],['digu',0],['bondi',5],['dhihaeh',8],['joker',9],['atolls','anonGuestX8f2k1pQ0z7Lm3n4b5v6c'],['binveriya',3]];
+ let user=null,authCb=null;
+ const block=async()=>{if(LIVE)throw Object.assign(new Error('Test mode: writes to the live database are disabled.'),{code:'mock/readonly'});await new Promise(r=>setTimeout(r,250));};
+ const M={
+  name:LIVE?'mock+live reads':'mock',
+  async init(){if(LIVE)await fbInit();},
+  current(){return user;},
+  onAuth(cb){authCb=cb;},
+  async signInEmail(email,pass){await new Promise(r=>setTimeout(r,300));if(!pass){throw{code:'auth/invalid-credential'};}
+   user={uid:Q.get('as')==='guest'?'mockGuestUid000000000000000b2':MOCK_ADMIN,email};authCb&&authCb(user);},
+  async signInGoogle(){return M.signInEmail('owner@gmail.example','x');},
+  async signOut(){user=null;authCb&&authCb(null);},
+  async probe(){if(LIVE)return Real.probe();return Q.get('rules')!=='0'&&user&&user.uid===MOCK_ADMIN;},
+  async players(){if(LIVE)return Real.players();await new Promise(r=>setTimeout(r,300));playersSrc='rest';return P.map(p=>Object.assign({},p));},
+  async player(uid){if(LIVE)return Real.player(uid);const p=P.find(x=>x.id===uid);return p?Object.assign({},p):null;},
+  async presence(){if(LIVE)return Real.presence();const n=Date.now();return pres.map(([g,i],k)=>({g,uid:typeof i==='number'?P[i].id:i,t:n-((k*23000+Math.round(Math.random()*9000))%110000)}));},
+  async oldPresence(){if(LIVE)return Real.oldPresence(Date.now()-D);return [{g:'digu',uid:P[20].id,t:now-3*D},{g:'bondi',uid:P[21].id,t:now-9*D}];},
+  async inbox(coll){if(LIVE)return Real.inbox(coll);if(Q.get('rules')==='0')throw{code:'permission-denied'};return (coll==='reports'?R:S).map(x=>Object.assign({time:x.t},x));},
+  async notes(){if(LIVE)return Real.notes();if(Q.get('rules')==='0')throw{code:'permission-denied'};return new Map(N);},
+  async setNote(id,data){await block();N.set(id,data);},
+  async delNote(id){await block();N.delete(id);},
+  async delInbox(coll,id,noteId){await block();const a=coll==='reports'?R:S;const i=a.findIndex(x=>x.id===id);if(i>=0)a.splice(i,1);if(noteId)N.delete(noteId);},
+  async merge(targetId,data,delIds){await block();const t=P.find(p=>p.id===targetId);Object.assign(t,data);delIds.forEach(id=>{const i=P.findIndex(p=>p.id===id);if(i>=0)P.splice(i,1);});},
+  async rename(id,name){await block();const p=P.find(x=>x.id===id);if(p)p.name=name;},
+  async delPlayer(id){await block();const i=P.findIndex(p=>p.id===id);if(i>=0)P.splice(i,1);},
+  async delPresence(){await block();},
+  async count(period,f){if(LIVE)return Real.count(period,f);if(Q.get('rules')==='0')throw{code:'permission-denied'};
+   await new Promise(r=>setTimeout(r,20));
+   const today=trafficDays(1)[0].k;const isM=period.startsWith('month-');
+   const i=isM?0:Math.round((Date.parse(today.slice(4,8)+'-'+today.slice(8,10)+'-'+today.slice(10,12))-Date.parse(period.slice(4,8)+'-'+period.slice(8,10)+'-'+period.slice(10,12)))/864e5);
+   if(!isM&&i>24)return 0;                                   // "counting started" 25 days ago
+   let tot=isM?(period.endsWith(today.slice(8,10))?640:410):Math.round((70+22*Math.sin(i/2.2)+(24-i)*2.1+(new Date(Date.now()-i*864e5).getDay()%6===5?25:0))*(i===0?.62:1));
+   if(f&&f.n)return Math.round(tot*(isM?.46:(i>20?.6:.17)));
+   const W={home:.78,digu:.42,dhogu:.12,bondi:.16,ranga:.07,dhashundhama:.09,binveriya:.11,atolls:.1,dhihaeh:.08,thaas:.05,joker:.07,juice:.06,raalhu:0};
+   if(f&&f.g)return Math.round(tot*(W[f.g]||0)*(isM?1.4:1));return tot;}
+ };
+ return M;}
+
+const DL=MOCK?makeMock():Real;
+
+/* =====================================================================================
+   STATE
+   ===================================================================================== */
+let authErr='',user=null,isAdmin=false,rulesOK=null,playersSrc='';
+let tab=(()=>{try{return sessionStorage.getItem('dga-tab')||'overview';}catch(e){return 'overview';}})();
+const ST={players:new Map(),playersAt:0,playersErr:'',loadingPlayers:false,
+ presence:[],presAt:0,presErr:'',names:new Map(),
+ reports:null,support:null,notes:new Map(),inboxErr:'',inboxKind:'reports',inboxFilter:'open',
+ q:'',sort:'wins',shown:60,openRow:'',dupSel:{},xpMode:'max',tFilter:'all'};
+const TB=new Map();const brokerUp=[false,false];let mq=[];
+if(MOCK)window.__dga={TB,ST};   /* localhost test hook only */
+
+/* =====================================================================================
+   VIEWS
+   ===================================================================================== */
+function setView(html){$('#view').innerHTML=html;}
+function chrome(on){$('#tabs').hidden=!on;$('#refreshBtn').hidden=!on;$('#outBtn').hidden=!user;}
+function viewLoading(t){chrome(false);setView(`<div class="center"><div class="muted" style="display:flex;gap:10px;align-items:center"><span class="spin"></span>${esc(t||'Loading…')}</div></div>`);}
+function viewLogin(){chrome(false);
+ setView(`<div class="center"><div class="card lcard">
+  <div class="logo"><img src="/icons/favicon.svg" alt=""><div><div class="muted small">Dhivehi Games</div><h1>Admin sign in</h1></div></div>
+  <form id="lf" autocomplete="on">
+   <div class="field"><label for="le">Email or username</label><input class="inp" id="le" name="email" type="text" inputmode="email" autocomplete="username" autocapitalize="off" spellcheck="false" required></div>
+   <div class="field"><label for="lp">Password</label><input class="inp" id="lp" name="password" type="password" autocomplete="current-password" required></div>
+   <button class="btn pri" style="width:100%;height:44px;border-radius:12px;font-size:14px" id="lb">Sign in</button>
+  </form>
+  <div class="or">or</div>
+  <button class="gbtn" data-a="google">${IC.google}<span>Continue with Google</span></button>
+  <div class="err" id="lerr">${esc(authErr)}</div>
+  ${MOCK?'<p class="small muted" style="margin:6px 0 0">Mock mode: any email and password signs in.</p>':''}
+ </div></div>`);
+ $('#lf').addEventListener('submit',async e=>{e.preventDefault();const raw=$('#le').value.trim(),pass=$('#lp').value;const b=$('#lb');
+  if(!raw||!pass){$('#lerr').textContent='Enter your email (or username) and password.';return;}
+  const email=raw.includes('@')?raw.toLowerCase():raw.toLowerCase().replace(/[^a-z0-9_.-]/g,'').slice(0,14)+USER_DOMAIN;
+  b.disabled=true;b.innerHTML='<span class="spin"></span>';$('#lerr').textContent='';
+  try{await DL.signInEmail(email,pass);}catch(err){$('#lerr').textContent=authMsg(err);}finally{if(b.isConnected){b.disabled=false;b.textContent='Sign in';}}});}
+function authMsg(e){const c=(e&&e.code)||'';
+ return({'auth/invalid-credential':'Wrong email or password.','auth/wrong-password':'Wrong email or password.','auth/user-not-found':'Wrong email or password.','auth/invalid-email':'That email doesn’t look right.',
+  'auth/too-many-requests':'Too many tries. Wait a few minutes and try again.','auth/popup-closed-by-user':'Google sign-in was closed.','auth/cancelled-popup-request':'Google sign-in was closed.',
+  'auth/unauthorized-domain':'This address isn’t allowed for Google sign-in (Firebase → Authentication → Settings → Authorized domains).','auth/network-request-failed':'No connection. Check the internet and try again.',
+  'auth/account-exists-with-different-credential':'That Google account belongs to a different sign-in. Use email and password.'})[c]||('Sign-in failed'+(c?' ('+c+')':'')+'.');}
+function viewDenied(){chrome(false);$('#outBtn').hidden=false;
+ setView(`<div class="center"><div class="card lcard denied"><img src="/icons/favicon.svg" alt="" style="width:48px;height:48px;border-radius:14px"><div class="big">Not authorised</div>
+  <button class="btn" data-a="signout">Sign out</button></div></div>`);}
+
+function viewPanel(){chrome(true);
+ setView(`<main><div class="wrap">
+  <section class="sec" id="s-overview" ${tab!=='overview'?'hidden':''}><div id="setup"></div><div id="stats"></div><div id="online"></div></section>
+  <section class="sec" id="s-stats" ${tab!=='stats'?'hidden':''}><div id="traffic"></div></section>
+  <section class="sec" id="s-tables" ${tab!=='tables'?'hidden':''}><div id="tables"></div></section>
+  <section class="sec" id="s-players" ${tab!=='players'?'hidden':''}><div id="pnote"></div><div class="grid2"><div id="dups"></div><div id="tests"></div></div><div id="plist"></div></section>
+  <section class="sec" id="s-inbox" ${tab!=='inbox'?'hidden':''}><div id="inbox"></div></section>
+ </div></main>`);
+ document.querySelectorAll('.tab').forEach(b=>b.setAttribute('aria-selected',String(b.dataset.t===tab)));
+ renderAll();}
+function setTab(t){tab=t;try{sessionStorage.setItem('dga-tab',t);}catch(e){}
+ document.querySelectorAll('.tab').forEach(b=>b.setAttribute('aria-selected',String(b.dataset.t===t)));
+ ['overview','stats','tables','players','inbox'].forEach(k=>{const s=$('#s-'+k);if(s)s.hidden=k!==t;});
+ if(t==='tables')renderTables();if(t==='stats'){if(!TR.at&&!TR.loading)loadTraffic();else renderTraffic();}window.scrollTo({top:0});}
+function renderAll(){renderSetup();renderStats();renderOnline();renderTables();renderPlayers();renderInbox();renderTraffic();if(tab==='stats'&&!TR.at&&!TR.loading)loadTraffic();}
+
+/* ---------- setup card (UID + one-time rules) ---------- */
+function renderSetup(){const el=$('#setup');if(!el)return;const uid=user?user.uid:'';
+ const st=rulesOK===true?'<span class="pill ok">Admin rules active</span>':rulesOK===false?'<span class="pill warn">Admin rules not published yet</span>':'<span class="pill">Checking rules…</span>';
+ el.innerHTML=`<details class="card setup" ${rulesOK===false?'open':''}><summary><h2>Your account &amp; one-time setup</h2>${st}<span class="muted">${IC.chev}</span></summary>
+  <div class="uidbox"><code id="uidv">${esc(uid)}</code><button class="btn sm" data-a="copy-uid">${IC.copy}Copy UID</button></div>
+  <div class="small muted">Signed in as ${esc(user&&user.email?user.email.replace(USER_DOMAIN,' (username)'):'')}</div>
+  ${rulesOK===true?'<p class="small" style="margin:10px 0 0">The admin rules are live. Reports, support messages, merge, rename and delete all work.</p>':`
+  <p class="small" style="margin:12px 0 4px"><b>Until the admin rules are published</b>, the online list, live tables and the player list work (they’re public), but the inboxes, visitor stats, merge, rename and delete are blocked by Firebase (the same rules also let the site start counting visitors). To switch them on, once:</p>
+  <ol class="steps">
+   <li>Copy your UID above (or find it in <b>Firebase Console → Authentication → Users</b>, column “User UID”).</li>
+   <li>Tap <b>Copy rules</b> below. Your UID is already filled in. (The same text is saved as <code>extras/firestore-rules-admin.txt</code> with the placeholder <code>OWNER_UID</code>.)</li>
+   <li>Open <b>Firebase Console → project dhivehi-digu → Firestore Database → Rules</b>.</li>
+   <li>Select all the old text, paste the new rules, check the UID sits inside <code>['…']</code>, then press <b>Publish</b>.</li>
+   <li>Wait about a minute, then press <b>Check again</b>.</li>
+  </ol>`}
+  <div class="dfoot"><button class="btn sm" data-a="copy-rules">${IC.copy}Copy rules</button><button class="btn sm ghost" data-a="probe">Check again</button></div>
+ </details>`;}
+
+/* ---------- stats ---------- */
+function renderStats(){const el=$('#stats');if(!el)return;const P=[...ST.players.values()];const now=Date.now();
+ const t0=new Date();t0.setHours(0,0,0,0);const byC=playersSrc==='rest';const cOf=p=>byC?p.created:p.updatedAt;
+ const today=P.filter(p=>cOf(p)>=t0.getTime()).length,week=P.filter(p=>cOf(p)>=now-7*864e5).length,act=P.filter(p=>p.updatedAt>=now-864e5).length;
+ const games=P.reduce((a,p)=>a+p.games,0),wins=P.reduce((a,p)=>a+p.wins,0);const onl=onlineUnique();
+ const ld=!ST.playersAt;const v=x=>ld?'<span class="spin" style="width:18px;height:18px"></span>':fmt(x);
+ el.innerHTML=`<div class="stats">
+  <div class="stat hero"><div class="k">Online now</div><div class="v">${ST.presAt?fmt(onl):'…'}</div><div class="s">${ST.presAt?'checked in, last 2 min':'loading'}</div></div>
+  <div class="stat"><div class="k">Players</div><div class="v">${v(P.length)}</div><div class="s">on the leaderboard</div></div>
+  <div class="stat"><div class="k">New today</div><div class="v">${v(today)}</div><div class="s">${byC?'by created date':'by last update'}</div></div>
+  <div class="stat"><div class="k">New this week</div><div class="v">${v(week)}</div><div class="s">last 7 days</div></div>
+  <div class="stat"><div class="k">Active 24 h</div><div class="v">${v(act)}</div><div class="s">saved in the last day</div></div>
+  <div class="stat"><div class="k">Games played</div><div class="v">${v(games)}</div><div class="s">sum of all players</div></div>
+  <div class="stat"><div class="k">Wins</div><div class="v">${v(wins)}</div><div class="s">sum of all players</div></div>
+  <div class="stat"><div class="k">Live tables</div><div class="v">${fmt(freshTables().length)}</div><div class="s">public, all games</div></div>
+ </div>${ST.playersErr?`<p class="small" style="color:var(--bad)">${esc(ST.playersErr)}</p>`:''}`;}
+
+/* ---------- online now ---------- */
+function onlineUnique(){return new Set(ST.presence.map(x=>x.uid)).size;}
+function nameOf(uid){const p=ST.players.get(uid)||ST.names.get(uid);return p&&p.name?p.name:'';}
+function renderOnline(){const el=$('#online');if(!el)return;
+ const by={};PRES.forEach(([k])=>by[k]=0);ST.presence.forEach(x=>by[x.g]=(by[x.g]||0)+1);
+ const rows=ST.presence.slice().sort((a,b)=>b.t-a.t);
+ el.innerHTML=`<div class="card"><div class="chead"><h2>Online now</h2>${ST.presAt?`<span class="live" title="auto-refreshes every 15 s"></span><span class="small muted">${fmt(onlineUnique())} players · updated ${ago(ST.presAt)} ago</span>`:'<span class="spin"></span>'}</div>
+  <div class="gchips">${PRES.map(([k,l])=>`<span class="gchip ${by[k]?'':'zero'}"><span class="gdot" style="background:${presColor(k)}"></span>${esc(l)} <b>${by[k]}</b></span>`).join('')}
+   <span class="gchip" style="border-color:var(--ink)">Total <b>${ST.presence.length}</b></span></div>
+  ${ST.presErr?`<p class="small" style="color:var(--bad)">${esc(ST.presErr)}</p>`:''}
+  <div class="list" style="margin-top:12px">${rows.length?rows.map(x=>{const n=nameOf(x.uid);const gl=(PRES.find(p=>p[0]===x.g)||[x.g,x.g])[1];
+   return `<div class="row"><div class="av" style="background:${n?hue(n):'#9A8A8C'}">${n?initial(n):'?'}</div><div class="main"><div class="nm"><span class="ell">${n?esc(n):'Guest (no leaderboard entry)'}</span></div>
+    <div class="sub ell"><span class="gdot" style="background:${presColor(x.g)};width:7px;height:7px"></span> ${esc(gl)} · <span class="mono">${esc(shortId(x.uid))}</span></div></div>
+    <div class="small muted nowrap">${ago(x.t)} ago</div></div>`;}).join(''):`<div class="empty">${ST.presAt?'Nobody has checked in during the last 2 minutes.':'Loading…'}</div>`}</div>
+  <p class="small muted" style="margin:10px 0 0">Counts come from each game’s check-in (every 60 s while the game is open). Dhogu has no check-ins, and a player with two games open is counted in both.</p>
+  <div class="dfoot"><span class="sp"></span><button class="btn sm ghost" data-a="clean-presence">Clear check-ins older than 24 h</button></div>
+ </div>`;}
+
+/* ---------- live tables ---------- */
+const freshTables=()=>[...TB.values()].filter(x=>Math.abs(Date.now()-x.t)<STALE_MS);
+function renderTables(){const el=$('#tables');if(!el)return;const all=freshTables();
+ const dot=$('#tDot');if(dot){dot.hidden=!all.length;dot.textContent=all.length;}
+ if(tab!=='tables'&&el.innerHTML)return;
+ const list=all.filter(x=>ST.tFilter==='all'||x.g===ST.tFilter).sort((a,b)=>(a.status===b.status?0:a.status==='open'?-1:1)||b.n-a.n||b.t-a.t);
+ const cnt={};all.forEach(x=>cnt[x.g]=(cnt[x.g]||0)+1);
+ const open=all.filter(x=>x.status==='open').length,play=all.length-open;
+ const bs=MOCK&&!LIVE?'<span class="pill co">Mock feed</span>':BROKERS.map((b,i)=>`<span class="pill ${brokerUp[i]?'ok':'warn'}">${b.includes('emqx')?'EMQX':'HiveMQ'} ${brokerUp[i]?'connected':'connecting…'}</span>`).join('');
+ const card=x=>{const G=GAMES[x.g]||{n:x.g,c:'#999'};const seats=Array.from({length:x.mx},(_,i)=>`<span class="seat ${i<x.n?'on':''}"></span>`).join('');
+  return `<div class="tcard" style="--gc:${G.c}"><div class="l1"><span class="gdot" style="background:${G.c}"></span><span class="gn">${esc(G.n)}</span>
+   ${x.status==='open'?'<span class="pill ok">Open</span>':'<span class="pill co">Playing</span>'}${x.q?'<span class="pill">Quick Match</span>':''}<span class="code mono muted">${esc(x.code)}</span></div>
+   <div class="host ell">${esc(x.name)}<span class="small muted" style="font:500 12px var(--tx)"> · host</span></div>
+   <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap"><div class="seats" aria-label="${x.n} of ${x.mx} seats">${seats}</div><b class="small">${x.n}/${x.mx}</b>${x.vw?`<span class="small muted">${x.vw} watching</span>`:''}</div>
+   <div class="tmeta">${x.info?`<span>${esc(x.info)}</span>`:''}<span>table up ${ago(x.c)}</span><span>listed ${ago(x.t)} ago</span></div></div>`;};
+ el.innerHTML=`<div class="card"><div class="chead"><h2>Live tables</h2><span class="live"></span><span class="small muted">${open} open · ${play} playing</span></div>
+  <div class="gchips" style="margin-bottom:10px">${bs}</div>
+  <div class="gchips" role="group" aria-label="Filter by game"><button class="gchip" data-a="tfilter" data-g="all" aria-pressed="${ST.tFilter==='all'}">All <b>${all.length}</b></button>
+   ${Object.keys(GAMES).map(k=>`<button class="gchip ${cnt[k]?'':'zero'}" data-a="tfilter" data-g="${k}" aria-pressed="${ST.tFilter===k}"><span class="gdot" style="background:${GAMES[k].c}"></span>${esc(GAMES[k].n)} <b>${cnt[k]||0}</b></button>`).join('')}</div>
+ </div>
+ ${list.length?`<div class="tgrid">${list.map(card).join('')}</div>`:`<div class="card empty">No public tables right now${ST.tFilter!=='all'?' for '+esc((GAMES[ST.tFilter]||{}).n||''):''}. Private tables never appear here.</div>`}
+ <p class="small muted" style="margin:0">Read-only: this page only listens to the public table lists (the same ones the games’ lobbies show). It never publishes, joins or watches a table. Tables disappear 45 s after their host stops listing them.</p>`;}
+
+/* ---------- players ---------- */
+const TEST_NAMES=/^(bob|cara|newbee|hosty|dee|alice|test|tester|test\d+|asdf\w*|qwe\w*|foo|bar|abc|aaa+|xxx+|x+)$/i;
+function testFlag(p){if(p.games>1)return '';if(!TEST_NAMES.test(String(p.name).trim()))return '';
+ const c=p.created||p.updatedAt;if(!c||Date.now()-c>14*864e5)return '';return 'test';}
+function dupGroups(){const m=new Map();ST.players.forEach(p=>{const k=normKey(p.name);if(!k)return;if(!m.has(k))m.set(k,[]);m.get(k).push(p);});
+ return [...m.entries()].filter(([,a])=>a.length>1).map(([k,a])=>({k,a:a.sort((x,y)=>y.updatedAt-x.updatedAt)})).sort((x,y)=>y.a.length-x.a.length||x.k.localeCompare(y.k));}
+function dupSel(g){let s=ST.dupSel[g.k];const ids=g.a.map(p=>p.id);
+ if(!s||!ids.includes(s.target)){s={target:g.a[0].id,excl:new Set()};ST.dupSel[g.k]=s;}return s;}
+function mergePlan(g){const s=dupSel(g);const T=g.a.find(p=>p.id===s.target);const src=g.a.filter(p=>p.id!==T.id&&!s.excl.has(p.id));const all=[T,...src];
+ const sum=k=>all.reduce((a,p)=>a+num(p[k]),0),max=k=>Math.max(...all.map(p=>num(p[k])));const bests=all.map(p=>p.best).filter(v=>v!=null);
+ const after={name:T.name,xp:ST.xpMode==='sum'?sum('xp'):max('xp'),shells:max('shells'),games:sum('games'),wins:sum('wins'),hands:sum('hands'),gins:sum('gins'),big:sum('big'),online:sum('online'),
+  best:bests.length?Math.max(...bests):null,updatedAt:Math.max(...all.map(p=>num(p.updatedAt)))};
+ return{T,src,after};}
+function renderPlayers(){renderPNote();renderDups();renderTests();renderPList();
+ const d=dupGroups().length,t=[...ST.players.values()].filter(testFlag).length,dot=$('#pDot');if(dot){dot.hidden=!(d+t);dot.textContent=d+t;}}
+function renderPNote(){const el=$('#pnote');if(!el)return;
+ el.innerHTML=`<div class="note">${IC.warn}<div><b>Merging only fixes the leaderboard.</b> A guest who plays again on an old device can reappear as a new entry, and a registered player’s game rewrites their own name the next time they play.
+ Recommended (a separate site change): <b>ranking = registered players only</b>.${rulesOK===false?'<br><b>Merge, rename and delete need the admin rules</b> (see Overview).':''}</div></div>`;}
+function renderDups(){const el=$('#dups');if(!el)return;const G=dupGroups();
+ el.innerHTML=`<div class="card"><div class="chead"><h2>Duplicate names</h2><span class="pill ${G.length?'warn':'ok'}">${G.length} group${G.length===1?'':'s'}</span></div>
+  <p class="small muted" style="margin:-4px 0 12px">Same name, ignoring capitals and spaces. Pick which entry to keep; the others’ totals are added to it and they are deleted.</p>
+  <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:12px"><span class="small" style="font-weight:600">XP when merging</span>
+   <div class="seg" role="group"><button type="button" data-a="xpmode" data-v="max" aria-pressed="${ST.xpMode==='max'}">Keep highest</button><button type="button" data-a="xpmode" data-v="sum" aria-pressed="${ST.xpMode==='sum'}">Add together</button></div></div>
+  ${G.length?G.map((g,gi)=>{const s=dupSel(g);return `<details class="dgroup" data-k="${esc(g.k)}" ${ST.dupOpen===g.k?'open':''}><summary><b class="ell">“${esc(g.a[0].name.trim())}”</b><span class="pill">${g.a.length} entries</span><span class="chev">${IC.chev}</span></summary><div class="body">
+   ${g.a.map(p=>`<div class="dm"><input type="radio" name="tg${gi}" data-a="dtarget" data-k="${esc(g.k)}" data-id="${esc(p.id)}" ${s.target===p.id?'checked':''} aria-label="Keep this one">
+    <div style="min-width:0"><div class="nm" style="font-weight:600;display:flex;gap:6px;align-items:center"><span class="ell">${esc(p.name)}</span>${s.target===p.id?'<span class="badge adm">keep</span>':''}</div>
+     <div class="small muted">W ${fmt(p.wins)} · G ${fmt(p.games)} · XP ${fmt(p.xp)} · upd ${ago(p.updatedAt)} ago${p.created?' · made '+ago(p.created)+' ago':''}</div><div class="mono muted">${esc(p.id)}</div></div>
+    <label class="inc"><input type="checkbox" data-a="dinc" data-k="${esc(g.k)}" data-id="${esc(p.id)}" ${s.target===p.id?'checked disabled':s.excl.has(p.id)?'':'checked'}>merge</label></div>`).join('')}
+   <div class="dfoot"><span class="small muted">Default keep: the most recently updated.</span><span class="sp"></span><button class="btn pri sm" data-a="merge" data-k="${esc(g.k)}">Preview merge…</button></div></div></details>`;}).join(''):'<div class="empty">No duplicate names. Nice and tidy.</div>'}
+ </div>`;}
+function renderTests(){const el=$('#tests');if(!el)return;const T=[...ST.players.values()].filter(testFlag).sort((a,b)=>(b.created||b.updatedAt)-(a.created||a.updatedAt));
+ el.innerHTML=`<div class="card"><div class="chead"><h2>Possible test accounts</h2><span class="pill ${T.length?'bad':'ok'}">${T.length}</span></div>
+  <p class="small muted" style="margin:-4px 0 8px">Test-style names (Bob, Cara, Newbee, Hosty, Dee…) made in the last 14 days with 0–1 games. For review only; nothing is deleted automatically.</p>
+  <div class="list">${T.length?T.map(p=>`<div class="row"><div class="av" style="background:${hue(p.name)}">${initial(p.name)}</div><div class="main"><div class="nm"><span class="ell">${esc(p.name)}</span></div>
+   <div class="sub">${p.games} game${p.games===1?'':'s'} · ${p.created?'made '+ago(p.created)+' ago':'updated '+ago(p.updatedAt)+' ago'} · <span class="mono">${esc(shortId(p.id))}</span></div></div>
+   <button class="btn sm" data-a="del" data-id="${esc(p.id)}">Delete…</button></div>`).join(''):'<div class="empty">None flagged.</div>'}</div></div>`;}
+function sortedPlayers(){const q=normKey(ST.q);let a=[...ST.players.values()];
+ if(q)a=a.filter(p=>normKey(p.name).includes(q)||p.id.toLowerCase().startsWith(q));
+ const k=ST.sort;const f={wins:p=>p.wins,xp:p=>p.xp,games:p=>p.games,updated:p=>p.updatedAt,created:p=>p.created||0};
+ if(k==='name')a.sort((x,y)=>normKey(x.name).localeCompare(normKey(y.name))||y.updatedAt-x.updatedAt);else a.sort((x,y)=>f[k](y)-f[k](x)||y.updatedAt-x.updatedAt);return a;}
+function renderPList(){const el=$('#plist');if(!el)return;
+ if(!el.querySelector('#pq')){el.innerHTML=`<div class="card"><div class="chead"><h2>All players</h2><span class="small muted" id="pcount"></span></div>
+  <div class="toolbar"><input class="search" id="pq" type="search" placeholder="Search name or UID" value="${esc(ST.q)}" autocomplete="off">
+   <select class="sel" id="psort" aria-label="Sort by">${[['wins','Most wins'],['xp','Most XP'],['games','Most games'],['updated','Recently updated'],['created','Newest'],['name','Name A–Z']].map(([v,l])=>`<option value="${v}" ${ST.sort===v?'selected':''}>${l}</option>`).join('')}</select></div>
+  <div class="phead"><span>Player</span><span>Wins</span><span>Games</span><span>XP</span><span>Best</span><span>Online</span><span>Updated</span></div><div id="prows"></div></div>`;
+  $('#pq').addEventListener('input',e=>{ST.q=e.target.value;ST.shown=60;renderRows();});
+  $('#psort').addEventListener('change',e=>{ST.sort=e.target.value;ST.shown=60;renderRows();});}
+ renderRows();}
+function renderRows(){const box=$('#prows');if(!box)return;const a=sortedPlayers();const dupK=new Set(dupGroups().map(g=>g.k));const onl=new Set(ST.presence.map(x=>x.uid));
+ $('#pcount').textContent=ST.playersAt?`${fmt(a.length)}${ST.q?' of '+fmt(ST.players.size):''} · loaded ${ago(ST.playersAt)} ago`:'';
+ if(!ST.playersAt){box.innerHTML=`<div class="empty">${ST.playersErr?esc(ST.playersErr):'<span class="spin"></span>'}</div>`;return;}
+ box.innerHTML=(a.length?a.slice(0,ST.shown).map((p,i)=>{const open=ST.openRow===p.id;
+  const badges=(ADMIN_UIDS.includes(p.id)||p.id===MOCK_ADMIN?'<span class="badge adm">owner</span>':'')+(onl.has(p.id)?'<span class="badge on">online</span>':'')+(dupK.has(normKey(p.name))?'<span class="badge dup">dup</span>':'')+(testFlag(p)?'<span class="badge test">test?</span>':'');
+  return `<div class="prow ${open?'open':''}"><button class="pbtn" data-a="row" data-id="${esc(p.id)}" aria-expanded="${open}"><div class="nm" style="font-weight:600;display:flex;gap:6px;align-items:center;min-width:0">
+    <span class="muted small" style="min-width:22px">${i+1}</span><span class="ell">${p.name?esc(p.name):'<i class="muted">(no name)</i>'}</span>${badges}</div>
+    <div class="small muted m-only ell">G ${fmt(p.games)} · XP ${fmt(p.xp)} · upd ${ago(p.updatedAt)} ago</div></button>
+   <div class="rt"><b>${fmt(p.wins)}</b> wins</div>
+   <span class="st"><b>${fmt(p.wins)}</b></span><span class="st">${fmt(p.games)}</span><span class="st">${fmt(p.xp)}</span><span class="st">${p.best==null?'—':fmt(p.best)}</span><span class="st">${fmt(p.online)}</span><span class="st muted small">${ago(p.updatedAt)}</span>
+   ${open?`<div class="acts"><span class="mono muted" style="align-self:center;overflow-wrap:anywhere;flex:1 1 100%">${esc(p.id)} · hands ${fmt(p.hands)} · gins ${fmt(p.gins)} · big ${fmt(p.big)} · shells ${fmt(p.shells)}${p.created?' · made '+esc(when(p.created)):''}</span>
+    <button class="btn sm" data-a="copy" data-v="${esc(p.id)}">${IC.copy}UID</button><button class="btn sm" data-a="rename" data-id="${esc(p.id)}">Rename…</button><button class="btn sm" data-a="del" data-id="${esc(p.id)}" style="color:var(--bad)">Delete…</button></div>`:''}</div>`;}).join('')
+  :'<div class="empty">No players match.</div>')+(a.length>ST.shown?`<div class="more"><button class="btn" data-a="more">Show more (${fmt(a.length-ST.shown)} left)</button></div>`:'');}
+
+/* ---------- inbox ---------- */
+const noteId=(kind,id)=>(kind==='reports'?'r_':'s_')+id;
+function renderInbox(){const el=$('#inbox');if(!el)return;const k=ST.inboxKind,items=ST[k];
+ const openN=kk=>(ST[kk]||[]).filter(x=>!(ST.notes.get(noteId(kk,x.id))||{}).handled).length;
+ const dot=$('#iDot');const tot=(ST.reports?openN('reports'):0)+(ST.support?openN('support'):0);if(dot){dot.hidden=!tot;dot.textContent=tot;}
+ let body='';
+ if(ST.inboxErr)body=`<div class="note">${IC.warn}<div>${esc(ST.inboxErr)}</div></div>`;
+ else if(!items)body='<div class="empty"><span class="spin"></span></div>';
+ else{const list=items.slice().sort((a,b)=>b.time-a.time).filter(x=>{const h=!!(ST.notes.get(noteId(k,x.id))||{}).handled;return ST.inboxFilter==='all'||(ST.inboxFilter==='open'?!h:h);});
+  body=list.length?list.map(x=>{const n=ST.notes.get(noteId(k,x.id))||{};const h=!!n.handled;
+   const head=k==='reports'?`<span class="pill bad">${esc(x.reason||'Report')}</span><b class="ell">about ${esc(x.targetName||'?')}</b>`:`<span class="pill co">Support</span><b class="ell">from ${esc(x.byName||'Player')}</b>`;
+   const meta=k==='reports'?`<div class="kv"><span>by <b>${esc(x.byName||'?')}</b></span><span>table <b>${esc(x.table||'—')}</b></span><span>reported id <b class="mono">${esc(x.targetId||'—')}</b></span><span>reporter UID <b class="mono">${esc(shortId(x.uid))}</b></span></div>`
+    :`<div class="kv">${x.user?`<span>username <b>${esc(x.user)}</b></span>`:''}<span>UID <b class="mono">${esc(shortId(x.uid)||'—')}</b></span><span>device <b>${esc(String(x.ua||'').slice(0,70))}</b></span></div>`;
+   const text=k==='reports'?(x.note?`<div class="txt">${esc(x.note)}</div>`:'<div class="small muted">No note.</div>')+(Array.isArray(x.chat)&&x.chat.length?`<div class="chat"><span class="small muted">Their recent chat</span>${x.chat.map(c=>`<span>“${esc(c)}”</span>`).join('')}</div>`:''):`<div class="txt">${esc(x.msg||'')}</div>`;
+   return `<div class="msg ${h?'done':''}"><div class="l1">${head}<span class="sp" style="flex:1"></span><span class="small muted nowrap" title="${esc(when(x.time))}">${ago(x.time)} ago</span></div>${text}${meta}
+    <div class="acts">${h?`<span class="pill ok">Handled ${n.at?ago(n.at)+' ago':''}</span><button class="btn sm" data-a="reopen" data-id="${esc(x.id)}">Reopen</button>`:`<button class="btn sm pri" data-a="handled" data-id="${esc(x.id)}">Mark handled</button>`}
+     ${x.uid?`<button class="btn sm ghost" data-a="find" data-v="${esc(x.uid)}">Find player</button>`:''}<button class="btn sm ghost" data-a="delmsg" data-id="${esc(x.id)}" style="color:var(--bad)">Delete…</button></div></div>`;}).join(''):`<div class="empty">${ST.inboxFilter==='open'?'All caught up. Nothing open.':'Nothing here.'}</div>`;}
+ el.innerHTML=`<div class="card"><div class="chead"><h2>Inbox</h2>
+  <div class="seg" role="group"><button type="button" data-a="ikind" data-v="reports" aria-pressed="${k==='reports'}">Reports ${ST.reports?'('+openN('reports')+')':''}</button><button type="button" data-a="ikind" data-v="support" aria-pressed="${k==='support'}">Support ${ST.support?'('+openN('support')+')':''}</button></div></div>
+  <div class="seg" role="group" style="margin-bottom:12px"><button type="button" data-a="ifilter" data-v="open" aria-pressed="${ST.inboxFilter==='open'}">Open</button><button type="button" data-a="ifilter" data-v="handled" aria-pressed="${ST.inboxFilter==='handled'}">Handled</button><button type="button" data-a="ifilter" data-v="all" aria-pressed="${ST.inboxFilter==='all'}">All</button></div>
+  ${body}</div>`;}
+
+/* ---------- traffic (visitor counts from shared/stats.js; days in Maldives time, UTC+5) ---------- */
+const TKEYS=['home','digu','dhogu','bondi','ranga','dhashundhama','binveriya','atolls','dhihaeh','thaas','joker','juice','raalhu'];
+const TNAME=k=>k==='home'?'Home page':k==='raalhu'?'Raalhu Rumble':(GAMES[k]||{n:k}).n;
+const TR={at:0,loading:false,err:'',days:[],pg:{},mon:null,prev:null,sel:0,reads:0,cached:0};
+const MVT=5*3600e3;
+function trafficDays(n){const out=[];for(let i=0;i<n;i++){const d=new Date(Date.now()+MVT-i*864e5),iso=d.toISOString();
+ out.push({k:'day-'+iso.slice(0,10).replace(/-/g,''),label:d.toLocaleDateString('en-GB',{day:'numeric',month:'short',timeZone:'UTC'}),dow:d.toLocaleDateString('en-GB',{weekday:'short',timeZone:'UTC'})});}return out;}
+function monthKeys(){const d=new Date(Date.now()+MVT),y=d.getUTCFullYear(),m=d.getUTCMonth();const p=new Date(Date.UTC(y,m-1,1));
+ const k=(Y,M)=>'month-'+Y+String(M+1).padStart(2,'0');const nm=D=>D.toLocaleDateString('en-GB',{month:'long',timeZone:'UTC'});
+ return{cur:{k:k(y,m),name:nm(new Date(Date.UTC(y,m,1)))},prev:{k:k(p.getUTCFullYear(),p.getUTCMonth()),name:nm(p)}};}
+/* past days never change, so their counts are cached on this device (today and the months are always re-read) */
+const TC={get(){try{return JSON.parse(localStorage.getItem('dga-traffic')||'{}')||{};}catch(e){return{};}},set(o){try{localStorage.setItem('dga-traffic',JSON.stringify(o));}catch(e){}}};
+async function loadTraffic(force){if(TR.loading)return;TR.loading=true;TR.err='';renderTraffic();
+ const days=trafficDays(30),today=days[0].k,M=monthKeys(),cache=(MOCK?{}:TC.get());if(force)Object.keys(cache).forEach(k=>{if(k.indexOf(today)===0)delete cache[k];});
+ const jobs=[];const want=(key,period,f,cacheable)=>jobs.push({key,period,f,cacheable});
+ days.forEach((d,i)=>{want(d.k+'|all',d.k,null,i>0);want(d.k+'|new',d.k,{n:true},i>0);if(i<7)TKEYS.forEach(g=>want(d.k+'|'+g,d.k,{g},i>0));});
+ want(M.cur.k+'|all',M.cur.k,null,false);want(M.cur.k+'|new',M.cur.k,{n:true},false);TKEYS.forEach(g=>want(M.cur.k+'|'+g,M.cur.k,{g},false));want(M.prev.k+'|all',M.prev.k,null,false);
+ const res={};let reads=0,cached=0,i=0,failed=null;
+ const worker=async()=>{while(i<jobs.length&&!failed){const j=jobs[i++];
+  if(j.cacheable&&cache[j.key]!=null){res[j.key]=cache[j.key];cached++;continue;}
+  try{const n=await DL.count(j.period,j.f);res[j.key]=n;reads+=Math.max(1,Math.ceil(n/1000));if(j.cacheable)cache[j.key]=n;}catch(e){failed=e;}}};
+ await Promise.all(Array.from({length:8},worker));
+ TR.loading=false;
+ if(failed){console.warn(failed);TR.err=failed.code==='permission-denied'?'Visitor counts are private. Publish the admin rules (Overview → Your account & one-time setup) to see them.':'Couldn’t load visitor counts: '+(failed.message||failed.code||failed);renderTraffic();return;}
+ if(!MOCK){const keep={};Object.keys(cache).forEach(k=>{if(days.some(d=>k.indexOf(d.k)===0))keep[k]=cache[k];});TC.set(keep);}
+ TR.days=days.map(d=>({k:d.k,label:d.label,dow:d.dow,all:res[d.k+'|all']|0,neu:Math.min(res[d.k+'|all']|0,res[d.k+'|new']|0)}));
+ TR.pg={};days.slice(0,7).forEach(d=>TKEYS.forEach(g=>{(TR.pg[g]=TR.pg[g]||{})[d.k]=res[d.k+'|'+g]|0;}));
+ TR.mon={name:M.cur.name,all:res[M.cur.k+'|all']|0,neu:res[M.cur.k+'|new']|0,g:Object.fromEntries(TKEYS.map(g=>[g,res[M.cur.k+'|'+g]|0]))};
+ TR.prev={name:M.prev.name,all:res[M.prev.k+'|all']|0};TR.reads=reads;TR.cached=cached;TR.at=Date.now();TR.sel=0;renderTraffic();}
+function renderTraffic(){const el=$('#traffic');if(!el)return;
+ if(TR.err){el.innerHTML=`<div class="card"><div class="chead"><h2>Players per day</h2></div><div class="note">${IC.warn}<div>${esc(TR.err)}</div></div><div class="dfoot"><span class="sp"></span><button class="btn sm" data-a="traffic">Try again</button></div></div>`;return;}
+ if(!TR.at){el.innerHTML=`<div class="card"><div class="chead"><h2>Players per day</h2><span class="spin"></span></div><div class="empty">Counting visitors…</div></div>`;return;}
+ const D=TR.days,t=D[0],y=D[1],ret=x=>x.all-x.neu;const w7=D.slice(1,8),avg7=Math.round(w7.reduce((a,x)=>a+x.all,0)/7);
+ const first=D.slice().reverse().find(x=>x.all>0);const pct=(a,b)=>b?Math.round((a-b)/b*100):null;const dp=pct(TR.mon.all,TR.prev.all);
+ el.innerHTML=`<div class="stats">
+   <div class="stat hero"><div class="k">Today so far</div><div class="v">${fmt(t.all)}</div><div class="s">${fmt(t.neu)} new · ${fmt(ret(t))} returning</div></div>
+   <div class="stat"><div class="k">Yesterday</div><div class="v">${fmt(y.all)}</div><div class="s">${fmt(y.neu)} new · ${fmt(ret(y))} returning</div></div>
+   <div class="stat"><div class="k">Daily average</div><div class="v">${fmt(avg7)}</div><div class="s">last 7 full days</div></div>
+   <div class="stat"><div class="k">This month</div><div class="v">${fmt(TR.mon.all)}</div><div class="s">${esc(TR.mon.name)} · ${fmt(TR.mon.neu)} new${dp!=null?` · ${dp>=0?'+':''}${dp}% vs ${esc(TR.prev.name)} (${fmt(TR.prev.all)})`:TR.prev.all?'':' · no data for '+esc(TR.prev.name)}</div></div>
+  </div>
+  <div class="card"><div class="chead"><h2>Players per day</h2><span class="small muted">last 30 days · Maldives time</span></div>
+   <div class="legend"><span><i style="background:var(--c-ret)"></i>Returning</span><span><i style="background:var(--c-new)"></i>New</span></div>
+   ${chartSVG(D.slice().reverse())}
+   <div class="readout" id="readout"></div>
+   <details style="margin-top:10px"><summary class="small muted" style="cursor:pointer">Show as a table</summary><div class="hscroll"><table class="plain"><thead><tr><th>Day</th><th>Players</th><th>New</th><th>Returning</th></tr></thead>
+    <tbody>${D.map(x=>`<tr><td>${esc(x.dow+' '+x.label)}</td><td>${fmt(x.all)}</td><td>${fmt(x.neu)}</td><td>${fmt(ret(x))}</td></tr>`).join('')}</tbody></table></div></details>
+  </div>
+  <div class="card"><div class="chead"><h2>Players per game</h2><span class="small muted">devices that opened each game</span></div>
+   ${perGameTable()}
+  </div>
+  <p class="small muted" style="margin:0">One count per device per day (a player on two phones counts twice; clearing the browser makes a device “new” again). Nothing personal is stored: no names, no IP, no device details.
+   ${first?`Counting started ${esc(first.label)}.`:'No visits counted yet: the counter starts once shared/stats.js is live.'} Last load used about ${fmt(TR.reads)} reads (${fmt(TR.cached)} cached). <button class="btn sm ghost" data-a="traffic">Reload counts</button></p>`;
+ setReadout(TR.sel);}
+function chartSVG(D){const W=Math.round(Math.max(280,Math.min(1000,(($('#traffic')||{}).clientWidth||600)-34))),Hh=W<500?190:220,L=30,R=4,T=10,B=24,n=D.length,cw=(W-L-R)/n,bw=Math.max(4,cw-4);
+ const mx=Math.max(4,...D.map(x=>x.all));const step=Math.pow(10,Math.floor(Math.log10(mx/3)));const nice=[1,2,5,10].map(s=>s*step).find(s=>mx/s<=4)||step*10;const top=Math.ceil(mx/nice)*nice;
+ const yy=v=>T+(Hh-T-B)*(1-v/top);const grid=[];for(let v=0;v<=top;v+=nice)grid.push(`<line class="grid" x1="${L}" x2="${W-R}" y1="${yy(v)}" y2="${yy(v)}"/><text x="${L-6}" y="${yy(v)+3}" text-anchor="end">${v}</text>`);
+ const bar=(x,y0,y1,cls,rTop)=>{const h=Math.max(0,y0-y1);if(h<.5)return '';const r=Math.min(4,bw/2,h);return rTop?`<path class="${cls}" d="M${x},${y0}V${y1+r}Q${x},${y1} ${x+r},${y1}H${x+bw-r}Q${x+bw},${y1} ${x+bw},${y1+r}V${y0}Z"/>`:`<rect class="${cls}" x="${x}" y="${y1}" width="${bw}" height="${h}"/>`;};
+ const bars=D.map((d,i)=>{const x=L+i*cw+(cw-bw)/2,base=yy(0),r=d.all-d.neu,yr=yy(r),ya=yy(d.all);const idx=n-1-i;
+  const gap=d.neu&&r?2:0;
+  return `<g>${idx===TR.sel?`<rect class="sel" x="${L+i*cw}" y="${T}" width="${cw}" height="${Hh-T-B}" rx="4"/>`:''}${bar(x,base,yr,'ret',!d.neu)}${bar(x,yr-gap,ya,'new',true)}
+   ${idx%(W<520?7:5)===0?`<text x="${idx===0?x+bw:x+bw/2}" y="${Hh-8}" text-anchor="${idx===0?'end':'middle'}">${idx===0?'Today':esc(d.label)}</text>`:''}
+   <rect class="hit" data-a="daysel" data-i="${idx}" x="${L+i*cw}" y="0" width="${cw}" height="${Hh}"><title>${esc(d.label)}: ${d.all} players, ${d.neu} new</title></rect></g>`;}).join('');
+ return `<svg class="chart" viewBox="0 0 ${W} ${Hh}" role="img" aria-label="Players per day, last 30 days">${grid.join('')}${bars}</svg>`;}
+function setReadout(i){const r=$('#readout');const d=TR.days[i];if(!r||!d)return;
+ const games=TKEYS.filter(g=>g!=='home').map(g=>[g,(TR.pg[g]||{})[d.k]]).filter(x=>x[1]).sort((a,b)=>b[1]-a[1]);
+ r.innerHTML=`<b>${esc(d.dow+' '+d.label)}${i===0?' (today so far)':''}</b>: ${fmt(d.all)} players · ${fmt(d.neu)} new · ${fmt(d.all-d.neu)} returning`+
+  (i<7&&games.length?`<div class="small muted" style="margin-top:3px">${games.slice(0,6).map(([g,v])=>esc(TNAME(g))+' '+fmt(v)).join(' · ')}</div>`:'');}
+function perGameTable(){const days=TR.days.slice(0,7);const rows=TKEYS.filter(g=>g!=='raalhu'||TR.mon.g.raalhu||days.some(d=>(TR.pg.raalhu||{})[d.k]));
+ const mx=Math.max(1,...rows.filter(g=>g!=='home').flatMap(g=>days.map(d=>(TR.pg[g]||{})[d.k]||0)));
+ const cell=(g,v)=>{const a=g==='home'?0:Math.min(1,v/mx);return `<td style="background:color-mix(in srgb,var(--c-new) ${Math.round(a*55)}%,var(--bg))">${v?fmt(v):'<span class="muted">·</span>'}</td>`;};
+ return `<div class="hscroll"><table class="heat"><thead><tr><th>Game</th>${days.map((d,i)=>`<th>${i===0?'Today':esc(d.dow)}<br><span style="font-weight:400">${esc(d.label)}</span></th>`).join('')}<th>${esc(TR.mon.name)}</th></tr></thead>
+  <tbody>${rows.map(g=>`<tr><td class="g"><span class="gdot" style="background:${g==='home'?'var(--muted)':(GAMES[g]||{c:'#999'}).c};margin-right:6px"></span>${esc(TNAME(g))}</td>${days.map(d=>cell(g,(TR.pg[g]||{})[d.k]||0)).join('')}<td class="mo">${fmt(TR.mon.g[g]||0)}</td></tr>`).join('')}</tbody></table></div>
+  <p class="small muted" style="margin:8px 0 0">Darker = more players. “Home page” counts visits to the front page; a device that opens three games counts once in each.</p>`;}
+
+/* =====================================================================================
+   LOADERS
+   ===================================================================================== */
+async function loadPlayers(){if(ST.loadingPlayers)return;ST.loadingPlayers=true;
+ try{const a=await DL.players();ST.players=new Map(a.map(p=>[p.id,p]));ST.playersAt=Date.now();ST.playersErr='';}
+ catch(e){console.warn(e);ST.playersErr='Couldn’t load players: '+(e.message||e.code||e);}
+ finally{ST.loadingPlayers=false;}renderStats();renderPlayers();renderOnline();}
+let presBusy=false;
+async function loadPresence(){if(presBusy||document.hidden)return;presBusy=true;
+ try{ST.presence=await DL.presence();ST.presAt=Date.now();ST.presErr='';
+  const miss=[...new Set(ST.presence.map(x=>x.uid))].filter(u=>!ST.players.has(u)&&!ST.names.has(u));
+  await Promise.all(miss.slice(0,40).map(async u=>{try{ST.names.set(u,await DL.player(u)||{name:''});}catch(e){ST.names.set(u,{name:''});}}));}
+ catch(e){console.warn(e);ST.presErr='Couldn’t read presence: '+(e.message||e.code||e);}
+ finally{presBusy=false;}renderOnline();renderStats();if(tab==='players')renderRows();}
+async function loadInbox(){if(rulesOK===false){ST.inboxErr='Reports and support messages are private. Publish the admin rules (Overview → Your account & one-time setup) to read them here.';ST.reports=ST.support=null;renderInbox();return;}
+ try{const [r,s,n]=await Promise.all([DL.inbox('reports'),DL.inbox('support'),DL.notes()]);ST.reports=r;ST.support=s;ST.notes=n;ST.inboxErr='';}
+ catch(e){console.warn(e);ST.inboxErr=e&&e.code==='permission-denied'?'Firebase refused access. Check that the admin rules are published with your UID.':'Couldn’t load the inbox: '+(e.message||e.code||e);}
+ renderInbox();}
+async function probe(){try{rulesOK=await DL.probe();}catch(e){console.warn(e);rulesOK=false;}renderSetup();renderPNote();}
+
+/* =====================================================================================
+   LIVE TABLES: read-only MQTT (subscribe only, no Will, never publishes)
+   ===================================================================================== */
+function MQ(url,topics,onMsg,onState){
+ const TE=new TextEncoder(),TD=new TextDecoder();let ws=null,buf=new Uint8Array(0),ping=0,retry=0,delay=1500,ended=false,mid=0,lastIn=0;const self={up:false};
+ const str=s=>{const b=TE.encode(s),o=new Uint8Array(2+b.length);o[0]=b.length>>8;o[1]=b.length&255;o.set(b,2);return o;};
+ function packet(head,parts){const n=parts.reduce((t,p)=>t+p.length,0);let len=n;const lb=[];do{let d=len%128;len=Math.floor(len/128);if(len>0)d|=128;lb.push(d);}while(len>0);
+  const out=new Uint8Array(1+lb.length+n);out[0]=head;out.set(lb,1);let off=1+lb.length;parts.forEach(p=>{out.set(p,off);off+=p.length;});return out;}
+ const send=u8=>{if(ws&&ws.readyState===1){try{ws.send(u8);}catch(e){}}};
+ const rid=()=>Array.from(crypto.getRandomValues(new Uint8Array(6)),x=>x.toString(16).padStart(2,'0')).join('');
+ function sched(){if(ended)return;clearTimeout(retry);retry=setTimeout(connect,delay);delay=Math.min(15000,delay*1.6);}
+ function drop(w){if(ws!==w)return;ws=null;clearInterval(ping);buf=new Uint8Array(0);if(self.up){self.up=false;onState(false);}sched();}
+ function connect(){if(ended)return;let w;try{w=new WebSocket(url,['mqtt']);}catch(e){sched();return;}ws=w;w.binaryType='arraybuffer';
+  const ct=setTimeout(()=>{if(ws===w&&!self.up){try{w.close();}catch(e){}drop(w);}},9000);
+  /* CONNECT: MQTT 3.1.1, clean session, keep-alive 30 s, no Will, no credentials */
+  w.onopen=()=>{if(ws===w)send(packet(0x10,[new Uint8Array([0,4,77,81,84,84,4,0x02,0,30]),str('dga_'+rid())]));};
+  w.onmessage=e=>{if(ws!==w)return;lastIn=Date.now();const d=new Uint8Array(e.data),nb=new Uint8Array(buf.length+d.length);nb.set(buf);nb.set(d,buf.length);buf=nb;parse();};
+  w.onclose=()=>{clearTimeout(ct);drop(w);};w.onerror=()=>{try{w.close();}catch(e){}};}
+ function parse(){while(buf.length>=2){let mul=1,len=0,i=1,b;do{if(i>=buf.length)return;b=buf[i++];len+=(b&127)*mul;mul*=128;}while(b&128);
+  if(buf.length<i+len)return;const head=buf[0],body=buf.slice(i,i+len);buf=buf.slice(i+len);handle(head>>4,head&15,body);}}
+ function handle(type,flags,b){
+  if(type===2){if(b[1]!==0){try{ws&&ws.close();}catch(e){}return;}self.up=true;delay=1500;onState(true);
+   mid=mid%65535+1;const parts=[new Uint8Array([mid>>8,mid&255])];topics.forEach(t=>{parts.push(str(t));parts.push(new Uint8Array([0]));});send(packet(0x82,parts));
+   clearInterval(ping);ping=setInterval(()=>{if(Date.now()-lastIn>50000){const w=ws;try{w&&w.close();}catch(e){}drop(w);return;}send(new Uint8Array([0xC0,0]));},20000);}
+  else if(type===3){const qos=(flags>>1)&3,tl=(b[0]<<8)|b[1];const topic=TD.decode(b.subarray(2,2+tl));let off=2+tl;if(qos>0)off+=2;
+   const p=b.subarray(off);let m=null;if(p.length){try{m=JSON.parse(TD.decode(p));}catch(e){return;}}onMsg(topic,m);}}
+ self.end=()=>{ended=true;clearTimeout(retry);clearInterval(ping);const w=ws;ws=null;if(w){try{w.send(new Uint8Array([0xE0,0]));w.close();}catch(e){}}};
+ connect();return self;}
+
+let tRenderT=0;function tablesChanged(){if(tRenderT)return;tRenderT=setTimeout(()=>{tRenderT=0;renderTables();if(tab==='overview')renderStats();},400);}
+function onListing(topic,m){const net=NETS.find(n=>topic.indexOf(n.ns+'lobby/')===0);if(!net)return;
+ const code=topic.slice((net.ns+'lobby/').length);if(!/^[A-Z]{4}$/.test(code))return;const key=net.ns+code;
+ if(!m||typeof m!=='object'||!m.t){if(TB.delete(key))tablesChanged();return;}
+ const cur=TB.get(key);if(cur&&+m.t<cur.t)return;
+ let g=net.g;const info0=String(m.info||'').slice(0,60);
+ if(g==='bondi'&&/^ranga/i.test(info0))g='ranga';if(g==='dhihaeh'&&/^thaas/i.test(info0))g='thaas';
+ const status=m.status==='lobby'?'open':'playing';
+ let info=info0;if(net.f==='digu'){const r=clampInt(m.r,0,99),h=clampInt(m.h,0,999);info=status==='open'?(r?r+' rounds':''):(h&&r?'Hand '+h+' of '+r:h?'Hand '+h:'');}
+ TB.set(key,{key,code,g,name:String(m.name||'').replace(/[\u0000-\u001f<>]/g,'').trim().slice(0,14)||'Player',n:clampInt(m.n,1,12),
+  mx:net.f==='dg'?clampInt(m.mx||net.mx,2,12):net.mx,t:+m.t,c:+m.c||+m.t,status,q:!!m.q,vw:clampInt(m.vw,0,999),info});
+ tablesChanged();}
+function startTables(){
+ if(MOCK&&!LIVE){startMockTables();return;}
+ const topics=NETS.map(n=>n.ns+'lobby/+');
+ mq=BROKERS.map((u,i)=>MQ(u,topics,onListing,up=>{brokerUp[i]=up;tablesChanged();}));}
+function startMockTables(){const pub=(ns,code,o)=>onListing(ns+'lobby/'+code,o);
+ const feed=()=>{const t=Date.now();
+  pub('dhivehidigu/v2/','KQTR',{v:2,code:'KQTR',name:'Hassan',n:4,t,c:t-14*60e3,status:'playing',q:false,host:'p1',h:3,r:5,vw:2,f:2});
+  pub('dhivehidigu/v2/','MXPA',{v:2,code:'MXPA',name:'Shifa',n:2,t,c:t-60e3,status:'lobby',q:true,host:'p2',h:0,r:3,vw:0,f:4});
+  pub('dhivehidhogu/v1/','BHWZ',{v:1,code:'BHWZ',name:'Nizam',n:3,t,c:t-8*60e3,status:'busy',q:false,host:'p3'});
+  pub('dhivehibondi/v1/','RNGA',{v:1,code:'RNGA',name:'Moosa_07',n:4,mx:5,t,c:t-20*60e3,status:'playing',info:'Ranga · round 2 of 5',vw:1,f:1});
+  pub('dhivehibondi/v1/','BNDL',{v:1,code:'BNDL',name:'aishath',n:1,mx:5,t,c:t-30e3,status:'lobby',info:'Bondi · 5 rounds',f:4});
+  pub('dhivehidhihaeh/v1/','THSS',{v:1,code:'THSS',name:'Ibu',n:4,mx:4,t,c:t-11*60e3,status:'playing',info:'Thaas · hand 3 · 2–1',f:0});
+  pub('dhivehijoker/v1/','JKRQ',{v:1,code:'JKRQ',name:'Zaki',n:2,mx:5,t,c:t-2*60e3,status:'lobby',q:true,info:'5 rounds',f:3});
+  pub('dhivehiatolls/v1/','ATLS',{v:1,code:'ATLS',name:'Riza',n:6,mx:8,t,c:t-25*60e3,status:'playing',info:'Round 4',f:2,vw:5});};
+ feed();setInterval(feed,8000);
+ onListing('dhivehijuice/v1/lobby/OLDX',{v:1,code:'OLDX',name:'Ghost',n:2,mx:5,t:Date.now()-5*60e3,status:'lobby'});        // stale: must stay hidden
+ onListing('dhivehibinveriya/v1/lobby/GONE',{v:1,code:'GONE',name:'Lamya',n:3,mx:5,t:Date.now(),status:'playing',info:'Hand 2'}); // cleared after 12 s
+ setTimeout(()=>onListing('dhivehibinveriya/v1/lobby/GONE',null),12000);}
+
+/* =====================================================================================
+   ACTIONS
+   ===================================================================================== */
+function needRules(){if(rulesOK===true)return false;toast('Publish the admin rules first (Overview → setup).',4000);return true;}
+function errMsg(e){return e&&e.code==='permission-denied'?'Firebase refused: check the admin rules and your UID.':(e&&e.message)||String(e);}
+function pLine(p){return `<b>${esc(p.name||'(no name)')}</b> · W ${fmt(p.wins)} · G ${fmt(p.games)} · XP ${fmt(p.xp)} · updated ${ago(p.updatedAt)} ago<br><span class="mono">${esc(p.id)}</span>`;}
+
+async function doMerge(k){if(needRules())return;const g=dupGroups().find(x=>x.k===k);if(!g)return;const {T,src,after}=mergePlan(g);
+ if(!src.length){toast('Tick at least one other entry to merge.');return;}
+ const F=[['wins','Wins'],['games','Games'],['hands','Hands'],['gins','Gins'],['big','Big wins'],['online','Online games'],['xp','XP'+(ST.xpMode==='sum'?' (added)':' (highest)')],['shells','Shells (highest)'],['best','Best (highest)'],['updatedAt','Last update']];
+ const cell=(f,v)=>f==='updatedAt'?esc(when(v)):v==null?'—':fmt(v);
+ const html=`<p style="margin:0 0 6px">Keep <b>${esc(T.name)}</b> <span class="mono muted">${esc(T.id)}</span> and add ${src.length} other entr${src.length===1?'y':'ies'} into it. The name stays “${esc(T.name)}”.</p>
+  <table class="ctab"><thead><tr><th>Field</th><th>Now</th><th>After</th></tr></thead><tbody>
+  ${F.map(([f,l])=>{const b=T[f],a=after[f];return `<tr class="${b!==a?'chg':''}"><td>${l}</td><td>${cell(f,b)}</td><td>${cell(f,a)}</td></tr>`;}).join('')}</tbody></table>
+  <p style="margin:12px 0 0"><b>These ${src.length} player doc${src.length===1?'':'s'} will be deleted:</b></p><ul class="dlist">${src.map(p=>`<li>${pLine(p)}</li>`).join('')}</ul>
+  <p class="small muted" style="margin:10px 0 0">This can’t be undone. If one of these guests plays again on an old device, their entry can come back.</p>`;
+ if(!await ask({title:`Merge ${src.length+1} “${T.name.trim()}” entries?`,html,ok:`Merge & delete ${src.length}`,danger:true}))return;
+ try{await DL.merge(T.id,after,src.map(p=>p.id));Object.assign(ST.players.get(T.id),after);src.forEach(p=>ST.players.delete(p.id));delete ST.dupSel[k];
+  toast('Merged. '+src.length+' entr'+(src.length===1?'y':'ies')+' removed.');renderPlayers();renderStats();}
+ catch(e){console.warn(e);toast('Merge failed: '+errMsg(e),5000);}}
+async function doRename(id){if(needRules())return;const p=ST.players.get(id);if(!p)return;
+ const v=await ask({title:'Rename player',html:`<p style="margin:0">${pLine(p)}</p><p class="small muted">Up to 20 characters. Heads-up: a registered player’s game writes their own username back the next time they play.</p>`,ok:'Next',input:{label:'New name',value:p.name,max:20}});
+ if(v==null)return;const name=cleanName(v);if(!name){toast('The name can’t be empty.');return;}if(name===p.name){toast('Same name, nothing changed.');return;}
+ if(!await ask({title:'Rename?',html:`<p style="margin:0">“<b>${esc(p.name)}</b>” → “<b>${esc(name)}</b>”</p><p class="mono muted">${esc(id)}</p>`,ok:'Rename'}))return;
+ try{await DL.rename(id,name);p.name=name;toast('Renamed.');renderPlayers();}catch(e){console.warn(e);toast('Rename failed: '+errMsg(e),5000);}}
+async function doDelete(id){if(needRules())return;const p=ST.players.get(id);if(!p)return;
+ if(!await ask({title:'Delete this player entry?',html:`<ul class="dlist"><li>${pLine(p)}</li></ul><p class="small muted" style="margin:10px 0 0">Removes the leaderboard entry only (their sign-in account stays). This can’t be undone. If they play again, a fresh entry appears.</p>`,ok:'Delete',danger:true}))return;
+ try{await DL.delPlayer(id);ST.players.delete(id);if(ST.openRow===id)ST.openRow='';toast('Deleted.');renderPlayers();renderStats();}catch(e){console.warn(e);toast('Delete failed: '+errMsg(e),5000);}}
+async function doHandled(id,on){if(needRules())return;const k=ST.inboxKind,nid=noteId(k,id);
+ try{if(on){const d={kind:k,ref:id,handled:true,at:Date.now(),by:user.uid};await DL.setNote(nid,d);ST.notes.set(nid,d);}else{await DL.delNote(nid);ST.notes.delete(nid);}renderInbox();toast(on?'Marked handled.':'Reopened.');}
+ catch(e){console.warn(e);toast('Failed: '+errMsg(e),5000);}}
+async function doDelMsg(id){if(needRules())return;const k=ST.inboxKind,x=(ST[k]||[]).find(m=>m.id===id);if(!x)return;
+ const what=k==='reports'?`${esc(x.reason||'Report')} about <b>${esc(x.targetName||'?')}</b> by ${esc(x.byName||'?')}`:`Support message from <b>${esc(x.byName||'Player')}</b>: “${esc(String(x.msg||'').slice(0,120))}”`;
+ if(!await ask({title:'Delete this message?',html:`<ul class="dlist"><li>${what}<br><span class="small">${esc(when(x.time))}</span></li></ul><p class="small muted" style="margin:10px 0 0">This can’t be undone. “Mark handled” keeps it instead.</p>`,ok:'Delete',danger:true}))return;
+ const nid=noteId(k,id);try{await DL.delInbox(k,id,ST.notes.has(nid)?nid:null);ST[k]=ST[k].filter(m=>m.id!==id);ST.notes.delete(nid);renderInbox();toast('Deleted.');}catch(e){console.warn(e);toast('Delete failed: '+errMsg(e),5000);}}
+async function doCleanPresence(){if(needRules())return;let old=[];try{old=await DL.oldPresence(Date.now()-864e5);}catch(e){toast('Couldn’t read check-ins: '+errMsg(e),5000);return;}
+ if(!old.length){toast('No check-ins older than 24 h.');return;}
+ if(!await ask({title:`Clear ${old.length} old check-in${old.length===1?'':'s'}?`,html:`<p style="margin:0">Deletes presence entries older than 24 hours (left behind when a game closed without saying goodbye). Live counts are not affected; games write a fresh one when they open.</p>`,ok:'Clear',danger:true}))return;
+ try{await DL.delPresence(old);toast('Cleared '+old.length+'.');}catch(e){toast('Failed: '+errMsg(e),5000);}}
+
+document.addEventListener('click',async e=>{const b=e.target.closest('[data-a]');if(!b)return;const a=b.dataset.a;
+ switch(a){
+  case 'tab':setTab(b.dataset.t);break;
+  case 'signout':try{await DL.signOut();}catch(x){}break;
+  case 'google':authErr='';try{await DL.signInGoogle();}catch(x){const el=$('#lerr');if(el)el.textContent=authMsg(x);}break;
+  case 'refresh':toast('Refreshing…',1200);loadPlayers();loadPresence();if(rulesOK!==false)loadInbox();if(tab==='stats'){TR.at=0;loadTraffic(true);}break;
+  case 'copy-uid':copy(user.uid);break;
+  case 'copy-rules':copy(RULES.replace('OWNER_UID',user&&!MOCK?user.uid:'OWNER_UID'));break;
+  case 'probe':rulesOK=null;renderSetup();await probe();if(rulesOK){loadInbox();TR.at=0;TR.err='';}else renderInbox();toast(rulesOK?'Admin rules are active.':'Not active yet. Publish the rules, wait a minute, try again.',3500);break;
+  case 'copy':copy(b.dataset.v);break;
+  case 'tfilter':ST.tFilter=b.dataset.g;renderTables();break;
+  case 'xpmode':ST.xpMode=b.dataset.v;renderDups();break;
+  case 'dtarget':{const s=ST.dupSel[b.dataset.k];if(s){s.target=b.dataset.id;s.excl.delete(b.dataset.id);}ST.dupOpen=b.dataset.k;renderDups();break;}
+  case 'dinc':{const s=ST.dupSel[b.dataset.k];if(s){if(b.checked)s.excl.delete(b.dataset.id);else s.excl.add(b.dataset.id);}break;}
+  case 'merge':ST.dupOpen=b.dataset.k;doMerge(b.dataset.k);break;
+  case 'row':ST.openRow=ST.openRow===b.dataset.id?'':b.dataset.id;renderRows();break;
+  case 'more':ST.shown+=100;renderRows();break;
+  case 'rename':doRename(b.dataset.id);break;
+  case 'del':doDelete(b.dataset.id);break;
+  case 'ikind':ST.inboxKind=b.dataset.v;renderInbox();break;
+  case 'ifilter':ST.inboxFilter=b.dataset.v;renderInbox();break;
+  case 'handled':doHandled(b.dataset.id,true);break;
+  case 'reopen':doHandled(b.dataset.id,false);break;
+  case 'delmsg':doDelMsg(b.dataset.id);break;
+  case 'find':ST.q=b.dataset.v;ST.shown=60;setTab('players');{const i=$('#pq');if(i)i.value=ST.q;}renderRows();break;
+  case 'clean-presence':doCleanPresence();break;
+  case 'daysel':TR.sel=+b.dataset.i;renderTraffic();break;
+  case 'traffic':TR.at=0;loadTraffic(true);break;
+ }});
+document.addEventListener('toggle',e=>{const d=e.target;if(d.classList&&d.classList.contains('dgroup')){if(d.open)ST.dupOpen=d.dataset.k;else if(ST.dupOpen===d.dataset.k)ST.dupOpen='';}},true);
+
+/* =====================================================================================
+   BOOT
+   ===================================================================================== */
+let timers=[];
+function stopTimers(){timers.forEach(clearInterval);timers=[];}
+async function onUser(u){user=u||null;stopTimers();
+ if(!user){isAdmin=false;rulesOK=null;viewLogin();if(MOCK&&Q.get('auto')==='1')DL.signInEmail('owner@example.com','x');return;}
+ viewLoading('Checking access…');
+ const listed=ADMIN_UIDS.includes(user.uid)||(MOCK&&user.uid===MOCK_ADMIN);
+ let ok=false;try{ok=await DL.probe();}catch(e){console.warn(e);}
+ if(user!==u)return;
+ isAdmin=listed||ok;rulesOK=ok;
+ if(!isAdmin){viewDenied();return;}
+ viewPanel();
+ loadPlayers();loadPresence();loadInbox();if(!mq.length&&!startTables.done){startTables.done=true;startTables();}
+ timers.push(setInterval(loadPresence,PRES_EVERY));
+ timers.push(setInterval(()=>{if(!document.hidden&&tab==='tables')renderTables();},3000));
+ timers.push(setInterval(()=>{if(!document.hidden&&Date.now()-ST.playersAt>5*60e3)loadPlayers();},60e3));}
+document.addEventListener('visibilitychange',()=>{if(!document.hidden&&isAdmin){loadPresence();renderTables();}});
+let rsT=0,lastW=innerWidth;addEventListener('resize',()=>{clearTimeout(rsT);rsT=setTimeout(()=>{if(innerWidth!==lastW){lastW=innerWidth;if(TR.at)renderTraffic();}},200);});
+
+(async()=>{
+ if(MOCK){const mb=$('#mockbar');mb.hidden=false;mb.textContent=LIVE?'TEST MODE · fake sign-in · real read-only data · all writes disabled':'MOCK MODE · fake data · nothing is sent to Firebase';}
+ viewLoading('Loading…');
+ try{await DL.init();}catch(e){console.error(e);setView(`<div class="center"><div class="card lcard"><h2>Couldn’t load Firebase</h2><p class="muted">${esc(e.message||e)}</p><button class="btn" onclick="location.reload()">Try again</button></div></div>`);return;}
+ DL.onAuth(u=>onUser(u));
+ if(MOCK)onUser(null);
+})();
+</script>
+</body>
+</html>
