@@ -20,6 +20,9 @@
    questions-en.json has been reviewed (see extras/quiz-questions-review.md); the "Questions being checked"
    note then disappears from the game. */
 var QUIZ_REVIEWED = false;
+/* OWNER SWITCH: while true, every mode plays only the 100 test questions ("testPool" in questions-en.json, listed in
+   extras/quiz-test-100.md). In Dhivehi mode the 19 Dhivehi questions can come up too. Set to false for the full bank. */
+var TEST_POOL = true;
 </script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -204,6 +207,14 @@ html.dg-lite .mesh i{animation:none}
 .fact{margin-top:12px;padding:12px 14px;border-radius:18px;background:rgba(255,255,255,.7);font-size:13px;line-height:1.45;box-shadow:inset 0 0 0 1px rgba(255,255,255,.9)}
 .fact b{display:block;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--coral);margin-bottom:2px}
 .fact b.ok{color:var(--good)}.fact b.no{color:var(--bad)}
+.qrepw{display:flex;justify-content:flex-end;margin-top:6px}
+.qrep{display:inline-flex;align-items:center;gap:5px;border:0;background:none;padding:6px 8px;border-radius:99px;font-size:11.5px;font-weight:700;color:var(--muted);cursor:pointer}
+.qrep svg{width:14px;height:14px}
+.qrep.done{cursor:default;opacity:.7}
+.rr{display:grid;gap:6px;margin:12px 0 4px}
+.rr label{display:flex;align-items:center;gap:10px;min-height:44px;padding:6px 12px;border-radius:12px;background:#fff;box-shadow:inset 0 0 0 1px var(--line);font-weight:700;font-size:14px;cursor:pointer}
+.rr input{accent-color:var(--coral);width:18px;height:18px;flex:none}
+textarea.in{height:auto;min-height:72px;padding:10px 12px;font:500 14px/1.4 Sora,sans-serif;resize:vertical}
 .watchnote{margin:10px 0 0;text-align:center;font-size:12.5px;font-weight:700;color:var(--muted)}
 .dock{display:flex;align-items:center;gap:8px;margin-top:auto;padding-top:14px;min-height:58px}
 .dock .dh{display:flex;align-items:center;gap:8px}
@@ -375,6 +386,7 @@ const I={
  eq:sv('<path d="M6 12h12"/>','class="mv eq"'),
  book:sv('<path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v15H6.5A2.5 2.5 0 0 0 4 20.5z"/><path d="M4 20.5V5.5M8 7.5h8"/>'),
  info:sv('<circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 7.6v.2"/>'),
+ flag:sv('<path d="M5 21V4M5 4h11l-2 4 2 4H5"/>'),
  crown:'<svg class="crown" viewBox="0 0 30 22" aria-hidden="true"><path d="M2 7l6.5 5L15 2l6.5 10L28 7l-2.5 13h-21z" fill="currentColor"/></svg>',
  history:sv('<path d="M3 9.5 12 4l9 5.5M5 10v8M9.7 10v8M14.3 10v8M19 10v8M3 20.5h18"/>'),
  islands:sv('<path d="M2 18c2.5 1.6 4.5 1.6 7 0s4.5-1.6 7 0 4.5 1.6 6 .6"/><path d="M12 15V8"/><path d="M12 8c-1.5-2.6-4.4-3-6.3-1.6M12 8c1.5-2.6 4.4-3 6.3-1.6M12 8c-.6-2.8.8-4.6 3-5"/>'),
@@ -465,7 +477,7 @@ const BANK={en:null,dv:null},bankP={};
 function loadBank(l){if(BANK[l])return Promise.resolve(BANK[l]);if(bankP[l])return bankP[l];
  bankP[l]=fetch('questions-'+l+'.json?v=1',{cache:'no-cache'}).then(r=>{if(!r.ok)throw new Error('HTTP '+r.status);return r.json();}).then(d=>{
   const ok=q=>q&&typeof q.id==='string'&&typeof q.q==='string'&&Array.isArray(q.a)&&q.a.length===4;
-  if(l==='en')BANK.en={q:(d.q||[]).filter(q=>ok(q)&&TKEYS.includes(q.t))};
+  if(l==='en')BANK.en={q:(d.q||[]).filter(q=>ok(q)&&TKEYS.includes(q.t)),pool:new Set(Array.isArray(d.testPool)?d.testPool:[])};
   else{const by={};(d.q||[]).forEach(q=>{if(ok(q))by[q.id]=q;});BANK.dv={by,n:Object.keys(by).length};}
   return BANK[l];}).catch(e=>{bankP[l]=null;throw e;});return bankP[l];}
 function loadBoth(){return Promise.all([loadBank('en'),loadBank('dv').catch(()=>null)]);}
@@ -479,7 +491,11 @@ function recent(){try{const a=JSON.parse(ls.get(RECENT_KEY)||'[]');return Array.
 function markSeen(id){if(!id)return;const a=recent().filter(x=>x!==id);a.push(id);ls.set(RECENT_KEY,JSON.stringify(a.slice(-RECENT_MAX)));}
 /* n questions from these topics: never-seen first (random order), then the ones seen longest ago; topics kept mixed */
 /* lv: one level for every question, or a list (the ramp). A level that runs short borrows from the nearest level. */
-function pickQs(n,topics,preferDv,lv){const all=BANK.en.q.filter(q=>topics.includes(q.t)),r=recent(),pos=new Map(r.map((id,i)=>[id,i]));
+/* the questions in play: the 100-question test pool while TEST_POOL is on (plus the Dhivehi ones in Dhivehi mode;
+   the Daily quiz stays the same for everyone, so it uses the pool only), else the whole bank */
+const poolOn=()=>window.TEST_POOL===true&&!!BANK.en&&BANK.en.pool&&BANK.en.pool.size>0;
+function bankQs(daily){if(!poolOn())return BANK.en.q;const P=BANK.en.pool;return BANK.en.q.filter(q=>P.has(q.id)||(!daily&&lang==='dv'&&hasDv(q.id)));}
+function pickQs(n,topics,preferDv,lv){const all=bankQs().filter(q=>topics.includes(q.t)),r=recent(),pos=new Map(r.map((id,i)=>[id,i]));
  let fresh=shuffle(all.filter(q=>!pos.has(q.id)));if(preferDv)fresh=fresh.filter(q=>hasDv(q.id)).concat(fresh.filter(q=>!hasDv(q.id)));
  const pool=fresh.concat(all.filter(q=>pos.has(q.id)).sort((a,b)=>pos.get(a.id)-pos.get(b.id)));
  const want=Array.isArray(lv)?lv.slice(0,n):Array(n).fill(lv||2);
@@ -492,7 +508,7 @@ function fillSlots(want,pool,cap){const used=new Set(),per={},out=[];
 
 /* ---------- the Daily quiz: the same 10 questions for everyone, chosen from the date (Maldives time, UTC+5) ---------- */
 const mvDay=()=>new Date(Date.now()+5*3600e3).toISOString().slice(0,10);
-function dailyQs(day){const r=seeded('dhivehi-quiz|'+day),sorted=BANK.en.q.slice().sort((a,b)=>a.id<b.id?-1:a.id>b.id?1:0);
+function dailyQs(day){const r=seeded('dhivehi-quiz|'+day),sorted=bankQs(true).slice().sort((a,b)=>a.id<b.id?-1:a.id>b.id?1:0);
  return fillSlots(RAMP,shuffle(sorted,r),2).map(q=>mkQ(q,r));}
 const DAILY_KEY='quiz-daily';
 function dailyRec(){try{const d=JSON.parse(ls.get(DAILY_KEY)||'null');if(d&&d.day===mvDay())return d;}catch(e){}return null;}
@@ -583,8 +599,10 @@ let startTok=0;
 function soloQuit(){clearHost();pausedAt=0;if(mode==='daily'&&S&&S.phase!=='over'){const m=me();dailySave({started:1,done:1,right:m?m.right:0,score:m?m.score:0,n:S.n,quit:1});}
  S=null;mode=null;closeSheet();renderHome();}
 /* solo: pause while the page is hidden (the clock stops), online never pauses */
-document.addEventListener('visibilitychange',()=>{if(document.hidden){AU.sleep();if(S&&(mode==='practice'||mode==='daily')&&S.phase!=='over'&&!pausedAt){pausedAt=Date.now();clearHost();}}
- else if(pausedAt&&S){const d=Date.now()-pausedAt;pausedAt=0;S.at+=d;Object.keys(qShown).forEach(k=>{qShown[k]+=d;});if(S.phase==='q')cpuGo();hostSched();render();}});
+function pauseSolo(){if(S&&(mode==='practice'||mode==='daily')&&S.phase!=='over'&&!pausedAt){pausedAt=Date.now();clearHost();}}
+function resumeSolo(){if(!pausedAt||!S)return;const d=Date.now()-pausedAt;pausedAt=0;S.at+=d;Object.keys(qShown).forEach(k=>{qShown[k]+=d;});if(S.phase==='q')cpuGo();hostSched();render();}
+let repPaused=false;
+document.addEventListener('visibilitychange',()=>{if(document.hidden){AU.sleep();pauseSolo();}else if(!repPaused)resumeSolo();});
 
 /* =====================================================================
    ONLINE (shared/net.js DGNet v5)
@@ -751,7 +769,8 @@ function revHTML(){const q=S.qs[S.qi];if(!q)return '';const v=qView(q),rtl=lang=
  <div class="ans"${rtl?' dir="rtl" lang="dv"':''}>${v.a.map((a,i)=>{const c=i===q.c?'right':(mp&&mp.p===i?'wrong':'dim');
   const who=(by[i]||[]).map(id=>{const k=S.players.findIndex(p=>p.id===id);return k<0?'':avHTML(S.players[k],24,'',k);}).join('');
   return `<div class="an ${c}"><span class="L">${L[i]}</span><span class="tx">${tx(a,rtl)}</span>${S.kind==='daily'?'':`<span class="who">${who}</span>`}${i===q.c?I.check.replace('<svg','<svg class="mark"'):c==='wrong'?I.x.replace('<svg','<svg class="mark"'):''}</div>`;}).join('')}</div>
- <div class="fact"><b class="${cls}">${esc(head)}</b>${esc(q.f)}${lang==='dv'&&q.dv?'':''}</div>
+ <div class="fact"><b class="${cls}">${esc(head)}</b>${esc(q.f)}</div>
+ <div class="qrepw">${reported(q.id)?`<span class="qrep done">${I.flag}Reported</span>`:`<button class="qrep" data-a="qreport" aria-label="Report this question">${I.flag}Report</button>`}</div>
  ${solo?`<button class="bt pri nextb" data-a="next">${S.qi+1<S.n?(S.kind==='daily'?'Next question':'Standings'):'See the result'}</button>`:''}`;}
 function standHTML(){const ids=rankIds(S),prev=S.prev||ids,k0=meIdx(),left=Math.max(0,STAND_MS-(Date.now()-S.at));
  const q=S.qs[S.qi],fastest=(()=>{let b=null;Object.keys(S.picks).forEach(id=>{const pk=S.picks[id];if(q&&pk.p===q.c&&(!b||pk.ms<b.ms))b={id,ms:pk.ms};});return b;})();
@@ -808,9 +827,41 @@ function tick(){if(screen!=='match'||!S)return;
 function planAuto(){if(!AUTO||!S||S.phase!=='q'||meIdx()<0||myPicks[S.qi]!=null||S.picks[myId])return;const qi=S.qi;clearTimeout(autoT);
  autoT=setTimeout(()=>{if(!S||S.qi!==qi||S.phase!=='q')return;const q=S.qs[qi];const c=q&&q.c!=null&&rnd()<.75?q.c:Math.floor(rnd()*4);answer(c);},(FAST?250:700)+rnd()*(FAST?500:1600));}
 
+/* ---------- "Report this question": one report per question per device; written to the Firestore "reports" collection
+   (the admin Inbox) with the same shape and sign-in as shared/net.js reports. On localhost it goes to dd-report-queue
+   (Digu sends that queue when it is next online), and so does a report that can't be sent right now. ---------- */
+const QREASONS=['Wrong answer','Spelling / Dhivehi text','Question unclear','Other'],REP_KEY='quiz-reported';
+function reportedList(){try{const a=JSON.parse(ls.get(REP_KEY)||'[]');return Array.isArray(a)?a:[];}catch(e){return[];}}
+const reported=id=>reportedList().includes(id);
+let repCtx=null;
+function openQReport(){if(!S)return;const q=S.qs[S.qi];if(!q||q.c==null)return;if(reported(q.id)){toast('You already reported this question. Thank you!');return;}
+ const v=qView(q),mp=S.picks[myId];
+ repCtx={id:q.id,d:q.d|0,lang:lang==='dv'&&q.dv?'dv':'en',picked:mp&&mp.p>=0?L[mp.p]:'none',q:v.q,right:v.a[q.c],pickedText:mp&&mp.p>=0?v.a[mp.p]:''};
+ if(!pausedAt){pauseSolo();repPaused=!!pausedAt;}
+ sheet(`<div class="grab"></div><h2>Report this question</h2><p class="muted" style="margin:4px 0 0;font-size:13px">What’s wrong with it? Question <b>${esc(q.id)}</b> · ${esc(LVNAME[q.d]||'')}</p>
+<div class="rr" role="radiogroup" aria-label="Reason">${QREASONS.map((r,i)=>`<label><input type="radio" name="qrr" value="${i}"${i?'':' checked'}>${esc(r)}</label>`).join('')}</div>
+<label class="f" for="qrn">Note (optional)</label><textarea class="in" id="qrn" maxlength="200" rows="3" placeholder="What should it say?"></textarea>
+<div class="row"><button class="bt" data-a="close">Cancel</button><button class="bt pri" data-a="sendQReport">Send</button></div>`);}
+const FBV='https://www.gstatic.com/firebasejs/12.19.0/';
+const FBCFG={apiKey:'AIzaSyCl9Xz5r80755hYX0ww2GRaB6TZTH6sayE',authDomain:'dhivehi-digu.firebaseapp.com',projectId:'dhivehi-digu',storageBucket:'dhivehi-digu.firebasestorage.app',messagingSenderId:'778464006205',appId:'1:778464006205:web:7dce5d63707c6b2d0eda54'};
+async function fbReport(rep){const [A,F,U]=await Promise.all([import(FBV+'firebase-app.js'),import(FBV+'firebase-firestore.js'),import(FBV+'firebase-auth.js')]);
+ const app=A.getApps&&A.getApps().length?A.getApp():A.initializeApp(FBCFG),auth=U.getAuth(app);try{if(auth.authStateReady)await auth.authStateReady();}catch(e){}
+ const u=auth.currentUser||(await U.signInAnonymously(auth)).user;await F.addDoc(F.collection(F.getFirestore(app),'reports'),Object.assign({},rep,{uid:u.uid,at:F.serverTimestamp()}));}
+function qReportDoc(c,reason,note){return{reason:('Quiz: '+reason).slice(0,40),note:[c.id,LVNAME[c.d]||'',c.lang,'picked '+c.picked,note].filter(Boolean).join(' · ').slice(0,300),
+ chat:[('Q: '+c.q).slice(0,200),('Right answer: '+c.right).slice(0,120),('Picked: '+(c.pickedText||'no answer')).slice(0,120)],
+ kind:'quiz',qid:c.id,level:c.d,lang:c.lang,picked:c.picked,targetId:c.id,targetName:('Question '+c.id).slice(0,20),byId:myId,byName:String(myName()||'Player').slice(0,20),
+ table:online()&&NET&&NET.meta()?String(NET.meta().code||'').slice(0,8):'',mode:'quiz:'+(!S?'':S.kind==='online'?(S.quick?'quick':'friends'):S.kind),t:Date.now()};}
+async function sendQReport(){const c=repCtx;if(!c)return;repCtx=null;const sel=document.querySelector('input[name="qrr"]:checked');
+ const note=String(($('#qrn')||{}).value||'').replace(/[\u0000-\u001f<>]/g,' ').trim().slice(0,200);
+ const rep=qReportDoc(c,QREASONS[sel?+sel.value:0]||'Other',note);
+ ls.set(REP_KEY,JSON.stringify(reportedList().concat(c.id).slice(-500)));closeSheet();lastRender='';render();
+ let ok=false;if(!LOCAL){try{await fbReport(rep);ok=true;}catch(e){}}
+ if(!ok){let q=[];try{q=JSON.parse(ls.get('dd-report-queue')||'[]');if(!Array.isArray(q))q=[];}catch(e){}q.push(rep);ls.set('dd-report-queue',JSON.stringify(q.slice(-20)));}
+ toast(ok?'Thanks! Sent to the Dhivehi Games team.':'Thanks! Saved, and sent to the Dhivehi Games team when you’re next online.',4000);}
+
 /* ---------- sheets, menu, toasts ---------- */
 function sheet(h){$('#sheetB').innerHTML=h;$('#sheet').classList.add('open');}
-function closeSheet(){$('#sheet').classList.remove('open');}
+function closeSheet(){$('#sheet').classList.remove('open');if(repPaused){repPaused=false;if(!document.hidden)resumeSolo();}}
 let toastT=0;function toast(t,ms){const e=$('#toast');e.textContent=t;e.classList.remove('show');void e.offsetWidth;e.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>e.classList.remove('show'),ms||2600);}
 function closeToast(){clearTimeout(toastT);$('#toast').classList.remove('show');}
 function howHTML(){return `<div class="rules">
@@ -875,6 +926,8 @@ document.addEventListener('click',e=>{const b=e.target.closest('[data-a]');if(!b
   case 'sfx':toggleSfx();break;
   case 'smooth':toggleSmooth();break;
   case 'close':closeSheet();break;
+  case 'qreport':openQReport();break;
+  case 'sendQReport':sendQReport();break;
   case 'name':openName();break;
   case 'saveName':saveName();break;}});
 $('#sheet').addEventListener('click',e=>{if(e.target.id==='sheet')closeSheet();});
@@ -883,7 +936,7 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'&&$('#sheet').classLi
  if(screen==='match'&&S&&S.phase==='q'&&!$('#sheet').classList.contains('open')&&!(e.target&&/INPUT|TEXTAREA/.test(e.target.tagName))){const i='1234'.indexOf(e.key)>=0?'1234'.indexOf(e.key):'abcd'.indexOf(e.key.toLowerCase());if(i>=0&&e.key.length===1)answer(i);}});
 
 /* test hooks (used by the automated checks; harmless in normal play) */
-window.__quiz={RAMP,BASE,XP_PLACE,XP_MULT,
+window.__quiz={RAMP,BASE,_report:()=>openQReport(),reported,poolOn:()=>poolOn(),XP_PLACE,XP_MULT,
  /* localhost tests only: show one question by id (the clock is parked) */
  _show:id=>{if(!LOCAL||!S||!BANK.en)return false;const q=BANK.en.q.find(x=>x.id===id);if(!q)return false;clearHost();S.phase='q';S.qs[S.qi]=mkQ(q);S.at=Date.now()+1e9;S.picks={};myPicks={};lastRender='';render();return true;},
  get S(){return S;},get mode(){return mode;},get NET(){return NET;},get lang(){return lang;},answer,dailyIds:()=>loadBoth().then(()=>dailyQs(mvDay()).map(q=>q.id)),
