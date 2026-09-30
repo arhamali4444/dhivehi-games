@@ -18,7 +18,7 @@
  window.__dgReveal=reveal;
  var now=(window.performance&&performance.now)?performance.now():0;
  var cap=setTimeout(reveal,Math.max(1500,6500-now));
- addEventListener('dg-intro-start',function(){clearTimeout(cap);setTimeout(reveal,3450+1200);});
+ addEventListener('dg-intro-start',function(){clearTimeout(cap);setTimeout(reveal,4540+1200);});
  addEventListener('pageshow',function(e){if(e.persisted)reveal();});
  addEventListener('error',function(e){if(window.ErrorEvent&&e instanceof ErrorEvent&&d.classList.contains('boot'))setTimeout(reveal,200);});
 })();</script>
@@ -423,6 +423,33 @@ html.lite .nav{-webkit-backdrop-filter:none;backdrop-filter:none;background:rgba
 .seasnd[aria-pressed="true"]{background:rgba(255,255,255,.9);color:#E0405C}
 
 html.boot .intro :is(.ix,.ix *,.pcb,.intro-ico,.enter,.pp,.pure-card,.nlogo,.wl,.wl .ch,.wt-l svg,.wt-l [pathLength],.wt-l circle,.tg,.tf,.hp,.top,.cats,.flow,.glow,.nav,.dots,.adbox,.resume,.foot,.stage,main,.light),html.boot .intro :is(.ix,.ix *,.di,.pcb)::before,html.boot .intro :is(.ix,.ix *,.di,.pcb)::after{animation-play-state:paused!important}
+
+/* ===== home reveal: how the page builds itself after the intro ===== */
+/* while the page boots, everything waits on its first frame (the reveal starts with the intro, on one timeline) */
+html.boot body.intro *,html.boot body.intro *::before,html.boot body.intro *::after{animation-play-state:paused!important}
+html.boot body.intro .flow{opacity:0}
+.rvx{display:none}
+.rv-tmp{pointer-events:none}
+/* shared overlay pieces used inside the game cards during a reveal */
+.rv-dark,.rv-back,.rv-face,.rv-sheen{position:absolute;inset:0;border-radius:inherit;pointer-events:none}
+.rv-dark{background:#0A0812;z-index:6}
+.rv-sheen{overflow:hidden;z-index:7}
+.rv-sheen i{position:absolute;top:-10%;bottom:-10%;left:0;width:65%;background:linear-gradient(90deg,rgba(255,255,255,0),rgba(255,255,255,.5) 45%,rgba(255,255,255,.7) 50%,rgba(255,255,255,.5) 55%,rgba(255,255,255,0));opacity:0}
+.rv-face{z-index:8;background:#fff}.rv-face svg{display:block;width:100%;height:100%}
+.rv-back{z-index:8;background:linear-gradient(160deg,#FF7254,#F23A56);box-shadow:inset 0 0 0 6px #fff}
+.rv-back:after{content:"";position:absolute;left:50%;top:50%;width:44%;height:44%;margin:-22% 0 0 -22%;background:url("data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%2721 23.5 58 58%27%3E%3Cpath d=%27M50,32.65%20A14.5,14.5%200%201%200%2026.01,48.85%20Q39.27,63.45%2050,80%20Q60.73,63.45%2073.99,48.85%20A14.5,14.5%200%201%200%2050,32.65Z%27 transform=%27rotate%28-8 50 52%29%27 fill=%27%23FFFFFF%27/%3E%3C/svg%3E") center/contain no-repeat}
+
+/* R6b The Deal: the heart card of the Punch Card logo is the dealer. Once the logo is in place it lifts a little, flicks
+   each game card out face down (they fly out from behind the logo) and every card flips face up as it lands; your card
+   comes last. The heart card then settles back into the logo and goes straight on into its Peek-a-boo idle loop. */
+body.intro .flow{animation:none}
+body.intro .top{animation:inDown 0.6s cubic-bezier(.3,1.2,.5,1) 2.4s both;animation:inDown 0.6s linear(0,0.0173,0.0623,0.1257,0.2004,0.2809,0.3629,0.4432,0.5198,0.5911,0.6561,0.7146,0.7664,0.8116,0.8505,0.8836,0.9115,0.9345,0.9534,0.9686,0.9807,0.99,0.9971,1.0024,1.0061,1.0086,1.0101,1.0109,1.0111,1.0109,1.0104,1.0096,1.0088,1.0079,1.007,1.0061,1.0053,1.0045,1.0038,1.0031,1.0026,1.0021,1.0016,1.0013,1) 2.4s both}
+body.intro .cats{animation:handUp 0.55s cubic-bezier(.3,1.2,.5,1) 2.55s both;animation:handUp 0.55s linear(0,0.0173,0.0623,0.1257,0.2004,0.2809,0.3629,0.4432,0.5198,0.5911,0.6561,0.7146,0.7664,0.8116,0.8505,0.8836,0.9115,0.9345,0.9534,0.9686,0.9807,0.99,0.9971,1.0024,1.0061,1.0086,1.0101,1.0109,1.0111,1.0109,1.0104,1.0096,1.0088,1.0079,1.007,1.0061,1.0053,1.0045,1.0038,1.0031,1.0026,1.0021,1.0016,1.0013,1) 2.55s both}
+body.intro .glow{animation:handF 0.8s ease 3.24s both}
+body.intro .nav{animation:navin 0.6s cubic-bezier(.3,1.2,.5,1) 3.69s both;animation:navin 0.6s linear(0,0.0173,0.0623,0.1257,0.2004,0.2809,0.3629,0.4432,0.5198,0.5911,0.6561,0.7146,0.7664,0.8116,0.8505,0.8836,0.9115,0.9345,0.9534,0.9686,0.9807,0.99,0.9971,1.0024,1.0061,1.0086,1.0101,1.0109,1.0111,1.0109,1.0104,1.0096,1.0088,1.0079,1.007,1.0061,1.0053,1.0045,1.0038,1.0031,1.0026,1.0021,1.0016,1.0013,1) 3.69s both}
+body.intro .dots{animation:handUp 0.45s cubic-bezier(.3,1.2,.5,1) 3.94s both;animation:handUp 0.45s linear(0,0.0173,0.0623,0.1257,0.2004,0.2809,0.3629,0.4432,0.5198,0.5911,0.6561,0.7146,0.7664,0.8116,0.8505,0.8836,0.9115,0.9345,0.9534,0.9686,0.9807,0.99,0.9971,1.0024,1.0061,1.0086,1.0101,1.0109,1.0111,1.0109,1.0104,1.0096,1.0088,1.0079,1.007,1.0061,1.0053,1.0045,1.0038,1.0031,1.0026,1.0021,1.0016,1.0013,1) 3.94s both}
+body.intro .adbox{animation:handUp 0.6s cubic-bezier(.3,1.2,.5,1) 3.84s both;animation:handUp 0.6s linear(0,0.0173,0.0623,0.1257,0.2004,0.2809,0.3629,0.4432,0.5198,0.5911,0.6561,0.7146,0.7664,0.8116,0.8505,0.8836,0.9115,0.9345,0.9534,0.9686,0.9807,0.99,0.9971,1.0024,1.0061,1.0086,1.0101,1.0109,1.0111,1.0109,1.0104,1.0096,1.0088,1.0079,1.007,1.0061,1.0053,1.0045,1.0038,1.0031,1.0026,1.0021,1.0016,1.0013,1) 3.84s both}
+body.intro .resume,body.intro .foot{animation:handUp 0.55s cubic-bezier(.3,1.2,.5,1) 3.94s both;animation:handUp 0.55s linear(0,0.0173,0.0623,0.1257,0.2004,0.2809,0.3629,0.4432,0.5198,0.5911,0.6561,0.7146,0.7664,0.8116,0.8505,0.8836,0.9115,0.9345,0.9534,0.9686,0.9807,0.99,0.9971,1.0024,1.0061,1.0086,1.0101,1.0109,1.0111,1.0109,1.0104,1.0096,1.0088,1.0079,1.007,1.0061,1.0053,1.0045,1.0038,1.0031,1.0026,1.0021,1.0016,1.0013,1) 3.94s both}
 </style>
 </head>
 <body class="intro"><script>/* ---- intro sound: foley, synthesised with WebAudio (no files, no music, no tones). ----
@@ -692,7 +719,7 @@ const ls={get(k){try{return localStorage.getItem(k);}catch(e){return null;}},set
 let myId=ls.get('lg-id');if(!myId){myId='u'+Math.random().toString(36).slice(2,11);ls.set('lg-id',myId);}
 const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let tt;function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('show');clearTimeout(tt);tt=setTimeout(()=>t.classList.remove('show'),2600);}
-(function(){var go=function(){setTimeout(()=>document.body.classList.remove('intro'),3450);};if(document.documentElement.classList.contains('boot'))addEventListener('dg-intro-start',go,{once:true});else go();})();
+/* the intro is ended by the home reveal controller (end of the page) */
 
 /* ---------- profile pill ---------- */
 function paintMe(){
@@ -783,7 +810,7 @@ flow.addEventListener('pointerup',e=>endDrag(e,false));flow.addEventListener('po
 flow.addEventListener('click',e=>{if(e.target.closest('.fc'))e.preventDefault();});
 flow.addEventListener('keydown',e=>{if(e.key==='ArrowRight'){lastTouch=Date.now();go(cur+1);e.preventDefault();}else if(e.key==='ArrowLeft'){lastTouch=Date.now();go(cur-1);e.preventDefault();}
  else if(e.key==='Enter'){const c=cards[idx(cur)];if(c.dataset.href)location.href=c.dataset.href;else toast(c.dataset.name+' is coming soon. Stay tuned!');}});
-if(!reduce)setInterval(()=>{if(document.hidden||drag||Date.now()-lastTouch<7000)return;go(cur+1);},3200);
+if(!reduce)setInterval(()=>{if(document.hidden||document.body.classList.contains('intro')||drag||Date.now()-lastTouch<7000)return;go(cur+1);},3200);
 
 /* ---------- sponsor box: ripple reveal ---------- */
 const box=$('#adbox'),barsEl=$('#bars'),rip=$('#ripple');let ai=0,az=1,adT=0,adStart=0,adLeft=AD_MS,held=false;
@@ -871,7 +898,7 @@ try{
   {offset:.7,transform:'translate(0px,36px) rotate(-5deg)',easing:IO},                             /* and the other */
   {offset:.79,transform:'translate(0px,36px) rotate(0deg)',easing:SPRING},                         /* spring back up */
   {offset:1,transform:'translate(0px,0px) rotate(0deg)'}];
- var tm=0,anim=null,onScreen=true,b=document.body;
+ var tm=0,anim=null,onScreen=true,b=document.body;window.__dgPeekNow=function(){plan(0);};
  function ok(){return onScreen&&!document.hidden&&!b.classList.contains('intro');}
  function plan(ms){clearTimeout(tm);tm=setTimeout(go,ms!=null?ms:7000+Math.random()*2000);}
  function go(){if(!ok()){plan(1500);return;}
@@ -1031,6 +1058,115 @@ addEventListener('keydown',function(e){if(b.classList.contains('intro')){end();c
   Promise.race([Promise.all([f,atlas]),new Promise(function(r){setTimeout(r,700);})]).then(start);}
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',ready);else ready();
  setTimeout(start,1800);
+})();</script>
+<script>/* home reveal: deal (r6b-the-deal) */
+window.__RVCFG={name:'the-deal-b',run:function(R){var H=R.H,cs=R.cards(),emb=document.getElementById('emb');if(!emb)return;var hm=R.home(emb);
+ var k=hm.w/100,tx=hm.x+50*k,ty=hm.y+50.5*k,tw=54*k,order=[-2,-1,1,2,0],T0=H+600,deals=[];
+ order.forEach(function(s,i){var c=cs.filter(function(q){return q.slot===s;})[0];if(!c)return;var el=c.el,dur=s===0?680:540,d0=H+740+i*150+(s===0?20:0);deals.push(d0);
+  var rc=el.getBoundingClientRect(),ex=rc.left+rc.width/2,ey=rc.top+rc.height/2,u=.55;
+  var from=R.at(c,tx,ty,tw,-8),mid=R.at(c,tx+(ex-tx)*u,ty+(ey-ty)*u-(s===0?60:44),tw+(rc.width-tw)*u,-8*(1-u)+(s<0?-5:s>0?5:0));
+  R.A(el,[{transform:from+' '+c.base+' rotateY(180deg)',opacity:0,easing:'cubic-bezier(.25,.5,.4,1)'},{opacity:c.op,offset:.08},
+   {transform:mid+' '+c.base+' rotateY(180deg)',offset:.5,easing:'cubic-bezier(.4,0,.6,1)'},
+   {transform:R.ID+' '+c.base+' rotateY(90deg)',offset:.78,easing:'cubic-bezier(.2,.9,.35,1.3)'},
+   {transform:R.ID+' '+c.base+' rotateY(0deg)',opacity:c.op}],{duration:dur,delay:d0,easing:'linear'});
+  R.A(R.span('rv-back',el),[{opacity:1},{opacity:1,offset:.78},{opacity:0,offset:.781},{opacity:0}],{duration:dur,delay:d0,easing:'linear'});
+  R.sfx('tick',d0,.8);R.sfx(s===0?'snap':'tick',d0+dur*.78|0,s===0?1:.5);});
+ /* the logo's heart card: lift into the dealer's pose, flick once per card, then settle back exactly into place
+    (same transform form and origin as the Peek-a-boo loop, which starts from this rest pose) */
+ var pc=document.querySelector('#emb .pure-card');
+ if(pc&&deals.length){var TE=H+1900,D=TE-T0,P='translate(0px,-5px) rotate(-6deg)',kf=[{offset:0,transform:'translate(0px,0px) rotate(0deg)',easing:'cubic-bezier(.3,0,.2,1)'},
+   {offset:(deals[0]-60-T0)/D,transform:P}];
+  deals.forEach(function(d){kf.push({offset:(d-40-T0)/D,transform:P,easing:'cubic-bezier(.4,0,.2,1)'});kf.push({offset:(d+30-T0)/D,transform:'translate(3px,-8px) rotate(-12deg)',easing:'cubic-bezier(.3,0,.3,1)'});
+   kf.push({offset:Math.min((d+110-T0)/D,.99),transform:P});});
+  var last=kf[kf.length-1].offset;kf.push({offset:Math.min(.999,last+.02),transform:P,easing:R.EZ.spring});
+  kf.push({offset:1,transform:'translate(0px,0px) rotate(0deg)'});
+  R.A(pc,kf,{duration:D,delay:T0,easing:'linear'});}},
+ /* the reveal ended on its own: the heart card is at rest, so the Peek-a-boo loop starts straight away from there */
+ end:function(){setTimeout(function(){if(window.__dgPeekNow)window.__dgPeekNow();},0);}};</script>
+<script>/* ===== Home reveal: one controller for the hand-off from the intro to the page =====
+ - the reveal runs on the intro's own clock: it starts with 'dg-intro-start'
+ - the page ends in its natural layout: at the end every reveal animation is cancelled in the same frame as the
+   'intro' class is removed, so nothing can stay half-way (no leftover transforms or opacity)
+ - safety net: an end timer, two watchdog checks, a check whenever the tab comes back, and the page's own head-first
+   fallback; a tap (or key) skips at any moment
+ - reduced motion: no reveal, just a short fade
+ - sound: optional, subtle, only if the page's sound is already on (never unlocks audio) and never when muted ('dd-sfx') */
+(function(){
+ var b=document.body,d=document.documentElement,H=2240,END=4540,C=window.__RVCFG||{};
+ var reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+ var anims=[],tmrs=[],temps=[],running=false,t0=0;
+ var LIN=!!(window.CSS&&CSS.supports&&CSS.supports('animation-timing-function','linear(0,1)'));
+ var EZ={soft:LIN?'linear(0,0.0173,0.0623,0.1257,0.2004,0.2809,0.3629,0.4432,0.5198,0.5911,0.6561,0.7146,0.7664,0.8116,0.8505,0.8836,0.9115,0.9345,0.9534,0.9686,0.9807,0.99,0.9971,1.0024,1.0061,1.0086,1.0101,1.0109,1.0111,1.0109,1.0104,1.0096,1.0088,1.0079,1.007,1.0061,1.0053,1.0045,1.0038,1.0031,1.0026,1.0021,1.0016,1.0013,1)':'cubic-bezier(.3,1.2,.5,1)',spring:LIN?'linear(0,.009,.035 2.1%,.141 4.4%,.723 12.9%,.938 16.7%,1.017 19.4%,1.067,1.089 25.4%,1.084 28.1%,1.029 35.3%,1.003 41.2%,.994 47.9%,1 60.1%,1)':'cubic-bezier(.34,1.4,.5,1)',pop:LIN?'linear(0,0.0551,0.1954,0.3846,0.5902,0.7864,0.9552,1.0856,1.1739,1.2213,1.2335,1.218,1.1836,1.1386,1.0905,1.0452,1.0067,0.9773,0.9577,0.9476,0.9456,0.9498,0.9582,0.9688,0.9801,0.9905,0.9993,1.0059,1.0102,1.0124,1.0127,1.0116,1.0095,1.007,1.0044,1.002,1,0.9985,0.9975,0.9971,0.9971,0.9973,0.9978,0.9984,1)':'cubic-bezier(.3,1.5,.5,1)',
+  out:'cubic-bezier(.16,1,.3,1)',io:'cubic-bezier(.45,0,.3,1)',calm:'cubic-bezier(.2,.8,.2,1)'};
+ window.__RV={H:H,END:END,name:C.name||''};
+ function T(f,ms){tmrs.push(setTimeout(f,ms));}
+ function A(el,kf,o){if(!el||!el.animate)return null;try{var op={fill:'both'};for(var k in o)op[k]=o[k];var a=el.animate(kf,op);anims.push(a);return a;}catch(e){window.__rvFail=(window.__rvFail||0)+1;return null;}}
+ function tmp(el){el.classList.add('rv-tmp');temps.push(el);return el;}
+ function span(cls,parent,before){var e=tmp(document.createElement('span'));e.className+=' '+cls;if(before)parent.insertBefore(e,before);else parent.appendChild(e);return e;}
+ function cleanup(){var a=anims;anims=[];a.forEach(function(x){try{x.cancel();}catch(e){}});var t=temps;temps=[];t.forEach(function(e){if(e.parentNode)e.parentNode.removeChild(e);});}
+ function num(re,s,f){var m=re.exec(s||'');return m?parseFloat(m[1]):f;}
+ /* the game cards on screen with their cover-flow transform; slot 0 = front, -1/1 beside it, -2/2 outside */
+ function cards(){var out=[];[].forEach.call(document.querySelectorAll('#flow .fc'),function(c){var op=c.style.opacity===''?1:parseFloat(c.style.opacity);if(!(op>0.01))return;
+   var tr=c.style.transform||'',x=num(/translateX\((-?[\d.]+)px\)/,tr,0),ax=Math.abs(x);
+   out.push({el:c,base:tr||'translateX(0px)',op:op,x:x,z:num(/translateZ\((-?[\d.]+)px\)/,tr,0),sc:num(/scale\((-?[\d.]+)\)/,tr,1),
+    slot:(x<0?-1:1)*(ax<=96?Math.round(ax/96):1+Math.round((ax-96)/50))});});
+  out.sort(function(p,q){return p.x-q.x;});return out;}
+ /* prefix transform that shows a card (its own cover-flow transform follows) centred on screen point sx,sy, sw pixels wide */
+ function at(c,sx,sy,sw,rot){var fl=document.getElementById('flow'),r=fl.getBoundingClientRect(),cs=getComputedStyle(fl),P=parseFloat(cs.perspective)||800,
+   po=(cs.perspectiveOrigin||'50% 40%').split(' '),ox=parseFloat(po[0]),oy=parseFloat(po[1]),el=c.el,cw=el.offsetWidth,
+   cx=el.offsetLeft+cw/2,cy=el.offsetTop+el.offsetHeight/2,rr=sw/(cw*c.sc),s=rr*P/(P+c.z*rr),k=P/(P-c.z*s);
+  var dx=(sx-r.left-ox)/k-(cx+c.x*s-ox),dy=(sy-r.top-oy)/k-(cy-oy);
+  return 'translate('+dx.toFixed(1)+'px,'+dy.toFixed(1)+'px) rotate('+(rot||0).toFixed(1)+'deg) scale('+s.toFixed(4)+')';}
+ var ID='translate(0px,0px) rotate(0deg) scale(1)';
+ /* where an element sits in the finished layout, in viewport pixels (ignores the intro's transforms) */
+ function home(el){var x=0,y=0;for(var o=el;o;o=o.offsetParent){x+=o.offsetLeft;y+=o.offsetTop;}x-=window.scrollX||0;y-=window.scrollY||0;
+  return {x:x,y:y,w:el.offsetWidth,h:el.offsetHeight,cx:x+el.offsetWidth/2,cy:y+el.offsetHeight/2};}
+ /* ---- optional subtle sounds (synthesised) ---- */
+ function actx(){var G=window.DGAudio;if(!G||G.muted())return null;var c=G.ctx;return c&&c.state==='running'?c:null;}
+ var NB=null;
+ function nb(c){if(NB&&NB.sampleRate===c.sampleRate)return NB;var n=c.sampleRate,bf=c.createBuffer(1,n,n),dd=bf.getChannelData(0);for(var i=0;i<n;i++)dd[i]=Math.random()*2-1;return NB=bf;}
+ function dest(c){return window.DGAudio&&DGAudio.ctx===c&&DGAudio.bus?DGAudio.bus:c.destination;}
+ function env(c,t,a,pk,dc){var g=c.createGain();g.gain.setValueAtTime(0.0001,t);g.gain.exponentialRampToValueAtTime(pk,t+a);g.gain.exponentialRampToValueAtTime(0.0001,t+a+dc);g.connect(dest(c));return g;}
+ function noise(c,t,dur,type,f0,f1,q,pk,a,dc){var s=c.createBufferSource();s.buffer=nb(c);var f=c.createBiquadFilter();f.type=type;f.Q.value=q;f.frequency.setValueAtTime(f0,t);
+  if(f1)f.frequency.exponentialRampToValueAtTime(f1,t+dur);s.connect(f);f.connect(env(c,t,a,pk,dc));s.start(t,Math.random()*.4,a+dc+.05);}
+ function tone(c,t,type,f0,f1,pk,a,dc){var o=c.createOscillator();o.type=type;o.frequency.setValueAtTime(f0,t);if(f1)o.frequency.exponentialRampToValueAtTime(f1,t+a+dc*.7);
+  o.connect(env(c,t,a,pk,dc));o.start(t);o.stop(t+a+dc+.05);}
+ var SFX={
+  whoosh:function(c,t,k){k=k||1;noise(c,t,.9*k,'bandpass',420,2200,.7,.045,.35*k,.6*k);},
+  shimmer:function(c,t){tone(c,t,'sine',2093,0,.011,.02,1.1);tone(c,t+.07,'sine',3136,0,.007,.02,.9);tone(c,t+.14,'sine',2637,0,.006,.02,.9);},
+  tick:function(c,t,g){g=g||1;noise(c,t,.02,'highpass',2600,0,.7,.06*g,.001,.03);noise(c,t,.03,'bandpass',1300,0,1,.045*g,.002,.045);},
+  snap:function(c,t){noise(c,t,.02,'highpass',2800,0,.8,.08,.0006,.03);tone(c,t,'triangle',240,140,.03,.003,.06);},
+  scan:function(c,t){tone(c,t,'sine',1760,2640,.005,.02,.25);},
+  wash:function(c,t,k){k=k||1;noise(c,t,1.1,'lowpass',380,1400,.5,.055*k,.45,.8);noise(c,t+.1,.9,'bandpass',2400,900,.6,.016*k,.35,.6);},
+  drum:function(c,t,k){k=k||1;tone(c,t,'sine',118,50,.15*k,.004,.34);noise(c,t,.05,'bandpass',210,0,1.2,.06*k,.002,.09);noise(c,t,.02,'highpass',2200,0,.7,.018*k,.001,.03);}};
+ function sfx(name,ms,arg){T(function(){var c=actx();if(!c)return;try{SFX[name](c,c.currentTime+.01,arg);}catch(e){}},ms);}
+ /* a sequence scheduled on the audio clock at once (tight rhythm): list of [ms after 'ms', name, arg] */
+ function seq(list,ms){T(function(){var c=actx();if(!c)return;var t=c.currentTime+.02;list.forEach(function(x){try{SFX[x[1]](c,t+x[0]/1000,x[2]);}catch(e){}});},ms);}
+ var api={H:H,END:END,A:A,T:T,tmp:tmp,span:span,cards:cards,at:at,ID:ID,home:home,EZ:EZ,sfx:sfx,seq:seq};
+ /* ---- timeline ---- */
+ function start(){cleanup();tmrs.forEach(clearTimeout);tmrs=[];t0=performance.now();window.__rvT0=t0;
+  if(reduce||!b.classList.contains('intro')){finish();var m=document.querySelector('main');
+   if(reduce&&m&&m.animate)try{m.animate([{opacity:0},{opacity:1}],{duration:450,easing:'ease-out'});}catch(e){}return;}
+  running=true;
+  try{if(C.run)C.run(api);}catch(e){try{console.warn('[reveal] '+e);}catch(_){}}
+  T(finish,END);T(check,END+700);T(check,END+2500);}
+ /* the page's head-first fallback has done its job once the intro is over: disarm it, so it can never fire later */
+ function disarm(){try{if(window.__dgReveal)window.__dgReveal();}catch(e){}}
+ function finish(){var natural=running;running=false;if(b.classList.contains('intro'))b.classList.remove('intro');cleanup();disarm();
+  if(natural&&C.end)try{C.end(api);}catch(e){}}
+ /* watchdog: the finished page must be fully visible; force anything that is not */
+ function check(){if(b.classList.contains('intro')){if(performance.now()-t0<END)return;finish();}
+  cleanup();var bad=[];
+  ['main','.top','#nlogo','#emb','.stage','.cats','#flow','.dots','.adbox','.foot','.nav'].forEach(function(s){var e=document.querySelector(s);if(!e)return;var cs=getComputedStyle(e);
+   if(+cs.opacity<.99||cs.visibility==='hidden'){bad.push(s);(e.getAnimations?e.getAnimations():[]).forEach(function(a){try{a.cancel();}catch(_){}});}});
+  var f=document.querySelector('#flow .fc.front');
+  if(f&&+getComputedStyle(f).opacity<.9){bad.push('front card');(f.getAnimations?f.getAnimations():[]).forEach(function(a){try{a.cancel();}catch(_){}});f.style.opacity='1';}
+  if(bad.length)try{console.info('[reveal safety net] forced visible: '+bad.join(', '));}catch(_){}}
+ document.addEventListener('visibilitychange',function(){if(document.hidden)return;if(running&&performance.now()-t0>END)finish();else if(!running)check();});
+ /* a tap/key skip (or the page's own fallback) removed the intro: drop the reveal at once */
+ new MutationObserver(function(){if(!b.classList.contains('intro')&&(running||anims.length||temps.length)){running=false;cleanup();disarm();}})
+  .observe(b,{attributes:true,attributeFilter:['class']});
+ if(d.classList.contains('boot'))addEventListener('dg-intro-start',start,{once:true});else if(b.classList.contains('intro'))start();
 })();</script>
 </body>
 </html>
