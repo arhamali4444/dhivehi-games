@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#073F52">
+<meta name="theme-color" content="#F3EEF7">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -19,8 +19,8 @@
 <link rel="preconnect" href="https://cdn.jsdelivr.net">
 <link rel="dns-prefetch" href="https://broker.emqx.io">
 <link rel="dns-prefetch" href="https://broker.hivemq.com">
-<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=DM+Serif+Display&family=Fraunces:ital,opsz,wght@0,9..144,900;1,9..144,700&family=Caveat:wght@700&family=Roboto:wght@500&display=swap" onload="this.onload=null;this.rel='stylesheet'">
-<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=DM+Serif+Display&family=Fraunces:ital,opsz,wght@0,9..144,900;1,9..144,700&family=Caveat:wght@700&family=Roboto:wght@500&display=swap"></noscript>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Bricolage+Grotesque:opsz,wght@12..96,800&family=DM+Serif+Display&family=Fraunces:ital,opsz,wght@0,9..144,900;1,9..144,700&family=Caveat:wght@700&family=Roboto:wght@500&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Bricolage+Grotesque:opsz,wght@12..96,800&family=DM+Serif+Display&family=Fraunces:ital,opsz,wght@0,9..144,900;1,9..144,700&family=Caveat:wght@700&family=Roboto:wght@500&display=swap"></noscript>
 <style>
 /* ================= Digu · Island Luxe ================= */
 :root{--ink:#15241F;--muted:#6B6354;--panel:#FFFDF8;--cream:#F7F1E6;--line:rgba(21,36,31,.12);--edge:#E6D9C0;--accent:#155E43;--accent-ink:#fff;--deep:#0B3B2B;
@@ -333,15 +333,6 @@ main.table>*{width:100%;max-width:640px;margin-left:auto;margin-right:auto}
 /* turn: a glowing ring around the avatar that drains clockwise (transform-only) */
 .av.on:before{content:"";position:absolute;inset:-7px;border-radius:50%;box-shadow:0 0 14px 3px var(--tg,rgba(255,211,110,.75));animation:tglow 1.6s ease-in-out infinite;pointer-events:none;z-index:-1}
 @keyframes tglow{0%,100%{opacity:.45}50%{opacity:1}}
-.tmr{--tc:#FFD36E;position:absolute;inset:-6px;border-radius:50%;z-index:3;pointer-events:none;background:rgba(255,255,255,.16);
- -webkit-mask:radial-gradient(farthest-side,transparent calc(100% - 4.5px),#000 calc(100% - 4px));mask:radial-gradient(farthest-side,transparent calc(100% - 4.5px),#000 calc(100% - 4px))}
-.tmr i{position:absolute;top:0;bottom:0;width:50%;overflow:hidden}
-.tmr i.l{left:0}.tmr i.r{right:0}
-.tmr b{position:absolute;top:0;bottom:0;width:200%;will-change:transform;animation:var(--an) var(--d,15s) linear var(--dl,0s) both}
-.tmr .l b{left:0;background:linear-gradient(90deg,var(--tc) 50%,transparent 50%);--an:tmL}
-.tmr .r b{left:-100%;background:linear-gradient(90deg,transparent 50%,var(--tc) 50%);--an:tmR}
-@keyframes tmL{0%{transform:rotate(0)}50%,100%{transform:rotate(-180deg)}}
-@keyframes tmR{0%,50%{transform:rotate(0)}100%{transform:rotate(-180deg)}}
 .tmr.warn{--tc:#FF9A3D}.tmr.hot{--tc:#FF4D4D}
 .av.on.warn{--tg:rgba(255,154,61,.8)}.av.on.hot{--tg:rgba(255,77,77,.85)}
 /* centre of the felt */
@@ -639,49 +630,180 @@ a.hsp{box-shadow:inset 0 0 0 1px var(--edge)}
 @media (max-width:360px){.items.avi .item b{font-size:11px}}
   .arena.crowd .status{max-width:min(57%,300px)}
 @media (max-width:400px){.mode.quick .lv{position:absolute;top:10px;right:10px;padding:4px 9px}.mode.quick b{white-space:nowrap}}
-/* ================= table themes ================= */
-main.table{background:var(--tbg,#040504)}
-.tlayer{position:absolute;inset:0;overflow:hidden;pointer-events:none;z-index:0;max-width:none!important;margin:0!important}
-.tsc{position:absolute;left:0;top:0;width:375px;height:812px;transform-origin:0 0}
-.tsc .lay{position:absolute;left:0;top:0;width:375px;height:812px;display:block;pointer-events:none;user-select:none;-webkit-user-select:none}
-.tsc>img.lay:first-child{-webkit-mask-image:linear-gradient(90deg,transparent,#000 4%,#000 96%,transparent),linear-gradient(transparent,#000 3%,#000 97%,transparent);-webkit-mask-composite:source-in;mask-image:linear-gradient(90deg,transparent,#000 4%,#000 96%,transparent),linear-gradient(transparent,#000 3%,#000 97%,transparent);mask-composite:intersect}
-/* live layers (transform / opacity only) */
-.tsc .beam{mix-blend-mode:screen;animation:txbeam 7s ease-in-out infinite}
-@keyframes txbeam{0%,100%{opacity:.8}50%{opacity:1}}
-.tsc .ehalo{position:absolute;width:200px;height:120px;margin:-60px 0 0 -100px;border-radius:50%;background:radial-gradient(closest-side,rgba(255,230,180,.5),rgba(255,200,120,.12) 55%,transparent);mix-blend-mode:screen;animation:txbeam 7s ease-in-out infinite}
-.tsc .motes i{position:absolute;width:2px;height:2px;border-radius:50%;background:#ffe6b8;box-shadow:0 0 3px 1px rgba(255,225,170,.45);opacity:0;animation:txmote 14s linear infinite}
-@keyframes txmote{0%{transform:translate(0,0);opacity:0}20%{opacity:.75}80%{opacity:.5}100%{transform:translate(var(--dx),-70px);opacity:0}}
-.tsc .scaus{position:absolute;left:-110px;top:-110px;width:600px;height:1040px;mix-blend-mode:overlay}
-.tsc .scaus.c1{animation:txcd 22s ease-in-out infinite alternate}
-.tsc .scaus.c2{mix-blend-mode:screen;opacity:.55;animation:txcd2 17s ease-in-out infinite alternate}
-@keyframes txcd{from{transform:translate(0,0) rotate(0)}to{transform:translate(70px,46px) rotate(2deg)}}
-@keyframes txcd2{from{transform:translate(60px,30px)}to{transform:translate(-10px,80px)}}
-.tsc .fish{position:absolute;left:250px;top:120px;width:60px;height:30px;animation:txswim 26s ease-in-out infinite alternate}
-.tsc .fish svg{position:absolute}
-@keyframes txswim{from{transform:translate(0,0)}to{transform:translate(-60px,18px)}}
-.tsc .foam{transform-origin:187.5px 398px;animation:txlap 5.5s ease-in-out infinite}
-@keyframes txlap{0%,100%{transform:scale(1);opacity:.3}50%{transform:scale(1.02);opacity:.9}}
-.tsc .palm{transform-origin:-26px 118px;animation:txsway 7s ease-in-out infinite alternate}
-@keyframes txsway{from{transform:rotate(-1.2deg)}to{transform:rotate(1.4deg)}}
-.tsc .glints i{position:absolute;width:10px;height:10px;margin:-5px;background:radial-gradient(circle,#fff 0 1px,transparent 2px),linear-gradient(#fff,#fff) center/1px 100% no-repeat,linear-gradient(#fff,#fff) center/100% 1px no-repeat;opacity:0;animation:txglint 4s ease-in-out infinite}
-@keyframes txglint{0%,70%,100%{opacity:0;transform:scale(.4)}82%{opacity:.95;transform:scale(1)}}
-.tsc .gl{animation:txglit 2.6s ease-in-out infinite alternate}.tsc .gl.g2{animation-delay:-1.3s}
-@keyframes txglit{from{opacity:.15}to{opacity:.95}}
-.tsc .tw{animation:txtwk 3.2s ease-in-out infinite}.tsc .tw.t1{animation-delay:-1.1s}.tsc .tw.t2{animation-delay:-2.2s}
-@keyframes txtwk{0%,100%{opacity:.15}50%{opacity:1}}
-.tsc .shim{position:absolute;left:0;top:0;width:375px;height:812px;-webkit-mask-size:375px 812px;mask-size:375px 812px;mix-blend-mode:screen;overflow:hidden}
-.tsc .shim i{position:absolute;left:-112.5px;top:-198px;width:600px;height:600px;border-radius:50%;background:conic-gradient(from 0deg,transparent 0 30deg,rgba(255,236,190,.55) 42deg,transparent 54deg 200deg,rgba(255,236,190,.3) 212deg,transparent 224deg);animation:txrot 11s linear infinite}
+/* ================= Digu redesign (2026-09): Pastel shell + home (L3), shared table layout ================= */
+/* shell: the site's pastel colours (soft gradient mesh, frosted white, coral accents) on every menu screen */
+:root{--ink:#2A1418;--muted:#7A5F66;--panel:#FFFFFF;--cream:#F6F1F5;--line:rgba(42,20,24,.1);--edge:#EADCE3;--accent:#E0405C;--deep:#9E1B3A;--soft:#F5EEF3}
+html,html[data-bg="cream"]{background:#F3EEF7}
+body:before,html[data-bg="cream"] body:before{background:
+ radial-gradient(closest-side,rgba(255,183,178,.85),rgba(255,183,178,0)) -38vw -10vh/100vw 100vw no-repeat,
+ radial-gradient(closest-side,rgba(186,200,255,.8),rgba(186,200,255,0)) 40vw 6vh/105vw 105vw no-repeat,
+ radial-gradient(closest-side,rgba(178,236,220,.7),rgba(178,236,220,0)) -30vw 52vh/110vw 110vw no-repeat,
+ radial-gradient(closest-side,rgba(255,221,170,.7),rgba(255,221,170,0)) 45vw 70vh/95vw 95vw no-repeat,#F3EEF7}
+.caus{display:none}
+.page{color:var(--ink)}
+.page .icon-btn,html[data-bg="cream"] .icon-btn{background:rgba(255,255,255,.72);color:var(--ink);box-shadow:inset 0 0 0 1px rgba(255,255,255,.9),0 8px 24px -14px rgba(90,70,140,.4)}
+.subtop h1{font:800 26px/1 'Bricolage Grotesque',Sora,sans-serif;letter-spacing:-.03em}
+.panel{background:rgba(255,255,255,.76);box-shadow:inset 0 0 0 1px rgba(255,255,255,.95),0 12px 30px -20px rgba(90,70,140,.45)}
+.btn{box-shadow:inset 0 0 0 1px var(--edge)}
+.btn.primary,.pick .btn[aria-pressed="true"]{background:linear-gradient(180deg,#FF6F7F,#EE4A64);color:#fff;box-shadow:0 3px 0 #B22A45,0 10px 20px -10px rgba(238,74,100,.6)}
+.btn.soft,.chip,.emo-opt,.rlist li,.stat,.bdg,.lookprev,.popt,.rrow,.bad,.note,.lrow .li{background:var(--soft)}
+.seg,.stabs{background:#EFE6EE}
+.code{color:var(--ink)}
+.in:focus{box-shadow:0 0 0 3px rgba(224,64,92,.15)}
+.lbrow.lbme{background:rgba(224,64,92,.08);box-shadow:inset 0 0 0 1.5px rgba(224,64,92,.4)}
+.lbbox{background:linear-gradient(180deg,#FFF6F7,#fff)}
+.badge-t{background:linear-gradient(135deg,#EE4A64,#FF7A6B)}
+.rcard .rbadge{background:linear-gradient(160deg,#FF6F7F,#D8324A);color:#fff;box-shadow:none}
+.rlist li.hl{background:linear-gradient(90deg,#FFEFF1,#FFE6E0);box-shadow:inset 0 0 0 1.5px #F7A3B0}
+.rmini span{background:var(--soft)}
+.srv,.modes .srv,.page>.srv{color:var(--muted)}
+.snote,html[data-bg="cream"] .snote,.powered{color:var(--muted)}
+.powered .pw.ph{background:rgba(255,255,255,.6);border-color:#E7B9C3;color:#A2566B}
+.resume{background:rgba(255,255,255,.72);color:var(--ink);box-shadow:inset 0 0 0 1px rgba(255,255,255,.95),0 10px 26px -18px rgba(90,70,140,.45)}
+.resume b{color:var(--accent)}.resume .go{background:var(--accent);color:#fff}
+.sheet-b{--dga-accent:#E0405C;--dga-gold:#E0405C;--dga-bg:#FFFFFF}
+.ov{background:rgba(42,20,40,.45)}
+.sheet{background:rgba(42,20,40,.4)}
+/* ================= Digu home (L3 Pastel) ================= */
+.profbtn,.shellpill,.icon-btn.dgh{background:rgba(255,255,255,.72);color:var(--ink);box-shadow:inset 0 0 0 1px rgba(255,255,255,.9),0 8px 24px -14px rgba(90,70,140,.4)}
+.profbtn .ps{color:#C0506A}
+.dhero{height:clamp(170px,48vw,200px)}
+.dhero .card{--w:clamp(76px,22vw,88px);top:24px}
+.dhero .card:nth-child(3){top:10px;--w:clamp(82px,24vw,96px)}
+.dhero .face{box-shadow:inset 0 0 0 1px rgba(40,30,10,.1),inset 0 1px 0 #fff,0 1px 1px rgba(60,40,90,.15),0 16px 26px -10px rgba(60,40,90,.45)}
+.dtitle{margin-top:-6px}
+.dtitle .eb{font:800 10.5px/1 Sora,sans-serif;letter-spacing:.3em;text-transform:uppercase;color:#C0506A}
+.dtitle h1{font:800 clamp(54px,17vw,66px)/.9 'Bricolage Grotesque',Sora,sans-serif;letter-spacing:-.045em;margin:8px 0 0;color:var(--ink);text-shadow:none}
+.dtitle p{margin:8px 0 0;font:600 14px/1.2 Sora,sans-serif;color:#7A5F66}
+.hplay{position:relative;display:flex;align-items:center;gap:14px;width:100%;border:0;text-align:left;margin:22px 0 0;padding:16px 18px;min-height:80px;border-radius:22px;cursor:pointer;font:inherit;color:#fff;background:linear-gradient(180deg,#FF6F7F,#EE4A64);box-shadow:0 14px 28px -14px rgba(238,74,100,.75),inset 0 1px 0 rgba(255,255,255,.25)}
+.hplay .pi{width:48px;height:48px;border-radius:50%;display:grid;place-items:center;flex:none;background:rgba(255,255,255,.96);color:#EE4A64}
+.hplay .pi svg{width:20px;height:20px;margin-left:3px}
+.hplay .ptx{display:flex;flex-direction:column;min-width:0}
+.hplay b{font-size:23px;line-height:1.1;font-weight:800}
+.hplay small{font-size:12px;margin-top:3px;color:rgba(255,255,255,.92)}
+.hplay .bz{position:absolute;right:14px;top:12px;font:800 9px/1 Sora,sans-serif;letter-spacing:.14em;text-transform:uppercase;padding:5px 8px;border-radius:99px;background:rgba(255,255,255,.22)}
+.heb{display:flex;align-items:center;gap:10px;margin:24px 2px 10px;font:800 10.5px/1 Sora,sans-serif;letter-spacing:.24em;text-transform:uppercase;color:#8E6F77}
+.heb:after{content:"";flex:1;height:1px;background:currentColor;opacity:.25}
+.htwo{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.htile{position:relative;border:0;text-align:left;font:inherit;color:var(--ink);border-radius:20px;padding:14px;min-height:116px;display:flex;flex-direction:column;justify-content:flex-end;gap:2px;cursor:pointer;background:rgba(255,255,255,.7);box-shadow:inset 0 0 0 1px rgba(255,255,255,.95),0 10px 26px -18px rgba(90,70,140,.5)}
+.htile .oi{position:absolute;top:12px;left:12px;width:38px;height:38px;border-radius:12px;display:grid;place-items:center;background:#FFE9EC;color:#E0405C}
+.htile .oi svg{width:20px;height:20px}
+.htile b{font-size:15.5px;font-weight:800}.htile small{font-size:11.5px;line-height:1.3;color:#7A5F66}
+.htile .lv{position:absolute;top:15px;right:12px;display:flex;align-items:center;gap:5px;font:800 9.5px/1 Sora,sans-serif;letter-spacing:.06em;color:#8E6F77;white-space:nowrap}
+.htile .lv i{width:7px;height:7px;border-radius:50%;background:#EE4A64;flex:none}
+.hmlist{margin-top:0;border-radius:20px;overflow:hidden;background:rgba(255,255,255,.72);box-shadow:inset 0 0 0 1px rgba(255,255,255,.95),0 10px 26px -18px rgba(90,70,140,.5)}
+.hmrow{display:flex;align-items:center;gap:12px;width:100%;padding:12px 14px;min-height:62px;border:0;background:none;font:inherit;color:var(--ink);text-align:left;cursor:pointer}
+.hmrow+.hmrow{border-top:1px solid rgba(42,20,24,.07)}
+.hmrow .ri{width:36px;height:36px;border-radius:11px;display:grid;place-items:center;flex:none;background:#FFE9EC;color:#E0405C}
+.hmrow .ri svg{width:19px;height:19px}
+.hmrow .rt{flex:1;min-width:0}
+.hmrow .rt b{display:block;font-size:14.5px}
+.hmrow .rt small{display:block;font-size:11.5px;color:#7A5F66;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hmrow>svg{width:16px;height:16px;flex:none;opacity:.45}
+.hpod{display:flex;align-items:center;flex:none}
+.hpod>span{display:block;width:28px;height:28px;border-radius:50%;overflow:hidden;margin-left:-8px;box-shadow:0 0 0 2px #fff;background:#F1E6EE}
+.hpod>span:first-child{margin-left:0}
+.hpod>span svg{width:100%;height:100%;display:block}
+.hhow{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;margin-top:12px;min-height:50px;border-radius:16px;border:0;font:inherit;font-weight:700;font-size:14px;color:var(--ink);background:rgba(255,255,255,.6);box-shadow:inset 0 0 0 1px rgba(255,255,255,.95);cursor:pointer}
+.hhow svg{width:18px;height:18px}
+.page>.srv{justify-content:center;margin:16px 4px 0}
+.homebelow .spbox{margin:12px 0 0}
+.page.enter .htwo>*{animation:pgIn .7s var(--spring) both}.page.enter .htwo>*:nth-child(2){animation-delay:.07s}
+/* ================= the table (layout from ../shared/table.js; each theme's look is drawn below) ================= */
+main.table{background:var(--tbg,#070504);color:var(--tx,#fff)}
+main.table>*{max-width:none;margin:0}
+main.table>.topbar,main.table>.me{max-width:680px;margin-left:auto;margin-right:auto}
+.tscene{position:absolute;inset:0;overflow:hidden;pointer-events:none;z-index:0;contain:strict}
+.tscene img{position:absolute;left:0;top:0;display:block;pointer-events:none;user-select:none;-webkit-user-select:none}
+.tscene .fxu,.tscene .fxo{position:absolute;inset:0}
+/* live layers: transform / opacity only */
+.tscene .lglow{position:absolute;width:190px;height:80px;margin:-40px 0 0 -95px;border-radius:50%;background:radial-gradient(closest-side,rgba(255,236,196,.55),rgba(255,214,150,.14) 60%,transparent);animation:txfl 6s ease-in-out infinite}
+.tscene .fglow{position:absolute;border-radius:50%;transform:translate(-50%,-50%);background:radial-gradient(closest-side,rgba(255,230,184,.13),transparent);animation:txfl 6s ease-in-out infinite}
+@keyframes txfl{0%,100%{opacity:.8}45%{opacity:1}52%{opacity:.86}}
+.tscene .dust i{position:absolute;width:2px;height:2px;border-radius:50%;background:#fff3da;box-shadow:0 0 3px 1px rgba(255,230,180,.4);opacity:0;animation:txmote 14s linear infinite}
+@keyframes txmote{0%{transform:translate(0,0);opacity:0}20%{opacity:.8}80%{opacity:.4}100%{transform:translate(var(--dx),-70px);opacity:0}}
+.tscene .scaus{mix-blend-mode:overlay;opacity:.6;animation:txcd 24s ease-in-out infinite alternate}
+@keyframes txcd{from{transform:translate(0,0)}to{transform:translate(-60px,-40px)}}
+.tscene .sfoam{animation:txlap 5.5s ease-in-out infinite}
+@keyframes txlap{0%,100%{transform:scale(1);opacity:.35}50%{transform:scale(1.012);opacity:.95}}
+.tscene .tw1{animation:txtw 3.2s ease-in-out infinite}.tscene .tw2{animation:txtw 3.2s ease-in-out -1.6s infinite}
+@keyframes txtw{0%,100%{opacity:.25}50%{opacity:1}}
+.tscene .gl1{animation:txtw 2.6s ease-in-out infinite}.tscene .gl2{animation:txtw 2.6s ease-in-out -1.3s infinite}
+.tscene .lshim{position:absolute;overflow:hidden;border-radius:50%;mix-blend-mode:screen;-webkit-mask:radial-gradient(closest-side,transparent calc(100% - var(--rl)),#000 calc(100% - var(--rl) + 1px),#000 calc(100% - 3px),transparent);mask:radial-gradient(closest-side,transparent calc(100% - var(--rl)),#000 calc(100% - var(--rl) + 1px),#000 calc(100% - 3px),transparent)}
+.tscene .lshim i{position:absolute;left:50%;top:50%;width:150%;aspect-ratio:1;translate:-50% -50%;border-radius:50%;background:conic-gradient(from 0deg,transparent 0 30deg,rgba(255,236,190,.6) 42deg,transparent 54deg 200deg,rgba(255,236,190,.3) 212deg,transparent 224deg);animation:txrot 11s linear infinite}
 @keyframes txrot{to{transform:rotate(360deg)}}
-.tsc.still *{animation:none!important}
-.tsc.still .motes,.tsc.still .glints,.tsc.still .fish{display:none}
-/* the ad slot: a small crafted piece of each table, centred under the piles (never tappable in play) */
-.tad{position:absolute;left:50%;top:70%;z-index:2;display:flex;align-items:center;justify-content:center;gap:7px;white-space:nowrap;pointer-events:none;transform:translate(-50%,-50%) scale(var(--k,1));transform-origin:50% 50%}
+.tscene.still *{animation:none!important}.tscene.still .dust{display:none}
+/* the small nameplate set into the rail */
+.plate{position:absolute;left:0;top:0;z-index:2;height:15px;min-width:86px;padding:0 12px;display:grid;place-items:center;border-radius:2px;pointer-events:none;font:900 8px/1 Fraunces,Georgia,serif;letter-spacing:.32em;text-indent:.32em;color:rgba(20,14,8,.85);text-shadow:0 .5px 0 rgba(255,255,255,.5);background:linear-gradient(180deg,rgba(255,255,255,.5),rgba(255,255,255,0) 50%,rgba(0,0,0,.2)),linear-gradient(100deg,#8a6424,#E7C97F 30%,#F6DC9C 45%,#B8863F 70%,#7a5418);box-shadow:inset 0 0 0 1px rgba(60,40,10,.6),0 2px 4px rgba(0,0,0,.7)}
+.th-sandbank .plate{background:linear-gradient(180deg,#efe4cc,#cdb996);box-shadow:inset 0 0 0 1px rgba(110,85,55,.5),0 2px 4px rgba(0,0,0,.35);color:#5d4526}
+.th-lacquer .plate{background:linear-gradient(100deg,#8A5510,#F2C24E 30%,#FFE39A 45%,#C98A22 70%,#8A5510);box-shadow:inset 0 0 0 1px rgba(40,10,0,.6),0 2px 4px rgba(0,0,0,.7)}
+.th-pastel .plate{background:#fff;box-shadow:inset 0 0 0 1px rgba(238,74,100,.45),0 2px 5px rgba(90,70,140,.3);color:#E0405C;text-shadow:none;font-family:'Bricolage Grotesque',Sora,sans-serif}
+/* seats: size and place come from DGTable.arena() */
+.seats .seat,.seats.n4 .seat,.seats.n5 .seat,.seats.n6 .seat{width:var(--sw,76px);margin-left:calc(var(--sw,76px)/-2);--av:var(--sav,46px)}
+.seat .nm{color:var(--tx,#fff);text-shadow:var(--nmSh,0 1px 3px rgba(0,0,0,.9))}
+.seat .cnt{background:var(--hud);box-shadow:inset 0 0 0 1px var(--hudEdge);color:var(--tx,#fff)}
+.seat .cnt.tg{background:none;box-shadow:none}
+.av.on:before{box-shadow:0 0 16px 3px var(--tg,var(--accGlow,rgba(255,211,110,.75)))}
+main.table{--ring-c:var(--acc,#FFD36E)}
+main.table .dgt-ring{--ring-bg:var(--ringBg,rgba(255,255,255,.16))}
+/* HUD in the theme's colours */
+.topbar .icon-btn,.goal>span{background:var(--hud);box-shadow:inset 0 0 0 1px var(--hudEdge);color:var(--tx,#fff)}
+.goal b{color:var(--accTx)}
+.emobtn svg{width:21px;height:21px}
+.status{background:var(--hudSolid);box-shadow:inset 0 0 0 1px var(--hudEdge);color:var(--tx,#fff)}
+.status b{color:var(--accTx)}
+.status.mine{background:var(--hudSolid);box-shadow:inset 0 0 0 1.5px var(--acc),0 0 18px -3px var(--accGlow)}
+.pcount{background:var(--hudSolid);color:var(--tx,#fff);box-shadow:0 0 0 1.5px var(--accTx)}
+.pile.can:after,.pile.drop:after{box-shadow:0 0 0 2.5px var(--acc),0 0 22px var(--accGlow)}
+.pile.drop:after{background:var(--accSoft,rgba(255,227,145,.16))}
+.empty{border-color:var(--hudEdge)}
+.me{background:var(--shade,linear-gradient(180deg,transparent,rgba(0,0,0,.72) 26%,rgba(0,0,0,.9)));color:var(--tx,#fff)}
+.yt{color:var(--accInk);background:var(--accBtn);box-shadow:0 4px 0 var(--accEdge),0 0 20px var(--accGlow)}
+.acts .btn.primary{background:var(--accBtn);color:var(--accInk);box-shadow:0 3px 0 var(--accEdge),0 10px 20px -10px var(--accGlow)}
+.acts .btn.soft{background:var(--hudSolid);color:var(--tx,#fff);box-shadow:inset 0 0 0 1px var(--hudEdge)}
+.watchbar .eye{background:var(--hud);box-shadow:inset 0 0 0 1px var(--hudEdge);color:var(--accTx)}
+.hand .watch{color:var(--tx,#fff)}
+.hand .card.inm .face{box-shadow:inset 0 0 0 2px var(--meld),0 0 0 1px rgba(0,0,0,.2),0 0 12px var(--meldGlow),0 8px 14px -6px rgba(0,0,0,.55)}
+.hand .card.sel .face{box-shadow:inset 0 0 0 2.5px var(--acc),0 0 0 2px var(--accGlow),0 0 22px var(--accGlow),0 14px 20px -8px rgba(0,0,0,.6)}
+.hand .card.gin .face{box-shadow:inset 0 0 0 2.5px #FFD36E,0 0 0 2px rgba(255,211,110,.7),0 0 22px rgba(255,211,110,.75),0 8px 16px -6px rgba(0,0,0,.55)}
+.mtk{background:var(--meld);color:#2A1A05}
+/* the hand: ONE fan across the full width (DGTable.fan), a thin shadow on each card's left edge so every corner reads */
+.hand{margin:0;height:var(--hh,160px)}
+.hand .card .face{box-shadow:inset 0 0 0 1px rgba(40,30,10,.1),inset 0 1px 0 #fff,-2px 0 4px -2px rgba(0,0,0,.28),0 8px 16px -8px rgba(0,0,0,.55)}
+/* per theme tokens (from the approved mockup) */
+.th-pastel{--tx:#2A1418;--nmSh:0 1px 0 rgba(255,255,255,.7);--hud:rgba(255,255,255,.72);--hudSolid:rgba(255,255,255,.94);--hudEdge:rgba(255,255,255,.95);--acc:#EE4A64;--accTx:#E0405C;--accGlow:rgba(238,74,100,.4);--accSoft:rgba(238,74,100,.12);--accInk:#fff;--accBtn:linear-gradient(180deg,#FF6F7F,#EE4A64);--accEdge:#B22A45;--meld:#F2B64C;--meldGlow:rgba(242,182,76,.45);--ringBg:rgba(42,20,24,.12);--shade:linear-gradient(180deg,rgba(243,238,247,0),rgba(243,238,247,.86) 26%,rgba(243,238,247,.97))}
+.th-dhanvaru{--hud:rgba(12,10,7,.66);--hudSolid:rgba(14,12,8,.88);--hudEdge:rgba(233,194,122,.26);--acc:#E9C27A;--accTx:#F3D596;--accGlow:rgba(233,194,122,.55);--accInk:#2A1A05;--accBtn:linear-gradient(180deg,#F6DDA4,#D9A94A);--accEdge:#8A6424;--meld:#E7C97F;--meldGlow:rgba(231,201,127,.45);--shade:linear-gradient(180deg,transparent,rgba(0,0,0,.8) 30%,#000)}
+.th-sandbank{--nmSh:0 1px 2px rgba(0,40,55,.9);--hud:rgba(5,62,84,.55);--hudSolid:rgba(5,58,78,.86);--hudEdge:rgba(255,255,255,.34);--acc:#FFE08F;--accTx:#FFE7A3;--accGlow:rgba(255,224,143,.6);--accInk:#063A4E;--accBtn:linear-gradient(180deg,#FFF1C4,#F4CF72);--accEdge:#B98C2C;--meld:#FFE08F;--meldGlow:rgba(255,224,143,.5);--shade:linear-gradient(180deg,transparent,rgba(4,52,74,.7) 32%,rgba(3,40,58,.94))}
+.th-dhoni{--hud:rgba(6,12,26,.62);--hudSolid:rgba(6,12,26,.88);--hudEdge:rgba(190,208,240,.3);--acc:#DCE6FF;--accTx:#E6EDFF;--accGlow:rgba(200,215,255,.55);--accInk:#0B1630;--accBtn:linear-gradient(180deg,#F4F7FF,#B9C8E8);--accEdge:#56668A;--meld:#E3C98E;--meldGlow:rgba(227,201,142,.45);--shade:linear-gradient(180deg,transparent,rgba(3,7,16,.72) 32%,rgba(2,5,12,.95))}
+.th-lacquer{--hud:rgba(22,4,6,.66);--hudSolid:rgba(20,3,5,.9);--hudEdge:rgba(232,178,58,.4);--acc:#F2C24E;--accTx:#F5CD62;--accGlow:rgba(242,194,78,.55);--accInk:#3A1403;--accBtn:linear-gradient(180deg,#FBDB86,#DDA232);--accEdge:#8A5510;--meld:#F2C24E;--meldGlow:rgba(242,194,78,.45);--shade:linear-gradient(180deg,transparent,rgba(12,2,3,.82) 32%,rgba(6,1,2,.96))}
+/* cards and the default back, per theme */
+.th-dhanvaru .face{box-shadow:inset 0 0 0 1px rgba(40,30,10,.1),inset 0 1px 0 #fff,0 1px 1px rgba(0,0,0,.35),0 10px 16px -6px rgba(0,0,0,.7)}
+.th-pastel .face{box-shadow:inset 0 0 0 1px rgba(40,30,10,.1),inset 0 1px 0 #fff,0 1px 1px rgba(60,40,90,.2),0 10px 16px -6px rgba(60,40,90,.4)}
+.th-sandbank .face{box-shadow:inset 0 0 0 1px rgba(40,30,10,.1),inset 0 1px 0 #fff,0 1px 1px rgba(90,60,20,.2),3px 6px 7px -2px rgba(110,80,40,.45)}
+.th-dhoni .face{box-shadow:inset 0 0 0 1px rgba(40,30,10,.1),inset 0 1px 0 #fff,0 1px 1px rgba(0,0,0,.3),5px 9px 12px -4px rgba(1,5,15,.7)}
+.th-dhanvaru .back.bdef{background:radial-gradient(120% 90% at 50% 20%,#1B6A4C,#0B3B2B 70%)}
+.th-sandbank .back.bdef{background:radial-gradient(120% 90% at 50% 20%,#1FB0C6,#0A6E8C 70%)}
+.th-sandbank .back.bdef:after{background:radial-gradient(circle,#075A74 55%,transparent 57%),conic-gradient(from 45deg,#E7C97F,#B8863F,#E7C97F,#B8863F,#E7C97F)}
+.th-dhoni .back.bdef{background:radial-gradient(120% 90% at 50% 20%,#2A4A7A,#0f1f3a 70%);box-shadow:inset 0 0 0 calc(var(--w)*.035) #F7EFDF,inset 0 0 0 calc(var(--w)*.06) #C9B07A,0 1px 1px rgba(0,0,0,.3),0 8px 16px -6px rgba(0,0,0,.7)}
+.th-dhoni .back.bdef:after{background:radial-gradient(circle,#0f1f3a 55%,transparent 57%),conic-gradient(from 45deg,#E7C97F,#B8863F,#E7C97F,#B8863F,#E7C97F)}
+.th-lacquer .back.bdef{background:radial-gradient(120% 90% at 50% 20%,#C62A33,#6e0b12 70%);box-shadow:inset 0 0 0 calc(var(--w)*.035) #120505,inset 0 0 0 calc(var(--w)*.06) #E8B23A,0 1px 1px rgba(0,0,0,.3),0 8px 16px -6px rgba(0,0,0,.7)}
+.th-lacquer .back.bdef:after{background:radial-gradient(circle,#5e0a10 55%,transparent 57%),conic-gradient(from 45deg,#E7C97F,#B8863F,#E7C97F,#B8863F,#E7C97F)}
+.th-pastel .back.bdef{background:radial-gradient(120% 90% at 50% 20%,#FF7A86,#E23D58 70%);box-shadow:inset 0 0 0 calc(var(--w)*.035) #fff,inset 0 0 0 calc(var(--w)*.06) #F7C9D1,0 1px 1px rgba(60,40,90,.2),0 8px 16px -6px rgba(60,40,90,.45)}
+.th-pastel .back.bdef:before{background:repeating-linear-gradient(45deg,rgba(255,255,255,.2) 0 1px,transparent 1px 7px),repeating-linear-gradient(-45deg,rgba(255,255,255,.2) 0 1px,transparent 1px 7px);box-shadow:inset 0 0 0 1px rgba(255,255,255,.55)}
+.th-pastel .back.bdef:after{background:radial-gradient(circle,#E23D58 55%,transparent 57%),conic-gradient(from 45deg,#fff,#F7C9D1,#fff,#F7C9D1,#fff);box-shadow:0 0 0 2px rgba(160,30,60,.35)}
+.th-pastel .hfan i.bdef{background:radial-gradient(120% 90% at 50% 20%,#FF7A86,#E23D58 70%);box-shadow:inset 0 0 0 1.5px #F7C9D1,0 0 0 1px #fff,0 2px 4px rgba(60,40,90,.35)}
+.th-sandbank .hfan i.bdef{background:radial-gradient(120% 90% at 50% 20%,#1FB0C6,#0A6E8C 70%)}
+.th-dhoni .hfan i.bdef{background:radial-gradient(120% 90% at 50% 20%,#2A4A7A,#0f1f3a 70%)}
+.th-lacquer .hfan i.bdef{background:radial-gradient(120% 90% at 50% 20%,#C62A33,#6e0b12 70%);box-shadow:inset 0 0 0 1.5px #E8B23A,0 0 0 1px #120505,0 2px 4px rgba(0,0,0,.4)}
+.th-pastel .aitag{background:#2A1418;color:#fff}
+.th-pastel .hostb{box-shadow:0 0 0 1.5px rgba(42,20,24,.3)}
+/* the sponsor piece on the felt, in each theme's own material (never tappable in play) */
+.tad{position:absolute;left:0;top:0;z-index:2;display:flex;align-items:center;justify-content:center;gap:7px;white-space:nowrap;pointer-events:none;transform:translate(-50%,-50%) scale(var(--k,1));transform-origin:50% 50%}
 .tad:empty{display:none}
 .tad .tt{display:flex;flex-direction:column;align-items:center;min-width:0;line-height:1}
 .tad b,.tad small{display:block;max-width:100%;overflow:hidden;text-overflow:clip}
 .tad b{font-variant-caps:all-small-caps;font-weight:800}
 .tad small{font:700 6.5px/1.2 Sora,sans-serif;letter-spacing:.22em;text-transform:uppercase;margin-top:3px}
-/* Dhanvaru: a slim engraved brass plaque catching the lamp light */
 .tad.plaque{width:150px;height:32px;border-radius:4px;transform:translate(-50%,-50%) scale(var(--k,1)) perspective(260px) rotateX(16deg);
  background:linear-gradient(180deg,rgba(255,250,225,.55),rgba(255,250,225,0) 38%,rgba(0,0,0,0) 62%,rgba(40,24,4,.45)),linear-gradient(90deg,#6a4914,#c9a45a 18%,#f0d995 48%,#caa55a 76%,#5e410f);
  box-shadow:inset 0 1px 0 rgba(255,246,214,.9),inset 0 -1px 0 rgba(60,36,6,.9),inset 0 0 0 1px rgba(90,60,14,.55),inset 0 0 0 3.5px rgba(255,236,180,.18),inset 0 0 0 4.5px rgba(80,52,10,.55),0 6px 10px -3px rgba(0,0,0,.85),0 1px 2px rgba(0,0,0,.6)}
@@ -690,11 +812,9 @@ main.table{background:var(--tbg,#040504)}
 .tad.plaque .sc:nth-child(1){left:6px;top:6px}.tad.plaque .sc:nth-child(2){right:6px;top:6px}.tad.plaque .sc:nth-child(3){left:6px;bottom:6px}.tad.plaque .sc:nth-child(4){right:6px;bottom:6px}
 .tad.plaque b{font:800 14px/1 Fraunces,Georgia,serif;font-variant-caps:all-small-caps;letter-spacing:.2em;margin-left:.2em;color:#3a2505;text-shadow:0 1px 0 rgba(255,241,200,.65),0 -.5px 0 rgba(40,22,2,.35)}
 .tad.plaque small{color:#4a3008;text-shadow:0 .5px 0 rgba(255,241,200,.55);margin-top:2px}
-/* Sandbank: written in the sand with a stick */
 .tad.sand{gap:0;transform:translate(-50%,-50%) scale(var(--k,1)) rotate(-4deg)}
 .tad.sand b{font:700 30px/1 Caveat,'Segoe Print',cursive;font-variant-caps:normal;letter-spacing:.01em;color:rgba(128,94,52,.62);text-shadow:0 1.2px 0 rgba(255,255,250,.9),0 -1px 0 rgba(96,66,30,.4),0 0 1px rgba(96,66,30,.25)}
 .tad.sand small{font:700 15px/1 Caveat,'Segoe Print',cursive;letter-spacing:.02em;text-transform:none;color:rgba(10,110,140,.78);text-shadow:0 1px 0 rgba(255,255,250,.8);margin-top:1px}
-/* Dhoni: a moonlit crate with a stencil */
 .tad.crate{width:132px;height:48px;padding:0 10px 0 9px;justify-content:flex-start;border-radius:3px;transform:translate(-50%,-50%) scale(var(--k,1)) rotate(-3deg);color:#0f5b72;
  background:linear-gradient(115deg,rgba(210,226,255,.34),rgba(210,226,255,0) 45%,rgba(10,16,40,.28)),repeating-linear-gradient(180deg,transparent 0 15.2px,rgba(92,56,24,.85) 15.2px 16px),repeating-linear-gradient(90deg,rgba(255,255,255,.035) 0 2px,transparent 2px 7px),linear-gradient(#c89a60,#a67440);
  box-shadow:inset 0 0 0 2.5px #5a3718,inset 0 0 0 3.5px rgba(210,226,255,.18),6px 8px 9px -2px rgba(1,5,15,.75)}
@@ -703,55 +823,53 @@ main.table{background:var(--tbg,#040504)}
 .tad.crate .tt{align-items:flex-start;min-width:0}
 .tad.crate b{font:800 12px/1 Sora,sans-serif;font-variant-caps:all-small-caps;letter-spacing:.14em;color:rgba(15,91,114,.9);max-width:84px}
 .tad.crate small{color:rgba(110,56,14,.85);letter-spacing:.18em;max-width:84px}
-/* Lacquer: a gold medallion in fine relief */
-.tad.medal{width:150px;height:44px;padding:0 16px 0 10px;border-radius:50%;gap:6px;
- background:radial-gradient(120% 140% at 50% 20%,#2c1214,#0a0304 70%);
+.tad.medal{width:150px;height:44px;padding:0 16px 0 10px;border-radius:50%;gap:6px;background:radial-gradient(120% 140% at 50% 20%,#2c1214,#0a0304 70%);
  box-shadow:inset 0 0 0 1px rgba(255,220,140,.35),inset 0 0 0 3px #0a0304,inset 0 0 0 4px rgba(232,178,58,.55),0 0 0 2px #9c1219,0 0 0 3px #3a0508,0 0 0 4.6px #d6a032,0 0 0 5.6px #6a4508,0 8px 12px -3px rgba(0,0,0,.75)}
 .tad.medal .dgs-lg{width:22px;height:22px;border-radius:50%;font-size:9.5px;background:radial-gradient(#7a0b12 58%,#e3b24a 61%,#8a5a10 80%);color:#f7d77a!important;flex:none}
 .tad.medal .tt{flex:1}
 .tad.medal b{font:900 13px/1 Fraunces,Georgia,serif;font-variant-caps:all-small-caps;letter-spacing:.16em;background:linear-gradient(#fff3c0,#e9b949 55%,#a8741c);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 .6px 0 rgba(0,0,0,.8))}
 .tad.medal small{color:#f2dfb8;opacity:.9}
+/* Pastel: a frosted white chip, coral kicker */
+.tad.chip{height:34px;padding:0 14px 0 5px;border-radius:99px;gap:8px;background:rgba(255,255,255,.62);box-shadow:inset 0 0 0 1px rgba(255,255,255,.95),0 6px 14px -8px rgba(90,70,140,.4)}
+.tad.chip .dgs-lg{width:24px;height:24px;border-radius:50%;font-size:11px;box-shadow:inset 0 0 0 1px rgba(42,20,24,.08);flex:none}
+.tad.chip .tt{align-items:flex-start}
+.tad.chip b{font:800 12px/1 Sora,sans-serif;font-variant-caps:normal;color:#2A1418;max-width:120px}
+.tad.chip small{color:#E0405C;letter-spacing:.2em;font-size:6.5px;margin-top:3px}
 /* table picker (store + in-game menu) */
-.tthumb{display:block;width:74px;height:86px;border-radius:14px;background-color:var(--tbg);background-repeat:no-repeat;background-position:50% 49.5%;box-shadow:inset 0 0 0 1px rgba(0,0,0,.25)}
+.tthumb{display:block;width:74px;height:86px;border-radius:14px;background-color:var(--tbg);background-repeat:no-repeat;background-position:50% 50%;background-size:cover;box-shadow:inset 0 0 0 1px rgba(0,0,0,.18)}
 .bigprev .tthumb.big{position:absolute;inset:0;width:auto;height:auto;border-radius:0}
 .bigprev.b-table{height:280px}
 .feat.b-table h3{font-size:22px;max-width:54%}
-.feat .stage .tthumb{width:100%;height:100%;border-radius:22px;box-shadow:0 18px 30px -12px rgba(0,0,0,.7)}
-.feat.b-table{background:radial-gradient(80% 90% at 72% 40%,#1a2a22,#040504 72%)}
-.tpick{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-bottom:4px}
-.tsw{border:0;background:none;padding:0;font:inherit;color:var(--ink);cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:5px;min-height:44px}
-.tsw .tthumb{width:100%;height:78px}
-.tsw small{font-size:10.5px;font-weight:700;line-height:1.2;text-align:center}
+.feat .stage .tthumb{width:100%;height:100%;border-radius:22px;box-shadow:0 18px 30px -12px rgba(0,0,0,.5)}
+.feat.b-table{background:radial-gradient(80% 90% at 72% 40%,#3a2438,#140a14 72%)}
+.tpick{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;margin-bottom:4px}
+.tsw{border:0;background:none;padding:0;font:inherit;color:var(--ink);cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:5px;min-height:44px;min-width:0}
+.tsw .tthumb{width:100%;height:74px}
+.tsw small{font-size:10px;font-weight:700;line-height:1.2;text-align:center;overflow-wrap:anywhere}
 .tsw[aria-pressed="true"] .tthumb{box-shadow:0 0 0 2.5px var(--panel),0 0 0 4.5px var(--accent)}
-/* theme accents on the shared table UI */
-.theme-dhanvaru .goal>span,.theme-dhanvaru .topbar .icon-btn{background:rgba(8,8,6,.6);box-shadow:inset 0 0 0 1px rgba(255,214,150,.22)}
-.theme-dhanvaru .goal b,.theme-dhanvaru .status b{color:#ffd99a}
-.theme-dhanvaru .status{background:rgba(6,16,11,.78)}
-.theme-dhanvaru .seat .cnt{background:rgba(0,0,0,.62)}
-.theme-dhanvaru .me{background:linear-gradient(180deg,transparent,rgba(0,0,0,.8) 30%,#000)}
-.theme-dhanvaru .face{box-shadow:inset 0 0 0 1px rgba(40,30,10,.1),inset 0 1px 0 #fff,0 1px 1px rgba(0,0,0,.3),0 12px 16px -5px rgba(0,0,0,.8)}
-.theme-sandbank .goal>span,.theme-sandbank .topbar .icon-btn{background:rgba(6,70,92,.5);box-shadow:inset 0 0 0 1px rgba(255,255,255,.35)}
-.theme-sandbank .goal b{color:#fff1c2}
-.theme-sandbank .status{background:rgba(5,62,82,.84)}
-.theme-sandbank .status b{color:#ffe7a3}
-.theme-sandbank .seat .cnt{background:rgba(4,52,70,.66)}
-.theme-sandbank .seat .nm{text-shadow:0 1px 2px rgba(0,40,55,.9)}
-.theme-sandbank .face{box-shadow:inset 0 0 0 1px rgba(40,30,10,.1),inset 0 1px 0 #fff,0 1px 1px rgba(90,60,20,.2),3px 6px 7px -2px rgba(110,80,40,.45)}
-.theme-sandbank .back.bdef{background:radial-gradient(120% 90% at 50% 20%,#1BA7BF,#0A6E8C 70%)}
-.theme-sandbank .me{background:linear-gradient(180deg,transparent,rgba(4,52,74,.7) 32%,rgba(3,40,58,.94))}
-.theme-dhoni .goal>span,.theme-dhoni .topbar .icon-btn{background:rgba(6,12,26,.6);box-shadow:inset 0 0 0 1px rgba(180,200,240,.35)}
-.theme-dhoni .goal b,.theme-dhoni .status b{color:#dbe7ff}
-.theme-dhoni .status{background:rgba(4,10,22,.8)}
-.theme-dhoni .seat .cnt{background:rgba(3,8,20,.66)}
-.theme-dhoni .face{box-shadow:inset 0 0 0 1px rgba(40,30,10,.1),inset 0 1px 0 #fff,0 1px 1px rgba(0,0,0,.3),5px 9px 12px -4px rgba(1,5,15,.7)}
-.theme-dhoni .back.bdef{background:radial-gradient(120% 90% at 50% 20%,#23406a,#0f1f3a 70%);box-shadow:inset 0 0 0 calc(var(--w)*.035) #F7EFDF,inset 0 0 0 calc(var(--w)*.06) #b9c6de,5px 9px 12px -4px rgba(1,5,15,.7)}
-.theme-dhoni .me{background:linear-gradient(180deg,transparent,rgba(3,7,16,.72) 32%,rgba(2,5,12,.95))}
-.theme-lacquer .goal>span,.theme-lacquer .topbar .icon-btn{background:rgba(24,4,7,.62);box-shadow:inset 0 0 0 1px rgba(232,178,58,.45)}
-.theme-lacquer .goal b,.theme-lacquer .status b{color:#f5c95a}
-.theme-lacquer .status{background:rgba(14,4,5,.84)}
-.theme-lacquer .seat .cnt{background:rgba(20,3,5,.66)}
-.theme-lacquer .back.bdef{background:radial-gradient(120% 90% at 50% 20%,#c0262e,#6e0b12 70%);box-shadow:inset 0 0 0 calc(var(--w)*.035) #120505,inset 0 0 0 calc(var(--w)*.06) #e8b23a,0 8px 18px -6px rgba(0,0,0,.6)}
-.theme-lacquer .me{background:linear-gradient(180deg,transparent,rgba(12,2,3,.82) 32%,rgba(6,1,2,.96))}
+/* sideways phones: a wide oval, seats around it, and one row at the bottom: you | your hand | your button */
+main.table.land .topbar{position:absolute;left:0;right:0;top:0;z-index:6;padding:max(6px,env(safe-area-inset-top)) max(10px,env(safe-area-inset-right)) 0 max(10px,env(safe-area-inset-left));pointer-events:none}
+main.table.land .topbar>*{pointer-events:auto}
+main.table.land .goal{justify-content:flex-start;flex:0 1 auto;margin-right:auto}
+main.table.land .goal>span{padding:8px 12px}
+main.table.land .topbar .icon-btn{width:40px;height:40px;border-radius:12px}
+main.table.land>.topbar,main.table.land>.me{max-width:none}
+main.table.land .me{display:grid;grid-template-columns:minmax(0,max-content) minmax(0,1fr) max-content;align-items:end;column-gap:8px;padding:0 max(10px,env(safe-area-inset-right)) calc(4px + env(safe-area-inset-bottom)) max(10px,env(safe-area-inset-left))}
+main.table.land .mebar{display:contents}
+main.table.land .meinfo{grid-column:1;grid-row:1;align-self:center;max-width:min(26vw,190px)}
+main.table.land .meav{width:40px;height:40px}
+main.table.land .hand{grid-column:2;grid-row:1;min-width:0}
+main.table.land .acts{grid-column:3;grid-row:1;align-self:center}
+main.table.land .acts .btn{min-width:88px}
+main.table.land .yt{padding:9px 12px;font-size:11px}
+main.table.land .emotray,main.table.land .chatbar{left:25%;right:25%}
+main.table.land .seat{display:grid;grid-template-columns:var(--sav) minmax(0,1fr);grid-template-rows:auto auto;column-gap:6px;row-gap:2px;align-items:center;justify-items:start}
+main.table.land .seat .av{grid-row:1/3;grid-column:1}
+main.table.land .seat .nm{margin:0;align-self:end;max-width:100%}
+main.table.land .seat .cnt{align-self:start}
+main.table.land .seat .hfan{--fw:14px;right:auto;left:calc(var(--fw)*-.9)}
+main.table.land .seat .crown{top:-11px}
+@media (prefers-reduced-motion:reduce){.tscene *{animation:none!important}}
 </style>
 
 </head>
@@ -767,6 +885,7 @@ main.table{background:var(--tbg,#040504)}
 <script src="../shared/avatar.js?v=10"></script>
 <script src="../shared/cosmetics.js?v=2"></script>
 <script src="../shared/sponsors.js?v=6"></script>
+<script src="../shared/table.js?v=1"></script>
 <script>
 (function(){
 
@@ -786,6 +905,7 @@ const PRIVACY_URL='../privacy.html';
 
 const $=s=>document.querySelector(s);
 const app=$('#app');
+if(window.DGTable)DGTable.injectCSS();
 const reduce=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
 const TARGET=500,GIN=100,BIG=150;
 const ROUND_OPTS=[3,5,10],DEF_ROUNDS=5;const roundsOf=N=>(N&&N.rounds>0?N.rounds|0:DEF_ROUNDS);
@@ -949,6 +1069,7 @@ async function loadWinsLeaderboard(){
   try{
     const players=await lbFetch();
     boxes.forEach(box=>{
+      if(box.dataset.podium==='mini'){const t=players.slice(0,3);box.innerHTML=t.map(x=>`<span>${lbFace(x,28)}</span>`).join('');const sb=$('#lbsub');if(sb)sb.textContent=t[0]?(t[0].name||'Digu Player')+' leads with '+winsTxt(t[0].wins):'No wins yet. Be the first!';return;}
       if(box.dataset.podium){const t=players.slice(0,3);if(!t.length){box.innerHTML='<p class="muted">No wins recorded yet. Be the first!</p>';return;}
         const face=x=>DGA()?DGA().render(DGA().random('lb:'+(x.name||'')),{size:64}):'';
         const pod=(x,i)=>x?`<div class="pod${i===0?' p1':''}"><span class="pf">${face(x)}</span><b>${esc(x.name||'Digu Player')}</b><small>${x.wins|0} wins</small><div class="step" style="--h:${[62,44,32][i]}px">${i+1}</div></div>`:'';
@@ -964,7 +1085,7 @@ async function loadWinsLeaderboard(){
       }).join('')+(!compact&&authIsGuest()?'<p class="muted" style="margin:10px 0 0;font-size:12px">Only registered players are ranked. Register to get ranked; your wins so far come with you.</p>':'');
     });
   }catch(e){
-    boxes.forEach(box=>box.innerHTML='<p class="muted">Leaderboard unavailable right now.</p>');
+    boxes.forEach(box=>{if(box.dataset.podium==='mini'){box.innerHTML='';const sb=$('#lbsub');if(sb)sb.textContent='Leaderboard unavailable right now';return;}box.innerHTML='<p class="muted">Leaderboard unavailable right now.</p>';});
   }
 }
 /* the same top-10-by-wins query, cached for a minute so the menu and the home page don't ask twice */
@@ -1611,7 +1732,7 @@ async function authLogout(){try{
   ls.set('dd-inv',JSON.stringify(INV));
   closeSheet(); toast('Logged out'); renderProfile();
 }catch(e){toast('Could not log out.');}}
-const HI={user:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="3.6"/><path d="M4.5 20.5c.9-3.6 3.9-6 7.5-6s6.6 2.4 7.5 6"/><path d="M16.5 4.5l1.6 1.6 3-3"/></svg>`,bolt:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13 2 4.5 13.5H11L10 22l8.5-11.5H12z"/></svg>`,friends:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><circle cx="17" cy="9" r="2.5"/><path d="M16.2 14.1c2.7.4 4.8 2.7 4.8 5.9"/></svg>`,bot:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="7" width="16" height="12" rx="3.5"/><path d="M12 7V4"/><circle cx="12" cy="3.4" r=".9"/><circle cx="9.3" cy="12.6" r="1.2" fill="currentColor" stroke="none"/><circle cx="14.7" cy="12.6" r="1.2" fill="currentColor" stroke="none"/><path d="M9.5 16h5"/></svg>`,book:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v15H6.5A2.5 2.5 0 0 0 4 20.5z"/><path d="M4 20.5V5.5M8 7.5h8"/></svg>`,trophy:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 4h8v5a4 4 0 0 1-8 0z"/><path d="M8 6H5.2a3 3 0 0 0 3.1 4M16 6h2.8a3 3 0 0 1-3.1 4M12 13v4M8.5 21h7M10 17h4"/></svg>`,shell:`<img class="boli" src="data:image/webp;base64,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" alt="">`,chev:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9.5 6l6 6-6 6"/></svg>`,eye:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg>`};
+const HI={play:`<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 4.8v14.4c0 .8.9 1.3 1.6.9l11.2-7.2c.6-.4.6-1.4 0-1.8L8.6 3.9C7.9 3.5 7 4 7 4.8z"/></svg>`,bag:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M5.5 8h13l-1 12h-11z"/><path d="M9 10V7a3 3 0 0 1 6 0v3" stroke-linecap="round"/></svg>`,smile:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M8.5 14.2c.9 1.3 2.1 2 3.5 2s2.6-.7 3.5-2"/><circle cx="9.3" cy="10" r=".7" fill="currentColor"/><circle cx="14.7" cy="10" r=".7" fill="currentColor"/></svg>`,user:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="3.6"/><path d="M4.5 20.5c.9-3.6 3.9-6 7.5-6s6.6 2.4 7.5 6"/><path d="M16.5 4.5l1.6 1.6 3-3"/></svg>`,bolt:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13 2 4.5 13.5H11L10 22l8.5-11.5H12z"/></svg>`,friends:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><circle cx="17" cy="9" r="2.5"/><path d="M16.2 14.1c2.7.4 4.8 2.7 4.8 5.9"/></svg>`,bot:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="7" width="16" height="12" rx="3.5"/><path d="M12 7V4"/><circle cx="12" cy="3.4" r=".9"/><circle cx="9.3" cy="12.6" r="1.2" fill="currentColor" stroke="none"/><circle cx="14.7" cy="12.6" r="1.2" fill="currentColor" stroke="none"/><path d="M9.5 16h5"/></svg>`,book:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v15H6.5A2.5 2.5 0 0 0 4 20.5z"/><path d="M4 20.5V5.5M8 7.5h8"/></svg>`,trophy:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 4h8v5a4 4 0 0 1-8 0z"/><path d="M8 6H5.2a3 3 0 0 0 3.1 4M16 6h2.8a3 3 0 0 1-3.1 4M12 13v4M8.5 21h7M10 17h4"/></svg>`,shell:`<img class="boli" src="data:image/webp;base64,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" alt="">`,chev:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9.5 6l6 6-6 6"/></svg>`,eye:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg>`};
 function heroFan(){return `<div class="dhero" aria-hidden="true">${['10-D-0','13-S-0','1-H-0'].map(c=>`<div class="card">${faceHTML(c)}</div>`).join('')}</div>`;}
 function acctCardHTML(){if(!authIsGuest())return '';
 return `<button class="acrow" data-a="acctNew"><span class="ai">${HI.user}</span><span class="at"><b>Save your progress</b><small>Create a free account or log in</small></span><span class="go" aria-hidden="true">${HI.chev}</span></button>`;}
@@ -1619,26 +1740,30 @@ function resumeHTML(){let d=null;try{d=JSON.parse(ls.get('lg-solo')||'null');}ca
 const me=d.players.find(q=>q.id===myId),best=Math.max(...d.players.filter(q=>q.id!==myId).map(q=>q.score|0));
 const lead=me?(me.score|0)-best:0,R=roundsOf(d);
 return `<button class="resume" data-a="resumeSolo"><span>Unfinished game: <b>Hand ${Math.min(d.handNo||1,R)} of ${R}</b>${me?(lead>0?`, you lead by ${lead}`:lead<0?`, ${-lead} behind`:', level'):''}</span><span class="go">Resume</span></button>`;}
+/* home (L3 Pastel, like the Dhivehi Games homepage): one big Play button first, then Online, then everything else */
+function storeSub(){const f=CATALOG.find(it=>it.feat&&!it.hidden&&itemState(it)==='owned');return f?'New and free: '+esc(f.name)+(f.cat==='frame'?' ring':''):'Card backs, rings, tables and avatar items';}
 function renderHome(){
 screen='home';offTable();closeOv();const nm=myName(),t=BYID[equippedId('title')];
 app.innerHTML=`<main class="page">
 <div class="hometop"><a class="icon-btn dgh" href="../" aria-label="Back to Dhivehi Games">${ICON.back}<img class="dgmk" src="/icons/favicon.svg" alt="" width="24" height="24"></a><button class="profbtn" data-a="profile" aria-label="Your profile">${avatarHTML(meP(),0,'',38)}<span class="pwrap"><span class="pn">${nm?esc(nm):'Player'}</span><span class="ps">${esc(t?t.name:'Guest')}</span></span></button><button class="shellpill" data-a="goStore" aria-label="Store, ${INV.shells} Boli">${HI.shell}<span>${compactNum(INV.shells)}</span></button></div>
 ${heroFan()}
-<div class="dtitle"><h1>DIGU</h1><p>Can you dig it?</p></div>
-<section class="modes">
-<button class="mode quick" data-a="quick"><span class="mi">${HI.bolt}</span><span class="mt"><b>Quick Match</b><small>Join a public table in one tap</small></span><span class="lv" id="qlive" hidden><i></i><span></span></span></button>
-<button class="mode" data-a="goFriends"><span class="mi">${HI.friends}</span><b>With Friends</b><small>Create or join a table</small></button>
-<button class="mode" data-a="goComputer"><span class="tag">Blitz</span><span class="mi">${HI.bot}</span><b>vs Computer</b><small>1 to 5 opponents, offline</small></button>
-</section>
-${db?'':srvHTML()}
+<div class="dtitle"><div class="eb">Maldivian rummy</div><h1>Digu</h1><p>Can you dig it?</p></div>
+<button class="hplay" data-a="goComputer"><span class="pi">${HI.play}</span><span class="ptx"><b>Play</b><small>vs Computer · 1 to 5 opponents · offline</small></span><span class="bz">Blitz at 5</span></button>
 ${resumeHTML()}
-<section class="podium"><h3>Most wins</h3><div data-wins-board data-podium="1"><p class="muted">Loading the leaderboard…</p></div></section>
-<div class="homebelow">
-${acctCardHTML()}
-${storeBannerHTML()}
-<div class="spbox" id="spbox"></div>
-<button class="btn ghost wide howbtn" data-a="howto">${HI.book}<span>How to play</span></button>
+<div class="heb">Online</div>
+<section class="htwo">
+<button class="htile" data-a="quick"><span class="oi">${HI.bolt}</span><span class="lv" id="qlive" hidden><i></i><span></span></span><b>Quick Match</b><small>Join a public table in one tap</small></button>
+<button class="htile" data-a="goFriends"><span class="oi">${HI.friends}</span><b>With Friends</b><small>Create or join a table</small></button>
+</section>
+<div class="heb">More</div>
+<div class="hmlist">
+<button class="hmrow" data-a="top10"><span class="ri">${HI.trophy}</span><span class="rt"><b>Most wins</b><small id="lbsub">See who’s on top</small></span><span class="hpod" data-wins-board data-podium="mini" aria-hidden="true"></span>${HI.chev}</button>
+<button class="hmrow" data-a="goStore"><span class="ri">${HI.bag}</span><span class="rt"><b>Store</b><small>${storeSub()}</small></span>${HI.chev}</button>
+${authIsGuest()?`<button class="hmrow" data-a="acctNew"><span class="ri">${HI.user}</span><span class="rt"><b>Save your progress</b><small>Create a free account or log in</small></span>${HI.chev}</button>`:''}
 </div>
+<div class="homebelow"><div class="spbox" id="spbox"></div></div>
+<button class="hhow" data-a="howto">${HI.book}<span>How to play</span></button>
+${db?'':srvHTML()}
 </main>`;mountSponsors();warmUp();setTimeout(loadWinsLeaderboard,0);loadLive();
 if(!nm&&!ls.get('dd-asked-name')){ls.set('dd-asked-name','1');setTimeout(()=>{if(screen==='home')openProfile(null,'Welcome to Digu! What should we call you?');},700);}}
 function renderFriends(){
@@ -1727,69 +1852,199 @@ function openPicker(){openProfile(null);}
 const CROWN='<span class="crown" aria-hidden="true"><svg viewBox="0 0 24 16"><path d="M2 14h20l1.5-10-6.5 4.5L12 1 7 8.5.5 4z" fill="#F2C94C" stroke="#8A6414" stroke-width="1.2" stroke-linejoin="round"/></svg></span>';
 function buildTable(){
 screen='table';offTable();closeRules();document.documentElement.dataset.tbl=equippedId('table');cardEls={};handKey=null;order=[];selected=null;ticks=[];
-app.innerHTML=`<main class="table"><div class="tlayer" aria-hidden="true"><div class="tsc" id="tsc"></div></div>
-<div class="topbar"><button class="icon-btn" data-a="menu" aria-label="Scores and menu">${ICON.menu}</button><div class="goal"><span id="goalt"></span></div><div class="tools"><button class="icon-btn micbtn" id="micbtn" data-a="mic" aria-label="Turn mic on" aria-pressed="false" hidden></button><button class="icon-btn chatbtn" id="chatbtn" data-a="chat" aria-label="Chat" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20.5l1.5-4.9A8 8 0 1 1 21 12z"/></svg><i class="dot" hidden></i></button><button class="icon-btn emobtn" id="emobtn" data-a="emotes" aria-label="Send a reaction">😊</button>${mode==='solo'?`<button class="icon-btn musicbtn" data-a="music" aria-label="Background music" aria-pressed="${Music.on}">${ICON.music}</button>`:''}</div></div>
-<section class="arena" id="arena"><div class="tad" id="tad" aria-hidden="true"></div>
+app.innerHTML=`<main class="table"><div class="tscene" id="tscene" aria-hidden="true"></div>
+<div class="topbar"><button class="icon-btn" data-a="menu" aria-label="Scores and menu">${ICON.menu}</button><div class="goal"><span id="goalt"></span></div><div class="tools"><button class="icon-btn micbtn" id="micbtn" data-a="mic" aria-label="Turn mic on" aria-pressed="false" hidden></button><button class="icon-btn chatbtn" id="chatbtn" data-a="chat" aria-label="Chat" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20.5l1.5-4.9A8 8 0 1 1 21 12z"/></svg><i class="dot" hidden></i></button><button class="icon-btn emobtn" id="emobtn" data-a="emotes" aria-label="Send a reaction">${HI.smile}</button>${mode==='solo'?`<button class="icon-btn musicbtn" data-a="music" aria-label="Background music" aria-pressed="${Music.on}">${ICON.music}</button>`:''}</div></div>
+<section class="arena" id="arena"><div class="plate" id="plate" aria-hidden="true">DIGU</div><div class="tad" id="tad" aria-hidden="true"></div>
 <div class="seats" id="opps"></div>
 <div class="status" id="status" aria-live="polite"></div>
 <div class="piles"><button class="pile" id="stock" data-a="drawStock" aria-label="Draw from the face-down pile"></button><button class="pile" id="disc" data-a="drawDiscard" aria-label="Take the top discard"></button></div></section>
 <section class="me"><div class="emotray" id="emotray" hidden>${EMOTE_PACKS.filter(p=>packOwned(p.id)).map(p=>p.items.map(it=>`<button class="emo-opt${it.txt?' txt':''}" data-a="emote" data-e="${it.id}" aria-label="${esc(it.n)}">${it.t}</button>`).join('')).join('')}</div><div class="chatbar" id="chatbar" hidden><div class="chatlog" id="chatlog" aria-live="polite"></div><div class="chatquick" id="chatquick">${chipsHTML()}</div><div class="chatrow"><input class="chatin" id="chatin" maxlength="60" placeholder="Message" autocomplete="off" autocorrect="on" enterkeyhint="send" aria-label="Chat message"><button class="chatsend" data-a="chatSend" aria-label="Send"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M3.4 20.4 21 12 3.4 3.6l-.1 6.5L15 12 3.3 13.9z"/></svg></button></div></div>
-<div class="mebar"><div class="meinfo" id="meinfo"></div><div class="acts" id="acts"></div></div><div class="hand" id="hand"></div></section>
+<div class="mebar"><div class="meinfo" id="meinfo"></div><div class="acts" id="acts"></div></div><div class="hand dgt-hand" id="hand"></div></section>
 </main>`;
-bindHand();applyTable();}
-/* ---------- table themes: static art baked to tables/*.webp, only small live layers animate.
-   Each theme is drawn in a 375x812 scene; g = the table's outer ellipse in that scene (cx, cy, rx, ry),
-   which is stretched onto the real table oval, so seats and piles always sit on the art.
-   Each player sees the table they chose (it is never synced). ---------- */
-const TFX={"dhanvaru":"<div class=\"ehalo\" style=\"left:187.5px;top:128px\"><\/div><div class=\"motes em\"><i style=\"left:172.77px;top:221.59px;animation-delay:-10.27s;animation-duration:17.45s;--dx:-9.57px\"><\/i><i style=\"left:264.21px;top:423px;animation-delay:-5.15s;animation-duration:14.03s;--dx:13.81px\"><\/i><i style=\"left:150.65px;top:263.79px;animation-delay:-10.9s;animation-duration:13.6s;--dx:3.92px\"><\/i><i style=\"left:157.73px;top:332.41px;animation-delay:-6.06s;animation-duration:19.53s;--dx:-1.32px\"><\/i><i style=\"left:177.47px;top:395.45px;animation-delay:-9.87s;animation-duration:14.25s;--dx:-13.03px\"><\/i><i style=\"left:167.24px;top:437.11px;animation-delay:-4.36s;animation-duration:13.51s;--dx:18.43px\"><\/i><i style=\"left:104.29px;top:444.76px;animation-delay:-12.97s;animation-duration:19.48s;--dx:8.18px\"><\/i><i style=\"left:158.27px;top:149.92px;animation-delay:-8.02s;animation-duration:12.31s;--dx:4.31px\"><\/i><i style=\"left:207.04px;top:241.78px;animation-delay:-3.84s;animation-duration:12.06s;--dx:1.78px\"><\/i><i style=\"left:148px;top:241.52px;animation-delay:-4.94s;animation-duration:15.63s;--dx:15.78px\"><\/i><i style=\"left:173.6px;top:265.37px;animation-delay:-2.16s;animation-duration:18.33s;--dx:12.89px\"><\/i><i style=\"left:189.78px;top:191.63px;animation-delay:-0.79s;animation-duration:13.5s;--dx:-3.88px\"><\/i><i style=\"left:194.06px;top:313.97px;animation-delay:-3.6s;animation-duration:18.42s;--dx:13.74px\"><\/i><i style=\"left:217.07px;top:171.86px;animation-delay:-14.14s;animation-duration:12.14s;--dx:3.28px\"><\/i><i style=\"left:147.09px;top:238.78px;animation-delay:-14.39s;animation-duration:17.98s;--dx:10.37px\"><\/i><i style=\"left:133.51px;top:431.06px;animation-delay:-0.95s;animation-duration:18.52s;--dx:4.26px\"><\/i><i style=\"left:205.43px;top:370.71px;animation-delay:-7.54s;animation-duration:18.4s;--dx:-6.48px\"><\/i><i style=\"left:160.91px;top:286.7px;animation-delay:-5.65s;animation-duration:14.38s;--dx:5.08px\"><\/i><i style=\"left:215.98px;top:180.47px;animation-delay:-1.14s;animation-duration:12.54s;--dx:0.47px\"><\/i><i style=\"left:218.6px;top:434.8px;animation-delay:-3.04s;animation-duration:14.16s;--dx:-17.65px\"><\/i><i style=\"left:120.63px;top:359.19px;animation-delay:-7.92s;animation-duration:17.45s;--dx:6.13px\"><\/i><i style=\"left:158.55px;top:209.75px;animation-delay:-1.67s;animation-duration:19.45s;--dx:1.54px\"><\/i><\/div>","sandbank":{"mid":"<div class=\"scaus c1\"><svg width=\"600\" height=\"1040\" aria-hidden=\"true\"><filter id=\"bC0\" x=\"0\" y=\"0\" width=\"100%\" height=\"100%\"><feTurbulence type=\"turbulence\" baseFrequency=\"0.020 0.026\" numOctaves=\"2\" seed=\"11\"><\/feTurbulence><feColorMatrix type=\"matrix\" values=\"0 0 0 0 .92 0 0 0 0 1 0 0 0 0 .98 -4.2 0 0 0 1.25\"><\/feColorMatrix><feComponentTransfer><feFuncA type=\"gamma\" amplitude=\"0.55\" exponent=\"1.8\" offset=\"0\"><\/feFuncA><\/feComponentTransfer><\/filter><rect width=\"600\" height=\"1040\" filter=\"url(#bC0)\"><\/rect><\/svg><\/div><div class=\"scaus c2\"><svg width=\"600\" height=\"1040\" aria-hidden=\"true\"><filter id=\"bC1\" x=\"0\" y=\"0\" width=\"100%\" height=\"100%\"><feTurbulence type=\"turbulence\" baseFrequency=\"0.028 0.022\" numOctaves=\"2\" seed=\"37\"><\/feTurbulence><feColorMatrix type=\"matrix\" values=\"0 0 0 0 .92 0 0 0 0 1 0 0 0 0 .98 -4.2 0 0 0 1.25\"><\/feColorMatrix><feComponentTransfer><feFuncA type=\"gamma\" amplitude=\"0.4\" exponent=\"1.8\" offset=\"0\"><\/feFuncA><\/feComponentTransfer><\/filter><rect width=\"600\" height=\"1040\" filter=\"url(#bC1)\"><\/rect><\/svg><\/div><div class=\"fish\"><svg style=\"left:0px;top:0px;transform:rotate(-8deg)\" width=\"14\" height=\"6\" viewBox=\"0 0 14 6\"><path d=\"M0 3 C3 0 8 0 11 3 C8 6 3 6 0 3Z M11 3 L14 0.6 L14 5.4Z\" fill=\"#0b4b5e\" opacity=\".45\"><\/path><\/svg><svg style=\"left:18px;top:7px;transform:rotate(-4deg)\" width=\"14\" height=\"6\" viewBox=\"0 0 14 6\"><path d=\"M0 3 C3 0 8 0 11 3 C8 6 3 6 0 3Z M11 3 L14 0.6 L14 5.4Z\" fill=\"#0b4b5e\" opacity=\".45\"><\/path><\/svg><svg style=\"left:9px;top:15px;transform:rotate(-10deg)\" width=\"14\" height=\"6\" viewBox=\"0 0 14 6\"><path d=\"M0 3 C3 0 8 0 11 3 C8 6 3 6 0 3Z M11 3 L14 0.6 L14 5.4Z\" fill=\"#0b4b5e\" opacity=\".45\"><\/path><\/svg><svg style=\"left:28px;top:1px;transform:rotate(-6deg)\" width=\"14\" height=\"6\" viewBox=\"0 0 14 6\"><path d=\"M0 3 C3 0 8 0 11 3 C8 6 3 6 0 3Z M11 3 L14 0.6 L14 5.4Z\" fill=\"#0b4b5e\" opacity=\".45\"><\/path><\/svg><svg style=\"left:22px;top:20px;transform:rotate(-2deg)\" width=\"14\" height=\"6\" viewBox=\"0 0 14 6\"><path d=\"M0 3 C3 0 8 0 11 3 C8 6 3 6 0 3Z M11 3 L14 0.6 L14 5.4Z\" fill=\"#0b4b5e\" opacity=\".45\"><\/path><\/svg><svg style=\"left:38px;top:12px;transform:rotate(-7deg)\" width=\"14\" height=\"6\" viewBox=\"0 0 14 6\"><path d=\"M0 3 C3 0 8 0 11 3 C8 6 3 6 0 3Z M11 3 L14 0.6 L14 5.4Z\" fill=\"#0b4b5e\" opacity=\".45\"><\/path><\/svg><\/div>","top":"<div class=\"glints\"><i style=\"left:24px;top:330px;animation-delay:0s\"><\/i><i style=\"left:352px;top:560px;animation-delay:-1.1s\"><\/i><i style=\"left:20px;top:590px;animation-delay:-2.3s\"><\/i><i style=\"left:345px;top:250px;animation-delay:-0.6s\"><\/i><i style=\"left:300px;top:118px;animation-delay:-1.7s\"><\/i><i style=\"left:60px;top:176px;animation-delay:-2.9s\"><\/i><i style=\"left:362px;top:420px;animation-delay:-3.4s\"><\/i><\/div>"},"dhoni":{"mid":"<svg class=\"lay tw t0\" viewBox=\"0 0 375 812\" aria-hidden=\"true\"><path d=\"M171.98 132.68L172.48 135.18L174.98 135.68L172.48 136.18L171.98 138.68L171.48 136.18L168.98 135.68L171.48 135.18Z\" fill=\"#fff\"><\/path><path d=\"M11.94 43.36L12.44 45.86L14.94 46.36L12.44 46.86L11.94 49.36L11.44 46.86L8.94 46.36L11.44 45.86Z\" fill=\"#fff\"><\/path><path d=\"M360.67 100.65L361.17 103.15L363.67 103.65L361.17 104.15L360.67 106.65L360.17 104.15L357.67 103.65L360.17 103.15Z\" fill=\"#fff\"><\/path><path d=\"M48.14 53.26L48.64 55.76L51.14 56.26L48.64 56.76L48.14 59.26L47.64 56.76L45.14 56.26L47.64 55.76Z\" fill=\"#fff\"><\/path><path d=\"M329.91 67.11L330.41 69.61L332.91 70.11L330.41 70.61L329.91 73.11L329.41 70.61L326.91 70.11L329.41 69.61Z\" fill=\"#fff\"><\/path><path d=\"M10.74 135.43L11.24 137.93L13.74 138.43L11.24 138.93L10.74 141.43L10.24 138.93L7.74 138.43L10.24 137.93Z\" fill=\"#fff\"><\/path><path d=\"M48.7 97.19L49.2 99.69L51.7 100.19L49.2 100.69L48.7 103.19L48.2 100.69L45.7 100.19L48.2 99.69Z\" fill=\"#fff\"><\/path><path d=\"M232.34 70.1L232.84 72.6L235.34 73.1L232.84 73.6L232.34 76.1L231.84 73.6L229.34 73.1L231.84 72.6Z\" fill=\"#fff\"><\/path><circle cx=\"255.3\" cy=\"737.51\" r=\".8\" fill=\"#dfe8ff\"><\/circle><circle cx=\"372.18\" cy=\"640.34\" r=\".8\" fill=\"#dfe8ff\"><\/circle><circle cx=\"370.89\" cy=\"308.27\" r=\".8\" fill=\"#dfe8ff\"><\/circle><circle cx=\"218.9\" cy=\"680.48\" r=\".8\" fill=\"#dfe8ff\"><\/circle><circle cx=\"0.21\" cy=\"710.57\" r=\".8\" fill=\"#dfe8ff\"><\/circle><\/svg><svg class=\"lay tw t1\" viewBox=\"0 0 375 812\" aria-hidden=\"true\"><path d=\"M142.88 35.61L143.38 38.11L145.88 38.61L143.38 39.11L142.88 41.61L142.38 39.11L139.88 38.61L142.38 38.11Z\" fill=\"#fff\"><\/path><path d=\"M62.26 138.08L62.76 140.58L65.26 141.08L62.76 141.58L62.26 144.08L61.76 141.58L59.26 141.08L61.76 140.58Z\" fill=\"#fff\"><\/path><path d=\"M216.73 104.52L217.23 107.02L219.73 107.52L217.23 108.02L216.73 110.52L216.23 108.02L213.73 107.52L216.23 107.02Z\" fill=\"#fff\"><\/path><path d=\"M207.4 58.53L207.9 61.03L210.4 61.53L207.9 62.03L207.4 64.53L206.9 62.03L204.4 61.53L206.9 61.03Z\" fill=\"#fff\"><\/path><path d=\"M274.36 87.46L274.86 89.96L277.36 90.46L274.86 90.96L274.36 93.46L273.86 90.96L271.36 90.46L273.86 89.96Z\" fill=\"#fff\"><\/path><path d=\"M292.95 100.24L293.45 102.74L295.95 103.24L293.45 103.74L292.95 106.24L292.45 103.74L289.95 103.24L292.45 102.74Z\" fill=\"#fff\"><\/path><path d=\"M314.74 66.91L315.24 69.41L317.74 69.91L315.24 70.41L314.74 72.91L314.24 70.41L311.74 69.91L314.24 69.41Z\" fill=\"#fff\"><\/path><path d=\"M58.14 23.48L58.64 25.98L61.14 26.48L58.64 26.98L58.14 29.48L57.64 26.98L55.14 26.48L57.64 25.98Z\" fill=\"#fff\"><\/path><circle cx=\"365.52\" cy=\"710.59\" r=\".8\" fill=\"#dfe8ff\"><\/circle><circle cx=\"5.18\" cy=\"528.24\" r=\".8\" fill=\"#dfe8ff\"><\/circle><circle cx=\"0.44\" cy=\"208.15\" r=\".8\" fill=\"#dfe8ff\"><\/circle><circle cx=\"7.63\" cy=\"451.46\" r=\".8\" fill=\"#dfe8ff\"><\/circle><circle cx=\"19.12\" cy=\"599.97\" r=\".8\" fill=\"#dfe8ff\"><\/circle><circle cx=\"367.26\" cy=\"321\" r=\".8\" fill=\"#dfe8ff\"><\/circle><\/svg><svg class=\"lay tw t2\" viewBox=\"0 0 375 812\" aria-hidden=\"true\"><path d=\"M239.79 4.75L240.29 7.25L242.79 7.75L240.29 8.25L239.79 10.75L239.29 8.25L236.79 7.75L239.29 7.25Z\" fill=\"#fff\"><\/path><path d=\"M103.14 34.48L103.64 36.98L106.14 37.48L103.64 37.98L103.14 40.48L102.64 37.98L100.14 37.48L102.64 36.98Z\" fill=\"#fff\"><\/path><path d=\"M276.18 102.5L276.68 105L279.18 105.5L276.68 106L276.18 108.5L275.68 106L273.18 105.5L275.68 105Z\" fill=\"#fff\"><\/path><path d=\"M334.57 14.04L335.07 16.54L337.57 17.04L335.07 17.54L334.57 20.04L334.07 17.54L331.57 17.04L334.07 16.54Z\" fill=\"#fff\"><\/path><path d=\"M158.22 5.47L158.72 7.97L161.22 8.47L158.72 8.97L158.22 11.47L157.72 8.97L155.22 8.47L157.72 7.97Z\" fill=\"#fff\"><\/path><path d=\"M81.99 76.8L82.49 79.3L84.99 79.8L82.49 80.3L81.99 82.8L81.49 80.3L78.99 79.8L81.49 79.3Z\" fill=\"#fff\"><\/path><path d=\"M9.95 30.83L10.45 33.33L12.95 33.83L10.45 34.33L9.95 36.83L9.45 34.33L6.95 33.83L9.45 33.33Z\" fill=\"#fff\"><\/path><path d=\"M243.71 82.74L244.21 85.24L246.71 85.74L244.21 86.24L243.71 88.74L243.21 86.24L240.71 85.74L243.21 85.24Z\" fill=\"#fff\"><\/path><circle cx=\"5.29\" cy=\"658.12\" r=\".8\" fill=\"#dfe8ff\"><\/circle><circle cx=\"3.83\" cy=\"784.7\" r=\".8\" fill=\"#dfe8ff\"><\/circle><circle cx=\"368.78\" cy=\"224.27\" r=\".8\" fill=\"#dfe8ff\"><\/circle><circle cx=\"366.46\" cy=\"542.35\" r=\".8\" fill=\"#dfe8ff\"><\/circle><circle cx=\"353.05\" cy=\"802.57\" r=\".8\" fill=\"#dfe8ff\"><\/circle><circle cx=\"371.93\" cy=\"579.57\" r=\".8\" fill=\"#dfe8ff\"><\/circle><\/svg>","top":""},"lacquer":"<div class=\"shim\" style=\"-webkit-mask-image:url(&quot;data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%20375%20812%27%3E%3Cpath%20fill-rule%3D%27evenodd%27%20d%3D%27M5.5%20402a182%20198%200%201%200%20364%200a182%20198%200%201%200%20-364%200zM37.5%20396a150%20166%200%201%200%20300%200a150%20166%200%201%200%20-300%200z%27%20fill%3D%27white%27/%3E%3C/svg%3E&quot;);mask-image:url(&quot;data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%20375%20812%27%3E%3Cpath%20fill-rule%3D%27evenodd%27%20d%3D%27M5.5%20402a182%20198%200%201%200%20364%200a182%20198%200%201%200%20-364%200zM37.5%20396a150%20166%200%201%200%20300%200a150%20166%200%201%200%20-300%200z%27%20fill%3D%27white%27/%3E%3C/svg%3E&quot;)\"><i><\/i><\/div>"};
-const TIMG=(n,c)=>`<img class="lay${c?' '+c:''}" src="tables/${n}.webp?v=1" alt="" decoding="async" draggable="false">`;
+bindHand();applyTable();watchTable();}
+/* any size change of the table screen (rotation, browser bars, split view) re-lays it */
+let tRO=null;function watchTable(){if(tRO){tRO.disconnect();tRO=null;}const m=document.querySelector('main.table');if(!m||!window.ResizeObserver)return;let w0=0,h0=0;tRO=new ResizeObserver(en=>{const r=en[0].contentRect;if(Math.abs(r.width-w0)<1&&Math.abs(r.height-h0)<1)return;w0=r.width;h0=r.height;relayout();});tRO.observe(m);}
+/* ---------- table themes: drawn in code (SVG, from the approved redesign), turned into a picture ONCE per screen size
+   (an <img>, so nothing is downloaded and the art fits the oval exactly); only small separate layers move, with
+   transform/opacity. Where everything sits (oval, seats, piles, message, sponsor, nameplate) comes from the shared
+   ../shared/table.js. Each player sees the table they chose (it is never synced). ---------- */
 const TABLES={
- 't-dhanvaru':{c:'dhanvaru',bg:'#040504',g:[187.5,402,170,187],f:400,ad:'plaque',img:['dhanvaru'],
-  L:a=>TIMG('dhanvaru')+a+TIMG('dhanvaru-beam','beam')+TFX.dhanvaru},
- 't-sandbank':{c:'sandbank',bg:'#0A6389',g:[187.5,398,164,180],f:398,ad:'sand',img:['sandbank-front','sandbank-back'],
-  L:a=>TIMG('sandbank-back')+TFX.sandbank.mid+TIMG('sandbank-front')+a+TIMG('sandbank-foam','foam')+TIMG('sandbank-palm','palm')+TFX.sandbank.top},
- 't-dhoni':{c:'dhoni',bg:'#040c1b',g:[187.5,403,160,182],f:401,ad:'crate',img:['dhoni-boat','dhoni-back'],
-  L:a=>TIMG('dhoni-back')+TIMG('dhoni-gl1','gl g1')+TIMG('dhoni-gl2','gl g2')+TFX.dhoni.mid+TIMG('dhoni-boat')+a},
- 't-lacquer':{c:'lacquer',bg:'#060102',g:[187.5,402,182,198],f:399,ad:'medal',img:['lacquer'],
-  L:a=>TIMG('lacquer')+a+TFX.lacquer}
-};
-const tableOf=()=>TABLES[equippedId('table')]||TABLES['t-dhanvaru'];
-const tthumbStyle=(id,w)=>{const T=TABLES[id];return `--tbg:${T.bg};background-image:${T.img.map(n=>`url(tables/${n}.webp?v=1)`).join(',')};background-size:${w}px auto`;};
-function tablePickHTML(){const cur=equippedId('table');return `<div class="tpick">${Object.keys(TABLES).map(id=>`<button class="tsw" data-a="tableSet" data-id="${id}" aria-pressed="${id===cur}"><span class="tthumb" style="${tthumbStyle(id,86)}"></span><small>${esc(BYID[id].name)}</small></button>`).join('')}</div>`;}
-/* the ad lives on top of the baked art in the theme's own style, so sponsors change without re-rendering */
+ 't-pastel':{c:'pastel',bg:'#F3EEF7',ad:'chip'},
+ 't-dhanvaru':{c:'dhanvaru',bg:'#070504',ad:'plaque'},
+ 't-sandbank':{c:'sandbank',bg:'#0A6E8C',ad:'sand'},
+ 't-dhoni':{c:'dhoni',bg:'#040a18',ad:'crate'},
+ 't-lacquer':{c:'lacquer',bg:'#080102',ad:'medal'}};
+const tableOf=()=>TABLES[equippedId('table')]||TABLES[DEF.table]||TABLES['t-pastel'];
+const SEATING='digu';
+const f1=v=>Math.round(v*10)/10;
+const tE=(cx,cy,rx,ry,a)=>`<ellipse cx="${f1(cx)}" cy="${f1(cy)}" rx="${f1(Math.max(0,rx))}" ry="${f1(Math.max(0,ry))}" ${a||''}/>`;
+function srnd(seed){let s=seed;return()=>{s=(s*16807)%2147483647;return (s-1)/2147483646;};}
+let SUID=0;
+/* g: {cx,cy,rx,ry,rail} of the table in this picture; top: y where the lamp / horizon may start. Returns {back, front}:
+   back = the room (under everything), front = the table itself (rail + felt). */
+function sceneSVG(th,W,H,g,land,top){const u='s'+(++SUID),E=tE,cx=g.cx,cy=g.cy,rx=g.rx,ry=g.ry,rl=g.rail,k=rl/21,frx=rx-rl,fry=ry-rl,R=srnd(7);
+ let bg='',defs='',rail='',felt='',lamp='';
+ defs+=`<filter id="${u}b6" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="${f1(6*k+1)}"/></filter><filter id="${u}b2" x="-10%" y="-10%" width="120%" height="120%"><feGaussianBlur stdDeviation="2"/></filter><filter id="${u}b12" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="14"/></filter>`;
+ defs+=`<linearGradient id="${u}hl" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".22"/><stop offset=".35" stop-color="#fff" stop-opacity="0"/><stop offset=".85" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".35"/></linearGradient><clipPath id="${u}fc">${E(cx,cy,frx,fry)}</clipPath>`;
+ const q=1-rl/Math.sqrt(rx*ry),b=1-q;
+ const railGrad=c=>`<radialGradient id="${u}rl" cx="50%" cy="50%" r="50%"><stop offset="${f1(1000*(q-.15*b))/1000}" stop-color="${c[0]}"/><stop offset="${f1(1000*(q+.18*b))/1000}" stop-color="${c[1]}"/><stop offset="${f1(1000*(q+.55*b))/1000}" stop-color="${c[2]}"/><stop offset="1" stop-color="${c[3]}"/></radialGradient>`;
+ const glowG=(id,col,op)=>`<radialGradient id="${u}${id}"><stop offset="0" stop-color="${col}" stop-opacity="${op}"/><stop offset="1" stop-color="${col}" stop-opacity="0"/></radialGradient>`;
+ const shadow=(c)=>E(cx,cy+16*k,rx+4*k,ry+6*k,`fill="${c||'rgba(0,0,0,.75)'}" filter="url(#${u}b6)"`);
+ const railHi=E(cx,cy,rx-rl/2,ry-rl/2,`fill="none" stroke="url(#${u}hl)" stroke-width="${f1(rl*.67)}"`);
+ const innerSh=c=>`<g clip-path="url(#${u}fc)">${E(cx,cy,frx,fry,`fill="none" stroke="${c||'rgba(0,0,0,.55)'}" stroke-width="${f1(18*k)}" filter="url(#${u}b6)"`)}</g>`;
+ const stitch=(d,col)=>E(cx,cy,rx-d*k,ry-d*k,`fill="none" stroke="${col}" stroke-width=".9" stroke-dasharray="3.2 2.6"`);
+ if(th==='dhanvaru'){
+  defs+=railGrad(['#1a0c06','#5e2f1c','#47220f','#120603']);
+  defs+=`<radialGradient id="${u}ft" cx="50%" cy="30%" r="75%"><stop offset="0" stop-color="#2a6049"/><stop offset=".45" stop-color="#164233"/><stop offset="1" stop-color="#0a2219"/></radialGradient>`;
+  defs+=`<linearGradient id="${u}br" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F6DC9C"/><stop offset=".5" stop-color="#C9973F"/><stop offset="1" stop-color="#7a5418"/></linearGradient>`;
+  defs+=`<pattern id="${u}bk" width="44" height="22" patternUnits="userSpaceOnUse"><rect width="44" height="22" fill="#0d0907"/><rect x="1" y="1" width="42" height="9.5" rx="1" fill="#241810"/><rect x="-21" y="12" width="42" height="9.5" rx="1" fill="#20150e"/><rect x="23" y="12" width="42" height="9.5" rx="1" fill="#261a12"/></pattern>`;
+  defs+=`<radialGradient id="${u}lm" gradientUnits="userSpaceOnUse" cx="${f1(cx)}" cy="${f1(top+20)}" r="${f1(Math.max(W,H)*(land?.7:.62))}"><stop offset="0" stop-color="#fff"/><stop offset=".55" stop-color="#fff" stop-opacity=".35"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient><mask id="${u}lmm"><rect width="${W}" height="${H}" fill="url(#${u}lm)"/></mask>`;
+  defs+=`<linearGradient id="${u}cone" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFE3B0" stop-opacity=".26"/><stop offset="1" stop-color="#FFE3B0" stop-opacity="0"/></linearGradient>`+glowG('lg','#FFE3B0',.35)+glowG('hs','#FFE6B8',.16);
+  bg=`<rect width="${W}" height="${H}" fill="#070504"/><rect width="${W}" height="${H}" fill="url(#${u}bk)" mask="url(#${u}lmm)" opacity=".9"/>`;
+  const ly=top;
+  bg+=`<path d="M${f1(cx-24)} ${f1(ly+18)}L${f1(cx-rx*.95)} ${f1(cy+ry*.2)}L${f1(cx+rx*.95)} ${f1(cy+ry*.2)}L${f1(cx+24)} ${f1(ly+18)}Z" fill="url(#${u}cone)" filter="url(#${u}b12)"/>`;
+  lamp=`<path d="M${f1(cx)} 0V${f1(ly)}" stroke="#2b2118" stroke-width="1.6"/><path d="M${f1(cx-28)} ${f1(ly+16)}Q${f1(cx-26)} ${f1(ly+2)} ${f1(cx)} ${f1(ly)}Q${f1(cx+26)} ${f1(ly+2)} ${f1(cx+28)} ${f1(ly+16)}Z" fill="#1F4A38" stroke="#0e2a1f" stroke-width="1"/><path d="M${f1(cx-28)} ${f1(ly+16)}h56" stroke="#C9973F" stroke-width="2"/><rect x="${f1(cx-4)}" y="${f1(ly-4)}" width="8" height="6" rx="1.5" fill="#C9973F"/>`+E(cx,ly+18,16,3.5,`fill="#FFF3D6"`)+E(cx,ly+22,80,32,`fill="url(#${u}lg)"`);
+  rail=shadow()+E(cx,cy,rx,ry,`fill="url(#${u}rl)"`)+railHi+stitch(5.5,'rgba(242,214,160,.34)')+stitch(16,'rgba(242,214,160,.3)')+E(cx,cy,frx+1.2,fry+1.2,`fill="none" stroke="url(#${u}br)" stroke-width="2.6"`);
+  felt=E(cx,cy,frx,fry,`fill="url(#${u}ft)"`)+`<g clip-path="url(#${u}fc)">`+E(cx,cy-fry*.42,frx*.95,fry*.6,`fill="url(#${u}hs)"`)+`</g>`+innerSh();
+ }
+ if(th==='sandbank'){
+  defs+=`<linearGradient id="${u}sea" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#18BFD0"/><stop offset=".5" stop-color="#0C8FB0"/><stop offset="1" stop-color="#086487"/></linearGradient>`;
+  defs+=railGrad(['#6d5a40','#e6d9bf','#c7b596','#7c6848']);
+  defs+=`<radialGradient id="${u}ft" cx="46%" cy="30%" r="78%"><stop offset="0" stop-color="#FBF1DA"/><stop offset=".55" stop-color="#EEDDB8"/><stop offset="1" stop-color="#D7BE92"/></radialGradient>`;
+  defs+=`<pattern id="${u}rp" width="46" height="10" patternUnits="userSpaceOnUse" patternTransform="rotate(-8)"><path d="M0 6Q11.5 1.5 23 6T46 6" fill="none" stroke="rgba(140,105,60,.2)" stroke-width="1.3"/><path d="M0 7.4Q11.5 3 23 7.4T46 7.4" fill="none" stroke="rgba(255,255,255,.35)" stroke-width=".8"/></pattern>`+glowG('hs','#fff',.28);
+  bg=`<rect width="${W}" height="${H}" fill="url(#${u}sea)"/>`;
+  const fy=Math.min(H-40,cy+ry+34);
+  for(let i=0;i<6;i++){const x=W*.72+i*9-(i%2)*14,y=fy+i*5+(i%3)*4;bg+=`<path d="M${f1(x)} ${f1(y)}c3-3 8-3 11 0-3 3-8 3-11 0zm11 0 3-2.4v4.8z" fill="#0b4b5e" opacity=".35"/>`;}
+  bg+=E(cx,cy+6,rx+14*k,ry+14*k,`fill="rgba(226,208,168,.55)" filter="url(#${u}b6)"`);
+  rail=E(cx,cy+10*k,rx+2,ry+4,`fill="rgba(4,60,80,.45)" filter="url(#${u}b6)"`)+E(cx,cy,rx,ry,`fill="url(#${u}rl)"`)+railHi+
+   [3.5,8,13.5,17].map((d,i)=>E(cx,cy,rx-d*k,ry-d*k,`fill="none" stroke="rgba(110,85,55,.28)" stroke-width=".7" stroke-dasharray="${38+i*9} ${5+i} ${14+i*3} 4"`)).join('')+
+   E(cx,cy,frx+2,fry+2,`fill="none" stroke="#8d7753" stroke-width="${f1(5.2*k)}"`)+E(cx,cy,frx+2,fry+2,`fill="none" stroke="#EFE3C6" stroke-width="${f1(4*k)}" stroke-dasharray="2.1 1.3"`);
+  felt=E(cx,cy,frx,fry,`fill="url(#${u}ft)"`)+`<g clip-path="url(#${u}fc)"><rect width="${W}" height="${H}" fill="url(#${u}rp)"/>`+E(cx-frx*.25,cy-fry*.45,frx*.8,fry*.45,`fill="url(#${u}hs)"`)+`</g>`+innerSh('rgba(120,90,50,.35)')+
+   `<g transform="translate(${f1(cx+frx*.62)},${f1(cy+fry*.3)}) rotate(-25)"><ellipse rx="7" ry="4.6" fill="#f3e6d4" stroke="#b79c7c" stroke-width=".7"/><path d="M-5 0h10" stroke="#9c7f5e" stroke-width=".8" stroke-dasharray="1 1"/></g>`+
+   `<g transform="translate(${f1(cx-frx*.66)},${f1(cy+fry*.5)}) rotate(18)"><path d="M0-6 1.6-1.6 6-1.2 2.4 1.2 3.4 5.6 0 3 -3.4 5.6 -2.4 1.2 -6-1.2 -1.6-1.6z" fill="#e7a57f" opacity=".9"/></g>`;
+ }
+ if(th==='dhoni'){
+  const hz=top;
+  defs+=`<linearGradient id="${u}sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0b1a36"/><stop offset="${f1(1000*hz/H)/1000}" stop-color="#1b2f55"/><stop offset="${f1(1000*hz/H)/1000+.001}" stop-color="#0c1b35"/><stop offset="1" stop-color="#040a18"/></linearGradient>`;
+  defs+=railGrad(['#241006','#9a5a2a','#6e3a17','#241005']);
+  const ph=land?90:200;
+  defs+=`<linearGradient id="${u}pl" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#7c4722"/><stop offset=".2" stop-color="#6c3c1b"/><stop offset=".4" stop-color="#855026"/><stop offset=".6" stop-color="#70401d"/><stop offset=".8" stop-color="#7f4a23"/><stop offset="1" stop-color="#673918"/></linearGradient>`;
+  defs+=`<pattern id="${u}pk" width="110" height="${ph}" patternUnits="userSpaceOnUse"><rect width="110" height="${ph}" fill="url(#${u}pl)"/>`+[22,44,66,88].map(x=>`<rect x="${x-.6}" width="1.2" height="${ph}" fill="#2a1407" opacity=".7"/>`).join('')+`<rect x="0" y="${land?60:140}" width="22" height="1" fill="#2a1407" opacity=".6"/><rect x="44" y="${land?30:60}" width="22" height="1" fill="#2a1407" opacity=".6"/><rect x="88" y="${land?75:170}" width="22" height="1" fill="#2a1407" opacity=".6"/></pattern>`;
+  defs+=`<filter id="${u}gr" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency="0.35 0.012" numOctaves="3" seed="4"/><feColorMatrix type="matrix" values="0 0 0 0 .12 0 0 0 0 .06 0 0 0 0 .02 0 0 0 1.4 -.55"/></filter>`;
+  defs+=`<radialGradient id="${u}moonl" cx="22%" cy="8%" r="80%"><stop offset="0" stop-color="#cfdcff" stop-opacity=".22"/><stop offset=".6" stop-color="#cfdcff" stop-opacity="0"/></radialGradient>`+glowG('mh','#dfe8ff',.16)+glowG('hs','#cfdcff',.12);
+  bg=`<rect width="${W}" height="${H}" fill="url(#${u}sky)"/>`;
+  const mx=land?110:62,my=Math.max(26,Math.min(92,hz-34));
+  bg+=`<circle cx="${mx}" cy="${f1(my)}" r="46" fill="url(#${u}mh)"/><circle cx="${mx}" cy="${f1(my)}" r="15" fill="#F2F0E6"/><circle cx="${mx+4}" cy="${f1(my-3)}" r="3" fill="#dcd8c8" opacity=".6"/>`;
+  bg+=`<path d="M0 ${f1(hz)}q20-6 40-2t36 -1 30 3v2H0z" fill="#050b18"/>`;
+  for(let i=0;i<14;i++){const y=hz+10+R()*(H-hz);bg+=`<path d="M${f1(R()*W)} ${f1(y)}h${f1(20+R()*60)}" stroke="#8fa7d8" stroke-opacity=".18" stroke-width="1"/>`;}
+  rail=shadow()+E(cx,cy,rx,ry,`fill="url(#${u}rl)"`)+railHi+
+   E(cx,cy,rx-rl/2,ry-rl/2,`fill="none" stroke="#E6C47C" stroke-width="2.6" stroke-linecap="round" stroke-dasharray="0 12"`)+
+   E(cx,cy,rx-1.5,ry-1.5,`fill="none" stroke="#2fa3b3" stroke-opacity=".55" stroke-width="1.4"`)+
+   E(cx,cy,frx+2,fry+2,`fill="none" stroke="#6d5a3a" stroke-width="${f1(5*k)}"`)+E(cx,cy,frx+2,fry+2,`fill="none" stroke="#D8BD88" stroke-width="${f1(3.6*k)}" stroke-dasharray="2.2 1.4"`);
+  const bx=cx-rx,by=cy-ry;
+  felt=`<g clip-path="url(#${u}fc)"><rect x="${f1(bx)}" y="${f1(by)}" width="${f1(2*rx)}" height="${f1(2*ry)}" fill="url(#${u}pk)"/><rect x="${f1(bx)}" y="${f1(by)}" width="${f1(2*rx)}" height="${f1(2*ry)}" filter="url(#${u}gr)" opacity=".85"/><rect x="${f1(bx)}" y="${f1(by)}" width="${f1(2*rx)}" height="${f1(2*ry)}" fill="url(#${u}moonl)"/>`+E(cx-frx*.3,cy-fry*.5,frx*.9,fry*.5,`fill="url(#${u}hs)"`)+`</g>`+innerSh();
+ }
+ if(th==='lacquer'){
+  defs+=`<radialGradient id="${u}room" cx="50%" cy="38%" r="75%"><stop offset="0" stop-color="#3a0a0e"/><stop offset=".6" stop-color="#1a0406"/><stop offset="1" stop-color="#080102"/></radialGradient>`;
+  defs+=railGrad(['#030000','#2c0d0d','#140405','#030000']);
+  defs+=`<radialGradient id="${u}ft" cx="50%" cy="34%" r="74%"><stop offset="0" stop-color="#B8242D"/><stop offset=".5" stop-color="#7c0f17"/><stop offset="1" stop-color="#3d0509"/></radialGradient>`+glowG('hs','#fff',.16);
+  bg=`<rect width="${W}" height="${H}" fill="url(#${u}room)"/>`;
+  for(let i=0;i<9;i++){const x=R()*W,y=R()*H*.9,r=4+R()*10;bg+=`<circle cx="${f1(x)}" cy="${f1(y)}" r="${f1(r)}" fill="#E8B23A" opacity="${(.05+R()*.08).toFixed(2)}" filter="url(#${u}b2)"/>`;}
+  const b=rx-rl/2,bb=ry-rl/2;
+  rail=shadow()+E(cx,cy,rx,ry,`fill="url(#${u}rl)"`)+
+   E(cx,cy,b,bb,`fill="none" stroke="#8f1119" stroke-width="${f1(11*k)}"`)+
+   E(cx,cy,b,bb,`fill="none" stroke="#E2AE3E" stroke-width="${f1(7*k)}" stroke-dasharray="3.2 3.2"`)+
+   E(cx,cy,b,bb,`fill="none" stroke="#1a0404" stroke-width="2.8" stroke-linecap="round" stroke-dasharray="0 6.4" stroke-dashoffset="1.6"`)+
+   E(cx,cy,b+6*k,bb+6*k,`fill="none" stroke="#D9A13A" stroke-width="1.1"`)+E(cx,cy,b-6*k,bb-6*k,`fill="none" stroke="#D9A13A" stroke-width="1.1"`)+
+   railHi+E(cx,cy,frx+1,fry+1,`fill="none" stroke="#E8B23A" stroke-width="1.6"`);
+  const sk=Math.max(.8,Math.min(1.6,rx/172)),st=[];for(let i=0;i<16;i++){const a=i*Math.PI/8,r=(i%2?16:34)*sk*1.5;st.push(`${(Math.cos(a)*r).toFixed(1)},${(Math.sin(a)*r).toFixed(1)}`);}
+  felt=E(cx,cy,frx,fry,`fill="url(#${u}ft)"`)+`<g clip-path="url(#${u}fc)">`+E(cx-frx*.35,cy-fry*.55,frx*.6,fry*.2,`fill="url(#${u}hs)" transform="rotate(-18 ${f1(cx-frx*.35)} ${f1(cy-fry*.55)})"`)+`</g>`+innerSh()+
+   `<g transform="translate(${f1(cx)},${f1(g.py!=null?g.py:cy)})" fill="none" stroke="#F0C45A" stroke-opacity=".34" stroke-width="1"><polygon points="${st.join(' ')}"/><circle r="${f1(40*sk*1.5)}"/><circle r="${f1(43*sk*1.5)}" stroke-dasharray="1 3"/><circle r="${f1(6*sk)}"/></g>`;
+ }
+ if(th==='pastel'){
+  defs+=railGrad(['#cdbfcb','#ffffff','#f1eaf0','#c9bcc8']);
+  defs+=`<radialGradient id="${u}ft" cx="50%" cy="32%" r="75%"><stop offset="0" stop-color="#E6DEEF"/><stop offset=".5" stop-color="#D3C9E1"/><stop offset="1" stop-color="#B8ADCB"/></radialGradient>`+glowG('hs','#fff',.4);
+  const m=[[.08,.1,.62,'255,183,178',.85],[.98,.22,.62,'186,200,255',.8],[.02,.68,.7,'178,236,220',.72],[.92,.9,.6,'255,221,170',.75]];
+  m.forEach((c,i)=>{defs+=glowG('m'+i,`rgb(${c[3]})`,c[4]);});
+  bg=`<rect width="${W}" height="${H}" fill="#F3EEF7"/>`+m.map((c,i)=>`<circle cx="${f1(c[0]*W)}" cy="${f1(c[1]*H)}" r="${f1(c[2]*Math.max(W,H)*.62)}" fill="url(#${u}m${i})"/>`).join('');
+  rail=shadow('rgba(90,70,140,.35)')+E(cx,cy,rx,ry,`fill="url(#${u}rl)"`)+railHi+stitch(5.5,'rgba(238,74,100,.5)')+stitch(16,'rgba(238,74,100,.5)')+E(cx,cy,frx+1,fry+1,`fill="none" stroke="#EE4A64" stroke-width="2"`);
+  felt=E(cx,cy,frx,fry,`fill="url(#${u}ft)"`)+`<g clip-path="url(#${u}fc)">`+E(cx,cy-fry*.42,frx*.95,fry*.62,`fill="url(#${u}hs)"`)+`</g>`+innerSh('rgba(80,60,120,.28)');
+ }
+ const head=`xmlns="http://www.w3.org/2000/svg" width="${Math.round(W)}" height="${Math.round(H)}" viewBox="0 0 ${f1(W)} ${f1(H)}"`;
+ /* the table picture only covers the table's box (+ its shadow), so it stays small */
+ const m=Math.round(26*k+14),bx=Math.max(0,Math.floor(cx-rx-m)),by=Math.max(0,Math.floor(cy-ry-m)),bw=Math.min(Math.ceil(W),Math.ceil(cx+rx+m))-bx,bh=Math.min(Math.ceil(H),Math.ceil(cy+ry+m+10*k))-by;
+ return{back:`<svg ${head}><defs>${defs}</defs>${bg}${lamp}</svg>`,
+  front:`<svg xmlns="http://www.w3.org/2000/svg" width="${bw}" height="${bh}" viewBox="${bx} ${by} ${bw} ${bh}"><defs>${defs}</defs>${rail}${felt}</svg>`,fb:{x:bx,y:by,w:bw,h:bh}};}
+/* the moving layers of each theme: 'under' sits between the room and the table, 'over' on top of the table */
+function sceneFX(th,W,H,g,land,top){const cx=g.cx,cy=g.cy,rx=g.rx,ry=g.ry,rl=g.rail,R=srnd(11);let under='',over='';const img=(svg,cls,x,y,w,h,st)=>`<img class="${cls}" src="${svgUrl(svg)}" alt="" draggable="false" style="left:${f1(x)}px;top:${f1(y)}px;width:${f1(w)}px;height:${f1(h)}px;${st||''}">`;
+ if(th==='dhanvaru'){
+  over=`<i class="lglow" style="left:${f1(cx)}px;top:${f1(top+22)}px"></i><i class="fglow" style="left:${f1(cx)}px;top:${f1(cy-(ry-rl)*.4)}px;width:${f1((rx-rl)*1.7)}px;height:${f1((ry-rl)*1.1)}px"></i><div class="dust">`+
+   Array.from({length:12},()=>{const x=cx+(R()-.5)*rx*1.3,y=top+40+R()*(cy-top-20);return `<i style="left:${f1(x)}px;top:${f1(y)}px;animation-delay:${(-R()*14).toFixed(2)}s;animation-duration:${(13+R()*7).toFixed(2)}s;--dx:${((R()-.5)*28).toFixed(1)}px"></i>`;}).join('')+`</div>`;}
+ if(th==='sandbank'){const cw=Math.round(W+160),ch=Math.round(H+120);
+  under=img(`<svg xmlns="http://www.w3.org/2000/svg" width="${cw}" height="${ch}"><filter id="c" x="0" y="0" width="100%" height="100%"><feTurbulence type="turbulence" baseFrequency="0.022 0.028" numOctaves="2" seed="11"/><feColorMatrix type="matrix" values="0 0 0 0 .95 0 0 0 0 1 0 0 0 0 .98 -4.2 0 0 0 1.25"/><feComponentTransfer><feFuncA type="gamma" amplitude="0.6" exponent="1.8"/></feComponentTransfer></filter><rect width="${cw}" height="${ch}" filter="url(#c)"/></svg>`,'scaus',-20,-20,cw,ch);
+  const m=14,fw=2*rx+2*m,fh=2*ry+2*m;
+  under+=img(`<svg xmlns="http://www.w3.org/2000/svg" width="${f1(fw)}" height="${f1(fh)}"><filter id="b"><feGaussianBlur stdDeviation="2"/></filter>${tE(fw/2,fh/2,rx+7,ry+7,'fill="none" stroke="#fff" stroke-opacity=".6" stroke-width="2.4" stroke-dasharray="18 10 8 12" filter="url(#b)"')}</svg>`,'sfoam',cx-fw/2,cy-fh/2,fw,fh);}
+ if(th==='dhoni'){const hz=top,mx=land?110:62;
+  const stars=(n,seed)=>{const r=srnd(seed);let s='';for(let i=0;i<n;i++)s+=`<circle cx="${f1(r()*W)}" cy="${f1(r()*(hz-10))}" r="${(r()*.7+.45).toFixed(2)}" fill="#fff"/>`;return `<svg xmlns="http://www.w3.org/2000/svg" width="${Math.round(W)}" height="${Math.round(hz)}">${s}</svg>`;};
+  const glit=seed=>{const r=srnd(seed);let s='';for(let i=0;i<18;i++){const y=4+Math.pow(r(),.8)*(H-hz-4),w=6+r()*26*(y/(H-hz)+.3),x=mx-w/2+(r()-.5)*(10+y*.12);s+=`<rect x="${f1(x)}" y="${f1(y)}" width="${f1(w)}" height="1.3" rx=".6" fill="#dfe8ff" opacity=".6"/>`;}return `<svg xmlns="http://www.w3.org/2000/svg" width="${Math.round(W)}" height="${Math.round(H-hz)}">${s}</svg>`;};
+  under=img(stars(13,3),'tw1',0,0,W,hz)+img(stars(13,5),'tw2',0,0,W,hz)+img(glit(8),'gl1',0,hz,W,H-hz)+img(glit(9),'gl2',0,hz,W,H-hz);}
+ if(th==='lacquer')over=`<div class="lshim" style="left:${f1(cx-rx)}px;top:${f1(cy-ry)}px;width:${f1(2*rx)}px;height:${f1(2*ry)}px;--rl:${f1(rl)}px"><i></i></div>`;
+ return{under:under,over:over};}
+let SURLS=[];
+function svgUrl(svg){try{const u=URL.createObjectURL(new Blob([svg],{type:'image/svg+xml'}));SURLS.push(u);return u;}catch(e){return 'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg);}}
+/* small previews for the store and the table picker: the 4-player table, cropped to the table */
+const THUMB={};
+function tthumbStyle(id){const T=TABLES[id];if(!T)return '';if(!THUMB[id]){const W=375,H=560,g={cx:187.5,cy:300,rx:172,ry:190,rail:21};const s=sceneSVG(T.c,W,H,g,false,T.c==='dhoni'?100:40);
+ const both=s.back.replace(/<\/svg>$/,'')+s.front.replace(/^<svg[^>]*>/,'').replace(/<\/svg>$/,'').replace(/<defs>[\s\S]*?<\/defs>/,'')+'</svg>';
+ const svg=both.replace(/width="375" height="560" viewBox="0 0 375 560"/,'width="400" height="460" viewBox="-12.5 90 400 460"');
+ THUMB[id]=`url('data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg).replace(/'/g,'%27').replace(/\(/g,'%28').replace(/\)/g,'%29')}')`;}
+ return `--tbg:${T.bg};background-image:${THUMB[id]}`;}
+function tablePickHTML(){const cur=equippedId('table');return `<div class="tpick">${Object.keys(TABLES).map(id=>`<button class="tsw" data-a="tableSet" data-id="${id}" aria-pressed="${id===cur}"><span class="tthumb" style="${tthumbStyle(id)}"></span><small>${esc(BYID[id].name)}</small></button>`).join('')}</div>`;}
+/* the ad lives on top of the table art in the theme's own style, so sponsors change without redrawing */
 function tadHTML(T,s){if(!s)return '';const t=esc(s.title),sub=esc(s.house?(s.kicker||''):(s.label==='Sponsored'?'':s.sub||'')),lg=window.DGSponsors?DGSponsors.logoHTML(s,'tl'):'';
 const tx=`<span class="tt"><b>${t}</b>${sub?`<small>${sub}</small>`:''}</span>`;
 return T.ad==='plaque'?`<i class="sc"></i><i class="sc"></i><i class="sc"></i><i class="sc"></i>${tx}`:T.ad==='sand'?tx:T.ad==='crate'?`<i class="nl"></i>${lg}${tx}`:`${lg}${tx}`;}
 function tableAd(force){const w=$('#tad');if(!w||!S)return;const T=tableOf(),s=handSponsor(),k=(s?s.title:'')+'|'+S.handNo+'|'+T.c;w.className='tad '+T.ad;if(!force&&w._k===k)return;w._k=k;w.innerHTML=tadHTML(T,s);}
-function applyTable(){const m=document.querySelector('main.table'),sc=$('#tsc');if(!m||!sc)return;const id=equippedId('table'),T=tableOf();
-Object.values(TABLES).forEach(x=>m.classList.toggle('theme-'+x.c,x===T));m.style.setProperty('--tbg',T.bg);document.documentElement.dataset.tbl=id;
-sc.classList.toggle('still',isSmooth()||reduce);
-if(sc._id!==id){sc._id=id;sc.innerHTML=T.L('');tableAd(true);}
+const setTC=c=>{const m=document.querySelector('meta[name="theme-color"]');if(m&&m.content!==c)m.content=c;};
+function applyTable(){const m=document.querySelector('main.table');if(!m)return;const id=equippedId('table'),T=tableOf();
+/* the flying cards live in #fx (outside the table), so it wears the theme too: same card backs mid-flight */
+const fxl=$('#fx');Object.values(TABLES).forEach(x=>{m.classList.toggle('th-'+x.c,x===T);if(fxl)fxl.classList.toggle('th-'+x.c,x===T);});m.style.setProperty('--tbg',T.bg);document.documentElement.dataset.tbl=id;setTC(T.bg);
+const sc=$('#tscene');if(sc){sc.classList.toggle('still',isSmooth()||reduce);if(sc._id!==id){sc._id=id;sc._k='';tableAd(true);}}
 layoutArena();}
-function placeScene(ox,oy,ow,oh){const sc=$('#tsc'),a=$('#arena');if(!sc||!a)return;const g=tableOf().g,sx=ow/(2*g[2]),sy=oh/(2*g[3]);
-const tx=a.offsetLeft+ox+ow/2-g[0]*sx,ty=a.offsetTop+oy+oh/2-g[1]*sy;sc.style.transform=`translate(${tx.toFixed(1)}px,${ty.toFixed(1)}px) scale(${sx.toFixed(4)},${sy.toFixed(4)})`;}
 function seatOrder(){const n=S.players.length,m=meIdx(),o=[];for(let i=1;i<=n;i++){const k=((m<0?-1:m)+i)%n;if(k!==m)o.push(k);}return o;}
 const SHUF_MS=reduce?0:780;
-/* the oval, the seats around its top and the piles in the middle are laid out from the space available */
-const SEAT_ANG=[[],[90],[130,50],[151,90,29],[164,122,58,16],[172,132,90,48,8],[174,140,106,74,40,6]];
+/* the oval, the seats, the piles, the message and the sponsor all come from DGTable.arena() (../shared/table.js) */
 let AR=null;
-function layoutArena(){const a=$('#arena');if(!a||!S)return;const W=a.clientWidth,H=a.clientHeight;if(!W||!H)return;
-const nO=Math.max(0,Math.min(6,seatOrder().length)),top=nO>=4?50:58;
-const tg=tableOf().g,ar=tg[3]/tg[2];let ow=Math.min(W*.92,560);const oh=Math.max(120,Math.min(H-top-10,ow*ar));if(oh<ow*ar*.8)ow=oh/(ar*.8);const ox=(W-ow)/2,oy=Math.round(top+Math.max(0,H-top-10-oh)*(nO>=3?.72:.5));
-const pw=Math.round(Math.max(48,Math.min(104,W*(nO>=5?.17:.19),oh*(nO>=5?.26:.3))));
-AR={W:W,H:H,ox:ox,oy:oy,ow:ow,oh:oh};const st=a.style;a.classList.toggle('crowd',nO>=3);
-st.setProperty('--ox',ox+'px');st.setProperty('--oy',oy+'px');st.setProperty('--ow',ow+'px');st.setProperty('--oh',oh+'px');st.setProperty('--pw',pw+'px');
-const T=tableOf(),syS=oh/(2*T.g[3]),py=oy+oh/2+(T.f-T.g[1])*syS;st.setProperty('--py',py+'px');
-const sins=(SEAT_ANG[nO]||[]).filter(g=>g>50&&g<130).map(g=>Math.sin(g*Math.PI/180)),topSeat=sins.length>0,seatBot=topSeat?oy+oh/2-oh/2*1.06*Math.min(...sins)+70:-1e9,stTop=py-pw*.7-24-18;
-const low=(nO>=4&&W<420)||(topSeat&&stTop<seatBot);st.setProperty('--sy',(low?py+pw*.7+24:py-pw*.7-24)+'px');st.setProperty('--sb',Math.max(0,H-oy-oh+14)+'px');
-const ad=$('#tad');if(ad){const k=Math.max(.72,Math.min(1.15,ow/340)),ay=py+pw*.7+(low?58:14)+22*k;ad.style.setProperty('--k',k.toFixed(3));ad.style.left=(ox+ow/2)+'px';ad.style.top=ay.toFixed(1)+'px';ad.hidden=low||ay+24*k>oy+oh*.94;}placeScene(ox,oy,ow,oh);
-placeSeats();}
-function placeSeats(){const oe=$('#opps');if(!oe||!AR)return;const seats=seatOrder(),nO=seats.length,ang=SEAT_ANG[Math.min(6,nO)]||[];
-const cx=AR.ox+AR.ow/2,cy=AR.oy+AR.oh/2,rx=AR.ow/2*1.02,ry=AR.oh/2*1.06,half=nO>=4?34:38;
-seats.forEach((k,i)=>{const el=oe.querySelector(`[data-pid="${CSS.escape(S.players[k].id)}"]`);if(!el)return;const t=(ang[i]||90)*Math.PI/180;
-const x=Math.max(half+2,Math.min(AR.W-half-2,cx+rx*Math.cos(t))),y=Math.max(26,cy-ry*Math.sin(t));
-if(!el._placed){el._placed=1;el.style.transition='none';}el.style.transform=`translate(${x.toFixed(1)}px,${(y-26).toFixed(1)}px)`;if(el.style.transition){void el.offsetWidth;el.style.transition='';}});}
-function timerHTML(){return '<span class="tmr" aria-hidden="true"><i class="l"><b></b></i><i class="r"><b></b></i></span>';}
+const isLand=()=>!!(window.DGTable&&DGTable.isLandscape(innerWidth,innerHeight));
+function sizeHand(){const m=document.querySelector('main.table'),box=$('#hand');if(!m||!box)return;const land=isLand();m.classList.toggle('land',land);
+ const cw=DGTable.handCard({vw:innerWidth,vh:innerHeight,n:0,land:land}),hh=Math.round(cw*1.4+(land?22:34));
+ if(box._hh!==hh){box._hh=hh;box.style.setProperty('--hh',hh+'px');}box._land=land;}
+function layoutArena(){const a=$('#arena');if(!a||!S||!window.DGTable)return;sizeHand();const W=a.clientWidth,H=a.clientHeight;if(!W||!H)return;
+const land=isLand(),nO=seatOrder().length,G=DGTable.arena({W:W,H:H,n:nO+1,seating:SEATING,land:land});
+const o=G.oval,p=G.piles;AR={W:W,H:H,ox:o.x,oy:o.y,ow:o.w,oh:o.h,G:G};const st=a.style;a.classList.toggle('crowd',nO>=3);
+st.setProperty('--pw',p.pw+'px');st.setProperty('--py',p.y.toFixed(1)+'px');st.setProperty('--sy',G.status.y.toFixed(1)+'px');
+const pl=a.querySelector('.piles');if(pl){pl.style.left=o.cx.toFixed(1)+'px';pl.style.gap=p.gap+'px';}
+const se=$('#status');if(se){se.style.left=o.cx.toFixed(1)+'px';se.style.maxWidth=Math.min(W-24,o.w*.9,360).toFixed(0)+'px';}
+const pt=$('#plate');if(pt){pt.hidden=!G.plate.show;pt.style.transform=`translate(${G.plate.x.toFixed(1)}px,${G.plate.y.toFixed(1)}px) translate(-50%,-50%)`;}
+const ad=$('#tad');if(ad){ad.style.setProperty('--k',G.ad.k.toFixed(3));ad.style.left=G.ad.x.toFixed(1)+'px';ad.style.top=G.ad.y.toFixed(1)+'px';ad.hidden=!G.ad.show;}
+paintScene(a,G,land);placeSeats();}
+/* the room + table pictures, redrawn only when the size, the seat count or the theme changes */
+function paintScene(a,G,land){const sc=$('#tscene'),m=document.querySelector('main.table');if(!sc||!m)return;const T=tableOf(),W=m.clientWidth,H=m.clientHeight;if(!W||!H)return;
+ const o=G.oval,ax=a.offsetLeft,ay=a.offsetTop,g={cx:ax+o.cx,cy:ay+o.cy,rx:o.rx,ry:o.ry,rail:o.rail,py:ay+G.piles.y};
+ /* the lamp hangs just under the top bar; the dhoni's horizon sits just above the table */
+ const top=T.c==='dhoni'?Math.max(land?40:70,g.cy-g.ry-14):land?Math.max(40,g.cy-g.ry-64):Math.max(48,Math.min(62,g.cy-g.ry-64));
+ const key=[T.c,W,H,f1(g.cx),f1(g.cy),f1(g.rx),f1(g.ry),f1(g.py),land?1:0].join('|');if(sc._k===key)return;sc._k=key;
+ const old=SURLS;SURLS=[];const s=sceneSVG(T.c,W,H,g,land,top),fx=sceneFX(T.c,W,H,g,land,top);
+ const html=`<img class="tb" src="${svgUrl(s.back)}" alt="" draggable="false" style="width:${W}px;height:${H}px"><div class="fxu">${fx.under}</div><img class="tf" src="${svgUrl(s.front)}" alt="" draggable="false" style="left:${s.fb.x}px;top:${s.fb.y}px;width:${s.fb.w}px;height:${s.fb.h}px"><div class="fxo">${fx.over}</div>`;
+ /* swap in the new pictures only once they are decoded, so rotating never shows a blank table */
+ const tmp=document.createElement('div');tmp.innerHTML=html;const imgs=[...tmp.querySelectorAll('img')];
+ const swap=()=>{if(sc._k!==key){return;}sc.replaceChildren(...tmp.childNodes);setTimeout(()=>old.forEach(u=>{try{URL.revokeObjectURL(u);}catch(e){}}),1500);};
+ Promise.all(imgs.map(i=>i.decode?i.decode().catch(()=>{}):null)).then(swap);}
+function placeSeats(){const oe=$('#opps');if(!oe||!AR)return;const G=AR.G,seats=seatOrder(),sz=G.seat;
+ oe.style.setProperty('--sw',sz.w+'px');oe.style.setProperty('--sav',sz.av+'px');
+ seats.forEach((k,i)=>{const el=oe.querySelector(`[data-pid="${CSS.escape(S.players[k].id)}"]`);if(!el)return;const q=G.seats[i]||{x:AR.W/2,y:sz.av/2+4};
+ if(!el._placed){el._placed=1;el.style.transition='none';}el.style.transform=`translate(${q.x.toFixed(1)}px,${(q.y-sz.top).toFixed(1)}px)`;if(el.style.transition){void el.offsetWidth;el.style.transition='';}});}
+function timerHTML(){return DGTable.ringHTML('tmr');}
 /* one turn ring at a time, synced to when the turn started */
 function syncTimer(el,on){let t=el.querySelector('.tmr');const want=on&&timedGame();
 if(!want){if(t)t.remove();return;}
@@ -1887,46 +2142,73 @@ function dealIn(els){const sr=rectOf($('#stockTop'))||rectOf($('#stock'));if(!sr
 els.forEach((el,i)=>{const r=el.getBoundingClientRect();const s=Math.max(.4,Math.min(1.2,sr.w/(r.width||1)));
 const dx=sr.x+sr.w/2-(r.left+r.width/2),dy=sr.y+sr.h/2-(r.top+r.height/2);
 el.animate([{translate:`${dx}px ${dy}px`,scale:String(s),opacity:0},{opacity:1,offset:.12},{translate:'0 0',scale:'1',opacity:1}],{duration:720,delay:SHUF_MS+i*70,easing:SPRING,fill:'backwards'});});}
-function layoutHand(dragId,dragIdx){const box=$('#hand');if(!box||!S)return;const W=box.clientWidth;const first=cardEls[order[0]];if(!first)return;
-const cw=first.offsetWidth;let ids=order.slice();if(dragId!=null){ids=ids.filter(x=>x!==dragId);ids.splice(dragIdx,0,dragId);}
-const g=groups(myHand());const n=ids.length,gs=ginSet();
+/* your hand: ONE fan across the full width (DGTable.fan). Sets and runs get a small gap and a gold edge;
+   a finger (or the mouse) on the hand spreads the cards around it, dock-style, and the touched card lifts */
+let fanFocus=null,fanPress=-1,fanAmp=null;
+function layoutHand(dragId,dragIdx){const box=$('#hand');if(!box||!S||!window.DGTable)return;const W=box.clientWidth;const first=cardEls[order[0]];if(!first||!W)return;
+let ids=order.slice();if(dragId!=null){ids=ids.filter(x=>x!==dragId);ids.splice(dragIdx,0,dragId);}
+const land=!!box._land,n=ids.length,cw=DGTable.handCard({vw:innerWidth,vh:innerHeight,n:n,land:land});
+if(box._cw!==cw){box._cw=cw;box.style.setProperty('--cw',cw+'px');}
+const g=groups(myHand()),gs=ginSet();
 const same=(a,b)=>g[a]!==undefined&&g[a]===g[b];
-const gap=ids.map((id,i)=>i>0&&!same(id,ids[i-1])&&(g[id]!==undefined||g[ids[i-1]]!==undefined));
-const gc=gap.filter(Boolean).length;let gg=cw*.2;let step=Math.min(cw*.6,(W-cw-gc*gg)/Math.max(1,n-1));
-if(step<cw*.4){gg=10;step=Math.min(cw*.6,(W-cw-gc*gg)/Math.max(1,n-1));}
-const total=cw+(n-1)*step+gc*gg;const x0=Math.max(0,(W-total)/2);let x=x0;
-/* runs of 3+ melded cards get a gold edge and a tick on their last card */
+const gaps=ids.map((id,i)=>i>0&&!same(id,ids[i-1])&&(g[id]!==undefined||g[ids[i-1]]!==undefined));
+const si=dragId==null&&selected?ids.indexOf(selected):-1;
+const base={W:W,cw:cw,n:n,gaps:gaps,land:land,pad:2,sel:si,press:dragId==null?fanPress:-1};
+let focus=fanFocus,amp=fanAmp;
+/* no finger on the hand: keep a gentle spread around the lifted card so it reads clearly */
+if(focus==null&&si>=0){const f0=DGTable.fan(base);focus=f0.x[si]+cw/2;amp=.7;}
+const f=DGTable.fan(Object.assign(base,{focus:focus,amp:amp}));
+const y0=land?10:18;
+/* runs of 3+ melded cards get a gold edge and a tick */
 const inm=new Set(),runs=[];{let run=[];const flush=()=>{if(run.length>=3){run.forEach(c=>inm.add(c));runs.push(run);}run=[];};
 ids.forEach((id,i)=>{if(g[id]===undefined||id===dragId){flush();return;}if(run.length&&!(same(id,ids[i-1])&&ids[i-1]!==dragId))flush();run.push(id);});flush();}
-const pos={};ids.forEach((id,i)=>{if(i>0){x+=step;if(gap[i])x+=gg;}const el=cardEls[id];if(!el)return;
-const d=Math.max(-1,Math.min(1,(x+cw/2-W/2)/(W/2))),rot=d*6,y=20+d*d*12+(id===selected?-26:0);el.style.zIndex=i+2;el._rot=rot;pos[id]={x:x,y:y};
-el.classList.toggle('inm',inm.has(id));el.classList.toggle('gin',gs.has(id));
+const pos={};ids.forEach((id,i)=>{const el=cardEls[id];if(!el)return;const x=f.x[i],y=y0+f.y[i],rot=f.r[i];
+el.style.zIndex=i+2;el._rot=rot;pos[id]={x:x,y:y};
+el.classList.toggle('inm',inm.has(id));el.classList.toggle('gin',gs.has(id));el.classList.toggle('sel',id===selected&&dragId==null);
 if(id!==dragId)el.style.transform=`translate(${x.toFixed(1)}px,${y.toFixed(1)}px) rotate(${rot.toFixed(2)}deg)`;});
 /* one gold tick floats above each meld */
 const tk=runs.filter(r=>r.every(id=>pos[id])).map(r=>({x:(pos[r[0]].x+pos[r[r.length-1]].x+cw)/2,y:Math.min(...r.map(id=>pos[id].y))}));
 while(ticks.length<tk.length){const e=document.createElement('i');e.className='mtk';e.setAttribute('aria-hidden','true');e.textContent='✓';box.appendChild(e);ticks.push(e);}
 ticks.forEach((e,k)=>{const r=tk[k];e.style.opacity=r?'1':'0';if(r)e.style.transform=`translate(${(r.x-10).toFixed(1)}px,${(r.y-13).toFixed(1)}px)`;});
-L={x0:x0,step:step,cw:cw,n:n};}
+L={f:f,cw:cw,n:n,slot:dragId!=null?dragIdx:-1};}
 function hit(el,x,y){if(!el)return false;const r=el.getBoundingClientRect();return x>=r.left-28&&x<=r.right+28&&y>=r.top-28&&y<=r.bottom+28;}
-function bindHand(){const box=$('#hand');
-box.addEventListener('pointerdown',e=>{const el=e.target.closest('.card');if(!el||!cardEls[el.dataset.id]||meIdx()<0)return;
-drag={id:el.dataset.id,el:el,sx:e.clientX,sy:e.clientY,moved:false,pid:e.pointerId,idx:order.indexOf(el.dataset.id)};try{el.setPointerCapture(e.pointerId);}catch(err){}});
+function bindHand(){const box=$('#hand');let press=null,hovT=0;
+const spread=(x,idx)=>{fanFocus=x;fanPress=idx;fanAmp=null;box.classList.add('dgt-mag');layoutHand(drag&&drag.moved?drag.id:null,drag&&drag.moved?drag.idx:undefined);};
+const settle=()=>{if(fanFocus==null&&fanPress<0)return;fanFocus=null;fanPress=-1;box.classList.remove('dgt-mag');layoutHand();};
+box.addEventListener('pointerdown',e=>{if(meIdx()<0)return;const bx=box.getBoundingClientRect(),x=e.clientX-bx.left;const el=e.target.closest('.card');
+ if(!el||!cardEls[el.dataset.id]){press={pid:e.pointerId};try{box.setPointerCapture(e.pointerId);}catch(err){}spread(x,-1);return;}
+ drag={id:el.dataset.id,el:el,sx:e.clientX,sy:e.clientY,moved:false,pid:e.pointerId,idx:order.indexOf(el.dataset.id)};try{el.setPointerCapture(e.pointerId);}catch(err){}
+ spread(x,order.indexOf(el.dataset.id));});
 let pendMove=null,rafId=0;
-function moveFrame(){rafId=0;const e=pendMove;if(!drag||!e)return;
-const px=e.x-drag.box.left,py=e.y-drag.box.top;const idx=Math.max(0,Math.min(order.length-1,Math.round((px-L.x0-L.cw/2)/L.step)));
-if(idx!==drag.idx){drag.idx=idx;layoutHand(drag.id,idx);}
-drag.el.style.transform=`translate(${px-L.cw/2}px,${py-L.cw*.7-18}px) scale(1.08)`;
+function moveFrame(){rafId=0;const e=pendMove;if(!drag||!e||!L)return;
+const px=e.x-drag.box.left,py=e.y-drag.box.top;
+/* where the card would land among the others (their slots are spread open around the finger) */
+let idx=0;const f=L.f;for(let i=0;i<f.n;i++){if(i===L.slot)continue;if(f.x[i]+L.cw/2<px)idx++;}
+fanFocus=px;fanPress=-1;drag.idx=idx;layoutHand(drag.id,idx);
+drag.el.style.transform=`translate(${(px-L.cw/2).toFixed(1)}px,${(py-L.cw*.7-18).toFixed(1)}px) scale(1.08)`;
 const tgt=S.blitz&&S.from==='down'?drag.stockEl:drag.discEl;const over=canDiscard()&&hit(tgt,e.x,e.y);if(over!==drag.over){drag.over=over;tgt&&tgt.classList.toggle('drop',over);if(over)buzz(6);}}
-box.addEventListener('pointermove',e=>{if(!drag||e.pointerId!==drag.pid)return;const dx=e.clientX-drag.sx,dy=e.clientY-drag.sy;
-if(!drag.moved){if(Math.hypot(dx,dy)<9)return;drag.moved=true;drag.el.classList.add('dragging');drag.box=box.getBoundingClientRect();drag.discEl=$('#disc');drag.stockEl=$('#stock');if(selected){selected=null;renderActs();}buzz(5);}
-pendMove={x:e.clientX,y:e.clientY};if(!rafId)rafId=requestAnimationFrame(moveFrame);});
-const end=(e,cancel)=>{if(!drag||e.pointerId!==drag.pid)return;if(rafId){cancelAnimationFrame(rafId);rafId=0;if(pendMove&&drag.moved)moveFrame();}pendMove=null;const d=drag;drag=null;document.querySelectorAll('.pile.drop').forEach(x=>x.classList.remove('drop'));
+box.addEventListener('pointermove',e=>{
+ if(!drag){if(press&&e.pointerId===press.pid){const bx=box.getBoundingClientRect();fanFocus=e.clientX-bx.left;if(!hovT)hovT=requestAnimationFrame(()=>{hovT=0;layoutHand();});return;}
+  /* a mouse over the hand spreads it too */
+  if(e.pointerType==='mouse'&&meIdx()>=0&&order.length){const bx=box.getBoundingClientRect();fanFocus=e.clientX-bx.left;fanPress=-1;box.classList.add('dgt-mag');if(!hovT)hovT=requestAnimationFrame(()=>{hovT=0;layoutHand();});}return;}
+ if(e.pointerId!==drag.pid)return;const dx=e.clientX-drag.sx,dy=e.clientY-drag.sy;
+ if(!drag.moved){if(Math.hypot(dx,dy)<9)return;drag.moved=true;drag.el.classList.add('dragging');drag.box=box.getBoundingClientRect();drag.discEl=$('#disc');drag.stockEl=$('#stock');if(selected){selected=null;renderActs();}buzz(5);}
+ pendMove={x:e.clientX,y:e.clientY};if(!rafId)rafId=requestAnimationFrame(moveFrame);});
+box.addEventListener('pointerleave',e=>{if(e.pointerType==='mouse'&&!drag&&!press)settle();});
+const end=(e,cancel)=>{if(press&&e.pointerId===press.pid){press=null;settle();return;}
+if(!drag||e.pointerId!==drag.pid)return;if(rafId){cancelAnimationFrame(rafId);rafId=0;if(pendMove&&drag.moved)moveFrame();}pendMove=null;const d=drag;drag=null;document.querySelectorAll('.pile.drop').forEach(x=>x.classList.remove('drop'));
+fanFocus=null;fanPress=-1;box.classList.remove('dgt-mag');
 if(d.moved){d.el.classList.remove('dragging');
 if(!cancel&&d.over&&canDiscard()){act('discard',d.id);if(cardEls[d.id]){order=order.filter(x=>x!==d.id);order.splice(d.idx,0,d.id);layoutHand();}return;}
 order=order.filter(x=>x!==d.id);order.splice(d.idx,0,d.id);layoutHand();}
-else if(!cancel){if(canDiscard()){selected=selected===d.id?null:d.id;buzz(4);SFX.tick();layoutHand();renderActs();}}};
+else if(!cancel&&canDiscard()){selected=selected===d.id?null:d.id;buzz(4);SFX.tick();layoutHand();renderActs();}
+else layoutHand();};
 box.addEventListener('pointerup',e=>end(e,false));box.addEventListener('pointercancel',e=>end(e,true));}
-let rzT=0;window.addEventListener('resize',()=>{if(rzT)return;rzT=requestAnimationFrame(()=>{rzT=0;if(screen==='table'){layoutArena();layoutHand();}});});
+/* rotating the phone or resizing: re-lay the table and the hand (and once more after the browser settles) */
+let rzT=0;const relayout=()=>{if(rzT)return;rzT=requestAnimationFrame(()=>{rzT=0;if(screen==='table'){layoutArena();layoutHand();}});};
+window.addEventListener('resize',relayout);
+window.addEventListener('orientationchange',()=>{relayout();setTimeout(relayout,300);setTimeout(relayout,800);});
+if(window.visualViewport)visualViewport.addEventListener('resize',relayout);
 
 /* ---------- motion: every card move is a spring on transform/opacity only ---------- */
 function rectOf(el){if(!el)return null;const r=el.getBoundingClientRect();if(!r.width)return null;return{x:r.left,y:r.top,w:r.width,h:r.height};}
@@ -1997,15 +2279,16 @@ const RAR={common:{n:'Common',c:'#8C9AA0'},rare:{n:'Rare',c:'#2D86C9'},epic:{n:'
 const CATS=[['back','Card backs'],['frame','Rings'],['table','Tables'],['avatar','Avatar']];
 const LEVELS=[['t-rookie','Digu Rookie',0],['t-player','Digu Player',400],['t-pro','Digu Pro',1500],['t-master','Digu Master',4000],['t-legend','Digu Legend',10000]];
 const DAILY_CAP=500,WELCOME=100;
-const DEF={deck:'d-classic',back:'b-reef',table:'t-dhanvaru',frame:'f-classic',effect:'e-none',title:'t-rookie'};
+const DEF={deck:'d-classic',back:'b-reef',table:'t-pastel',frame:'f-classic',effect:'e-none',title:'t-rookie'};
 const mk=o=>Object.assign({collection:null,rarity:'common',shells:null,gems:null,unlock:null,start:null,end:null,sponsor:null,anim:null,free:false,feat:false,desc:'',asset:{}},o);
 /* one deck; the store sells card backs, rings, tables and avatar items (prices stay in the data below) */
 const CATALOG=[
 mk({id:'d-classic',cat:'deck',name:'Digu Classic',free:true,desc:'The original clean cream cards.'}),
-mk({id:'t-dhanvaru',cat:'table',name:'Dhanvaru Club',free:true,desc:'An underground card room lit by one enamel lamp over green felt.'}),
-mk({id:'t-sandbank',cat:'table',name:'Sandbank Lagoon',rarity:'rare',shells:1200,desc:'A sandbank in a turquoise lagoon, with caustic light and lapping foam.'}),
-mk({id:'t-dhoni',cat:'table',name:'Dhoni Deck at Night',rarity:'epic',shells:1800,desc:'A teak dhoni deck under the moon, the moon path shimmering on the sea.'}),
-mk({id:'t-lacquer',cat:'table',name:'Lacquer Royale',rarity:'legendary',shells:2800,desc:'Red and gold Maldivian lacquerwork with a slow sweep of light on the rim.'}),
+mk({id:'t-pastel',cat:'table',name:'Pastel',free:true,desc:'White leather, coral stitching and soft lilac cloth, in the colours of Dhivehi Games.'}),
+mk({id:'t-dhanvaru',cat:'table',name:'Dhanvaru Club',free:true,desc:'An underground card room: oxblood leather, bottle-green felt and one warm lamp.'}),
+mk({id:'t-sandbank',cat:'table',name:'Sandbank Lagoon',rarity:'rare',shells:1200,desc:'A sand island in a turquoise lagoon: a driftwood rail bound with rope, foam lapping at the edge.'}),
+mk({id:'t-dhoni',cat:'table',name:'Dhoni Deck at Night',rarity:'epic',shells:1800,desc:'A teak dhoni deck under the moon: brass rivets, a rope edge and the moon path glittering on the sea.'}),
+mk({id:'t-lacquer',cat:'table',name:'Lacquer Royale',rarity:'legendary',shells:2800,desc:'Black lacquer with a hand-painted red and gold band, and a slow sweep of light around the rim.'}),
 mk({id:'b-reef',cat:'back',name:'Lagoon',free:true,desc:'Deep lagoon green with a gold medallion.'}),
 mk({id:'f-classic',cat:'frame',name:'Classic',free:true,shells:0,desc:'The clean ring every player starts with.'})];
 [['f-shine','Shine','common',100,'Polished gold that catches the light as it turns.'],['f-bloom','Pastel Bloom','rare',400,'A wreath of soft pastel flowers that slowly turns.'],['f-bolt','Lightning','epic',900,'A blue ring crackling with electricity.'],['f-orbit','Orbit','epic',1200,'A little moon circles your avatar while meteorites drift past.'],['f-fire','Inferno','legendary',2500,'A ring of living, flickering flame.'],['f-horizon','Event Horizon','legendary',3500,'A black hole: a glowing accretion disk swirls around the dark edge while light falls in.',true]]
@@ -2073,7 +2356,7 @@ function applyCosmetics(){const h=document.documentElement;h.dataset.deck='d-cla
    applyCosmetics();if(screen==='table'){applyTable();const f=document.querySelector('.scenefx');if(f)f.remove();}}});
  try{po.observe({type:'long-animation-frame'});}catch(e){}})();
 function setBg(v){const h=document.documentElement;if(v)h.dataset.bg=v;else delete h.dataset.bg;}
-function offTable(){delete document.documentElement.dataset.tbl;setBg('');if(screen!=='lobby')closeRules();if(spCtl){spCtl.destroy();spCtl=null;}}
+function offTable(){delete document.documentElement.dataset.tbl;setBg('');setTC('#F3EEF7');const fxl=document.getElementById('fx');if(fxl)fxl.className='fx';if(screen!=='lobby')closeRules();if(spCtl){spCtl.destroy();spCtl=null;}}
 function playEffect(id,box){const it=BYID[id];const a=it&&it.asset;if(!a||!a.fx||isSmooth()||reduce||document.hidden)return;
 let L=box;if(!L){L=document.getElementById('fxl');if(!L){L=document.createElement('div');L.id='fxl';L.className='fxl';document.body.appendChild(L);}}
 const R=L.getBoundingClientRect();const W=R.width,H=R.height,cx=W/2,cy=box?H/2:H*.4;
