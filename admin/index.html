@@ -336,9 +336,9 @@ const RULES=`rules_version = '2';
 service cloud.firestore {
   match /databases/{db}/documents {
 
-    // ADMIN: the owner's account. Replace OWNER_UID with the UID shown on https://dhivehi.games/admin/ after you sign in
+    // ADMIN: the owner's account (UID from https://dhivehi.games/admin/ after signing in)
     // (or Firebase Console -> Authentication -> Users -> "User UID"). Keep the quotes: ['abc123...']
-    function isAdmin() { return request.auth != null && request.auth.uid in ['OWNER_UID']; }
+    function isAdmin() { return request.auth != null && request.auth.uid in ['mLOkxzQ7J0YC8z0auCKdv3HprJj2']; }
 
     match /players/{uid} {
       allow read: if true;
