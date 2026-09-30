@@ -520,10 +520,13 @@ function deal(N){N.handNo++;N.dealer=N.handNo===1?Math.floor(rnd(N)*4):(N.dealer
   /* Thaas: five each, the player left of the dealer names trumps, then the rest */
   for(let i=0;i<20;i++)N.hands[(first+i)%4].push(d[i]);
   N.stock=d.slice(20);N.chooser=first;N.status='trump';N.phase='trump';N.turn=first;N.leader=first;mv(N,'deal5',N.dealer,[]);}}
+/* is seat k's partner (opposite) winning the trick as it stands, trumps counted? */
+function partnerWinning(N,k){return N.trick.length>0&&winnerOf(N.trick,N.trump).p===(k+2)%4;}
 /* legal cards for seat k right now */
 function legal(N,k){const h=N.hands[k]||[];if(N.status!=='playing'||N.phase!=='play'||N.turn!==k)return [];if(!N.trick.length)return h.slice();
  const f=h.filter(c=>rs(c)===N.led);if(f.length)return f;
- if(N.mode==='dhihaeh'){const t=h.filter(c=>rs(c)===N.trump);if(t.length)return t;}
+ /* Dhihaeh: can't follow, so trump if you can, unless your partner is already winning the trick (then any card) */
+ if(N.mode==='dhihaeh'&&!partnerWinning(N,k)){const t=h.filter(c=>rs(c)===N.trump);if(t.length)return t;}
  return h.slice();}
 const SN={S:'spades',H:'hearts',C:'clubs',D:'diamonds'};
 function whyNot(N,k,c){if(N.status!=='playing'||N.phase!=='play')return 'Wait a moment.';if(N.turn!==k)return 'It is not your turn.';
@@ -552,8 +555,9 @@ function step(N,type,arg,who){
   const h=N.hands[who];h.splice(h.indexOf(c),1);
   if(!N.trick.length)N.led=rs(c);
   else if(rs(c)!==N.led){if(N.voids[who].indexOf(N.led)<0)N.voids[who]+=N.led;
-   /* in Dhihaeh a player who neither follows nor trumps has shown they hold no trumps either */
-   if(N.mode==='dhihaeh'&&rs(c)!==N.trump&&N.voids[who].indexOf(N.trump)<0)N.voids[who]+=N.trump;}
+   /* in Dhihaeh a player who neither follows nor trumps has shown they hold no trumps either
+      (unless their partner was winning: then they were free to throw any card) */
+   if(N.mode==='dhihaeh'&&rs(c)!==N.trump&&!partnerWinning(N,who)&&N.voids[who].indexOf(N.trump)<0)N.voids[who]+=N.trump;}
   if(c===N.tcard)N.tshown=false;
   N.trick.push({p:who,c:c});
   if(N.trick.length===4){const w=winnerOf(N.trick,N.trump).p;N.phase='resolve';N.res={w:w};N.turn=w;}
@@ -597,10 +601,15 @@ function botCard(N,k){const L=legal(N,k);if(L.length<=1)return L[0];const K=know
  const tensIn=N.trick.filter(e=>rr(e.c)===10).length;
  if(best.p===part&&!threatened(N,K,oppAfter,best.c,led)){
   /* partner is sure to win: give them a ten if we can, otherwise our cheapest card */
-  if(D){const t=L.filter(c=>ten(c)&&(!beats(c,best.c,tr)||!threatened(N,K,oppAfter,c,led)));if(t.length)return t[0];}
+  if(D){const t=L.filter(c=>ten(c)&&(!beats(c,best.c,tr)||!threatened(N,K,oppAfter,c,led))).sort((a,b)=>(rs(a)===tr)-(rs(b)===tr));if(t.length)return t[0];}
   return discard(N,k,L,cost);}
  const win=L.filter(c=>beats(c,best.c,tr));
  const safe=win.filter(c=>!threatened(N,K,oppAfter,c,led));
+ /* Dhihaeh, partner winning (but not safe) and we can't follow: no duty to trump. Only trump in
+    when there is a ten in the trick to protect and our trump is safe; otherwise throw a low card and keep our trumps */
+ if(D&&best.p===part&&!L.some(c=>rs(c)===led)){
+  if(tensIn&&safe.length)return byCost(safe)[0];
+  return discard(N,k,L,cost);}
  if(safe.length){if(D){const t=safe.filter(ten);if(t.length)return t[0];}return byCost(safe)[0];}
  if(win.length&&best.p!==part){
   const worth=!D||tensIn>0||L.some(ten)||N.mode==='thaas';
@@ -637,7 +646,7 @@ function botTrump(N,k){const h=N.hands[k];let best='S',bs=-1;SUITS.forEach(s=>{c
 /* the next action for a computer seat, or null when it has nothing to do */
 function bot(N,k){if(N.status==='trump'&&N.chooser===k)return{type:'trump',arg:botTrump(N,k)};
  if(N.status==='playing'&&N.phase==='play'&&N.turn===k){const c=botCard(N,k);return c?{type:'play',arg:c}:null;}return null;}
-return{SUITS:SUITS,P:P,create:create,step:step,legal:legal,whyNot:whyNot,beats:beats,winnerOf:winnerOf,view:view,bot:bot,botCard:botCard,botTrump:botTrump,team:team,deck:deck};
+return{SUITS:SUITS,P:P,create:create,step:step,legal:legal,partnerWinning:partnerWinning,whyNot:whyNot,beats:beats,winnerOf:winnerOf,view:view,bot:bot,botCard:botCard,botTrump:botTrump,team:team,deck:deck};
 })();
 </script>
 <script>
@@ -1030,7 +1039,7 @@ app.innerHTML=`${homeScene(game)}<main class="page home ${th?'du':'mo'}">
 <div class="hhero" aria-hidden="true"></div>
 <div class="dtitle"><span class="kick">${HI.drum.replace('<svg','<svg width="14" height="14"')}2 v 2 · ${th?'Sunset':'Morning'} jetty</span><h1>${th?'THAAS':'DHIHAEH'}</h1><span class="dv" lang="dv" dir="rtl">${MODEDV[game]}</span><p>${th?'Name trumps. Take seven tricks.':'Capture the tens with your partner'}</p>${laceHTML()}</div>
 <div class="mseg" role="group" aria-label="Game"><button data-a="mode" data-v="dhihaeh" aria-pressed="${!th}">Dhihaeh<small>Win the tens</small></button><button data-a="mode" data-v="thaas" aria-pressed="${th}">Thaas<small>Seven tricks</small></button></div>
-<p class="mhint">${th?'The player left of the dealer names <b>trumps</b> after 5 cards. First team to <b>7 tricks</b> (koatey) wins the hand.':'Trumps are the dealer’s last card. Can’t follow suit? <b>You must trump.</b> Take <b>3 or 4 tens</b> to win the hand.'}</p>
+<p class="mhint">${th?'The player left of the dealer names <b>trumps</b> after 5 cards. First team to <b>7 tricks</b> (koatey) wins the hand.':'Trumps are the dealer’s last card. Can’t follow suit? <b>You must trump</b>, unless your partner is winning. Take <b>3 or 4 tens</b> to win the hand.'}</p>
 <section class="modes">
 <button class="mode quick" data-a="quick"><span class="mi">${HI.bolt}</span><span class="mt"><b>Quick Match</b><small>Play real people now · ${MODEN[game]}</small><span class="live zero" id="qmLive"><i></i><span>Be the first to play</span></span></span></button>
 <button class="mode row fr" data-a="friends"><span class="mi">${HI.friends}</span><span class="mt"><b>Play with Friends</b><small>Create a table, or use a code</small></span>${HI.chev}</button>
@@ -1054,6 +1063,7 @@ function howDhihaeh(){return `
 <figure class="fig"><div class="cr">${mc(null)}${mc(null)}${mc(null)}${mc('7-H','glow up','Trump')}</div><figcaption>The <b>dealer’s last card is turned up</b>: its suit is trumps for the hand. The dealer keeps it and plays it later.</figcaption></figure>
 <p>The player left of the dealer leads. Everyone plays one card in turn and the highest card of the suit led wins the trick, unless someone trumps it: then the <b>highest trump</b> wins. The winner leads the next trick.</p>
 <figure class="fig"><div class="cr">${mc('9-S','','Led')}<span class="arrow">→</span>${mc('4-H','glow','You')}${mc('13-C','dim')}</div><figcaption>You have no spades, so you <b>must play a trump</b> (hearts) if you have one. Only with no trumps may you throw any card.</figcaption></figure>
+<p><b>One exception:</b> if you can’t follow suit and <b>your partner is winning the trick</b>, you don’t have to trump. Play <b>any card</b>, so you never take the trick off your own partner.</p>
 <p>The <b>tens</b> decide the hand. Capture <b>3 or 4 tens</b> and your team wins it. If the tens split 2–2, the team with <b>7 or more tricks</b> wins.</p>
 <figure class="fig"><div class="cr">${mc('10-S','','Us','u')}${mc('10-H','','Us','u')}${mc('10-C','','Them','t')}${mc('10-D','','Us','u')}</div><figcaption>3 tens to 1: <b>your team wins the hand</b>.</figcaption></figure>
 <h3>Bonus wins</h3>
@@ -1079,6 +1089,7 @@ const items=th?[li('2v2',`You and <b>${esc(pn)}</b> (opposite) against the two a
 :[li('2v2',`You and <b>${esc(pn)}</b> (opposite) against the two at the sides.`),
  li(sv('H'),'Trumps = the <b>dealer’s last card</b>, turned up for all to see.'),
  li('↺','<b>Follow suit.</b> Can’t? You <b>must trump</b> if you can. Otherwise any card.',1),
+ li('2v2','Can’t follow and <b>your partner is winning</b>? No need to trump: play <b>any card</b>.'),
  li('10','Take <b>3 or 4 tens</b> to win the hand. Tens 2–2? <b>7+ tricks</b> wins.',1),
  li('+1','<b>Baga</b> (all 4 tens) +1 · <b>Hukunbunye</b> (all 13 tricks) +1 more.'),
  li('5','First team to <b>5 hand wins</b> takes the match.')];
@@ -1196,7 +1207,7 @@ function renderStatus(){const st=$('#status');const me=meIdx(),playing=S.status=
  else if(playing&&S.phase==='resolve'&&S.res){const w=S.res.w,tens=S.trick.filter(e=>P(e.c).r===10).map(e=>e.c);t=(w===me?'<b>You</b> win the trick':`${nm(w)} wins the trick`)+(S.mode==='dhihaeh'&&tens.length?` · ${tens.map(short).join(' ')}`:'');}
  else if(playing){const cur=S.turn;
   if(cur===me){if(!S.trick.length)t='<b>Your lead</b>: play any card';
-   else{const h=S.hands[me];if(h.some(c=>P(c).s===S.led))t=`<b>Follow</b> ${suitI(S.led)}`;else if(S.mode==='dhihaeh'&&h.some(c=>P(c).s===S.trump))t=`No ${suitI(S.led)}: <b>you must trump</b> ${suitI(S.trump)}`;else t=`No ${suitI(S.led)}: play <b>any card</b>`;}}
+   else{const h=S.hands[me];if(h.some(c=>P(c).s===S.led))t=`<b>Follow</b> ${suitI(S.led)}`;else if(S.mode==='dhihaeh'&&h.some(c=>P(c).s===S.trump)&&E.partnerWinning(S,me))t=`Your partner is winning, so you can play <b>any card</b>`;else if(S.mode==='dhihaeh'&&h.some(c=>P(c).s===S.trump))t=`No ${suitI(S.led)}: <b>you must trump</b> ${suitI(S.trump)}`;else t=`No ${suitI(S.led)}: play <b>any card</b>`;}}
   else t=`${nm(cur)} ${S.trick.length?'is playing':'leads'}${S.decided>=0&&!S.trick.length?` · ${S.decided===0?'hand won, playing on':'hand lost, fight for pride'}`:''}`;}
  else if(S.result){const r=S.result;t=(r.w===myT()?'<b>Your team</b> wins the hand':'<b>Them</b> win the hand');if(me<0&&mode==='online')t=`<b>${esc(teamNames(r.w))}</b> win the hand`;}
  if(st._t!==t){st.innerHTML=t;st._t=t;}st.classList.toggle('mine',(playing&&S.phase==='play'&&S.turn===me)||(S.status==='trump'&&S.chooser===me));}
