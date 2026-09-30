@@ -522,7 +522,7 @@ const Real={
  async delNote(id){const F=FB.F;await F.deleteDoc(F.doc(FB.db,'adminNotes',id));},
  async delInbox(coll,id,noteId){const F=FB.F,b=F.writeBatch(FB.db);b.delete(F.doc(FB.db,coll,id));if(noteId)b.delete(F.doc(FB.db,'adminNotes',noteId));await b.commit();},
  /* merge = one atomic batch: update the kept doc, delete the others */
- async merge(targetId,data,delIds){const F=FB.F,b=F.writeBatch(FB.db);b.update(F.doc(FB.db,'players',targetId),data);delIds.forEach(id=>b.delete(F.doc(FB.db,'players',id)));await b.commit();},
+ async merge(targetId,data,delIds,keep){const F=FB.F,b=F.writeBatch(FB.db);b.update(F.doc(FB.db,'players',targetId),data);delIds.forEach(id=>keep?b.update(F.doc(FB.db,'players',id),ZERO()):b.delete(F.doc(FB.db,'players',id)));await b.commit();},
  async rename(id,name){const F=FB.F;await F.updateDoc(F.doc(FB.db,'players',id),{name});},
  async delPlayer(id){const F=FB.F;await F.deleteDoc(F.doc(FB.db,'players',id));},
  async delPresence(list){const F=FB.F;for(let i=0;i<list.length;i+=400){const b=F.writeBatch(FB.db);list.slice(i,i+400).forEach(x=>b.delete(F.doc(FB.db,'presence',x.g,'users',x.uid)));await b.commit();}},
@@ -579,7 +579,7 @@ function makeMock(){
   async setNote(id,data){await block();N.set(id,data);},
   async delNote(id){await block();N.delete(id);},
   async delInbox(coll,id,noteId){await block();const a=coll==='reports'?R:S;const i=a.findIndex(x=>x.id===id);if(i>=0)a.splice(i,1);if(noteId)N.delete(noteId);},
-  async merge(targetId,data,delIds){await block();const t=P.find(p=>p.id===targetId);Object.assign(t,data);delIds.forEach(id=>{const i=P.findIndex(p=>p.id===id);if(i>=0)P.splice(i,1);});},
+  async merge(targetId,data,delIds,keep){await block();const t=P.find(p=>p.id===targetId);Object.assign(t,data);delIds.forEach(id=>{const i=P.findIndex(p=>p.id===id);if(i>=0){if(keep)Object.assign(P[i],ZERO());else P.splice(i,1);}});},
   async rename(id,name){await block();const p=P.find(x=>x.id===id);if(p)p.name=name;},
   async delPlayer(id){await block();const i=P.findIndex(p=>p.id===id);if(i>=0)P.splice(i,1);},
   async delPresence(){await block();},
@@ -742,6 +742,7 @@ function dupGroups(){const m=new Map();ST.players.forEach(p=>{const k=normKey(p.
  return [...m.entries()].filter(([,a])=>a.length>1).map(([k,a])=>({k,a:a.sort((x,y)=>y.updatedAt-x.updatedAt)})).sort((x,y)=>y.a.length-x.a.length||x.k.localeCompare(y.k));}
 function dupSel(g){let s=ST.dupSel[g.k];const ids=g.a.map(p=>p.id);
  if(!s||!ids.includes(s.target)){s={target:g.a[0].id,excl:new Set()};ST.dupSel[g.k]=s;}return s;}
+function ZERO(){return {xp:0,shells:0,games:0,wins:0,hands:0,gins:0,big:0,online:0,best:0};}
 function mergePlan(g){const s=dupSel(g);const T=g.a.find(p=>p.id===s.target);const src=g.a.filter(p=>p.id!==T.id&&!s.excl.has(p.id));const all=[T,...src];
  const sum=k=>all.reduce((a,p)=>a+num(p[k]),0),max=k=>Math.max(...all.map(p=>num(p[k])));const bests=all.map(p=>p.best).filter(v=>v!=null);
  const after={name:T.name,xp:ST.xpMode==='sum'?sum('xp'):max('xp'),shells:max('shells'),games:sum('games'),wins:sum('wins'),hands:sum('hands'),gins:sum('gins'),big:sum('big'),online:sum('online'),
@@ -986,11 +987,17 @@ async function doMerge(k){if(needRules())return;const g=dupGroups().find(x=>x.k=
  const html=`<p style="margin:0 0 6px">Keep <b>${esc(T.name)}</b> <span class="mono muted">${esc(T.id)}</span> and add ${src.length} other entr${src.length===1?'y':'ies'} into it. The name stays “${esc(T.name)}”.</p>
   <table class="ctab"><thead><tr><th>Field</th><th>Now</th><th>After</th></tr></thead><tbody>
   ${F.map(([f,l])=>{const b=T[f],a=after[f];return `<tr class="${b!==a?'chg':''}"><td>${l}</td><td>${cell(f,b)}</td><td>${cell(f,a)}</td></tr>`;}).join('')}</tbody></table>
-  <p style="margin:12px 0 0"><b>These ${src.length} player doc${src.length===1?'':'s'} will be deleted:</b></p><ul class="dlist">${src.map(p=>`<li>${pLine(p)}</li>`).join('')}</ul>
-  <p class="small muted" style="margin:10px 0 0">This can’t be undone. If one of these guests plays again on an old device, their entry can come back.</p>`;
- if(!await ask({title:`Merge ${src.length+1} “${T.name.trim()}” entries?`,html,ok:`Merge & delete ${src.length}`,danger:true}))return;
- try{await DL.merge(T.id,after,src.map(p=>p.id));Object.assign(ST.players.get(T.id),after);src.forEach(p=>ST.players.delete(p.id));delete ST.dupSel[k];
-  toast('Merged. '+src.length+' entr'+(src.length===1?'y':'ies')+' removed.');renderPlayers();renderStats();}
+  <p style="margin:12px 0 0"><b>The other ${src.length} entr${src.length===1?'y':'ies'}:</b></p><ul class="dlist">${src.map(p=>`<li>${pLine(p)}</li>`).join('')}</ul>
+  <div style="margin:10px 0 0;display:grid;gap:6px">
+   <label style="display:flex;gap:8px;align-items:flex-start"><input type="radio" name="mkeep" value="del" checked onchange="window.__mkeep=false"><span><b>Merge &amp; delete</b>: their stats move into “${esc(T.name)}” and these entries are removed.</span></label>
+   <label style="display:flex;gap:8px;align-items:flex-start"><input type="radio" name="mkeep" value="keep" onchange="window.__mkeep=true"><span><b>Merge &amp; keep</b>: their stats move into “${esc(T.name)}”, and these entries stay (reset to 0 wins, so nothing is counted twice).</span></label>
+  </div>
+  <p class="small muted" style="margin:10px 0 0">This can’t be undone.</p>`;
+ window.__mkeep=false;
+ if(!await ask({title:`Merge ${src.length+1} “${T.name.trim()}” entries?`,html,ok:'Merge',danger:true}))return;
+ const keep=!!window.__mkeep;
+ try{await DL.merge(T.id,after,src.map(p=>p.id),keep);Object.assign(ST.players.get(T.id),after);src.forEach(p=>{if(keep)Object.assign(ST.players.get(p.id),ZERO());else ST.players.delete(p.id);});delete ST.dupSel[k];
+  toast('Merged. '+src.length+' entr'+(src.length===1?'y':'ies')+(keep?' kept with stats reset to 0.':' removed.'));renderPlayers();renderStats();}
  catch(e){console.warn(e);toast('Merge failed: '+errMsg(e),5000);}}
 async function doRename(id){if(needRules())return;const p=ST.players.get(id);if(!p)return;
  const v=await ask({title:'Rename player',html:`<p style="margin:0">${pLine(p)}</p><p class="small muted">Up to 20 characters. Heads-up: a registered player’s game writes their own username back the next time they play.</p>`,ok:'Next',input:{label:'New name',value:p.name,max:20}});
