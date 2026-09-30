@@ -198,6 +198,8 @@ main.table>*{width:100%;max-width:640px;margin-left:auto;margin-right:auto}
 @keyframes twk{0%,100%{opacity:.25}50%{opacity:1}}
 .tsc.still *{animation:none!important}
 .tsc.still .emb,.tsc.still .glint{display:none}
+/* smooth mode: hold the avatars' idle blink, glance and breathe still */
+.dg-lite .dga-anim .dga-eyes,.dg-lite .dga-anim .dga-iris,.dg-lite .dga-anim .dga-fig,.dg-lite .dga-anim .dga-mouth{animation:none}
 /* the ad: a driftwood sign stuck in the sand, drawn in scene units so it scales with the beach */
 .tad{position:absolute;transform:translate(-50%,-50%) rotate(-4deg);pointer-events:none}
 .tad .post{position:absolute;left:50%;top:60%;width:7px;height:36px;margin-left:-3.5px;border-radius:2px 2px 3px 3px;background:linear-gradient(90deg,#2A1D12,#6E5A42 45%,#3A2A1B);box-shadow:2px 3px 4px rgba(0,0,0,.5)}
@@ -400,6 +402,15 @@ const clone=o=>JSON.parse(JSON.stringify(o));
 const sleep=ms=>new Promise(r=>setTimeout(r,Math.max(0,ms)));
 const rnd=(a,b)=>a+Math.random()*(b-a);
 const reduce=!!(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches);
+/* smooth mode, as in the other games: slower phones (4 cores or fewer), or switched on by itself when this phone keeps
+   dropping frames (many janky frames within 20 s; one-off heavy screen changes count little) for the rest of the visit; a manual Smooth setting (dd-smooth) always wins */
+var autoLite=false;try{autoLite=sessionStorage.getItem('dg-lite')==='1';}catch(e){}
+const isSmooth=()=>{const v=ls.get('dd-smooth');return v==='1'?true:v==='0'?false:(autoLite||!!(navigator.hardwareConcurrency&&navigator.hardwareConcurrency<=4));};
+const liteSync=()=>{const on=isSmooth();document.documentElement.classList.toggle('dg-lite',on);const t=document.getElementById('tsc');if(t)t.classList.toggle('still',on||reduce);};liteSync();
+(()=>{const P=window.PerformanceObserver;if(autoLite||reduce||!P||!(P.supportedEntryTypes||[]).includes('long-animation-frame'))return;const T=[];
+ const po=new P(l=>{if(document.hidden)return;for(const e of l.getEntries())if(e.startTime>5000&&e.blockingDuration>0)T.push([e.startTime,Math.min(40,e.blockingDuration)]);const now=performance.now();while(T.length&&T[0][0]<now-20000)T.shift();
+  if(T.reduce((s,x)=>s+x[1],0)>=280){po.disconnect();if(ls.get('dd-smooth')!=null)return;autoLite=true;try{sessionStorage.setItem('dg-lite','1');}catch(e){}liteSync();}});
+ try{po.observe({type:'long-animation-frame'});}catch(e){}})();
 function compactNum(n){n=Number(n)||0;const a=Math.abs(n);const f=(v,s)=>{let x=v>=100?Math.round(v):Math.round(v*10)/10;return String(x).replace(/\.0$/,'')+s;};if(a>=1e6)return f(n/1e6,'M');if(a>=1e3)return f(n/1e3,'K');return String(Math.round(n));}
 const buzz=p=>{try{if(navigator.userActivation&&!navigator.userActivation.hasBeenActive)return;navigator.vibrate&&navigator.vibrate(p)}catch(e){}};
 
@@ -740,7 +751,7 @@ ${whoHTML(me)}<button class="stk mine" id="st${me}" data-a="flip"></button><div 
 <section class="me"><div class="status" id="status"></div><div class="ctrl"><button class="autob" id="autob" data-a="auto" aria-pressed="${auto}" aria-label="Auto flip"><span class="sw" aria-hidden="true"><i></i></span><span>Auto</span></button><button class="flipb" id="flipb" data-a="flip"><span class="fl" id="fl">Tap to flip</span><span class="tb" id="tb" aria-hidden="true"></span></button></div></section>
 </main>`;
  [0,1].forEach(p=>{const pl=S.players[p];$('#av'+p).innerHTML=avInner(pl.ch,pl.name,true);$('#nm'+p).innerHTML=esc(p===me?(pl.name==='You'?'You':pl.name):pl.name)+(pl.ai?' <span class="aitag">CPU</span>':'');});
- const tsc=$('#tsc');if(tsc)tsc.classList.toggle('still',reduce);
+ const tsc=$('#tsc');if(tsc)tsc.classList.toggle('still',reduce||isSmooth());
  snap();layout();drawStacks();drawPile();drawStatic();tableAd();if(online&&NET)NET.updDock();}
 /* the mat: scene art drawn in a 375x812 box, G = the mat's box (cx, cy, half width, half height).
    The scene is scaled so the mat fills the play box; the pile always sits at the mat's exact centre. */

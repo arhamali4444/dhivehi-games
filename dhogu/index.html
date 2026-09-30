@@ -579,6 +579,11 @@ html.eb .bubble.dh::after{border-top-color:#A5372B}
 @media (max-width:359px){html.eb .top{gap:6px}html.eb .me-pill{gap:6px;padding-right:9px}html.eb .boli{padding:0 10px 0 8px;gap:4px}.eb-ttl h1{font-size:54px}.eb-acts{margin-top:22px}.eb-fh{gap:10px;padding:8px 12px 8px 14px}.eb-fh b{font-size:16px}.eb-fb{margin:0 6px 10px;padding:4px 10px 14px}}
 @media (prefers-reduced-motion:reduce){.eb-motes{display:none}}
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+/* smooth mode (slower phones, or switched on by itself when frames keep dropping): hold the ambient lamp flicker, motes,
+   swaying photos and idle face animations still; turn cues (bob, thinking dots, timer, live button) keep moving */
+html.dg-lite .eb-motes{display:none}
+html.dg-lite .face .eyes,html.dg-lite .sus,html.dg-lite .lampw .sway,html.dg-lite .lit,html.dg-lite .lit2,html.dg-lite .glow,html.dg-lite .glow i,html.dg-lite .spot,html.dg-lite .spot i,html.dg-lite .eb-room i,html.dg-lite .eb-sw,html.dg-lite .eb-pool,
+html.dg-lite .dga-anim .dga-eyes,html.dg-lite .dga-anim .dga-iris,html.dg-lite .dga-anim .dga-fig,html.dg-lite .dga-anim .dga-mouth{animation:none!important}
 </style>
 </head>
 <body>
@@ -722,6 +727,15 @@ const ARROW=sv('<path d="M5 12h14M13 6l6 6-6 6"/>',1.8),BOOK=sv('<path d="M3 5.5
 /* the whole game lives in the detective world (html.eb); this only stops home-screen timers when you leave home */
 function setHomeMode(on){if(!on){clearTimeout(spT);spT=0;}}
 document.addEventListener('visibilitychange',()=>document.documentElement.classList.toggle('eb-hid',document.hidden));
+/* smooth mode, as in the other games: slower phones (4 cores or fewer), or switched on by itself when this phone keeps
+   dropping frames (many janky frames within 20 s; one-off heavy screen changes count little) for the rest of the visit; a manual Smooth setting (dd-smooth) always wins */
+var autoLite=false;try{autoLite=sessionStorage.getItem('dg-lite')==='1';}catch(e){}
+const isSmooth=()=>{const v=ls.get('dd-smooth');return v==='1'?true:v==='0'?false:(autoLite||!!(navigator.hardwareConcurrency&&navigator.hardwareConcurrency<=4));};
+const liteSync=()=>document.documentElement.classList.toggle('dg-lite',isSmooth());liteSync();
+(()=>{const P=window.PerformanceObserver;if(autoLite||(RM&&RM.matches)||!P||!(P.supportedEntryTypes||[]).includes('long-animation-frame'))return;const T=[];
+ const po=new P(l=>{if(document.hidden)return;for(const e of l.getEntries())if(e.startTime>5000&&e.blockingDuration>0)T.push([e.startTime,Math.min(40,e.blockingDuration)]);const now=performance.now();while(T.length&&T[0][0]<now-20000)T.shift();
+  if(T.reduce((s,x)=>s+x[1],0)>=280){po.disconnect();if(ls.get('dd-smooth')!=null)return;autoLite=true;try{sessionStorage.setItem('dg-lite','1');}catch(e){}liteSync();}});
+ try{po.observe({type:'long-animation-frame'});}catch(e){}})();
 const SIL='<svg viewBox="-27 0 54 54" aria-hidden="true"><path d="M-20 54C-19 41-10 37 0 37S19 41 20 54Z" fill="#26221E"/><ellipse cx="0" cy="24" rx="9" ry="10.5" fill="#26221E"/></svg>';
 function mugSVG(cfg){if(!DGA||!cfg)return SIL;try{return DGA.render(cfg,{size:54,crop:'13 7 74 74',bg:false});}catch(e){return SIL;}}
 /* pin x, pin y, tilt, sway seconds */

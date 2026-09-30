@@ -619,6 +619,7 @@ main.table>*{width:100%;max-width:640px;margin-left:auto;margin-right:auto}
 /* smooth mode (slower phones) and reduced motion */
 .smooth .caus{display:none}
 .smooth main.table .dgc-ring *,.smooth main.table .dgc-bkw *{animation:none!important}
+.smooth .dga-anim .dga-eyes,.smooth .dga-anim .dga-iris,.smooth .dga-anim .dga-fig,.smooth .dga-anim .dga-mouth{animation:none}
 @media (prefers-reduced-motion:reduce){*,*:before,*:after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition:none!important}.caus,.tsc .motes,.tsc .glints,.tsc .fish{display:none}.tmr b{animation-duration:var(--d,15s)!important}}
 .seat .cnt.tg{background:none;padding:0}
 html[data-tbl] .caus{display:none}
@@ -2011,8 +2012,15 @@ function faceInner(p,k,size){const ch=charOf(p,k);if(ch)return `<span class="pz 
 function avatarHTML(p,k,extra,size){size=size||46;return `<span class="mini frm${frameCls(p)}${extra?' '+extra:''}">${faceInner(p,k,size)}${size>=34?ringHTML(p,size):''}</span>`;}
 const meP=()=>({id:myId,name:myName(),piece:myPiece(),cos:myCos()});
 const autoSmooth=!!((navigator.hardwareConcurrency&&navigator.hardwareConcurrency<=4)||(navigator.deviceMemory&&navigator.deviceMemory<=4));
-const isSmooth=()=>{const v=ls.get('dd-smooth');return v==='1'?true:v==='0'?false:(autoSmooth||reduce);};
+var autoLite=false;try{autoLite=sessionStorage.getItem('dg-lite')==='1';}catch(e){}
+const isSmooth=()=>{const v=ls.get('dd-smooth');return v==='1'?true:v==='0'?false:(autoSmooth||reduce||autoLite);};
 function applyCosmetics(){const h=document.documentElement;h.dataset.deck='d-classic';h.classList.toggle('smooth',isSmooth());}
+/* adaptive quality: if this phone keeps dropping frames (many janky frames within 20 s; one-off heavy screen changes count little), switch smooth mode on for the rest of the visit; a manual Smooth setting always wins */
+(()=>{const P=window.PerformanceObserver;if(autoLite||reduce||!P||!(P.supportedEntryTypes||[]).includes('long-animation-frame'))return;const T=[];
+ const po=new P(l=>{if(document.hidden)return;for(const e of l.getEntries())if(e.startTime>5000&&e.blockingDuration>0)T.push([e.startTime,Math.min(40,e.blockingDuration)]);const now=performance.now();while(T.length&&T[0][0]<now-20000)T.shift();
+  if(T.reduce((s,x)=>s+x[1],0)>=280){po.disconnect();if(ls.get('dd-smooth')!=null)return;autoLite=true;try{sessionStorage.setItem('dg-lite','1');}catch(e){}
+   applyCosmetics();if(screen==='table'){applyTable();const f=document.querySelector('.scenefx');if(f)f.remove();}}});
+ try{po.observe({type:'long-animation-frame'});}catch(e){}})();
 function setBg(v){const h=document.documentElement;if(v)h.dataset.bg=v;else delete h.dataset.bg;}
 function offTable(){delete document.documentElement.dataset.tbl;setBg('');if(screen!=='lobby')closeRules();if(spCtl){spCtl.destroy();spCtl=null;}}
 function playEffect(id,box){const it=BYID[id];const a=it&&it.asset;if(!a||!a.fx||isSmooth()||reduce||document.hidden)return;

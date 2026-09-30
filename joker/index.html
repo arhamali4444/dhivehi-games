@@ -184,6 +184,8 @@ main.table>*{width:100%;max-width:640px;margin-left:auto;margin-right:auto}
 .tsc .tw{position:absolute;width:18px;height:18px;margin:-9px 0 0 -9px;border-radius:50%;background:radial-gradient(closest-side,rgba(255,236,190,.9),rgba(255,180,90,.35) 45%,rgba(255,150,60,0));animation:twk 3.4s ease-in-out infinite}
 @keyframes twk{0%,100%{opacity:.35}50%{opacity:1}}
 .tsc.still *{animation:none!important}
+/* smooth mode (slower phones, or switched on by itself when frames keep dropping): hold the avatars' idle blink, glance and breathe still */
+.dg-lite .dga-anim .dga-eyes,.dg-lite .dga-anim .dga-iris,.dg-lite .dga-anim .dga-fig,.dg-lite .dga-anim .dga-mouth{animation:none}
 .tadw{position:absolute;left:0;top:0;width:375px;height:812px;pointer-events:none}
 .tad{position:absolute;transform:translate(-50%,-50%);display:flex;align-items:center;gap:6px;white-space:nowrap;pointer-events:none}
 /* the sponsor spot: a little gold carnival ticket set into the rim */
@@ -863,7 +865,14 @@ function sceneHTML(){let h='<img class="lay" src="carnival.webp?v=1" alt="" deco
 for(let i=0;i<36;i++){const a=i/36*Math.PI*2,x=187.5+163.5*Math.cos(a),y=418+191.5*Math.sin(a);h+=`<i class="mq" style="left:${x.toFixed(1)}px;top:${y.toFixed(1)}px;animation-delay:${(-(i%3)*.5).toFixed(2)}s"></i>`;}
 JSTR.forEach(s=>qpts(s).forEach(([x,y],i)=>{if(i%2)return;h+=`<i class="tw" style="left:${x.toFixed(1)}px;top:${(y+4).toFixed(1)}px;animation-delay:${(-Math.random()*3.4).toFixed(2)}s;animation-duration:${(2.6+Math.random()*2).toFixed(1)}s"></i>`;}));
 return h+'<div class="tadw" id="tadw"></div>';}
-const isSmooth=()=>{const v=ls.get('dd-smooth');return v==='1'?true:v==='0'?false:(reduce||!!(navigator.hardwareConcurrency&&navigator.hardwareConcurrency<=4));};
+var autoLite=false;try{autoLite=sessionStorage.getItem('dg-lite')==='1';}catch(e){}
+const isSmooth=()=>{const v=ls.get('dd-smooth');return v==='1'?true:v==='0'?false:(reduce||autoLite||!!(navigator.hardwareConcurrency&&navigator.hardwareConcurrency<=4));};
+/* adaptive quality: if this phone keeps dropping frames (many janky frames within 20 s; one-off heavy screen changes count little), switch to smooth mode for the rest of the visit; a manual Smooth setting always wins */
+const liteSync=()=>{const on=isSmooth();document.documentElement.classList.toggle('dg-lite',on);const t=document.getElementById('tsc');if(t)t.classList.toggle('still',on);};liteSync();
+(()=>{const P=window.PerformanceObserver;if(autoLite||reduce||!P||!(P.supportedEntryTypes||[]).includes('long-animation-frame'))return;const T=[];
+ const po=new P(l=>{if(document.hidden)return;for(const e of l.getEntries())if(e.startTime>5000&&e.blockingDuration>0)T.push([e.startTime,Math.min(40,e.blockingDuration)]);const now=performance.now();while(T.length&&T[0][0]<now-20000)T.shift();
+  if(T.reduce((s,x)=>s+x[1],0)>=280){po.disconnect();if(ls.get('dd-smooth')!=null)return;autoLite=true;try{sessionStorage.setItem('dg-lite','1');}catch(e){}liteSync();}});
+ try{po.observe({type:'long-animation-frame'});}catch(e){}})();
 function buildTable(){screen='table';offTable();closeOv();cardEls={};order=[];handKey=null;
 app.innerHTML=`<main class="table"><div class="tlayer" aria-hidden="true"><div class="tsc${isSmooth()?' still':''}" id="tsc">${sceneHTML()}</div></div>
 <div class="topbar"><button class="icon-btn" data-a="menu" aria-label="Scores and menu">${HI.menu}</button><div class="goal"><span id="goalt"></span></div><div class="tools"><button class="icon-btn" data-a="sfx" id="sfxbtn" aria-label="Sound effects" aria-pressed="${sfxOn()}">${HI.sound}</button></div></div>
