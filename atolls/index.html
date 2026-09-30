@@ -26,7 +26,9 @@ button:disabled{cursor:default}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 #gl{position:fixed;left:0;top:0;width:100vw;height:100vh;display:block;z-index:0}
 #fbsea{position:fixed;inset:0;z-index:0;background:radial-gradient(120% 80% at 50% 40%,#2aa9b8 0%,#0f6e92 38%,#06304f 80%)}
-.wg{background:var(--glass);-webkit-backdrop-filter:blur(16px) saturate(1.6);backdrop-filter:blur(16px) saturate(1.6);box-shadow:0 0 0 .5px rgba(0,0,0,.08),0 10px 30px -10px rgba(0,30,50,.45)}
+.wg{background:var(--glass);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);box-shadow:0 0 0 .5px rgba(0,0,0,.08),0 10px 30px -10px rgba(0,30,50,.45)}
+/* HUD glass sits over the live water canvas: a lighter blur, and none at all (a more opaque glass instead) once the water drops its quality or in smooth mode */
+.gl-low .wg,.dg-lite .wg,.gl-low .dgnslot .dgn-dock .dgn-ib,.dg-lite .dgnslot .dgn-dock .dgn-ib{-webkit-backdrop-filter:none;backdrop-filter:none}.gl-low .wg,.dg-lite .wg{background:rgba(255,255,255,.93)}
 .scr{position:fixed;inset:0;z-index:2;overflow:hidden}
 /* ---------------- drone HUD bits ---------------- */
 .brk{position:absolute;left:14px;right:14px;top:calc(var(--sat) + 64px);bottom:calc(var(--sab) + 330px);pointer-events:none;z-index:1}
@@ -354,7 +356,7 @@ button:disabled{cursor:default}
  --dgn-dock-size:40px;--dgn-inline-bg:var(--glass);--dgn-inline-shadow:0 0 0 .5px rgba(0,0,0,.08),0 10px 30px -10px rgba(0,30,50,.45);--dgn-dock-z:20;--dgn-bub-z:39}
 .dgnslot{display:contents}
 .dgnslot .dgn-dock{gap:6px}
-.dgnslot .dgn-dock .dgn-ib{border-radius:14px;color:var(--ink);-webkit-backdrop-filter:blur(16px) saturate(1.6);backdrop-filter:blur(16px) saturate(1.6)}
+.dgnslot .dgn-dock .dgn-ib{border-radius:14px;color:var(--ink);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
 .dgnslot .dgn-vw{background:var(--glass);color:var(--ink);box-shadow:0 0 0 .5px rgba(0,0,0,.08)}
 @media (max-width:360px){.dgnslot .dgn-vw{display:none!important}}
 </style>
@@ -411,7 +413,7 @@ button:disabled{cursor:default}
 <div id="dim" hidden></div>
 <div id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle" tabindex="-1" hidden></div>
 <div id="fx" aria-hidden="true"></div>
-<script src="../shared/avatar.js?v=7"></script>
+<script src="../shared/avatar.js?v=8"></script>
 <script src="../shared/sponsors.js?v=5"></script>
 <script src="../shared/net.js?v=3"></script>
 
@@ -1049,8 +1051,8 @@ void main(){vec2 fc=gl_FragCoord.xy;vec2 uv=vec2(fc.x-uRes.x*.5,(uRes.y-fc.y)-uR
  function setAtlas(img){if(!ok)return;try{gl.activeTexture(gl.TEXTURE1);atlasTex=gl.createTexture();gl.bindTexture(gl.TEXTURE_2D,atlasTex);gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL,false);gl.texImage2D(gl.TEXTURE_2D,0,gl.RGB,gl.RGB,gl.UNSIGNED_BYTE,img);
   gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE);
   gl.bindTexture(gl.TEXTURE_2D,null);gl.activeTexture(gl.TEXTURE0);}catch(e){atlasTex=null;atlasFailed=true;}
-  if(waitAtlas){waitAtlas=false;baking=true;dirty=true;}}
- function atlasFail(){atlasFailed=true;if(waitAtlas){waitAtlas=false;baking=true;dirty=true;}}
+  if(waitAtlas){waitAtlas=false;baking=true;dirty=true;}wake();}
+ function atlasFail(){atlasFailed=true;if(waitAtlas){waitAtlas=false;baking=true;dirty=true;}wake();}
  /* map: {hexes:[{q,r,t}]}, S: hex size in world px, bb: {x0,y0,x1,y1} world bounds */
  function setBoard(map,S,bb,cb){if(!ok){cb&&cb();return;}
   const d=new Uint8Array(32*32);map.hexes.forEach(h=>{const x=h.q+16,y=h.r+16;if(x>=0&&x<32&&y>=0&&y<32)d[y*32+x]=TCODE[h.t]+1;});
@@ -1060,7 +1062,7 @@ void main(){vec2 fc=gl_FragCoord.xy;vec2 uv=vec2(fc.x-uRes.x*.5,(uRes.y-fc.y)-uR
   if(bakeTex)gl.deleteTexture(bakeTex);bakeTex=tex(texW,texH,null,gl.RGBA,gl.LINEAR);gl.bindTexture(gl.TEXTURE_2D,null);
   if(!fbo)fbo=gl.createFramebuffer();gl.bindFramebuffer(gl.FRAMEBUFFER,fbo);gl.framebufferTexture2D(gl.FRAMEBUFFER,gl.COLOR_ATTACHMENT0,gl.TEXTURE_2D,bakeTex,0);
   gl.viewport(0,0,texW,texH);gl.clearColor(.012,.14,.33,1);gl.clear(gl.COLOR_BUFFER_BIT);gl.bindFramebuffer(gl.FRAMEBUFFER,null);
-  BS=S;bakeY=0;baked=false;onBaked=cb||null;dirty=true;if(atlasTex||atlasFailed){baking=true;waitAtlas=false;}else{baking=false;waitAtlas=true;}}
+  BS=S;bakeY=0;baked=false;onBaked=cb||null;dirty=true;if(atlasTex||atlasFailed){baking=true;waitAtlas=false;}else{baking=false;waitAtlas=true;}wake();}
  let BS=36;
  function bakeStep(budget){gl.useProgram(P.bake.p);gl.bindFramebuffer(gl.FRAMEBUFFER,fbo);gl.viewport(0,0,texW,texH);
   gl.activeTexture(gl.TEXTURE1);gl.bindTexture(gl.TEXTURE_2D,atlasTex);gl.activeTexture(gl.TEXTURE0);gl.bindTexture(gl.TEXTURE_2D,mapTex);
@@ -1075,18 +1077,34 @@ void main(){vec2 fc=gl_FragCoord.xy;vec2 uv=vec2(fc.x-uRes.x*.5,(uRes.y-fc.y)-uR
   if(mode!=='board'||!bakeTex)return;gl.useProgram(P.show.p);const u=P.show.u;gl.activeTexture(gl.TEXTURE0);gl.bindTexture(gl.TEXTURE_2D,bakeTex);gl.uniform1i(u.uBake,0);
   gl.uniform4f(u.uBox,box.x,box.y,box.w,box.h);gl.uniform2f(u.uRes,cv.width,cv.height);gl.uniform3f(u.uCam,cam.x,cam.y,cam.z);gl.uniform2f(u.uOrg,cam.ox,cam.oy);
   gl.uniform1f(u.uK,cv.width/Wc);gl.uniform1f(u.uT,now());gl.uniform1f(u.uS,BS);gl.uniform1f(u.uDim,dim);gl.uniform1f(u.uHaze,cam.haze||0);gl.drawArrays(gl.TRIANGLE_STRIP,0,4);gl.bindTexture(gl.TEXTURE_2D,null);}
- function frame(ts){requestAnimationFrame(frame);if(!ok||document.hidden||mode==='none')return;
+ /* frame pacing: ~30 fps while something moves (camera tween, baking, storm dimming, a reveal, the home screen), ~15 fps
+    when the board just sits there (the water drifts slowly, so it looks the same), and no frames at all while a
+    full-screen sheet covers the board or the tab is hidden. Between frames the loop sleeps on a timer instead of
+    spinning requestAnimationFrame. */
+ let rafId=0,tmo=0,boostT=0,hold=false;const IV_BUSY=33,IV_IDLE=66;
+ function wake(){if(tmo){clearTimeout(tmo);tmo=0;}if(!rafId&&ok)rafId=requestAnimationFrame(frame);}
+ function later(ms){if(rafId||tmo)return;tmo=setTimeout(()=>{tmo=0;if(!rafId)rafId=requestAnimationFrame(frame);},ms);}
+ function frame(ts){rafId=0;if(!ok||document.hidden||mode==='none')return;
   if(baking){bakeStep(RMq.matches?texW*texH:240000);dirty=true;}
   if(Math.abs(dim-dimTo)>.01){dim+=(dimTo-dim)*.12;dirty=true;}
-  const anim=!RMq.matches;if(!dirty&&!(anim&&ts-last>=33))return;
-  const dt=ts-last;last=ts;dirty=false;draw();if(cv.style.opacity==='0')cv.style.opacity='1';
-  if(anim){times.push(dt);if(times.length>24){times.shift();const avg=times.reduce((a,b)=>a+b,0)/times.length;if(avg>58&&qual>.5){qual*=.8;times.length=0;resize();}}}}
- addEventListener('resize',resize);document.addEventListener('visibilitychange',()=>{dirty=true;});
- if(ok){resize();requestAnimationFrame(frame);}
+  if(hold&&!dirty&&!baking)return;/* woken again by hold(false) or any change */
+  const anim=!RMq.matches,busy=mode!=='board'||baking||waitAtlas||dim>.01||dimTo>.01||ts<boostT,iv=busy?IV_BUSY:IV_IDLE;
+  if(dirty||(anim&&ts-last>=iv-4)){const dt=ts-last,wasDirty=dirty;last=ts;dirty=false;draw();if(cv.style.opacity==='0')cv.style.opacity='1';
+   /* quality adapter: judged on how late frames come against their target (30 fps scale, as before) */
+   if(anim&&!hold){times.push(wasDirty?dt:dt-iv+IV_BUSY);if(times.length>24){times.shift();const avg=times.reduce((a,b)=>a+b,0)/times.length;if(avg>58&&qual>.5){qual*=.8;times.length=0;resize();document.documentElement.classList.add('gl-low');}}}}
+  if(baking||Math.abs(dim-dimTo)>.01){rafId=requestAnimationFrame(frame);return;}
+  if(!anim||hold)return;/* still water: only redrawn when something changes */
+  const wait=iv-(performance.now()-last);if(wait<=20)rafId=requestAnimationFrame(frame);else later(wait-12);}
+ addEventListener('resize',()=>{resize();wake();});document.addEventListener('visibilitychange',()=>{dirty=true;if(!document.hidden)wake();});
+ if(ok){resize();wake();}
  return {get ok(){return ok;},get baked(){return baked||!ok;},get baking(){return baking;},get progress(){return !ok||baked?1:waitAtlas?0.05:.1+.9*Math.min(1,bakeY/Math.max(1,texH));},setBoard,setAtlas,atlasFail,
-  setMode(m){mode=ok?m:'none';cv.style.visibility=mode==='none'?'hidden':'visible';dirty=true;},
-  setCam(c){cam.x=c.x;cam.y=c.y;cam.z=c.z;cam.ox=c.ox;cam.oy=c.oy;cam.haze=c.haze||0;dirty=true;},
-  setDim(v){dimTo=v;dirty=true;},poke(){dirty=true;}};
+  setMode(m){mode=ok?m:'none';cv.style.visibility=mode==='none'?'hidden':'visible';dirty=true;wake();},
+  setCam(c){cam.x=c.x;cam.y=c.y;cam.z=c.z;cam.ox=c.ox;cam.oy=c.oy;cam.haze=c.haze||0;dirty=true;boostT=performance.now()+500;wake();},
+  setDim(v){dimTo=v;dirty=true;wake();},poke(){dirty=true;wake();},
+  /* busy frame rate for a while (a reveal, a burst of action) */
+  boost(ms){boostT=Math.max(boostT,performance.now()+(ms||1000));wake();},
+  /* a full-screen sheet covers the board: stop drawing until it closes */
+  hold(v){v=!!v;if(v===hold)return;hold=v;if(!v){dirty=true;wake();}},get held(){return hold;}};
 })();
 </script>
 
@@ -1101,6 +1119,17 @@ const LOCAL=/^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname)||/\.(lo
 const FAST=LOCAL&&Q.has('fast'),AUTO=LOCAL&&Q.has('auto');
 const RM=matchMedia('(prefers-reduced-motion: reduce)');
 const ls={get(k){try{return localStorage.getItem(k);}catch(e){return null;}},set(k,v){try{localStorage.setItem(k,v);}catch(e){}},del(k){try{localStorage.removeItem(k);}catch(e){}}};
+/* smooth mode, as in the card games: on slower phones (or switched on by itself when frames keep dropping) the HUD glass
+   drops its blur. A manual Smooth setting (dd-smooth, shared with the other games) always wins. */
+let autoLite=false;try{autoLite=sessionStorage.getItem('dg-lite')==='1';}catch(e){}
+const isSmooth=()=>{const v=ls.get('dd-smooth');return v==='1'?true:v==='0'?false:(RM.matches||autoLite||!!(navigator.hardwareConcurrency&&navigator.hardwareConcurrency<=4));};
+const liteSync=()=>{document.documentElement.classList.toggle('dg-lite',isSmooth());};liteSync();
+/* adaptive quality: many janky frames within 20 s (one-off heavy screen changes count little) -> smooth mode for the rest of the visit */
+(()=>{const P=window.PerformanceObserver;if(autoLite||RM.matches||!P||!(P.supportedEntryTypes||[]).includes('long-animation-frame'))return;const T=[];
+ const po=new P(l=>{if(document.hidden)return;for(const e of l.getEntries())if(e.startTime>5000&&e.blockingDuration>0)T.push([e.startTime,Math.min(40,e.blockingDuration)]);const now=performance.now();while(T.length&&T[0][0]<now-20000)T.shift();
+  if(T.reduce((s,x)=>s+x[1],0)>=280){po.disconnect();if(ls.get('dd-smooth')!=null)return;autoLite=true;try{sessionStorage.setItem('dg-lite','1');}catch(e){}liteSync();}});
+ try{po.observe({type:'long-animation-frame'});}catch(e){}})();
+addEventListener('storage',e=>{if(e.key==='dd-smooth')liteSync();});
 const esc=s=>String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 const f1=n=>Math.round(n*10)/10;
 const S=36;                                   // world px per hex radius
@@ -1370,7 +1399,7 @@ const MM=(()=>{const box=$('#mm'),cv=box.querySelector('canvas'),x=cv.getContext
  return {setup,draw};})();
 
 /* ---------- harbour dhonis: a small boat in the owner's colour sails between their harbours ---------- */
-const DH=(()=>{let boats=[];let last=0;
+const DH=(()=>{let boats=[];let last=0,raf=0,wake=0,sleepT=0;
  function islandCentre(isl){let x=0,y=0,n=0;G.map.hexes.forEach((h,i)=>{if(h.t!=='sea'&&h.isl===isl){const [a,b]=hxy(i);x+=a;y+=b;n++;}});return n?[x/n,y/n]:[0,0];}
  function rebuild(){const L=$('#L_dh');if(!L||!G){boats=[];return;}const per={};
   G.map.harb.forEach((hb,k)=>{const ed=E.GR.E[E.GR.he[hb.h][hb.e]];const b=[G.vb[ed.a],G.vb[ed.b]].find(x=>x);if(!b)return;const {mx,my,nx,ny}=harbPos(k);(per[b.p]=per[b.p]||[]).push({x:mx+nx*S*1.05,y:my+ny*S*1.05,nx,ny,isl:G.map.hexes[hb.h].isl});});
@@ -1378,15 +1407,22 @@ const DH=(()=>{let boats=[];let last=0;
   Object.keys(per).forEach(pk=>{const p=+pk,list=per[p];const c=E.HOP()?[0,0]:islandCentre(0);list.forEach(a=>{a.ang=Math.atan2(a.y-c[1],a.x-c[0]);a.r=Math.hypot(a.x-c[0],a.y-c[1]);});list.sort((a,b)=>a.ang-b.ang);
    const o=old[p];const b={p,c,pts:list,i:o&&o.i<list.length?o.i:0,u:o?o.u:0,wait:o?o.wait:1.5*Math.random(),x:list[0].x,y:list[0].y,h:0};boats.push(b);
    html+=`<g data-dh="${p}" transform="translate(${f1(list[0].x)} ${f1(list[0].y)})"><g transform="scale(.55)"><path d="M-22 0h-14" stroke="#fff" stroke-opacity=".55" stroke-width="2.2" stroke-linecap="round" stroke-dasharray="3 3"/>${boatPath(G.players[p].col)}</g></g>`;});
-  L.innerHTML=html;boats.forEach(b=>b.el=L.querySelector(`[data-dh="${b.p}"]`));pos(0);}
+  L.innerHTML=html;boats.forEach(b=>b.el=L.querySelector(`[data-dh="${b.p}"]`));pos(0);kick();}
  function leg(b,u){const A=b.pts[b.i];if(b.pts.length===1){const t=u*Math.PI*2,cx=A.x+A.nx*S*.55,cy=A.y+A.ny*S*.55,r=S*.5,a0=Math.atan2(A.y-cy,A.x-cx);return [cx+Math.cos(a0+t)*r,cy+Math.sin(a0+t)*r];}
   const B=b.pts[(b.i+1)%b.pts.length];let d=B.ang-A.ang;if(b.pts.length===2&&b.i===1)d=(d<=0?d+Math.PI*2:d);else if(d<=0)d+=Math.PI*2;if(b.pts.length===2&&b.i===0&&d>Math.PI){}
   const a=A.ang+d*u,r=A.r+(B.r-A.r)*u+Math.sin(u*Math.PI)*S*.35;return [b.c[0]+Math.cos(a)*r,b.c[1]+Math.sin(a)*r];}
  function legLen(b){if(b.pts.length===1)return Math.PI*S;const A=b.pts[b.i],B=b.pts[(b.i+1)%b.pts.length];let d=B.ang-A.ang;if(d<=0)d+=Math.PI*2;return d*(A.r+B.r)/2+S;}
  function pos(dt){boats.forEach(b=>{if(!b.el)return;if(dt>0){if(b.wait>0)b.wait-=dt;else{b.u+=dt*16/legLen(b);if(b.u>=1){b.u=0;b.i=(b.i+1)%b.pts.length;b.wait=1.6;}}}
-   const p=leg(b,b.u),q=leg(b,Math.min(1,b.u+.02));const hd=b.wait>0?b.h:Math.atan2(q[1]-p[1],q[0]-p[0])*180/Math.PI;b.h=hd;b.el.setAttribute('transform',`translate(${f1(p[0])} ${f1(p[1])}) rotate(${f1(hd)})`);});}
- function frame(t){requestAnimationFrame(frame);if(SCREEN!=='game'||document.hidden||RM.matches||!boats.length){last=t;return;}if(t-last<33)return;const dt=Math.min(.1,(t-last)/1000);last=t;pos(dt);}
- requestAnimationFrame(frame);return {rebuild};})();
+   const p=leg(b,b.u),q=leg(b,Math.min(1,b.u+.02));const hd=b.wait>0?b.h:Math.atan2(q[1]-p[1],q[0]-p[0])*180/Math.PI;b.h=hd;const tr=`translate(${f1(p[0])} ${f1(p[1])}) rotate(${f1(hd)})`;if(b.tr!==tr){b.tr=tr;b.el.setAttribute('transform',tr);}});}
+ /* the loop runs only while a boat is sailing; when every boat rests at a harbour it sleeps until the first one leaves.
+    It stops off the game screen, in a hidden tab or with reduced motion (woken again by rebuild / visibility). */
+ function kick(){if(wake){clearTimeout(wake);wake=0;const el=(performance.now()-sleepT)/1000;boats.forEach(b=>{if(b.wait>0)b.wait-=el;});}if(!raf&&boats.length)raf=requestAnimationFrame(frame);}
+ function frame(t){raf=0;if(SCREEN!=='game'||document.hidden||RM.matches||!boats.length){last=0;return;}
+  if(!last)last=t;if(t-last>=33){const dt=Math.min(.1,(t-last)/1000);last=t;pos(dt);}
+  const w=boats.reduce((m,b)=>Math.min(m,Math.max(0,b.wait)),Infinity);
+  if(w>.15){last=0;sleepT=performance.now();wake=setTimeout(kick,w*1000-60);}else raf=requestAnimationFrame(frame);}
+ document.addEventListener('visibilitychange',()=>{if(!document.hidden)kick();});
+ return {rebuild,kick};})();
 
 /* ================================================================ HUD */
 function renderPlayers(){const n=G.players.length,el=$('#pls');const cur=G.phase==='setup'?E.cur():G.step==='sbp'?E.sbpP():G.turn;
@@ -1530,7 +1566,7 @@ async function animate(evs){for(const ev of evs){switch(ev.t){
  case 'afk':toast(`${esc(G.players[ev.p].name)} is away. The computer plays this seat to the end.`,true);renderPlayers();break;
  case 'trade':{SND.trade();clearBanner();const a=ev.a,b=ev.b;toast(`${esc(nameOf(a))} ${rr(ev.give)} ⇄ ${rr(ev.get)} ${esc(nameOf(b))}`);react(a,'happy',1200);react(b,'happy',1200);renderPlayers();renderHand();if(SHEET==='trade'&&(a===ME||b===ME))renderTradeSheet();await sleep(350);break;}
  case 'bank':if(ev.p!==ME||AUTO)toast(`${esc(nameOf(ev.p))} ${verb(ev.p,'trade','trades')} ${ev.n} ${RNAME[ev.give]} with the ${ev.n===4?'bank':'harbour'} for ${RNAME[ev.get]}`);else SND.trade();renderHand();renderPlayers();if(SHEET==='trade')renderTradeSheet();break;
- case 'reveal':{SND.reveal();const f=$(`#L_fog [data-h="${ev.h}"]`);if(f){f.style.opacity='0';setTimeout(()=>drawFog(),1300);}drawTokens();const H=G.map.hexes[ev.h];
+ case 'reveal':{SND.reveal();GLR.boost(1800);const f=$(`#L_fog [data-h="${ev.h}"]`);if(f){f.style.opacity='0';setTimeout(()=>drawFog(),1300);}drawTokens();const H=G.map.hexes[ev.h];
   toast(`Discovered: ${isRes(H.t)?`<span class="rr">${swI(H.t)}</span> `:''}${RNAME[H.t]}${H.n?' '+H.n:''}${ev.r?` · ${esc(nameOf(ev.p))} ${verb(ev.p,'get','gets')} 1 ${RNAME[ev.r]}`:''}`);MM.draw();await sleep(300);break;}
  case 'disc':SND.award();react(ev.p,'laugh',1600);await bigmsg('Discovery!',`${esc(nameOf(ev.p))} settled a new island · +${E.discPts()} point${E.discPts()>1?'s':''}`,1300);renderPlayers();break;
  case 'turn':case 'setupturn':drawHi([]);if(ev.p===ME&&!AUTO){SND.turn();}renderAll();if(bigBoard()&&G.phase==='play'&&isBot(ev.p))focusPlayer(ev.p);break;
@@ -1553,6 +1589,8 @@ function openSheet(key,html,lock){SHEET=key;SHEETLOCK=!!lock;const s=$('#sheet')
 function closeSheet(force){if(SHEETLOCK&&!force)return;SHEET=null;SHEETLOCK=false;$('#sheet').hidden=true;$('#dim').hidden=true;$('#sheet').innerHTML='';}
 const X='<button class="x" type="button" data-close="1" aria-label="Close">'+IC.x+'</button>';
 $('#dim').addEventListener('click',()=>closeSheet());
+/* a sheet that covers (nearly) the whole board holds the water still until it closes; sized by a ResizeObserver, so no layout reads */
+if(window.ResizeObserver){const s=$('#sheet');new ResizeObserver(es=>{const h=es[es.length-1].contentRect.height;GLR.hold(!s.hidden&&h+40>=innerHeight*.8);}).observe(s);}
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){if($('.reveal')){$('.reveal').remove();return;}if(SEL&&SEL.cancel){endSel();return;}closeSheet();}});
 function costHTML(c,p){const h=p!=null?G.players[p].hand:null,out=[];RES.forEach(r=>{let have=h?h[r]:99;for(let i=0;i<(c[r]|0);i++){out.push(`<i style="background-image:${SW[r]}" class="${have>0?'':'miss'}" title="${RNAME[r]}"></i>`);have--;}});return `<div class="cost">${out.join('')}</div>`;}
 function needTxt(c){const h=G.players[ME].hand,m=[];RES.forEach(r=>{const k=(c[r]|0)-h[r];if(k>0)m.push(k+' '+RNAME[r]);});return m.length?'Need '+m.join(', '):'';}

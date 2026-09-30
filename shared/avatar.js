@@ -1104,7 +1104,14 @@ function build(c, o) {
   let s = shellOpen(c, o, crop || '0 0 100 100', size);
   s += d + (crop ? '<g>' : '<g clip-path="url(#§c)">');
   if (o.bg !== false && !(o.bust === false && !o.crop)) s += bgSVG(c.bg, !!crop) + '<circle cx="50" cy="42" r="36" fill="url(#§gl)"/>';
-  s += '<g class="dga-fig">' + (crop ? '<g>' : '<g transform="translate(50 47) scale(1.12) translate(-50 -47)">');
+  if (o.animate) {
+    /* animated: the figure sits in its own HTML layer (a <div> in a <foreignObject>, clipped by the same circle), so the
+       breathing is a plain CSS transform the compositor runs off the main thread; the background stays in the outer SVG */
+    const vbA = (crop || '0 0 100 100').split(/[\s,]+/);
+    s += '</g><foreignObject x="' + vbA[0] + '" y="' + vbA[1] + '" width="' + vbA[2] + '" height="' + vbA[3] + '"' + (crop ? '' : ' clip-path="url(#§c)"') + '>' +
+      '<div xmlns="http://www.w3.org/1999/xhtml" class="dga-fig"><svg xmlns="http://www.w3.org/2000/svg" viewBox="' + (crop || '0 0 100 100') + '" preserveAspectRatio="none"><g>';
+  } else s += '<g class="dga-fig">';
+  s += (crop ? '<g>' : '<g transform="translate(50 47) scale(1.12) translate(-50 -47)">');
   const O = OUTS[c.outfit] || OUTS.tee;
   const TX = m ? ' transform="translate(50 0) scale(1.15 1) translate(-50 0)"' : '';
   s += `<g${TX}>${outfitBack(X, c, O)}</g>`;
@@ -1154,7 +1161,7 @@ function build(c, o) {
     '<ellipse cx="81" cy="18.6" rx="5.4" ry="4.2" fill="#fff" stroke="' + INK + '" stroke-width=".6"/>' + circ(78.8, 18.8, 0.7, INK) + circ(81, 18.8, 0.7, INK) + circ(83.2, 18.8, 0.7, INK);
   else if (e === 'sleepy') xe = S3('M71.4 29.6h3.6l-3.6 4.4h3.6', '#5A6CB8', 1.2) + S3('M77 20.6h5l-5 6h5', '#5A6CB8', 1.5);
   if (xe) s += `<g transform="${T3}">${xe}</g>`;
-  s += '</g></g></g>';
+  s += o.animate ? '</g></g></svg></div></foreignObject>' : '</g></g></g>';
   if (o.ring && !crop) s += '<circle cx="50" cy="50" r="48.4" fill="none" stroke="' + (typeof o.ring === 'string' ? esc(o.ring) : '#fff') + '" stroke-width="3.2"/>';
   return s + '</svg>';
 }
@@ -1187,7 +1194,7 @@ function render(cfg, o) {
   if (small) return t;
   var id = 'dga' + (++SEQ).toString(36);
   t = t.replace(/§/g, id);
-  if (o.animate) t = t.replace('¤', idleVars());
+  if (o.animate) { t = t.replace('¤', idleVars()); idleKick(); }
   return t;
 }
 /* react(el, expression, ms=1600): briefly show an expression on an avatar that is already on the page, with a springy pop,
@@ -1241,25 +1248,102 @@ function save(cfg) {
 
   /* ---------------------------------------------------------------- base css + render */
   /* Idle life (render with {animate:true}): random blink / double blink, breathing, glances, a rare small smile.
-     Every avatar gets its own random timings (CSS variables on the <svg>). transform-only; all off under reduced motion. */
+     Same look and timings as v4.0, which ran all four as endless CSS animations on SVG parts. Those can't be composited,
+     so every avatar was restyled, laid out and repainted on every frame. Now:
+     - breathing moves the figure's own HTML layer (see build: <foreignObject><div class="dga-fig">), which the compositor
+       animates off the main thread; it pauses while the avatar is off screen (.dga-off);
+     - one shared scheduler (idleTick) plays each blink / glance / smile as a short one-shot, only for avatars on screen,
+       at most cfg.maxFx at a time. Between moves nothing on the main thread animates.
+     Every avatar still gets its own random timings. All off under reduced motion, in the games' smooth mode, or while the tab is hidden. */
   var BASE_CSS = '.dga-av{display:block;overflow:hidden}' +
-    '.dga-anim .dga-eyes{transform-box:fill-box;transform-origin:center;animation:var(--dga-bk,dga-blink) var(--dga-bd,5.2s) var(--dga-bo,0s) infinite}' +
-    '.dga-anim .dga-eyes.dga-closed{animation:none}' +
-    '.dga-anim .dga-iris{animation:dga-glance var(--dga-gl,9s) var(--dga-go,0s) infinite}.dga-anim .dga-irl{animation-name:dga-glancel}' +
-    '.dga-anim .dga-fig{animation:dga-breathe var(--dga-br,3.8s) ease-in-out var(--dga-bo2,0s) infinite}' +
-    '.dga-anim .dga-mouth{transform-box:fill-box;transform-origin:center;animation:dga-smile var(--dga-sm,14s) var(--dga-so,0s) infinite}' +
-    '@keyframes dga-blink{0%,91%,97%,100%{transform:scaleY(1)}94%{transform:scaleY(.1)}}' +
-    '@keyframes dga-blink2{0%,84%,88%,90.5%,94.5%,100%{transform:scaleY(1)}86%,92.5%{transform:scaleY(.1)}}' +
-    '@keyframes dga-glance{0%,56%,100%{transform:translate(0,0)}59%,68%{transform:translate(1.1px,0)}71%,80%{transform:translate(0,0)}83%,91%{transform:translate(-1.1px,-.2px)}94%{transform:translate(0,0)}}' +
-    '@keyframes dga-glancel{0%,56%,100%{transform:translate(0,0)}59%,68%{transform:translate(-1.1px,0)}71%,80%{transform:translate(0,0)}83%,91%{transform:translate(1.1px,-.2px)}94%{transform:translate(0,0)}}' +
+    '.dga-anim .dga-fig{width:100%;height:100%;animation:dga-breathe var(--dga-br,3.8s) ease-in-out var(--dga-bo2,0s) infinite}' +
+    '.dga-anim .dga-fig>svg{display:block;width:100%;height:100%;overflow:visible}.dga-off .dga-fig{animation-play-state:paused}.dga-calm .dga-fig{animation:none}' +
     '@keyframes dga-breathe{0%,100%{transform:translateY(0)}50%{transform:translateY(-.9px)}}' +
-    '@keyframes dga-smile{0%,84%,100%{transform:scale(1)}88%,95%{transform:scale(1.12,1.1)}}' +
+    '.dga-anim .dga-eyes,.dga-anim .dga-mouth{transform-box:fill-box;transform-origin:center}' +
+    '.dga-anim .dga-iris{transition:transform var(--dga-gt,.3s) ease}.dga-anim .dga-mouth{transition:transform var(--dga-st,.6s) ease}' +
+    '.dga-anim.dga-b1 .dga-eyes{animation:dga-blink var(--dga-bt,.31s) ease}.dga-anim.dga-b2 .dga-eyes{animation:dga-blink2 var(--dga-bt,.55s) ease}' +
+    '.dga-anim .dga-eyes.dga-closed{animation:none}' +
+    '.dga-anim.dga-gr .dga-iris{transform:translate(1.1px,0)}.dga-anim.dga-gr .dga-irl{transform:translate(-1.1px,0)}' +
+    '.dga-anim.dga-gl .dga-iris{transform:translate(-1.1px,-.2px)}.dga-anim.dga-gl .dga-irl{transform:translate(1.1px,-.2px)}' +
+    '.dga-anim.dga-sm .dga-mouth{transform:scale(1.12,1.1)}' +
+    '@keyframes dga-blink{0%,100%{transform:scaleY(1)}50%{transform:scaleY(.1)}}' +
+    '@keyframes dga-blink2{0%,38.1%,61.9%,100%{transform:scaleY(1)}19.05%,80.95%{transform:scaleY(.1)}}' +
     '.dga-react{transform-origin:50% 50%;animation:dga-rpop .55s cubic-bezier(.34,1.56,.64,1)}@keyframes dga-rpop{0%{transform:scale(1)}40%{transform:scale(1.08)}100%{transform:scale(1)}}' +
-    '@media (prefers-reduced-motion:reduce){.dga-anim .dga-eyes,.dga-anim .dga-iris,.dga-anim .dga-fig,.dga-anim .dga-mouth,.dga-react{animation:none}}';
-  function idleVars() {
-    var R = Math.random, f = function (n) { return n.toFixed(2) + 's'; }, bd = 3.6 + R() * 3.4, gl = 7 + R() * 6, sm = 11 + R() * 10;
-    return '--dga-bk:' + (R() < 0.3 ? 'dga-blink2' : 'dga-blink') + ';--dga-bd:' + f(bd) + ';--dga-bo:' + f(-R() * bd) + ';--dga-br:' + f(3.2 + R() * 1.6) + ';--dga-bo2:' + f(-R() * 4) +
-      ';--dga-gl:' + f(gl) + ';--dga-go:' + f(-R() * gl) + ';--dga-sm:' + f(sm) + ';--dga-so:' + f(-R() * sm);
+    '@media (prefers-reduced-motion:reduce){.dga-anim .dga-eyes,.dga-anim .dga-iris,.dga-anim .dga-fig,.dga-anim .dga-mouth,.dga-react{animation:none;transition:none}}';
+  function idleVars() { var R = Math.random; return '--dga-br:' + (3.2 + R() * 1.6).toFixed(2) + 's;--dga-bo2:' + (-R() * 4).toFixed(2) + 's'; }
+  /* ---- idle scheduler: one timer for every animated avatar on the page */
+  var IDLE = { list: [], io: null, t: 0, rm: null, busy: [], cfg: { ms: 200, maxFx: 2, moves: true, lead: '.on,.meav,.dga-root,.dga-lead' } };
+  function idleKick() { if (!IDLE.t && typeof document !== 'undefined' && root.setTimeout) IDLE.t = setTimeout(idleTick, 50); }
+  function idleState(el, now) {
+    var R = Math.random, bd = 3.6 + R() * 3.4, gl = 7 + R() * 6, sm = 11 + R() * 10;
+    /* same random ranges as v4.0; the first move lands at a random point of its cycle, like the old negative delays */
+    return { vis: !IDLE.io, on: {}, b2: R() < 0.3, bd: bd, gl: gl, sm: sm, q: [],
+      nb: now + R() * bd * 1000, ng: now + R() * gl * 1000, ns: now + R() * sm * 1000, eyes: el.querySelector('.dga-eyes') };
+  }
+  function idleAt(s, t, fn) { var i = s.q.length; while (i && s.q[i - 1][0] > t) i--; s.q.splice(i, 0, [t, fn]); }
+  function fxFree(now, ms) {
+    IDLE.busy = IDLE.busy.filter(function (t) { return t > now; });
+    if (!IDLE.cfg.moves || IDLE.busy.length >= IDLE.cfg.maxFx) return false;
+    IDLE.busy.push(now + ms); return true;
+  }
+  function idleTick() {
+    IDLE.t = 0;
+    var now = Date.now(), found = document.querySelectorAll('svg.dga-anim'), i, el, s;
+    if (IDLE.rm == null) IDLE.rm = root.matchMedia ? root.matchMedia('(prefers-reduced-motion: reduce)') : false;
+    if (IDLE.io == null) IDLE.io = 'IntersectionObserver' in root ? new IntersectionObserver(function (es) { es.forEach(function (e) { if (e.target.__dgi) { e.target.__dgi.vis = e.isIntersecting; e.target.classList.toggle('dga-off', !e.isIntersecting); } }); }) : false;
+    for (i = 0; i < found.length; i++) { el = found[i]; if (!el.__dgi) { el.__dgi = idleState(el, now); IDLE.list.push(el); if (IDLE.io) IDLE.io.observe(el); } }
+    IDLE.list = IDLE.list.filter(function (e) { if (e.isConnected) return true; if (IDLE.io) IDLE.io.unobserve(e); return false; });
+    if (!IDLE.list.length) return; /* nothing to animate: sleep until the next render({animate:true}) */
+    if ((IDLE.rm && IDLE.rm.matches) || document.hidden) { IDLE.t = setTimeout(idleTick, 1000); return; }
+    /* lead avatars get the full idle life: yours (.meav), the one whose turn it is (the games mark that seat .on) and the
+       builder preview. When a lead is on screen, the other avatars stay calm: no breathing, glances or smiles, and they
+       blink half as often. With no lead on screen (a lobby, a list), every avatar is lead. */
+    var lead = 0;
+    for (i = 0; i < IDLE.list.length; i++) { el = IDLE.list[i]; el.__dgi.lead = !!(el.closest && el.closest(IDLE.cfg.lead)); if (el.__dgi.lead && el.__dgi.vis) lead++; }
+    for (i = 0; i < IDLE.list.length; i++) {
+      el = IDLE.list[i]; s = el.__dgi;
+      while (s.q.length && s.q[0][0] <= now) s.q.shift()[1]();
+      var calm = lead > 0 && !s.lead;
+      if (calm !== !!s.calm) { s.calm = calm; el.classList.toggle('dga-calm', calm); }
+      if (!s.vis) continue;
+      /* the games' smooth mode (.dg-lite / .smooth) switches the idle life off, like its CSS did for the old animations */
+      if (el.closest && el.closest('.dg-lite,.smooth')) continue;
+      /* each kind of move (blink, glance, smile) runs one at a time per avatar; different kinds may overlap, as before */
+      if (!s.on.b && now >= s.nb) {
+        var bt = s.bd * (s.b2 ? 0.105 : 0.06);
+        if (s.eyes && s.eyes.classList.contains('dga-closed')) s.nb = now + s.bd * 1000;
+        else if (fxFree(now, bt * 1000)) {
+          el.style.setProperty('--dga-bt', bt.toFixed(2) + 's'); el.classList.add(s.b2 ? 'dga-b2' : 'dga-b1'); s.on.b = 1;
+          idleAt(s, now + bt * 1000 + 40, (function (e) { return function () { e.classList.remove('dga-b1', 'dga-b2'); e.__dgi.on.b = 0; }; })(el));
+          s.nb = now + s.bd * (calm ? 2000 : 1000);
+        } else s.nb = now + 300 + Math.random() * 700;
+      }
+      if (!calm && !s.on.g && now >= s.ng) {
+        var gt = s.gl * 0.03, G = s.gl * 1000;
+        if (fxFree(now, gt * 1000)) {
+          (function (e, t0) {
+            e.style.setProperty('--dga-gt', gt.toFixed(2) + 's'); e.classList.add('dga-gr'); s.on.g = 1;
+            idleAt(s, t0 + G * 0.12, function () { e.classList.remove('dga-gr'); });
+            idleAt(s, t0 + G * 0.24, function () { e.classList.add('dga-gl'); });
+            idleAt(s, t0 + G * 0.35, function () { e.classList.remove('dga-gl'); });
+            idleAt(s, t0 + G * 0.38, function () { e.__dgi.on.g = 0; });
+          })(el, now);
+          s.ng = now + G;
+        } else s.ng = now + 300 + Math.random() * 700;
+      }
+      if (!calm && !s.on.s && now >= s.ns) {
+        var S = s.sm * 1000;
+        if (fxFree(now, S * 0.04)) {
+          (function (e, t0, sm) {
+            e.style.setProperty('--dga-st', (sm * 0.04).toFixed(2) + 's'); e.classList.add('dga-sm'); s.on.s = 1;
+            idleAt(s, t0 + S * 0.11, function () { e.style.setProperty('--dga-st', (sm * 0.05).toFixed(2) + 's'); e.classList.remove('dga-sm'); });
+            idleAt(s, t0 + S * 0.16, function () { e.__dgi.on.s = 0; });
+          })(el, now, s.sm);
+          s.ns = now + S;
+        } else s.ns = now + 300 + Math.random() * 700;
+      }
+    }
+    IDLE.t = setTimeout(idleTick, IDLE.cfg.ms);
   }
   var baseDone = false;
   function injectCSS(id, css) {
@@ -1645,6 +1729,7 @@ function save(cfg) {
     looks: LOOKS,
     expressions: ['happy', 'laugh', 'wink', 'shocked', 'smug', 'thinking', 'sad', 'angry', 'sleepy', 'blink'],
     react: react,
+    _idle: IDLE,
     item: function (id) { return BYID[id] || (id === 'bg.night' ? BYID['bg.stars'] : null); },
     normalize: norm,
     render: render,

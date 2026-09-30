@@ -186,7 +186,7 @@ button:disabled{cursor:default}
 .ticker span{animation:tin .5s var(--out)}
 @keyframes tin{from{opacity:0;transform:translateY(6px)}}
 .tokens{position:absolute;inset:0;pointer-events:none;z-index:6}
-.tok{position:absolute;left:0;top:0;width:calc(var(--B)*.056);height:calc(var(--B)*.056);margin:calc(var(--B)*-.028) 0 0 calc(var(--B)*-.028);transition:left .17s var(--out),top .17s var(--out)}
+.tok{position:absolute;left:0;top:0;width:calc(var(--B)*.056);height:calc(var(--B)*.056);margin:calc(var(--B)*-.028) 0 0 calc(var(--B)*-.028);transition:transform .17s var(--out)}
 .tok i{display:grid;place-items:center;width:100%;height:100%;border-radius:50%;background:#fff;box-shadow:0 0 0 calc(var(--B)*0.0067) var(--c),0 3px 5px rgba(0,0,0,.45)}
 .tok svg{width:78%;height:78%}
 .tok.hop i{animation:hop .17s ease-out}
@@ -578,6 +578,8 @@ button:disabled{cursor:default}
  *,*:before,*:after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
  .sun:before,.sun:after,.lagoon i{animation:none!important}
 }
+/* smooth mode (dg-lite): the caustic light and the home board hold still */
+.dg-lite .sun:before,.dg-lite .sun:after,.dg-lite .lagoon i,.dg-lite .tilt .board{animation:none!important}
 /* online (shared/net.js): lagoon night, gold buttons */
 :root{--dgn-bg:#08323D;--dgn-bg2:#0D4350;--dgn-fg:#FFF8EA;--dgn-muted:rgba(255,248,234,.7);--dgn-line:rgba(242,212,155,.22);--dgn-soft:rgba(255,255,255,.09);
  --dgn-acc:#F0BE4E;--dgn-acc-fg:#3A2305;--dgn-good:#2FA66A;--dgn-font:'Sora',system-ui,sans-serif;--dgn-talk:rgba(255,224,138,.95);
@@ -652,7 +654,7 @@ button:disabled{cursor:default}
 <div id="cardpopWrap"></div>
 <div id="drawWrap"></div>
 <div id="toasts" aria-live="polite"></div>
-<script src="../shared/avatar.js?v=7"></script>
+<script src="../shared/avatar.js?v=8"></script>
 <script src="../shared/sponsors.js?v=5"></script>
 <script src="../shared/net.js?v=3"></script>
 
@@ -1386,13 +1388,34 @@ LAYOUTS.square.deco=function(view,i,w,col,ini,tag){const c=view.cells[i];c.class
  let rt=c.querySelector('.rt');
  if(w&&tag){if(!rt){rt=document.createElement('span');rt.className='rt';rt.setAttribute('aria-hidden','true');const pr=c.querySelector('.pr');if(pr)pr.after(rt);else c.appendChild(rt);}
   const k=[tag.t,tag.c,tag.fg,col].join('|');c.classList.add('hasrt');
-  if(rt.dataset.k!==k){rt.dataset.k=k;rt.className='rt'+(tag.c?' '+tag.c:'');rt.innerHTML=(tag.mvr?'<small>MVR</small>':'')+esc(tag.t)+(tag.ic&&ICON[tag.ic]?ICON[tag.ic]:'');rt.style.setProperty('--rc',tag.fg||'#fff');fitTag(c);
-   if(tag.pulse&&!RM.matches){rt.classList.remove('bump');void rt.offsetWidth;rt.classList.add('bump');}}}
+  if(rt.dataset.k!==k){rt.dataset.k=k;rt.className='rt'+(tag.c?' '+tag.c:'');rt.innerHTML=(tag.mvr?'<small>MVR</small>':'')+esc(tag.t)+(tag.ic&&ICON[tag.ic]?ICON[tag.ic]:'');rt.style.setProperty('--rc',tag.fg||'#fff');fitTagSoon(c);
+   if(tag.pulse&&!RM.matches){rt.classList.remove('bump');requestAnimationFrame(()=>requestAnimationFrame(()=>rt.classList.add('bump')));}}}
  else{if(rt)rt.remove();c.classList.remove('hasrt');}};
 /* side margin every label keeps: clear of the owner's coloured frame (drawn at B*0.006) whether or not the space is owned yet */
 const EDGE=c=>Math.max(4,2*(c.parentElement.clientWidth*0.006+1));
 /* shrink a rent tag that is wider than its space (4-digit rents on narrow phone tiles) */
-function fitTag(c){const rt=c&&c.querySelector('.rt');if(!rt)return;rt.style.removeProperty('--rf');const cs=getComputedStyle(c),avail=c.clientWidth-parseFloat(cs.paddingLeft)-parseFloat(cs.paddingRight)-EDGE(c),w=rt.offsetWidth;if(avail>0&&w>avail)rt.style.setProperty('--rf',(avail/w*.97).toFixed(3));}
+/* the width a label / tag may use on its space (a layout read) */
+const AVAIL=c=>{const cs=getComputedStyle(c);return c.clientWidth-parseFloat(cs.paddingLeft)-parseFloat(cs.paddingRight)-EDGE(c);};
+/* style writes that skip no-op changes (a no-op write still makes the browser restyle) */
+const setVar=(el,k,v)=>{if(v==null){if(el.style.getPropertyValue(k))el.style.removeProperty(k);}else if(el.style.getPropertyValue(k)!==v)el.style.setProperty(k,v);};
+/* fit many rent tags at once: all writes, one layout read, all writes (no read/write ping-pong per space) */
+function fitTags(cells){const rts=cells.map(c=>c&&c.isConnected?c.querySelector('.rt'):null);
+ rts.forEach(rt=>{if(rt)setVar(rt,'--rf',null);});
+ const m=cells.map((c,i)=>rts[i]?[AVAIL(c),rts[i].offsetWidth]:null);
+ m.forEach((v,i)=>{if(v&&v[0]>0&&v[1]>v[0])setVar(rts[i],'--rf',(v[0]/v[1]*.97).toFixed(3));});}
+function fitTag(c){fitTags([c]);}
+/* deco() changes tags one space at a time: queue them and fit the batch just before the next frame */
+/* tokens move with a compositor-friendly transform (the old left/top transition re-laid out the board every frame).
+   x, y are % of the board, like the old left/top; --B is the board size. */
+function tokAt(t,x,y){const k=x.toFixed(3)+','+y.toFixed(3);if(t.__xy===k)return;t.__xy=k;t.style.transform=`translate(calc(var(--B) * ${(x/100).toFixed(5)}),calc(var(--B) * ${(y/100).toFixed(5)}))`;}
+/* restart a token's hop without forcing a layout: rewind it if it is still running, else (re)add the class,
+   which is dropped again when the hop ends */
+function hopTok(t){if(!t.classList.contains('hop')){t.classList.add('hop');return;}let n=0;
+ try{t.getAnimations({subtree:true}).forEach(a=>{if(/^(hop|pkhop|pkshade)$/.test(a.animationName||'')){a.currentTime=0;n++;}});}catch(e){}
+ if(!n){t.classList.remove('hop');requestAnimationFrame(()=>requestAnimationFrame(()=>t.classList.add('hop')));}}
+document.addEventListener('animationend',e=>{if(e.animationName==='hop'||e.animationName==='pkhop'){const t=e.target.closest&&e.target.closest('.tok');if(t)t.classList.remove('hop');}});
+const TAGQ=new Set();let TAGR=0;
+function fitTagSoon(c){TAGQ.add(c);if(!TAGR)TAGR=requestAnimationFrame(()=>{TAGR=0;const a=[...TAGQ];TAGQ.clear();fitTags(a);});}
 
 let LAYOUT=LAYOUTS.square;
 
@@ -1401,21 +1424,35 @@ let LAYOUT=LAYOUTS.square;
       label font: Sora 800, -0.02em tracking);
    2) labels share ONE size per kind (corners / edge spaces) so the board reads evenly: the size that
       3 in 4 labels can take. Only the few longest names go below it, each just enough to fit;
-   3) a final DOM check shrinks a label only if it really overflows its space. */
+   3) a final DOM check shrinks a label only if it really overflows its space.
+   Reads and writes are batched (a handful of layouts per fit instead of one or more per space), only overflowing labels
+   go through the shrink loop, and FIT(view, cells) re-fits just those spaces (ownership changes) with the shared sizes
+   from the last full fit. */
 const FIT=(()=>{const cx=document.createElement('canvas').getContext('2d');const cache={};
  function w(word){if(cache[word]==null){cx.font='800 100px Sora, system-ui, sans-serif';cache[word]=(cx.measureText(word).width-2*[...word].length)/100*1.03;}return cache[word];}
  const q25=a=>{const s=[...a].sort((x,y)=>x-y);return s[Math.floor((s.length-1)*.25)];};
  const over=(c,nm)=>c.scrollHeight>c.clientHeight+.5||nm.scrollWidth>nm.clientWidth+.5;
- return function(view){const B=view.B();if(!B)return;view.el.style.setProperty('--T',Math.round(B*.34)+'px');view.el.style.setProperty('--T2',Math.round(B*.34*1.37)+'px');
+ /* the unbreakable pieces: split at <br> and ordinary spaces only (a no-break space keeps "Bus Stop" together) */
+ const widest=nm=>{const k=nm.textContent;if(nm.__wk!==k){nm.__wk=k;const words=[...nm.childNodes].filter(n=>n.nodeType===3).map(n=>n.textContent).join(' ').split(/[ \n\t]+/).filter(Boolean);nm.__w=Math.max(...words.map(w));}return nm.__w;};
+ const px=v=>v.toFixed(2)+'px';
+ function place(L){/* L: [{c,nm,fs}] -> write sizes, fit tags, then shrink only the labels that still overflow */
+  L.forEach(o=>setVar(o.nm,'--fs',px(o.fs)));
+  const cells=L.map(o=>o.c);cells.forEach(c=>TAGQ.delete(c));fitTags(cells);
+  let bad=L.filter(o=>over(o.c,o.nm));
+  for(let k=0;k<10&&bad.length;k++){bad.forEach(o=>{o.fs*=0.95;setVar(o.nm,'--fs',px(o.fs));});bad=bad.filter(o=>over(o.c,o.nm));}}
+ return function(view,only){const B=view.B();if(!B)return;
+  const st=view.__fit;
+  if(only&&st&&st.B===B){/* re-fit just these spaces, keeping the shared sizes */
+   const L=[];only.forEach(c=>{const nm=c&&c.querySelector('.nm');if(nm){setVar(nm,'--fs',null);L.push({c,nm,corner:c.classList.contains('corner')});}});
+   L.forEach(o=>{o.fit=Math.min(o.corner?B*0.023:B*0.0215,AVAIL(o.c)/Math.max(1,widest(o.nm)));o.fs=Math.min(st.common[o.corner?1:0],o.fit);});
+   place(L);return;}
+  setVar(view.el,'--T',Math.round(B*.34)+'px');setVar(view.el,'--T2',Math.round(B*.34*1.37)+'px');
   const L=[];
-  view.cells.forEach(c=>{const nm=c.querySelector('.nm');if(!nm)return;const corner=c.classList.contains('corner');
-   nm.style.removeProperty('--fs');const cs=getComputedStyle(c),avail=c.clientWidth-parseFloat(cs.paddingLeft)-parseFloat(cs.paddingRight)-EDGE(c);
-   /* the unbreakable pieces: split at <br> and ordinary spaces only (a no-break space keeps "Bus Stop" together) */
-   const words=[...nm.childNodes].filter(n=>n.nodeType===3).map(n=>n.textContent).join(' ').split(/[ \n\t]+/).filter(Boolean);const widest=Math.max(...words.map(w));
-   L.push({c,nm,corner,fit:Math.min(corner?B*0.023:B*0.0215,avail/Math.max(1,widest))});});
-  for(const corner of [true,false]){const g=L.filter(o=>o.corner===corner);if(!g.length)continue;const common=q25(g.map(o=>o.fit));
-   g.forEach(o=>{let fs=Math.min(common,o.fit);o.nm.style.setProperty('--fs',fs.toFixed(2)+'px');fitTag(o.c);
-    for(let k=0;k<10&&over(o.c,o.nm);k++){fs*=0.95;o.nm.style.setProperty('--fs',fs.toFixed(2)+'px');}});}};})();
+  view.cells.forEach(c=>{const nm=c.querySelector('.nm');if(!nm)return;setVar(nm,'--fs',null);L.push({c,nm,corner:c.classList.contains('corner')});});
+  L.forEach(o=>{o.fit=Math.min(o.corner?B*0.023:B*0.0215,AVAIL(o.c)/Math.max(1,widest(o.nm)));});/* one layout, then pure reads */
+  const common=[0,0];
+  for(const corner of [true,false]){const g=L.filter(o=>o.corner===corner);if(!g.length)continue;const cm=q25(g.map(o=>o.fit));common[corner?1:0]=cm;g.forEach(o=>{o.fs=Math.min(cm,o.fit);});}
+  view.__fit={B,common};place(L);};})();
 </script>
 
 <script>
@@ -1431,8 +1468,19 @@ const ls={get(k){try{return localStorage.getItem(k);}catch(e){return null;}},set
 const esc=s=>String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 const fmt=n=>'MVR '+Math.round(n).toLocaleString('en-US');/* no-break space: an amount never splits across lines */
 const sleep=ms=>(FAST||ms<=0)?Promise.resolve():new Promise(r=>setTimeout(r,ms));
-const macro=f=>{const c=new MessageChannel();c.port1.onmessage=()=>{c.port1.close();f();};c.port2.postMessage(0);};
+const macro=f=>{const c=new MessageChannel();c.port1.onmessage=()=>{c.port1.onmessage=null;c.port1.close();c.port2.close();f();};c.port2.postMessage(0);};
 let G=null,ME=0,SCREEN='home',WATCH=false;
+/* smooth mode, as in the card games: on slower phones (or switched on by itself when frames keep dropping) the drifting
+   caustic light holds still. A manual Smooth setting (dd-smooth, shared with the other games) always wins. */
+let autoLite=false;try{autoLite=sessionStorage.getItem('dg-lite')==='1';}catch(e){}
+const isSmooth=()=>{const v=ls.get('dd-smooth');return v==='1'?true:v==='0'?false:(RM.matches||autoLite||!!(navigator.hardwareConcurrency&&navigator.hardwareConcurrency<=4));};
+const liteSync=()=>{document.documentElement.classList.toggle('dg-lite',isSmooth());};liteSync();
+/* adaptive quality: many janky frames within 20 s (one-off heavy screen changes count little) -> smooth mode for the rest of the visit */
+(()=>{const P=window.PerformanceObserver;if(autoLite||RM.matches||!P||!(P.supportedEntryTypes||[]).includes('long-animation-frame'))return;const T=[];
+ const po=new P(l=>{if(document.hidden)return;for(const e of l.getEntries())if(e.startTime>5000&&e.blockingDuration>0)T.push([e.startTime,Math.min(40,e.blockingDuration)]);const now=performance.now();while(T.length&&T[0][0]<now-20000)T.shift();
+  if(T.reduce((s,x)=>s+x[1],0)>=280){po.disconnect();if(ls.get('dd-smooth')!=null)return;autoLite=true;try{sessionStorage.setItem('dg-lite','1');}catch(e){}liteSync();}});
+ try{po.observe({type:'long-animation-frame'});}catch(e){}})();
+addEventListener('storage',e=>{if(e.key==='dd-smooth')liteSync();});
 let speedPref=ls.get('bv-speed')==='fast';
 function UI_SPEED(){return FAST?0.02:WATCH?0.35:speedPref?0.5:GUIDE.on?1.35:1;}
 /* online: NET (shared/net.js); ONLINE is true at an online table. A spectator has ME = -1. */
@@ -1601,7 +1649,7 @@ let BV=null;const VIEW={pos:[],cash:[]};
 const PK=(()=>{const BASE='pieces/',S=(window.devicePixelRatio||1)>1.2?184:92,ALIAS={whaleshark:'conch'},img={},cache={};
  const s2l=v=>{v/=255;return v<=.04045?v/12.92:Math.pow((v+.055)/1.055,2.4)},l2s=v=>{v=Math.min(Math.max(v,0),1);return v<=.0031308?12.92*v:1.055*Math.pow(v,1/2.4)-.055};
  const aces=x=>Math.min(Math.max((x*(2.51*x+.03))/(x*(2.43*x+.59)+.14),0),1),lin=h=>[1,3,5].map(i=>s2l(parseInt(String(h).slice(i,i+2),16)||136));
- const load=k=>img[k]||(img[k]=new Promise(r=>{const im=new Image();im.onload=()=>r(im);im.onerror=()=>r(null);im.src=BASE+k+'.webp';}));
+ const load=k=>img[k]||(img[k]=new Promise(r=>{const im=new Image();/* drop the handlers once settled: the cached Image kept them (2 live listeners per piece image, forever) */im.onload=()=>{im.onload=im.onerror=null;r(im);};im.onerror=()=>{im.onload=im.onerror=null;r(null);};im.src=BASE+k+'.webp';}));
  const fig=k=>ALIAS[k]||k;
  function comp(f,col){const key=f+'|'+col;if(cache[key])return cache[key].p;const c={url:null,done:false};cache[key]=c;
   c.p=Promise.all([load(`${f}_enamel_${S}_b`),load(`${f}_enamel_${S}_t`),load(`${f}_${S}_s`)]).then(([b,t,s])=>{
@@ -1627,9 +1675,9 @@ function buildBoard(){const cam=$('#bcam');cam.innerHTML='';BV=LAYOUT.build(cam)
 function tokXY(i){const p=G.players[i],pos=VIEW.pos[i],jailed=pos===JAIL&&p.jail;const b=LAYOUT.pos(pos,{jailed});
  const same=G.players.map((_,j)=>j).filter(j=>!G.players[j].out&&VIEW.pos[j]===pos&&(pos!==JAIL||!!(G.players[j].jail)===!!jailed));
  const n=same.length,k=same.indexOf(i);if(n<=1)return b;const a=Math.PI*2*k/n-Math.PI/2,r=n<=2?1.7:n===3?2.1:2.7;return {x:b.x+Math.cos(a)*r,y:b.y+Math.sin(a)*r};}
-function placeTokens(hopP){if(!BV)return;BV.toks.forEach((t,i)=>{const p=G.players[i];t.hidden=p.out;const xy=tokXY(i);t.style.left=xy.x+'%';t.style.top=xy.y+'%';
+function placeTokens(hopP){if(!BV)return;BV.toks.forEach((t,i)=>{const p=G.players[i];t.hidden=p.out;const xy=tokXY(i);tokAt(t,xy.x,xy.y);
  t.classList.toggle('on',i===G.turn&&!G.over);t.classList.toggle('jailed',!!p.jail&&VIEW.pos[i]===JAIL);
- if(i===hopP){t.classList.remove('hop');void t.offsetWidth;t.classList.add('hop');}});}
+ if(i===hopP)hopTok(t);});}
 function deco(view,i,w,col,ini,tag){if(view.deco)view.deco(i,w,col,ini,tag);else if(view.layout.deco)view.layout.deco(view,i,w,col,ini,tag);}
 const initial=i=>(i===ME?'Y':(G.players[i].name||'?')[0]).toUpperCase();
 /* text colour that stays readable on a player colour */
@@ -1640,9 +1688,9 @@ function rentTag(sp){const w=G.own[sp];if(!w)return null;const s=SP[sp],col=G.pl
  const amt=E.rentOf(sp,7),full=s.k==='p'&&!w.h&&E.ownsAll(w.o,s.g);
  return {t:amt.toLocaleString('en-US'),mvr:1,c:s.k==='p'&&w.h===5?'rs':full?'x2':'',fg:s.k==='p'&&w.h===5?'#4A3308':onCol(col),say:`rent ${fmt(amt)}${full?' (whole colour group, doubled)':''}`};}
 let TAGK={};
-function decorate(){if(!BV)return;let ch=false;OWNABLE.forEach(i=>{const c=BV.cells[i],w=G.own[i],tag=w?rentTag(i):null;const k=tag?tag.t+tag.c:'';if(tag&&TAGK[i]&&TAGK[i]!==k)tag.pulse=1;if(TAGK[i]!==k)ch=true;TAGK[i]=k;
+function decorate(){if(!BV)return;const ch=[];OWNABLE.forEach(i=>{const c=BV.cells[i],w=G.own[i],tag=w?rentTag(i):null;const k=tag?tag.t+tag.c:'';if(tag&&TAGK[i]&&TAGK[i]!==k)tag.pulse=1;if(TAGK[i]!==k)ch.push(c);TAGK[i]=k;
  deco(BV,i,w,w?G.players[w.o].col:null,w?initial(w.o):'',tag);
- c.setAttribute('aria-label',SP[i].name+(w?`, owned by ${nameOf(w.o)}`+(w.h?`, ${w.h===5?'resort':w.h+' guesthouse'+(w.h>1?'s':'')}`:'')+', '+tag.say:', for sale'));});if(ch)FIT(BV);}
+ c.setAttribute('aria-label',SP[i].name+(w?`, owned by ${nameOf(w.o)}`+(w.h?`, ${w.h===5?'resort':w.h+' guesthouse'+(w.h>1?'s':'')}`:'')+', '+tag.say:', for sale'));});if(ch.length)FIT(BV,ch);}
 function flashCell(i){if(!BV)return;if(BV.flash)return BV.flash(i);const c=BV.cells[i];c.classList.remove('hit');void c.offsetWidth;c.classList.add('hit');}
 const human=s=>String(s).replace(/([a-z,] )You\b/g,'$1you').replace(/\bYou is\b/g,'You are').replace(/\bYou was\b/g,'You were').replace(/\bYou has\b/g,'You have').replace(/\byou is\b/g,'you are');
 function ticker(s){if(!BV)return;BV.ticker.innerHTML=`<span>${esc(human(s))}</span>`;}
@@ -2297,7 +2345,7 @@ function showHome(){SCREEN='home';GUIDE.hide();clearBanner();closeDraw(true);$('
  $$('.modes button').forEach(b=>b.setAttribute('aria-checked',b.dataset.mode===MODE));
  if(!HOMEBV){HOMEBV=LAYOUT.build($('#tilt'));const demo={27:[0,5],26:[0,2],12:[1,0],13:[1,1],5:[2,3],6:[2,0],17:[3,0]};
   Object.entries(demo).forEach(([i,[o,h]])=>deco(HOMEBV,+i,{o,h,m:false},PCOL[o],'YIMH'[o]));
-  HOMEBV.tokens.innerHTML=[['dhoni',13,0],['turtle',17,1],['manta',27,2],['seaplane',7,3]].map(([t,i,k])=>tokHTML(t,PCOL[k])).join('');$$('.tok',HOMEBV.tokens).forEach((e,j)=>{const p=LAYOUT.pos([13,17,27,7][j]);e.style.left=p.x+'%';e.style.top=p.y+'%';});}
+  HOMEBV.tokens.innerHTML=[['dhoni',13,0],['turtle',17,1],['manta',27,2],['seaplane',7,3]].map(([t,i,k])=>tokHTML(t,PCOL[k])).join('');$$('.tok',HOMEBV.tokens).forEach((e,j)=>{const p=LAYOUT.pos([13,17,27,7][j]);tokAt(e,p.x,p.y);});}
  homeFit();TZ.start();}
 function homeFit(){const t=$('#tilt');if(!t||SCREEN!=='home')return;const hb=Math.max(150,Math.min(innerWidth*0.8,t.clientHeight*(innerHeight<640?1.05:1.2),460));t.style.setProperty('--hb',hb+'px');if(HOMEBV)FIT(HOMEBV);TZ.refit();}
 
@@ -2367,7 +2415,7 @@ const TZ=(()=>{
  function placeToks(hop){const by={};S.pos.forEach((p,k)=>{const key=p+(S.jail[k]?'j':'');(by[key]=by[key]||[]).push(k);});
   toks.forEach((t,k)=>{const b=LAYOUT.pos(S.pos[k],{jailed:!!S.jail[k]}),g=by[S.pos[k]+(S.jail[k]?'j':'')],n=g.length,j=g.indexOf(k);let x=b.x,y=b.y;
    if(n>1){const a=Math.PI*2*j/n-Math.PI/2,r=n<=2?1.7:2.1;x+=Math.cos(a)*r;y+=Math.sin(a)*r;}
-   t.style.left=x+'%';t.style.top=y+'%';t.classList.toggle('jailed',!!S.jail[k]);if(k===hop){t.classList.remove('hop');void t.offsetWidth;t.classList.add('hop');}});}
+   tokAt(t,x,y);t.classList.toggle('jailed',!!S.jail[k]);if(k===hop)hopTok(t);});}
  function setState(st){OWNABLE.forEach(i=>deco(HOMEBV,i,null));Object.entries(st.own).forEach(([i,[o,h]])=>own(+i,o,h));
   HOMEBV.tokens.innerHTML=CAST.map(c=>tokHTML(c.tok,c.c)).join('');toks=$$('.tok',HOMEBV.tokens);
   S.pos=st.pos.slice();S.jail=(st.jail||[0,0,0,0]).slice();placeToks();FIT(HOMEBV);}
