@@ -480,6 +480,46 @@ body.intro .resume,body.intro .foot{animation:handUp 0.55s cubic-bezier(.3,1.2,.
 .nav svg{transition:transform .18s ease}
 .nav a:active svg,.nav button:active svg{transform:scale(.86)}
 @media (prefers-reduced-motion:reduce){.nav .nav-ind,.nav svg{transition:none}}
+
+/* ===== the phone app (APP_FIT in build_home.py): the homepage is one screen, nothing scrolls ===== */
+html.dg-app,html.dg-app body{height:100%;overflow:hidden;overscroll-behavior:none}
+html.dg-app main.z{box-sizing:border-box;height:100vh;height:100dvh;display:flex;flex-direction:column;overflow:hidden;
+ padding-top:calc(8px + env(safe-area-inset-top,0px));padding-bottom:calc(90px + env(safe-area-inset-bottom,0px))}
+html.dg-app main.z>*{flex:none}
+html.dg-app .stage{margin-top:auto}
+html.dg-app .adbox{margin-top:auto}
+html.dg-app .foot{display:none}
+html.dg-app .resume{margin:10px 16px 0;padding:7px 8px 7px 10px;border-radius:16px}
+html.dg-app .resume img{width:36px;height:36px;border-radius:11px}
+html.dg-app .resume .go{height:34px}
+/* hf1: a short phone: tighter spacing, a slightly smaller sponsor box */
+html.dg-app.hf1 .cats{margin-top:4px}
+html.dg-app.hf1 .flow{height:268px}
+html.dg-app.hf1 .floor{top:232px}
+html.dg-app.hf1 .dots{margin-top:-10px}
+html.dg-app.hf1 .adbox{height:96px}
+/* hf2: a very short phone (SE): smaller game cards */
+html.dg-app.hf2 .flow{height:240px}
+html.dg-app.hf2 .fc{width:140px;height:196px;margin-left:-70px;top:8px;padding:11px}
+html.dg-app.hf2 .fc img{width:70px;height:70px;margin-left:-35px;top:12px;border-radius:19px}
+html.dg-app.hf2 .fc.two img{width:56px;height:56px;margin-left:-28px;top:10px;border-radius:16px}
+html.dg-app.hf2 .fc .pl{height:32px;margin-top:7px}
+html.dg-app.hf2 .floor{top:212px}
+html.dg-app.hf2 .adbox{height:84px}
+/* still too short (never expected): the page scrolls rather than cut anything off */
+html.dg-app.hf-scroll,html.dg-app.hf-scroll body{height:auto;overflow:visible}
+html.dg-app.hf-scroll main.z{height:auto;overflow:visible}
+/* About: the footer's links, behind a small (i) button (app only; the website keeps its footer) */
+.infobtn{position:absolute;left:16px;top:calc(100% + 12px);z-index:5;display:none;place-items:center;width:36px;height:36px;padding:0;border:0;border-radius:50%;cursor:pointer;
+ color:#2A1418;background:rgba(255,255,255,.5);box-shadow:inset 0 0 0 1px rgba(255,255,255,.75),0 4px 12px -6px rgba(10,60,70,.45);touch-action:manipulation;transition:transform .2s}
+.infobtn:before{content:"";position:absolute;inset:-5px;border-radius:50%}
+.infobtn:active{transform:scale(.92)}
+.infobtn svg{width:18px;height:18px;display:block}
+html.dg-app .infobtn{display:grid}
+#abSheet .panel{text-align:center}
+#abSheet .abl{display:flex;flex-direction:column;align-items:center;gap:10px;margin:6px 0 4px}
+#abSheet .abl a{display:inline-block;padding:10px 6px;color:#C0506A;font-weight:700;text-decoration:none}
+#abSheet .abl p{margin:0;color:var(--muted);font-size:13px}
 </style>
 </head>
 <body class="intro"><script>if(document.documentElement.classList.contains('dg-seen')){document.body.classList.remove('intro');document.body.classList.add('dg-again');if(window.__dgReveal)window.__dgReveal();}</script><script>/* ---- intro sound: foley, synthesised with WebAudio (no files, no music, no tones). ----
@@ -634,7 +674,7 @@ window.DGAudio=window.DGAudio||(function(){
  /* chooser "Replay with sound": the parent page passes its already-unlocked AudioContext */
  try{var P=window.parent;if(P!==window&&P.__dgSoundWant===location.pathname&&P.__dgSoundCtx){window.DGSfx.use(P.__dgSoundCtx);P.__dgSoundWant=null;atStart(function(){playFrom(0,true);});}}catch(e){}
  /* native app wrapper: autoplay allowed, start from the first frame */
- if(!started&&(window.Capacitor||/DhivehiGamesApp/.test(navigator.userAgent))){atStart(function(){playFrom(0,false);});}
+ if(!started&&(window.Capacitor||/DhivehiGamesApp/.test(navigator.userAgent))&&!document.documentElement.classList.contains('dg-seen')){atStart(function(){if(intro())playFrom(0,false);});}
 })();
 </script>
 
@@ -644,7 +684,7 @@ window.DGAudio=window.DGAudio||(function(){
  <div class="top">
   <button class="pill" id="me" type="button" aria-label="Your character"><span class="av" id="av"></span><span class="nmw"><span class="nm" id="nm">Player</span><small id="st">Digu Rookie</small></span></button>
   <span class="right"><a class="signchip" id="signin" href="digu/?open=account">Sign in</a><a class="pill boli" href="digu/?open=boli" aria-label="Boli, get more"><img src="data:image/webp;base64,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" alt=""><span id="sh">100</span></a></span>
-  <button type="button" class="seasnd" id="oceanSnd" aria-pressed="true" aria-label="Sound on. Tap to mute" title="Mute"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9.5v5h3.6L12 18.5v-13L7.6 9.5z" fill="currentColor" stroke-width="1.6"/><g class="w"><path d="M15.6 9a4.2 4.2 0 0 1 0 6"/><path d="M18.3 6.6a7.6 7.6 0 0 1 0 10.8"/></g><g class="x"><path d="M16 9.8l4.4 4.4M20.4 9.8L16 14.2"/></g></svg></button>
+  <button type="button" class="seasnd" id="oceanSnd" aria-pressed="true" aria-label="Sound on. Tap to mute" title="Mute"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9.5v5h3.6L12 18.5v-13L7.6 9.5z" fill="currentColor" stroke-width="1.6"/><g class="w"><path d="M15.6 9a4.2 4.2 0 0 1 0 6"/><path d="M18.3 6.6a7.6 7.6 0 0 1 0 10.8"/></g><g class="x"><path d="M16 9.8l4.4 4.4M20.4 9.8L16 14.2"/></g></svg></button><button type="button" class="infobtn" id="infoBtn" aria-label="About Dhivehi Games" title="About"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v6"/><circle cx="12" cy="7.6" r=".6" fill="currentColor"/></svg></button>
  </div>
 
  <div class="nlogo" id="nlogo">
@@ -717,6 +757,32 @@ window.DGAudio=window.DGAudio||(function(){
 
  <div class="foot"><a href="privacy.html">Privacy policy</a><div>Made in the Maldives</div></div>
 </main>
+<script>/* the phone app (APP_FIT in build_home.py): fit the homepage to one screen; runs before the intro starts */
+(function(){var d=document.documentElement;if(!d.classList.contains('dg-app'))return;
+ var m=document.querySelector('main.z'),n=document.getElementById('nlogo'),e=document.getElementById('emb');if(!m||!n||!e)return;
+ var S=1;window.__dgLogoScale=1;
+ function over(){return m.scrollHeight-m.clientHeight;}
+ function aim(){/* the intro glide starts with the tile in the middle of the screen; the logo's scale also scales the glide */
+  if(!document.body.classList.contains('intro'))return;var y=e.offsetHeight/2;for(var o=e;o;o=o.offsetParent)y+=o.offsetTop;
+  n.style.setProperty('--dy',Math.round((innerHeight/2-y)/S)+'px');}
+ function logo(s){S=s;window.__dgLogoScale=s;if(s>=.999){n.style.scale='';n.style.marginTop='';n.style.marginBottom='';return;}
+  var h=n.offsetHeight;n.style.scale=String(s);n.style.marginTop='calc(14px - '+(32*(1-s)).toFixed(1)+'px)';n.style.marginBottom=(-(h-32)*(1-s)).toFixed(1)+'px';}
+ function fit(){d.classList.remove('hf1','hf2','hf-scroll');logo(1);
+  var o=over();
+  if(o>0){d.classList.add('hf1');o=over();}
+  if(o>0){var h=n.offsetHeight;logo(Math.max(.7,1-(o+2)/h));o=over();}
+  if(o>0){d.classList.add('hf2');o=over();}
+  if(o>0){var h2=n.offsetHeight;logo(Math.max(.56,S*(1-(o+2)/(h2*S))));o=over();}
+  if(o>0)d.classList.add('hf-scroll');
+  aim();if(window.__dRelayout)try{window.__dRelayout();}catch(x){}}
+ fit();
+ var rt=0;addEventListener('resize',function(){clearTimeout(rt);rt=setTimeout(fit,120);});
+ /* the resume row and fonts can change the height after the first fit */
+ var rs=document.getElementById('resume');if(rs&&window.MutationObserver)new MutationObserver(fit).observe(rs,{attributes:true,attributeFilter:['hidden']});
+ if(document.fonts&&document.fonts.ready)document.fonts.ready.then(function(){if(over()>0||S<1)fit();});
+ window.__dgFitHome=fit;
+})();</script>
+
 
 <nav class="nav" aria-label="Main">
  <a class="on" href="./" aria-current="page"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 3 2 11h3v9h5v-6h4v6h5v-9h3z"/></svg>Home</a>
@@ -727,6 +793,7 @@ window.DGAudio=window.DGAudio||(function(){
 
 <div class="sheet" id="avSheet" role="dialog" aria-modal="true" aria-label="Your character"><div class="panel"><div class="grab"></div><div id="builder"></div></div></div>
 <div class="sheet" id="rkSheet" role="dialog" aria-modal="true" aria-labelledby="rkTitle"><div class="panel"><div class="grab"></div><h2 id="rkTitle">Most wins</h2><div id="rkList"><p style="color:var(--muted)">Loading…</p></div><div style="text-align:center;margin-top:16px"><button class="btn" type="button" data-close>Close</button></div></div></div>
+<div class="sheet" id="abSheet" role="dialog" aria-modal="true" aria-labelledby="abTitle"><div class="panel"><div class="grab"></div><h2 id="abTitle">Dhivehi Games</h2><div class="abl"><p>Made in the Maldives</p><a href="privacy.html">Privacy policy</a></div><div style="text-align:center;margin-top:12px"><button class="btn" type="button" data-close>Close</button></div></div></div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script src="/shared/avatar.js?v=10" defer onload="window.dispatchEvent(new Event('dg-char-change'))"></script>
@@ -1275,5 +1342,8 @@ window.__RVCFG={name:'the-deal-b',run:function(R){var H=R.H,cs=R.cards(),emb=doc
  addEventListener('resize',function(){if(cur)place(cur,true);});
  sel(home,true);if(document.fonts&&document.fonts.ready)document.fonts.ready.then(function(){if(cur)place(cur,true);});
 })();</script>
+<script>/* About sheet (APP_FIT): opened by the (i) button; closing is handled by the page's sheet code */
+(function(){var b=document.getElementById('infoBtn'),s=document.getElementById('abSheet');if(!b||!s)return;
+ b.addEventListener('click',function(){s.classList.add('open');document.body.style.overflow='hidden';});})();</script>
 </body>
 </html>
