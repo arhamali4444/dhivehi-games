@@ -432,7 +432,7 @@ let levelSel=(()=>{const v=+ls.get('quiz-level');return v>=1&&v<=4?v:2;})();
 const myId=(()=>{if(window.DGNet&&DGNet.local&&/^[a-z0-9_-]{2,24}$/i.test(Q.get('pid')||''))return Q.get('pid');
  let v=ls.get('dd-pid');if(!v){v='p'+Math.random().toString(36).slice(2,10);ls.set('dd-pid',v);}return v;})();
 
-const TOPICS=[['history','History'],['islands','Islands & atolls'],['language','Dhivehi & Thaana'],['food','Food'],['sea','Sea life'],['sports','Sports'],['culture','Culture & pop'],['general','General knowledge']];
+const TOPICS=[['history','History'],['islands','Islands & atolls'],['language','Dhivehi & Thaana'],['food','Food'],['sea','Sea life'],['sports','Sports'],['culture','Culture'],['general','General knowledge']];
 const TNAME=Object.fromEntries(TOPICS),TKEYS=TOPICS.map(t=>t[0]);
 const TDV={history:'ތާރީޚު',islands:'ރަށްތަކާއި އަތޮޅުތައް',language:'ދިވެހި ބަހާއި ތާނަ',food:'ކާނާ',sea:'ކަނޑުގެ ދިރުން',sports:'ކުޅިވަރު',culture:'ސަގާފަތާއި ފަންނު',general:'އާންމު މަޢުލޫމާތު'};
 const tName=t=>lang==='dv'?(TDV[t]||''):(TNAME[t]||'');
