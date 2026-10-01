@@ -791,7 +791,7 @@ function initNet(){if(!window.DGNet)return;NET=DGNet.create({game:'juice',title:
    ===================================================================== */
 let nBots=Math.max(1,Math.min(4,+(ls.get('juice-bots')||3)||3)),diff=DIFF[ls.get('juice-diff')]?ls.get('juice-diff'):'normal';
 function meP(){return{id:myId,name:myName()||'You',ch:myChar(),ring:myRing(),col:'#FF7A45'};}
-function heroFan(){return `<div class="dhero" aria-hidden="true">${cardHTML('13-S')}${cardHTML('2-D')}${cardHTML('14-H')}<span class="fr f1">${FRUIT.lime}</span><span class="fr f2">${FRUIT.melon}</span><span class="fr f3">${FRUIT.ice}</span></div>`;}
+function heroFan(){return `<div class="dhero" aria-hidden="true">${cardHTML(null)}${cardHTML(null)}${cardHTML('11-H')}<span class="fr f1">${FRUIT.lime}</span><span class="fr f2">${FRUIT.melon}</span><span class="fr f3">${FRUIT.ice}</span></div>`;}
 function savedGame(){try{const d=JSON.parse(ls.get(SAVE_KEY)||'null');if(d&&d.game==='juice'&&d.players&&d.status==='playing'&&d.v===1)return d;}catch(e){}return null;}
 function resumeHTML(){const d=savedGame();if(!d)return '';const k=d.players.findIndex(q=>q.id===myId);const n=k>=0?JU.total(d,k):0;
 return `<button class="resume" data-a="resume"><span>Unfinished game: <b>${n} card${n===1?'':'s'} left</b> to go</span><span class="go">Resume</span></button>`;}
