@@ -7,6 +7,9 @@
      title, sub : text          cta  : button text ('' = no button)
      url        : where a tap goes ('' = nowhere). Relative links are relative to the SITE ROOT (e.g. 'digu/').
      logo       : 2-3 letters or an emoji, or an image path/URL (site-root relative or https://)
+     feltLogo   : 'only' = show just the logo on the Digu felt (no name)
+     where      : '' everywhere | 'home' homepage only | 'games' all games | ['digu','juice'] only those games
+     photo      : optional product photo (path) or a list of paths (one is picked each visit); shown on the right side
      colors     : three gradient colours           label: 'Sponsored' for paid ads ('Advertise', 'New', ...)
      felt       : true ONLY for real paid sponsors. Those (and only those) are printed on the Digu table
                   felt and credited as "Hand sponsored by ...". Default false: placeholders and house
@@ -34,6 +37,7 @@
 (function (root) {
   'use strict';
   var SPONSORS = [
+    { id: 'trendy-handicrafts', from: '', to: '', title: 'Trendy Handicrafts', sub: 'Handmade pots, gifts & flowers', cta: 'Visit', url: 'https://www.instagram.com/trendy.handicrafts/', logo: '/sponsors/trendy.webp', where: 'home', photo: ['/sponsors/trendy-succulents.webp', '/sponsors/trendy-flowers-pink.webp', '/sponsors/trendy-flowers-red.webp', '/sponsors/trendy-hearts.webp'], colors: ['#6F8A63', '#A8BB9C', '#E9E2D3'], label: 'Sponsored' },
     { id: 'advertise', from: '', to: '', title: 'Your brand here', sub: 'The main sponsor spot on Dhivehi Games', cta: '', url: '', logo: '/icons/favicon.svg', colors: ['#0E4C6B', '#1E8A8A', '#E9C476'], label: 'Advertise' },
     { id: 'h-binveriya', from: '', to: '', title: 'Binveriya', sub: 'Own the islands. Bend the rules.', cta: 'Play', url: 'binveriya/', logo: '/icons/binveriya.svg', colors: ['#0A6E8C', '#1BA7BF', '#F2C94C'], label: 'New', house: true, kicker: 'New' },
     { id: 'h-bondi', from: '', to: '', title: 'Bondi', sub: 'Noir card duel. Don\'t be the last one holding.', cta: 'Play', url: 'bondi/', logo: '♠', colors: ['#0B0B0D', '#2A2A30', '#C9A45C'], label: 'New', house: true, kicker: 'New' },
@@ -44,7 +48,11 @@
   /* showing today? (from/to are Maldives dates, UTC+5) */
   function today() { return new Date(Date.now() + 5 * 3600e3).toISOString().slice(0, 10); }
   function live(s) { var d = today(); return !!s && (!s.from || d >= s.from) && (!s.to || d <= s.to); }
-  function active() { return SPONSORS.filter(live); }
+  /* where an ad may show: s.where = '' (everywhere) | 'home' (main homepage only) | 'games' (every game, not the homepage)
+     | ['digu','juice',...] (only those games). The current page decides by default (homepage or a game folder). */
+  function here() { var pth = (root.location && root.location.pathname) || '/'; var m = /\/([a-z0-9-]+)\/(index\.html)?$/i.exec(pth); return (!m || /^(index\.html)?$/.test(pth.replace(/^\//, ''))) ? 'home' : m[1].toLowerCase(); }
+  function fits(s, at) { var w = s && s.where; if (!w) return true; if (Array.isArray(w)) return at !== 'home' && w.indexOf(at) >= 0; if (w === 'games') return at !== 'home'; return w === at; }
+  function active(at) { at = at || here(); return SPONSORS.filter(function (s) { return live(s) && fits(s, at); }); }
   function adAttr(s, place, game) { if (!s || !s.id) return ''; return ' data-ad="' + esc(s.id) + '" data-ad-place="' + esc(place || '') + '"' + (game ? ' data-ad-game="' + esc(game) + '"' : ''); }
   function tag(el, s, place, game) {
     if (!el) return; var id = s && s.id ? s.id : '';
@@ -68,6 +76,11 @@
     '.dgs-box{position:relative;height:118px;border-radius:22px;overflow:hidden;isolation:isolate;background:#0E4C6B;box-shadow:0 18px 30px -18px rgba(11,59,43,.55);touch-action:pan-y;user-select:none;-webkit-user-select:none}',
     '.dgs-ad{position:absolute;inset:0;color:#fff;display:flex;align-items:center;gap:12px;padding:0 16px;text-decoration:none;clip-path:circle(140% at 86% 50%);-webkit-tap-highlight-color:transparent}',
     '.dgs-ad:focus-visible{outline:2px solid #fff;outline-offset:-4px}',
+    '.dgs-ad>*{position:relative;z-index:1}',
+    '.dgs-ph{position:absolute!important;z-index:0!important;top:0;right:0;bottom:0;width:62%;overflow:hidden;pointer-events:none}',
+    '.dgs-ph:before{content:"";position:absolute;inset:0;background:var(--ph) center/cover no-repeat;transform-origin:60% 50%;animation:dgs-kb 6s ease-out both}',
+    '.dgs-ph:after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,var(--c0) 0%,color-mix(in srgb,var(--c0) 70%,transparent) 22%,transparent 60%)}',
+    '@keyframes dgs-kb{from{transform:scale(1)}to{transform:scale(1.09)}}',
     '.dgs-ad.dgs-in{animation:dgs-iris .95s cubic-bezier(.6,0,.2,1) both}',
     '@keyframes dgs-iris{from{clip-path:circle(0% at 86% 50%)}to{clip-path:circle(140% at 86% 50%)}}',
     '.dgs-lg{width:50px;height:50px;border-radius:14px;display:grid;place-items:center;font:900 18px/1 Fraunces,Georgia,serif;background:#fff;flex:none;overflow:hidden}',
@@ -109,7 +122,17 @@
     var ads = LIST.map(function (s) {
       var u = abs(s.url), a = doc.createElement(u ? 'a' : 'div'); a.className = 'dgs-ad'; if (u) { a.href = u; if (/^https?:/i.test(s.url || '')) { a.target = '_blank'; a.rel = 'noopener sponsored'; } }
       var c = s.colors || ['#0E4C6B', '#1E8A8A', '#E9C476'];
-      a.style.background = 'linear-gradient(120deg,' + c[0] + ',' + c[1] + ' 60%,' + c[2] + ')';
+      var phs = s.photo ? (Array.isArray(s.photo) ? s.photo.slice() : [s.photo]) : [];
+      a._phs = phs; a._ph = Math.floor(Math.random() * Math.max(1, phs.length));   /* start somewhere random, then a new photo every time it shows */
+      a._bg = function () { var ph = phs.length ? phs[a._ph % phs.length] : '';
+        a.style.background = ph ? c[0] : 'linear-gradient(120deg,' + c[0] + ',' + c[1] + ' 60%,' + c[2] + ')';
+        if (!ph) return;
+        var old = a.querySelector('.dgs-ph'); if (old) old.remove();
+        var pe = doc.createElement('span'); pe.className = 'dgs-ph'; pe.setAttribute('aria-hidden', 'true');
+        pe.style.setProperty('--ph', 'url("' + abs(ph) + '")'); pe.style.setProperty('--c0', c[0]);
+        a.insertBefore(pe, a.firstChild); };
+      a._bg();
+      phs.forEach(function (u) { var im = new Image(); im.src = abs(u); });   /* warm the photos so each swap is instant */
       a.innerHTML = logoHTML(s) + '<span class="dgs-tx"><b>' + esc(s.title) + '</b><small>' + esc(s.sub) + '</small></span>' + (s.cta ? '<span class="dgs-go" style="color:' + esc(c[0]) + '">' + esc(s.cta) + '</span>' : '') + '<span class="dgs-lab">' + esc(s.label || 'Sponsored') + '</span>';
       a.setAttribute('aria-label', s.title + '. ' + s.sub); el.insertBefore(a, rip); return a;
     });
@@ -119,6 +142,7 @@
     function show(n, first) {
       if (!ads.length) return;
       ai = ((n % ads.length) + ads.length) % ads.length; var a = ads[ai]; a.style.zIndex = String(++az); tag(el, LIST[ai], place, opts.game);
+      if (!first && a._phs && a._phs.length) { if (a._phs.length > 1) a._ph++; a._bg(); }   /* next photo + restart the slow zoom */
       ads.forEach(function (x, i) { if (i !== ai) { x.tabIndex = -1; x.setAttribute('aria-hidden', 'true'); } });
       a.removeAttribute('aria-hidden'); a.tabIndex = 0;
       if (!first && !reduce) { a.classList.remove('dgs-in'); void a.offsetWidth; a.classList.add('dgs-in'); rip.classList.remove('dgs-go2'); void rip.offsetWidth; rip.classList.add('dgs-go2'); }
@@ -140,7 +164,8 @@
     };
   }
   /* paid sponsors (felt:true) own the table; with none, our own game promos (house:true) fill it instead */
-  function feltList() { var on = active(), paid = on.filter(function (s) { return s.felt === true; }); return paid.length ? paid : on.filter(function (s) { return s.house === true; }); }
+  /* the felt is its own placement: a felt:true sponsor shows on the table even if its box ad is set to 'home' only */
+  function feltList() { var paid = SPONSORS.filter(function (s) { return live(s) && s.felt === true; }); return paid.length ? paid : active().filter(function (s) { return s.house === true; }); }
   root.DGSponsors = {
     version: 2,
     list: SPONSORS,

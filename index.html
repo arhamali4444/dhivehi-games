@@ -170,6 +170,12 @@ h1.word span{display:inline-block;background:linear-gradient(180deg,#155E43,#0B2
 @keyframes iris{from{clip-path:circle(0% at 86% 50%)}to{clip-path:circle(140% at 86% 50%)}}
 .ad .lg{width:50px;height:50px;border-radius:14px;display:grid;place-items:center;font:900 18px/1 Fraunces,Georgia,serif;background:#fff;flex:none;overflow:hidden}
 .ad .lg img{width:100%;height:100%;object-fit:cover}
+.ad>*{position:relative;z-index:1}
+.ad .ph{position:absolute;z-index:0;top:0;right:0;bottom:0;width:62%;overflow:hidden;pointer-events:none}
+.ad .ph:before{content:"";position:absolute;inset:0;background:var(--ph) center/cover no-repeat;transform-origin:60% 50%;animation:kb 6s ease-out both}
+.ad .ph:after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,var(--c0) 0%,color-mix(in srgb,var(--c0) 70%,transparent) 22%,transparent 60%)}
+@keyframes kb{from{transform:scale(1)}to{transform:scale(1.09)}}
+@media (prefers-reduced-motion:reduce){.ad .ph:before{animation:none}}
 .ad .tx{min-width:0}
 .ad b{display:block;font-size:15px;line-height:1.15}.ad small{display:block;font-size:11.5px;opacity:.92;line-height:1.3}
 .ad .go{margin-left:auto;background:#fff;font-weight:800;font-size:12px;padding:8px 13px;border-radius:99px;flex:none}
@@ -796,7 +802,7 @@ window.DGAudio=window.DGAudio||(function(){
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script src="/shared/avatar.js?v=10" defer onload="window.dispatchEvent(new Event('dg-char-change'))"></script>
-<script src="/shared/sponsors.js?v=7"></script>
+<script src="/shared/sponsors.js?v=8"></script>
 <script>
 /* ---------- sponsor slides: the list lives in /shared/sponsors.js (window.DGSponsors), shared by the whole site ----------
    The home page shows the ones running today (from/to), with its own look for Digu Blitz (the Digu logo).
@@ -905,13 +911,17 @@ if(!reduce)setInterval(()=>{if(document.hidden||document.body.classList.contains
 /* ---------- sponsor box: ripple reveal ---------- */
 const box=$('#adbox'),barsEl=$('#bars'),rip=$('#ripple');let ai=0,az=1,adT=0,adStart=0,adLeft=AD_MS,held=false;
 const adEls=SPONSORS.map(s=>{const el=document.createElement(s.url?'a':'div');el.className='ad';if(s.url)el.href=s.url;
- const c=s.colors||['#0E4C6B','#1E8A8A','#E9C476'];el.style.background=`linear-gradient(120deg,${c[0]},${c[1]} 60%,${c[2]})`;
+ const c=s.colors||['#0E4C6B','#1E8A8A','#E9C476'];const phs=s.photo?(Array.isArray(s.photo)?s.photo.slice():[s.photo]):[];el._ph=Math.floor(Math.random()*Math.max(1,phs.length));
+ el._bg=()=>{const ph=phs.length?phs[el._ph%phs.length]:'';el.style.background=ph?c[0]:`linear-gradient(120deg,${c[0]},${c[1]} 60%,${c[2]})`;if(!ph)return;const o=el.querySelector('.ph');if(o)o.remove();
+  const pe=document.createElement('span');pe.className='ph';pe.setAttribute('aria-hidden','true');pe.style.setProperty('--ph',`url("${ph}")`);pe.style.setProperty('--c0',c[0]);el.insertBefore(pe,el.firstChild);};
+ el._phs=phs;phs.forEach(u=>{const im=new Image();im.src=u;});
  const logo=/^(https?:|data:|\/|\.)/.test(s.logo||'')?`<img src="${esc(s.logo)}" alt="">`:esc(s.logo||'');
  el.innerHTML=`<span class="lg" style="color:${c[0]}">${logo}</span><span class="tx"><b>${esc(s.title)}</b><small>${esc(s.sub)}</small></span>${s.cta?`<span class="go" style="color:${c[0]}">${esc(s.cta)}</span>`:''}<span class="lab">${esc(s.label||'Sponsored')}</span>`;
- el.setAttribute('aria-label',s.title+'. '+s.sub);box.insertBefore(el,rip);return el;});
+ el._bg();el.setAttribute('aria-label',s.title+'. '+s.sub);box.insertBefore(el,rip);return el;});
 barsEl.innerHTML=SPONSORS.length>1?SPONSORS.map(()=>'<i></i>').join(''):'';const barEls=[...barsEl.children];
 function showAd(n,first){if(!adEls.length)return;ai=((n%adEls.length)+adEls.length)%adEls.length;const el=adEls[ai];el.style.zIndex=String(++az);
  if(window.DGSponsors&&DGSponsors.tag)DGSponsors.tag(box,SPONSORS[ai],'home_box','home');
+ if(!first&&el._phs&&el._phs.length){if(el._phs.length>1)el._ph++;el._bg();}
  adEls.forEach((x,i)=>{if(i!==ai){x.tabIndex=-1;x.setAttribute('aria-hidden','true');}});el.removeAttribute('aria-hidden');el.tabIndex=0;
  if(!first&&!reduce){el.classList.remove('in');void el.offsetWidth;el.classList.add('in');rip.classList.remove('go');void rip.offsetWidth;rip.classList.add('go');}
  barEls.forEach((b,i)=>{b.classList.remove('run');b.style.setProperty('--f',i<ai?1:0);});
