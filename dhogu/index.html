@@ -667,7 +667,7 @@ function award(n){const d=inv();const today=new Date().toISOString().slice(0,10)
  const got=Math.max(0,Math.min(n,DAILY_CAP-(d.dayEarned|0)));d.dayEarned=(d.dayEarned|0)+got;d.shells=(d.shells|0)+got;ls.set('dd-inv',JSON.stringify(d));return got;}
 /* identity is shared with Digu (lg-id / lg-name). ?as=N (localhost only) gives a separate test identity per tab. */
 const Q=new URLSearchParams(location.search);
-const LOCAL=/^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname)||/\.(localhost|test)$/.test(location.hostname);
+const LOCAL=!(window.DG_APP||location.protocol==='capacitor:'||!!(window.Capacitor&&window.Capacitor.isNativePlatform&&window.Capacitor.isNativePlatform()))&&(/^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname)||/\.(localhost|test)$/.test(location.hostname));   /* a local host name means a developer test machine, but NEVER inside the phone app (https://localhost, capacitor://localhost): the app is production */
 const AS=LOCAL&&/^\d{1,2}$/.test(Q.get('as')||'')?Q.get('as'):'';
 const IDK=AS?'lg-id-as'+AS:'lg-id',NMK=AS?'lg-name-as'+AS:'lg-name';
 let myId=ls.get(IDK);if(!myId){myId='u'+Math.random().toString(36).slice(2,11);ls.set(IDK,myId);}
@@ -1165,7 +1165,7 @@ const FBV='https://www.gstatic.com/firebasejs/12.19.0/',FBCFG={apiKey:'AIzaSyCl9
 const PRES_GAME='dhogu',presWrite=()=>!LOCAL&&!TEST_NS;
 let fbP=null,fbaP=null,presUid=null,presN=0,presAt=0;
 function fb(){if(fbP)return fbP;fbP=Promise.all([import(FBV+'firebase-app.js'),import(FBV+'firebase-firestore.js')]).then(([A,F])=>{const app=A.getApps&&A.getApps().length?A.getApp():A.initializeApp(FBCFG);return{A,F,app,db:F.getFirestore(app)};}).catch(e=>{fbP=null;throw e;});return fbP;}
-function fbAuth(){if(fbaP)return fbaP;fbaP=Promise.all([fb(),import(FBV+'firebase-auth.js')]).then(([f,U])=>({f,U,auth:U.getAuth(f.app)})).catch(e=>{fbaP=null;throw e;});return fbaP;}
+function fbAuth(){if(fbaP)return fbaP;fbaP=Promise.all([fb(),import(FBV+'firebase-auth.js')]).then(([f,U])=>({f,U,auth:(!LOCAL&&!!(window.DG_APP||location.protocol==='capacitor:'||!!(window.Capacitor&&window.Capacitor.isNativePlatform&&window.Capacitor.isNativePlatform()))&&U.initializeAuth?(()=>{try{return U.initializeAuth(f.app,{persistence:[U.indexedDBLocalPersistence,U.browserLocalPersistence]});}catch(e){return U.getAuth(f.app);}})():U.getAuth(f.app))})).catch(e=>{fbaP=null;throw e;});return fbaP;}
 async function presence(){if(!presWrite()||document.hidden)return;try{const a=await fbAuth(),f=a.f;try{if(a.auth.authStateReady)await a.auth.authStateReady();}catch(e){}
  const u=a.auth.currentUser||(await a.U.signInAnonymously(a.auth)).user;presUid=u.uid;await f.F.setDoc(f.F.doc(f.db,'presence',PRES_GAME,'users',u.uid),{t:f.F.serverTimestamp()});}catch(e){}}
 async function presenceOff(){if(!presUid||!presWrite())return;try{const f=await fb();f.F.deleteDoc(f.F.doc(f.db,'presence',PRES_GAME,'users',presUid)).catch(()=>{});}catch(e){}}

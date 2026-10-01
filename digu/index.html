@@ -959,6 +959,7 @@ main.table.land .seat .crown{top:-11px}
 <script src="../shared/table.js?v=1"></script>
 <script>
 (function(){
+const DG_IN_APP=!!(window.DG_APP||location.protocol==='capacitor:'||!!(window.Capacitor&&window.Capacitor.isNativePlatform&&window.Capacitor.isNativePlatform()));   /* a local host name means a developer test machine, but NEVER inside the phone app (https://localhost, capacitor://localhost): the app is production */
 
 
 /* ---------- sponsors: the list lives in ../shared/sponsors.js?v=4 (window.DGSponsors), shared by the whole site ---------- */
@@ -1097,7 +1098,7 @@ async function initFirebase(){try{
     import('https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js'),
     import('https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js')
   ]);
-  const fa=A.initializeApp(FIREBASE_CONFIG),auth=U.getAuth(fa);
+  const fa=A.initializeApp(FIREBASE_CONFIG),auth=(DG_IN_APP&&U.initializeAuth?(()=>{try{return U.initializeAuth(fa,{persistence:[U.indexedDBLocalPersistence,U.browserLocalPersistence]});}catch(e){return U.getAuth(fa);}})():U.getAuth(fa));
   FB.auth=auth; FB.db=F.getFirestore(fa); Object.assign(FB,{doc:F.doc,setDoc:F.setDoc,getDoc:F.getDoc,collection:F.collection,query:F.query,orderBy:F.orderBy,limit:F.limit,getDocs:F.getDocs,createUserWithEmailAndPassword:U.createUserWithEmailAndPassword,signInWithEmailAndPassword:U.signInWithEmailAndPassword,signOut:U.signOut,deleteDoc:F.deleteDoc,addDoc:F.addDoc,serverTimestamp:F.serverTimestamp,EmailAuthProvider:U.EmailAuthProvider,reauthenticateWithCredential:U.reauthenticateWithCredential,deleteUser:U.deleteUser,signInAnonymously:U.signInAnonymously,getCountFromServer:F.getCountFromServer,where:F.where,Timestamp:F.Timestamp,U:U});
   /* wait until Firebase has restored the saved session, otherwise a refresh would sign the player out */
   try{if(auth.authStateReady)await auth.authStateReady();else await new Promise(r=>{const un=U.onAuthStateChanged(auth,()=>{un();r();});});}catch(e){}
@@ -1587,7 +1588,9 @@ function rememberedLoginEmail(){return ls.get('dd-login-email')||'';} // legacy 
    so turn this on before the iOS app ships. */
 const APPLE_SIGNIN=false;
 /* Google: switch on once the provider is enabled in the Firebase console (Authentication → Sign-in method). */
-const GOOGLE_SIGNIN=true;
+/* Not inside the phone app yet: Google's sign-in pop-up can't open in the iPhone/Android web view. Native Google/Apple sign-in is on the launch list;
+   until then the app offers username + password only (accounts that only use Google can log in on dhivehi.games). */
+const GOOGLE_SIGNIN=!DG_IN_APP;
 const USER_DOMAIN='@users.dhivehidigu.invalid';
 const SSO={google:{id:'google.com',name:'Google'},apple:{id:'apple.com',name:'Apple'}};
 const SSO_ICON={google:`<svg viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>`,
@@ -1709,7 +1712,7 @@ async function saveRecovery(){const u=FB.auth&&FB.auth.currentUser;if(!u||u.isAn
  const em=String((($('#recMail')||{}).value||'')).trim().toLowerCase(),pass=($('#recPass')||{}).value||'';
  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(em)||isSynthetic(em)){toast('Enter a valid email address.');return;}
  if(pass.length<6){toast('Enter your password to confirm.');return;}
- if(!(await unameDocsOK())){toast('Recovery email isn’t available yet. Link Google instead.',4500);return;}
+ if(!(await unameDocsOK())){toast('Recovery email isn’t available yet.'+(GOOGLE_SIGNIN?' Link Google instead.':''),4500);return;}
  const btn=document.querySelector('[data-a="recoveryGo"]');if(btn)btn.disabled=true;
  try{await FB.reauthenticateWithCredential(u,FB.EmailAuthProvider.credential(u.email,pass));
   const un=acctUsernameOf(u)||authUsername();
@@ -1727,11 +1730,11 @@ async function saveRecovery(){const u=FB.auth&&FB.auth.currentUser;if(!u||u.isAn
 function openForgot(){const typed=(($('#authUser')||{}).value||'').trim();const pre=typed.indexOf('@')>0?typed:(rememberedLoginEmail()||'');
  sheet(`<div class="grab"></div><h2>Forgot password?</h2><p class="muted" style="margin:4px 0 12px">Enter the recovery email on your account and we’ll send you a link to choose a new password.</p>
  <label class="f" for="fpMail">Recovery email</label><input class="in" id="fpMail" type="email" inputmode="email" value="${esc(pre)}" placeholder="you@example.com" autocomplete="email" autocapitalize="none" spellcheck="false">
- <p class="note"><b>No recovery email?</b> If you linked Google${APPLE_SIGNIN?' or Apple':''}, just use Continue with Google${APPLE_SIGNIN?' or Apple':''} on the login screen. Without either, the password can’t be reset. Tip: while you’re signed in, link Google${APPLE_SIGNIN?'/Apple':''} or add a recovery email in Account.</p>
+ <p class="note"><b>No recovery email?</b> If you linked Google${APPLE_SIGNIN?' or Apple':''}, just use Continue with Google${APPLE_SIGNIN?' or Apple':''} on ${GOOGLE_SIGNIN?'the login screen':'dhivehi.games in your browser'}. Without either, the password can’t be reset. Tip: while you’re signed in, link Google${APPLE_SIGNIN?'/Apple':''} or add a recovery email in Account.</p>
  <div class="row"><button class="btn ghost" data-a="acctLogin">Back</button><button class="btn primary" data-a="forgotGo">Send link</button></div>`);}
 async function sendReset(){if(!FB.ready||!FB.U){toast('Account service is still connecting.');return;}
  const em=String((($('#fpMail')||{}).value||'')).trim();
- if(em&&em.indexOf('@')<0){toast('Resets go to a recovery email, not a username. No recovery email? Use Continue with Google'+(APPLE_SIGNIN?'/Apple':'')+' if you linked it.',6500);return;}
+ if(em&&em.indexOf('@')<0){toast('Resets go to a recovery email, not a username. No recovery email? Use Continue with Google'+(APPLE_SIGNIN?'/Apple':'')+(GOOGLE_SIGNIN?'':' on dhivehi.games')+' if you linked it.',6500);return;}
  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(em)||isSynthetic(em)){toast('Enter a valid email address.');return;}
  const btn=document.querySelector('[data-a="forgotGo"]');if(btn)btn.disabled=true;
  try{await FB.U.sendPasswordResetEmail(FB.auth,em);closeSheet();toast('If an account uses '+em+', a reset link is on its way. Check your spam folder too.',6500);}
@@ -2772,7 +2775,7 @@ function quitGo(){closeSheet();if(mode==='solo'){clearTimeout(soloSaveT);clearTi
    Phones talk through public MQTT relays over secure WebSockets, so players on mobile data
    or different Wi-Fi networks can join. A tiny built-in MQTT client is used (no library
    download). Each player's cards are end-to-end encrypted (ECDH + AES-GCM). */
-const NS=(()=>{try{const q=new URLSearchParams(location.search).get('ns');if(q&&/^[a-z0-9]{3,16}$/i.test(q)&&/^(localhost|127\.\d+\.\d+\.\d+|\[::1\])$/.test(location.hostname))return 'dhivehidigu/test-'+q+'/';}catch(e){}return 'dhivehidigu/v2/';})();
+const NS=(()=>{try{const q=new URLSearchParams(location.search).get('ns');if(q&&/^[a-z0-9]{3,16}$/i.test(q)&&(!DG_IN_APP&&/^(localhost|127\.\d+\.\d+\.\d+|\[::1\])$/.test(location.hostname)))return 'dhivehidigu/test-'+q+'/';}catch(e){}return 'dhivehidigu/v2/';})();
 const BROKERS=['wss://broker.emqx.io:8084/mqtt','wss://broker.hivemq.com:8884/mqtt'];
 let isHost=false,net=null,joinInfo=null,pool=null,poolT=null,srvState='checking';const lobbyList={};
 const TE=new TextEncoder(),TD=new TextDecoder();
@@ -3058,7 +3061,7 @@ const VC_ICE=[{urls:['stun:stun.l.google.com:19302','stun:stun1.l.google.com:193
    a good answer is cached until shortly before it expires. */
 const TURN_ON=false,DG_TURN_URL='https://turn.dhivehi.games/api/turn';
 const TURN={ice:null,exp:0,p:null,bad:0};
-const vcTurnOn=()=>TURN_ON||(/^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname)&&!!window.__vcTurnTest);
+const vcTurnOn=()=>TURN_ON||((!DG_IN_APP&&/^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname))&&!!window.__vcTurnTest);
 const vcIsTurn=u=>typeof u==='string'&&/^turns?:/i.test(u);
 const vcHasTurn=ice=>Array.isArray(ice)&&ice.some(s=>s&&[].concat(s.urls).some(vcIsTurn));
 /* keep well-formed entries only; drop port 53 (browsers time out on it, and we don't trickle candidates) */
@@ -3082,7 +3085,7 @@ const MIC_ON=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-
 const vcTable=()=>mode==='p2p'&&!!net&&!!S&&S.status!=='over'&&meIdx()>=0;
 const vcSupported=()=>!!window.RTCPeerConnection&&!!(navigator.mediaDevices&&navigator.mediaDevices.getUserMedia)&&window.isSecureContext!==false;
 const vcAvail=()=>vcTable()&&vcSupported();
-function vcSend(to,d,alt){if(VC.lose>0&&d&&d.t==='offer'&&/^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname)){VC.lose--;return;}   /* tests: VC.lose=n loses the next n offers */
+function vcSend(to,d,alt){if(VC.lose>0&&d&&d.t==='offer'&&(!DG_IN_APP&&/^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname))){VC.lose--;return;}   /* tests: VC.lose=n loses the next n offers */
  if(window.__vcOut){window.__vcOut(to,d,alt);return;}const n=net;if(!n)return;
  if(n.role==='host')n.players.forEach((pl,tp)=>{if(pl.pid===to)sendPlayer(tp,pl,{k:'rtc',f:myId,d:d},alt);});else joinSend({k:'rtc',to:to,d:d},alt);}
 function vcAC(){if(!VC.ac){const A=window.AudioContext||window.webkitAudioContext;if(A)try{VC.ac=new A();}catch(e){}}if(VC.ac&&VC.ac.state==='suspended')VC.ac.resume().catch(()=>{});return VC.ac;}
@@ -3538,7 +3541,7 @@ setTimeout(runPending,300);
 const idle=window.requestIdleCallback||(fn=>setTimeout(fn,1200));
 idle(()=>warmUp(),{timeout:2500});
 /* automated tests on this computer only (localhost): read the table and drive moves */
-if(/^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname))window.__dg={get S(){return S;},get mode(){return mode;},get screen(){return screen;},get isHost(){return isHost;},get net(){return net;},get VC(){return VC;},get myId(){return myId;},act:act,commit:commit,clone:clone,win:win,deal:deal,pickDiscard:pickDiscard,cover:cover,meIdx:meIdx,mutedP:mutedP,lobbyList:lobbyList,vcT:{ice:vcIce,opus:vcOpus,lvl:vcPeerLevel,redial:vcRedial,TURN:TURN,chip:()=>!!VC.chip&&VC.chip.style.display!=='none'}};
+if((!DG_IN_APP&&/^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname)))window.__dg={get S(){return S;},get mode(){return mode;},get screen(){return screen;},get isHost(){return isHost;},get net(){return net;},get VC(){return VC;},get myId(){return myId;},act:act,commit:commit,clone:clone,win:win,deal:deal,pickDiscard:pickDiscard,cover:cover,meIdx:meIdx,mutedP:mutedP,lobbyList:lobbyList,vcT:{ice:vcIce,opus:vcOpus,lvl:vcPeerLevel,redial:vcRedial,TURN:TURN,chip:()=>!!VC.chip&&VC.chip.style.display!=='none'}};
 (async()=>{try{if(window.claude&&typeof window.claude.use==='function')db=await window.claude.use('db');}catch(e){db=null;}if(db&&screen==='home'){const a=document.activeElement&&document.activeElement.id;if(!a)renderHome();}})();
 })();
 </script>

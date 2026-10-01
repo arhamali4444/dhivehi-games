@@ -45,6 +45,8 @@
        --dgn-bg --dgn-bg2 --dgn-fg --dgn-muted --dgn-line --dgn-soft --dgn-acc --dgn-acc-fg
        --dgn-good --dgn-bad --dgn-scrim --dgn-radius --dgn-font --dgn-head --dgn-room-bg
        --dgn-dock-inset (e.g. "64px 10px auto auto")  --dgn-watch-bottom  --dgn-talk
+   - Localhost = a developer test machine, EXCEPT inside the phone app (window.DG_APP, set by app/scripts/sync-web.mjs):
+     the app runs at https://localhost or capacitor://localhost and behaves exactly like the live site (DGNet.app).
    - Namespaces: every game has its own, "dhivehi<game>/v1/". On localhost ONLY, "?ns=abc" switches
      to a private test namespace "dhivehi<game>/test-abc/". Test namespaces never write to Firestore,
      and on localhost without ?ns= public tables and Quick Match are blocked (private tables only).
@@ -99,7 +101,8 @@
 if(window.DGNet)return;
 const VERSION=1;
 const BROKERS=['wss://broker.emqx.io:8084/mqtt','wss://broker.hivemq.com:8884/mqtt'];
-const LOCAL=/^(localhost|127\.\d+\.\d+\.\d+|\[::1\])$/.test(location.hostname)||/\.(localhost|test)$/.test(location.hostname);
+const APP=!!(window.DG_APP||location.protocol==='capacitor:'||!!(window.Capacitor&&window.Capacitor.isNativePlatform&&window.Capacitor.isNativePlatform()));   /* a local host name means a developer test machine, but NEVER inside the phone app (https://localhost, capacitor://localhost): the app is production */
+const LOCAL=!APP&&(/^(localhost|127\.\d+\.\d+\.\d+|\[::1\])$/.test(location.hostname)||/\.(localhost|test)$/.test(location.hostname));
 const Q=new URLSearchParams(location.search);
 const LIST_MS=10000,STALE_MS=45000,INFO_MS=5000,PING_MS=2500,AWAY_MS=30000,LOST_MS=12000,MIG_STEP=7000,MIG_GIVEUP=50000,
       MAX_VIEW=30,AFK_TURNS=2,QUICK_WAIT=20000,QUICK_FULL=3000,QUICK_AGAIN=25000,BK_MS=1200,
@@ -186,7 +189,7 @@ function fb(){if(fbP)return fbP;
   const app=A.getApps&&A.getApps().length?A.getApp():A.initializeApp(FBCFG);return{A,F,app,db:F.getFirestore(app)};}).catch(e=>{fbP=null;throw e;});return fbP;}
 /* sign-in is only loaded for real presence check-ins (never on localhost or test tables) */
 let fbaP=null;
-function fbAuth(){if(fbaP)return fbaP;fbaP=Promise.all([fb(),import(FBV+'firebase-auth.js')]).then(([f,U])=>({f,U,auth:U.getAuth(f.app)})).catch(e=>{fbaP=null;throw e;});return fbaP;}
+function fbAuth(){if(fbaP)return fbaP;fbaP=Promise.all([fb(),import(FBV+'firebase-auth.js')]).then(([f,U])=>({f,U,auth:(APP&&U.initializeAuth?(()=>{try{return U.initializeAuth(f.app,{persistence:[U.indexedDBLocalPersistence,U.browserLocalPersistence]});}catch(e){return U.getAuth(f.app);}})():U.getAuth(f.app))})).catch(e=>{fbaP=null;throw e;});return fbaP;}
 
 /* ---------- locked names (same rule as Digu) ----------
    A registered player (Digu keeps their username in dd-auth-username) always plays as that username, their own capital
@@ -1358,5 +1361,5 @@ ${cfg.rulesNote?`<p class="dgn-fine">${esc(cfg.rulesNote)}</p>`:''}
   R._quick=()=>({qEnd:T&&T.qEnd,qAsk:T&&T.qAsk,autoAt:T&&T.autoAt,players:T?T.players.map(p=>({id:p.id,name:p.name,cpu:!!p.cpu,gone:!!p.gone})):[],wait:T?T.wait.map(w=>w.id):[]});}   /* localhost test hooks */
  return R;}
 
-window.DGNet={version:VERSION,create,pid,testName,ns:nsFor,local:LOCAL,PRESENCE};
+window.DGNet={version:VERSION,create,pid,testName,ns:nsFor,local:LOCAL,app:APP,PRESENCE};
 })();

@@ -1495,7 +1495,7 @@ const FIT=(()=>{const cx=document.createElement('canvas').getContext('2d');const
    ===================================================================== */
 const $=(s,r=document)=>r.querySelector(s),$$=(s,r=document)=>Array.from(r.querySelectorAll(s));
 const Q=new URLSearchParams(location.search);
-const LOCAL=/^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname)||/\.(localhost|test)$/.test(location.hostname);
+const LOCAL=!(window.DG_APP||location.protocol==='capacitor:'||!!(window.Capacitor&&window.Capacitor.isNativePlatform&&window.Capacitor.isNativePlatform()))&&(/^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname)||/\.(localhost|test)$/.test(location.hostname));   /* a local host name means a developer test machine, but NEVER inside the phone app (https://localhost, capacitor://localhost): the app is production */
 const FAST=LOCAL&&Q.has('fast'),AUTO=LOCAL&&Q.has('auto');
 const RM=matchMedia('(prefers-reduced-motion: reduce)');
 const ls={get(k){try{return localStorage.getItem(k);}catch(e){return null;}},set(k,v){try{localStorage.setItem(k,v);}catch(e){}},del(k){try{localStorage.removeItem(k);}catch(e){}}};

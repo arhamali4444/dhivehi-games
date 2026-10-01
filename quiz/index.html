@@ -391,7 +391,7 @@ label.f{display:block;font-size:12px;font-weight:700;color:var(--muted);margin:1
 const $=s=>document.querySelector(s);
 const app=$('#app');
 const Q=new URLSearchParams(location.search);
-const LOCAL=/^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname)||/\.(localhost|test)$/.test(location.hostname);
+const LOCAL=!(window.DG_APP||location.protocol==='capacitor:'||!!(window.Capacitor&&window.Capacitor.isNativePlatform&&window.Capacitor.isNativePlatform()))&&(/^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname)||/\.(localhost|test)$/.test(location.hostname));   /* a local host name means a developer test machine, but NEVER inside the phone app (https://localhost, capacitor://localhost): the app is production */
 const FAST=LOCAL&&Q.has('fast'),AUTO=LOCAL&&Q.has('auto');
 const reduce=!!(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches);
 const ls={get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}},del(k){try{localStorage.removeItem(k)}catch(e){}}};
@@ -936,7 +936,7 @@ function planAuto(){if(!AUTO||!S||S.phase!=='q'||meIdx()<0||myPicks[S.qi]!=null|
  autoT=setTimeout(()=>{if(!S||S.qi!==qi||S.phase!=='q')return;const q=S.qs[qi];const c=q&&q.c!=null&&rnd()<.75?q.c:Math.floor(rnd()*4);answer(c);},(FAST?250:700)+rnd()*(FAST?500:1600));}
 
 /* ---------- "Report this question": one report per question per device; written to the Firestore "reports" collection
-   (the admin Inbox) with the same shape and sign-in as shared/net.js reports. On localhost it goes to dd-report-queue
+   (the admin Inbox) with the same shape and sign-in as shared/net.js reports. On localhost (never in the phone app) it goes to dd-report-queue
    (Digu sends that queue when it is next online), and so does a report that can't be sent right now. ---------- */
 const QREASONS=['Wrong answer','Spelling / Dhivehi text','Question unclear','Other'],REP_KEY='quiz-reported';
 /* the same reasons in Dhivehi (the report itself always carries the English reason, for the admin Inbox) */
@@ -958,7 +958,7 @@ function openQReport(){if(!S)return;const q=S.qs[S.qi];if(!q||q.c==null)return;i
 const FBV='https://www.gstatic.com/firebasejs/12.19.0/';
 const FBCFG={apiKey:'AIzaSyCl9Xz5r80755hYX0ww2GRaB6TZTH6sayE',authDomain:'dhivehi-digu.firebaseapp.com',projectId:'dhivehi-digu',storageBucket:'dhivehi-digu.firebasestorage.app',messagingSenderId:'778464006205',appId:'1:778464006205:web:7dce5d63707c6b2d0eda54'};
 async function fbReport(rep){const [A,F,U]=await Promise.all([import(FBV+'firebase-app.js'),import(FBV+'firebase-firestore.js'),import(FBV+'firebase-auth.js')]);
- const app=A.getApps&&A.getApps().length?A.getApp():A.initializeApp(FBCFG),auth=U.getAuth(app);try{if(auth.authStateReady)await auth.authStateReady();}catch(e){}
+ const app=A.getApps&&A.getApps().length?A.getApp():A.initializeApp(FBCFG),auth=(!!(window.DG_APP||location.protocol==='capacitor:'||!!(window.Capacitor&&window.Capacitor.isNativePlatform&&window.Capacitor.isNativePlatform()))&&U.initializeAuth?(()=>{try{return U.initializeAuth(app,{persistence:[U.indexedDBLocalPersistence,U.browserLocalPersistence]});}catch(e){return U.getAuth(app);}})():U.getAuth(app));try{if(auth.authStateReady)await auth.authStateReady();}catch(e){}
  const u=auth.currentUser||(await U.signInAnonymously(auth)).user;await F.addDoc(F.collection(F.getFirestore(app),'reports'),Object.assign({},rep,{uid:u.uid,at:F.serverTimestamp()}));}
 function qReportDoc(c,reason,note){return{reason:('Quiz: '+reason).slice(0,40),note:[c.id,LVNAME[c.d]||'',c.lang,'picked '+c.picked,note].filter(Boolean).join(' · ').slice(0,300),
  chat:[('Q: '+c.q).slice(0,200),('Right answer: '+c.right).slice(0,120),('Picked: '+(c.pickedText||'no answer')).slice(0,120)],

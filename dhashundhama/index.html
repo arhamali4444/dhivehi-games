@@ -427,7 +427,7 @@ const buzz=p=>{try{if(navigator.userActivation&&!navigator.userActivation.hasBee
 
 /* ---------- test flags (localhost only): ?fast  ?limit=SECONDS  ?cards=N (per player) ---------- */
 const Q=new URLSearchParams(location.search);
-const LOCAL=/^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname)||/\.(localhost|test)$/.test(location.hostname);
+const LOCAL=!(window.DG_APP||location.protocol==='capacitor:'||!!(window.Capacitor&&window.Capacitor.isNativePlatform&&window.Capacitor.isNativePlatform()))&&(/^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname)||/\.(localhost|test)$/.test(location.hostname));   /* a local host name means a developer test machine, but NEVER inside the phone app (https://localhost, capacitor://localhost): the app is production */
 const FAST=LOCAL&&Q.has('fast');
 const LIMIT_S=LOCAL?Math.max(0,+(Q.get('limit')||0)):0;
 const PER_Q=LOCAL?Math.max(0,+(Q.get('cards')||0)|0):0;

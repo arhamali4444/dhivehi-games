@@ -8,14 +8,15 @@
    Opening a new game adds it to g with one small update; each game is written at most once per day
    (remembered in localStorage "dg-stats"). Days follow Maldives time (UTC+5).
    Loads after the page is idle, never blocks, and gives up silently on any error.
-   Skipped on localhost / file:, on test namespaces (?ns=), for bots, and with Do Not Track / Global Privacy Control.
+   Skipped on localhost / file: (but counted inside the phone app, which runs at https://localhost or capacitor://localhost), on test namespaces (?ns=), for bots, and with Do Not Track / Global Privacy Control.
    Rules: see extras/firestore-rules-admin.txt (match /stats/{period}/visitors/{id}).
    Pages can report an in-page game switch with DGStats.mark('ranga'). */
 (function(){
 'use strict';
 if(window.DGStats)return;
 var H=location.hostname,Q=new URLSearchParams(location.search);
-var LOCAL=/^(localhost|127\.\d+\.\d+\.\d+|\[::1\])$/.test(H)||/\.(localhost|test)$/.test(H)||location.protocol==='file:';
+var APP=!!(window.DG_APP||location.protocol==='capacitor:'||(window.Capacitor&&window.Capacitor.isNativePlatform&&window.Capacitor.isNativePlatform()));   /* a local host name means a developer test machine, but NEVER inside the phone app (https://localhost, capacitor://localhost): the app is production */
+var LOCAL=!APP&&(/^(localhost|127\.\d+\.\d+\.\d+|\[::1\])$/.test(H)||/\.(localhost|test)$/.test(H)||location.protocol==='file:');
 var OFF=LOCAL||Q.has('ns')||navigator.doNotTrack==='1'||window.doNotTrack==='1'||navigator.globalPrivacyControl===true||
  /bot|crawl|spider|slurp|lighthouse|headless|prerender/i.test(navigator.userAgent||'')||!window.Promise||!window.localStorage;
 var KEYS=['home','digu','dhogu','bondi','ranga','dhashundhama','binveriya','atolls','dhihaeh','thaas','joker','juice','raalhu'];
@@ -38,7 +39,7 @@ var st=load(),queue=[],timer=0,busy=false,again=false,fbP=null;
 function fb(){if(fbP)return fbP;
  fbP=Promise.all([import(FBV+'firebase-app.js'),import(FBV+'firebase-auth.js'),import(FBV+'firebase-firestore.js')]).then(function(m){
   var A=m[0],U=m[1],F=m[2];var app=A.getApps().filter(function(a){return a.name==='dg-stats';})[0]||A.initializeApp(CFG,'dg-stats');
-  var auth=U.getAuth(app);
+  var auth=(APP&&U.initializeAuth)?(function(){try{return U.initializeAuth(app,{persistence:[U.indexedDBLocalPersistence,U.browserLocalPersistence]});}catch(e){return U.getAuth(app);}})():U.getAuth(app);
   return (auth.authStateReady?auth.authStateReady():Promise.resolve()).catch(function(){}).then(function(){
    return auth.currentUser||U.signInAnonymously(auth).then(function(c){return c.user;});
   }).then(function(u){return{F:F,db:F.getFirestore(app),uid:u.uid};});
