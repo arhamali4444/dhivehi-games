@@ -249,7 +249,7 @@ const STYLE=`
 .dgn-srv i{width:8px;height:8px;border-radius:50%;background:#d9a441;flex:none}
 .dgn-srv.s-ok i{background:var(--dgn-good,#43B581)}.dgn-srv.s-fail i{background:var(--dgn-bad,#E5604D)}
 .dgn-lbl{display:block;font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--dgn-muted,rgba(245,241,232,.64));margin:14px 0 6px}
-.dgn-in{width:100%;min-width:0;height:46px;border-radius:12px;border:1px solid var(--dgn-line,rgba(255,255,255,.14));background:var(--dgn-bg2,#1d2128);color:inherit;font:600 16px/1 inherit;padding:0 14px;outline:none}
+.dgn-in{width:100%;min-width:0;height:46px;border-radius:12px;border:1px solid var(--dgn-line,rgba(255,255,255,.14));background:var(--dgn-bg2,#1d2128);color:inherit;font-family:inherit;font-weight:600;font-size:16px;line-height:1;padding:0 14px;outline:none}
 .dgn-in:focus{border-color:var(--dgn-acc,#E5604D);box-shadow:0 0 0 3px color-mix(in srgb,var(--dgn-acc,#E5604D) 30%,transparent)}
 .dgn-in.code{text-transform:uppercase;letter-spacing:.3em;font-weight:800;text-align:center;max-width:150px}
 .dgn-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:46px;padding:10px 16px;border-radius:12px;border:1px solid var(--dgn-line,rgba(255,255,255,.12));
@@ -533,8 +533,8 @@ function create(cfg){
     f:live?freeSeats():Math.max(0,MAX-inRoom),cp:cpuSeats().length,info:info.slice(0,60),ids:humanSeats().map(p=>p.id).slice(0,12)};
    n.listed=true;n.clients.forEach(c=>pub(c,topic,msg,true));}
   else if(n.listed){n.listed=false;n.clients.forEach(c=>{try{if(c.ok)c.c.publish(topic,'',true);}catch(e){}});}}
- async function sendTo(tp,pl,obj){const n=net;if(!n||n.role!=='host'||!pl||!pl.key)return;try{const m=await seal(pl.key,obj);let o=n.clients[pl.bi];if(!o||!o.ok)o=n.clients.find(x=>x.ok);pub(o,NS+n.code+'/p/'+tp,m);}catch(e){}}
- const sendToId=(id,obj)=>{const n=net;if(!n)return;n.players.forEach((pl,tp)=>{if(pl.pid===id)sendTo(tp,pl,obj);});};
+ async function sendTo(tp,pl,obj,alt){const n=net;if(!n||n.role!=='host'||!pl||!pl.key)return;try{const m=await seal(pl.key,obj);let o=n.clients[alt?((pl.bi|0)+alt)%n.clients.length:pl.bi];if(!o||!o.ok)o=n.clients.find(x=>x.ok);pub(o,NS+n.code+'/p/'+tp,m);}catch(e){}}
+ const sendToId=(id,obj,alt)=>{const n=net;if(!n)return;n.players.forEach((pl,tp)=>{if(pl.pid===id)sendTo(tp,pl,obj,alt);});};
  function connIds(){const n=net,now=Date.now();return T.players.filter(p=>p.id===myId||(!p.gone&&n&&n.last[p.id]&&now-n.last[p.id]<8000)).map(p=>p.id);}
  function viewers(){const n=net;if(!n||!T)return 0;const ids=new Set();n.players.forEach(pl=>{if(pl.pid&&!seated(pl.pid))ids.add(pl.pid);});return ids.size;}
  let syncT=0,syncAt=0;
@@ -543,7 +543,7 @@ function create(cfg){
   T.rev=(T.rev|0)+1;T.conn=connIds();T.viewers=viewers();
   if(T.status==='lobby'&&cfg.lobbyFix){try{cfg.lobbyFix(T);}catch(e){console.error(e);}}
   n.players.forEach((pl,tp)=>{if(pl.pid)sendState(tp,pl);});
-  updListing(false);backups();renderRoom();updDock();}
+  updListing(false);backups();renderRoom();updDock();vcSoon();}
  function sendState(tp,pl){let s=null;if(T.status!=='lobby'&&cfg.view){try{s=cfg.view(pl.pid,!seated(pl.pid));}catch(e){console.error(e);}}
   sendTo(tp,pl,{k:'state',m:T,s,now:Date.now()});}
  /* the first two successors keep a full copy so a board game can carry on if the host vanishes */
@@ -685,8 +685,8 @@ function create(cfg){
    case 'leave':n.players.delete(tp);drop(id,'left');if(!seat)sync();return;}}
 
  /* ================= JOINER ================= */
- async function joinSend(obj){const n=net;if(!n||n.role!=='join'||!n.key)return false;
-  let o=n.clients[n.bi];if(!o||!o.ok)o=n.clients.find(x=>x.ok);if(!o)return false;
+ async function joinSend(obj,alt){const n=net;if(!n||n.role!=='join'||!n.key)return false;
+  let o=n.clients[alt?((n.bi|0)+alt+n.clients.length)%n.clients.length:n.bi];if(!o||!o.ok)o=n.clients.find(x=>x.ok);if(!o)return false;
   try{const m=await seal(n.key,obj);m.f=n.topic;m.p=n.pub;return pub(o,NS+n.code+'/h',m);}catch(e){return false;}}
  const hello=()=>{const n=net,me=meInfo();return joinSend({k:'hello',id:myId,name:me.name||'Player',look:me.look,spec:n&&n.spec?1:0});};
  async function netJoin(code,o){o=o||{};if(!netOK()){o.onFail&&o.onFail('');return;}vcStop();closeNet();
@@ -731,7 +731,7 @@ function create(cfg){
  function applyState(d){const n=net,m=d.m;if(!m||typeof m!=='object'||!Array.isArray(m.players))return;
   if(T&&T.code===m.code&&(m.ep|0)===(T.ep|0)&&(m.rev|0)<=(T.rev|0))return;
   if(typeof d.now==='number')noteSkew(d.now);
-  const prev=T;T=m;T.wait=T.wait||[];V=d.s;
+  const prev=T;T=m;T.wait=T.wait||[];V=d.s;vcSoon();
   if(!n.ready){n.ready=true;clearTimeout(n.failT);role='join';keepAwake(true);hideQuick();closeHub();
    try{const u=new URL(location.href);if(u.searchParams.has('t')){u.searchParams.delete('t');history.replaceState(history.state,'',u.pathname+u.search+u.hash);}}catch(e){}}
   const me=seatOf(myId);
@@ -814,8 +814,33 @@ function create(cfg){
   if(meInfo().name)return true;openHub();setTimeout(()=>{const i=document.getElementById('dgnName');if(i){i.focus();}},120);toast('Choose a name first, so the others know who you are.');return false;}
 
  /* ================= VOICE (WebRTC, signalled through the table) ================= */
- const VC={peers:new Map(),stream:null,on:false,deaf:ls.get('dgn-deaf')==='1',ac:null,me:null,lv:{},code:null,box:null,lit:false,mute:new Set(),fake:null};
+ const VC={peers:new Map(),stream:null,on:false,deaf:ls.get('dgn-deaf')==='1',ac:null,me:null,lv:{},code:null,box:null,lit:false,mute:new Set(),fake:null,pend:new Set(),fails:{},q:new Map(),qT:0,sq:new Map(),chip:null,dbg:null,lose:0};
  const ICE=[{urls:['stun:stun.l.google.com:19302','stun:stun1.l.google.com:19302']},{urls:'stun:stun.cloudflare.com:3478'}];
+ /* A1 (prepared, Oct 2026): a TURN relay for phones that can't reach each other directly (mobile data, some Wi-Fi). Short-lived
+    passwords come from our Cloudflare Worker (extras/turn-worker). OFF until the Worker is live: then set TURN_ON=true and bump ?v=.
+    window.DG_TURN_URL can point elsewhere. A failure or a 2 s timeout falls back to the STUN-only list above (today's behaviour);
+    a good answer is cached until shortly before it expires. */
+ const TURN_ON=false,DG_TURN_URL='https://turn.dhivehi.games/api/turn';
+ const TURN={ice:null,exp:0,p:null,bad:0};
+ const vcTurnOn=()=>TURN_ON||(LOCAL&&!!window.__vcTurnTest);
+ const vcIsTurn=u=>typeof u==='string'&&/^turns?:/i.test(u);
+ const vcHasTurn=ice=>Array.isArray(ice)&&ice.some(s=>s&&[].concat(s.urls).some(vcIsTurn));
+ /* keep well-formed entries only; drop port 53 (browsers time out on it, and we don't trickle candidates) */
+ function vcTurnList(a){const out=[];if(!Array.isArray(a))return out;
+  a.slice(0,8).forEach(s=>{if(!s||typeof s!=='object')return;const u=[].concat(s.urls).filter(x=>typeof x==='string'&&/^(stun|turns?):/i.test(x)&&!/:53(\?|$)/.test(x));if(!u.length)return;
+   const o={urls:u};if(typeof s.username==='string')o.username=s.username;if(typeof s.credential==='string')o.credential=s.credential;
+   if(u.some(vcIsTurn)&&!(o.username&&o.credential))return;out.push(o);});return out;}
+ function vcIce(){if(!vcTurnOn())return Promise.resolve(ICE);const now=Date.now();
+  if(TURN.ice&&now<TURN.exp)return Promise.resolve(TURN.ice);if(now<TURN.bad)return Promise.resolve(ICE);
+  if(!TURN.p)TURN.p=new Promise(res=>{let done=false;const fin=v=>{if(!done){done=true;TURN.p=null;res(v);}};
+   const ac=window.AbortController?new AbortController():null;
+   const t=setTimeout(()=>{try{ac&&ac.abort();}catch(e){}TURN.bad=Date.now()+30000;fin(ICE);},2000);
+   fetch(window.DG_TURN_URL||DG_TURN_URL,{signal:ac?ac.signal:undefined,cache:'no-store',credentials:'omit',mode:'cors'})
+    .then(r=>r.ok?r.json():Promise.reject(new Error('turn '+r.status)))
+    .then(j=>{const s=vcTurnList(j&&j.iceServers);if(!vcHasTurn(s))throw new Error('no turn');
+     const ttl=Math.max(120,Math.min(86400,+(j&&j.ttl)||3600));TURN.ice=ICE.concat(s);TURN.exp=Date.now()+(ttl-60)*1000;TURN.bad=0;clearTimeout(t);fin(TURN.ice);})
+    .catch(()=>{clearTimeout(t);if(!(TURN.ice&&Date.now()<TURN.exp))TURN.bad=Date.now()+30000;fin(ICE);});});
+  return TURN.p;}
  /* v5: voice at Quick Match tables too for games with computer seats (mic off until tapped); older games keep friends-only */
  const vcTable=()=>!!role&&!!T&&(!T.quick||CPU)&&seated(myId);
  const vcHears=id=>!VC.deaf&&!VC.mute.has(id);
@@ -824,40 +849,157 @@ function create(cfg){
   if(role==='host'){T.mic=T.mic||{};if(!!T.mic[myId]!==on){if(on)T.mic[myId]=1;else delete T.mic[myId];sync();}}else joinSend({k:'mic',on:on?1:0});}
  const vcSupported=()=>!!window.RTCPeerConnection&&!!(navigator.mediaDevices&&navigator.mediaDevices.getUserMedia)&&window.isSecureContext!==false;
  const vcAvail=()=>vcTable()&&vcSupported();
- function vcSend(to,d){if(role==='host')sendToId(to,{k:'rtc',f:myId,d});else joinSend({k:'rtc',to,d});}
+ function vcSend(to,d,alt){if(LOCAL&&VC.lose>0&&d&&d.t==='offer'){VC.lose--;return;}   /* tests: R._vcLose(n) loses the next n offers */
+  if(role==='host')sendToId(to,{k:'rtc',f:myId,d},alt);else joinSend({k:'rtc',to,d},alt);}
  function vcAC(){if(!VC.ac){const A=window.AudioContext||window.webkitAudioContext;if(A)try{VC.ac=new A();}catch(e){}}if(VC.ac&&VC.ac.state==='suspended')VC.ac.resume().catch(()=>{});return VC.ac;}
  function vcMeter(stream){const ac=vcAC();if(!ac)return null;try{const src=ac.createMediaStreamSource(stream),an=ac.createAnalyser();an.fftSize=512;an.smoothingTimeConstant=.5;src.connect(an);return{an,buf:new Uint8Array(an.fftSize),src};}catch(e){return null;}}
- function vcWait(pc){return new Promise(r=>{if(pc.iceGatheringState==='complete')return r();const t=setTimeout(r,2500);pc.addEventListener('icegatheringstatechange',()=>{if(pc.iceGatheringState==='complete'){clearTimeout(t);r();}});});}
+ /* A5: send the connection details once a relay route is known (or gathering is done): at most 4 s with a relay server,
+    2.5 s without (then a direct public address is the best there is, so it goes 0.5 s after the first one) */
+ function vcWait(pc,turn){return new Promise(r=>{if(pc.iceGatheringState==='complete')return r();let g=0,t=0;
+  const done=()=>{clearTimeout(t);clearTimeout(g);pc.removeEventListener('icegatheringstatechange',chk);pc.removeEventListener('icecandidate',cand);r();};
+  const chk=()=>{if(pc.iceGatheringState==='complete')done();};
+  const cand=e=>{const c=e.candidate;if(!c){done();return;}const ty=c.type||(/ typ (\w+)/.exec(c.candidate||'')||[])[1];
+   if(!g&&(ty==='relay'||(!turn&&ty==='srflx')))g=setTimeout(done,ty==='relay'?150:500);};
+  t=setTimeout(done,turn?4000:2500);pc.addEventListener('icegatheringstatechange',chk);pc.addEventListener('icecandidate',cand);});}
+ /* C1: ask the other phone for speech-friendly Opus (in-band FEC, mono, 32 kb/s). Only the Opus a=fmtp line of the SDP we SEND
+    changes; our own local description is never touched, and anything unexpected leaves the SDP as it is. */
+ function vcOpus(sdp){try{const m=/^a=rtpmap:(\d+) opus\/48000/im.exec(sdp);if(!m)return sdp;const f=new RegExp('^a=fmtp:'+m[1]+' (.*)$','m').exec(sdp);if(!f)return sdp;
+  const want={useinbandfec:'1',stereo:'0',maxaveragebitrate:'32000'},seen={},has=k=>Object.prototype.hasOwnProperty.call(want,k);
+  const ps=f[1].split(';').map(x=>x.trim()).filter(Boolean).map(x=>{const k=x.split('=')[0].trim().toLowerCase();if(has(k)){seen[k]=1;return k+'='+want[k];}return x;});
+  Object.keys(want).forEach(k=>{if(!seen[k])ps.push(k+'='+want[k]);});const line='a=fmtp:'+m[1]+' '+ps.join(';');return sdp.replace(f[0],()=>line);}catch(e){return sdp;}}
+ /* C3: voice-only sender settings where the browser allows them */
+ function vcTune(p){const s=p.tr&&p.tr.sender;if(!s||p.tuned||!s.getParameters||!s.setParameters)return;
+  try{const pr=s.getParameters();if(!pr||!pr.encodings||!pr.encodings.length)return;pr.encodings.forEach(e=>{e.maxBitrate=32000;e.priority='high';e.networkPriority='high';});
+   p.tuned=1;const r=s.setParameters(pr);if(r&&r.catch)r.catch(()=>{p.tuned=0;});}catch(e){p.tuned=0;}}
  function vcAttach(p){if(!p.tr)return;const tk=VC.stream&&VC.on?VC.stream.getAudioTracks()[0]:null;p.tr.sender.replaceTrack(tk).catch(()=>{});}
- function vcPeer(id,offerer){let p=VC.peers.get(id);if(p)return p;
-  const pc=new RTCPeerConnection({iceServers:ICE});
+ /* A2: the iPhone audio mode. Never 'ambient' at a voice table (it stops the mic and obeys the silent switch): my mic in use ->
+    play-and-record, only listening -> playback, no voice -> ambient again. The game's own sound unlock() reads the same two flags. */
+ function vcSess(){const at=VC.peers.size>0;window.__vcAt=at;const s=navigator.audioSession;if(!s)return;
+  const t=window.__vcRec?'play-and-record':at?'playback':'ambient';try{if(s.type!==t&&(t!=='ambient'||s.type==='playback'||s.type==='play-and-record'))s.type=t;}catch(e){}}
+ /* B1: Safari keeps voices silent until a tap: say so with a small "Tap to hear voices" chip instead of waiting quietly */
+ function vcPlay(p){const au=p.au;if(!au||!au.srcObject||!au.paused)return;let r;try{r=au.play();}catch(e){return;}
+  if(r&&r.then)r.then(vcChipChk,e=>{if(e&&e.name==='NotAllowedError'&&VC.peers.get(p.id)===p)vcChip(true);});}
+ function vcPlayAll(){if(VC.ac)vcAC();VC.peers.forEach(vcPlay);vcChipChk();}
+ function vcChipChk(){let w=false;VC.peers.forEach(p=>{if(p.au.srcObject&&p.au.paused)w=true;});if(!w)vcChip(false);}
+ function vcChip(on){let c=VC.chip;if(!on){if(c&&c.style.display!=='none')c.style.display='none';return;}
+  if(!c){c=VC.chip=document.createElement('button');c.type='button';c.className='vc-chip';
+   c.innerHTML='<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9.5h3.5L12 5v14l-4.5-4.5H4z"/><path d="M15.5 9a4 4 0 0 1 0 6"/><path d="M18 6.5a7.5 7.5 0 0 1 0 11"/></svg><span>Tap to hear voices</span>';
+   c.style.cssText='position:fixed;left:50%;top:calc(env(safe-area-inset-top,0px) + 64px);transform:translateX(-50%);z-index:2147483000;display:none;align-items:center;gap:7px;max-width:calc(100vw - 32px);box-sizing:border-box;margin:0;padding:9px 16px;border:0;border-radius:999px;background:rgba(18,20,28,.92);color:#fff;font:600 14px/1.2 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;box-shadow:0 6px 18px rgba(0,0,0,.28);cursor:pointer;white-space:nowrap;-webkit-tap-highlight-color:transparent';
+   c.addEventListener('click',vcPlayAll);document.body.appendChild(c);}
+  if(c.style.display!=='flex')c.style.display='flex';}
+ function vcPeer(id,offerer,ice){let p=VC.peers.get(id);if(p)return p;ice=ice||ICE;const turn=vcHasTurn(ice);
+  /* A6: after two failed tries, with a relay server available, this call goes through the relay only */
+  const relay=!!offerer&&turn&&(VC.fails[id]|0)>=2;
+  const pc=new RTCPeerConnection(relay?{iceServers:ice,iceTransportPolicy:'relay'}:{iceServers:ice});
   if(!VC.box){VC.box=document.createElement('div');VC.box.hidden=true;document.body.appendChild(VC.box);}
-  const au=document.createElement('audio');au.autoplay=true;au.setAttribute('playsinline','');VC.box.appendChild(au);
-  p={pc,tr:offerer?pc.addTransceiver('audio',{direction:'sendrecv'}):null,au,meter:null,t:Date.now()};VC.peers.set(id,p);vcAttach(p);
-  pc.ontrack=e=>{const st=(e.streams&&e.streams[0])||new MediaStream([e.track]);au.srcObject=st;au.muted=!vcHears(id);au.play().catch(()=>{});p.meter=vcMeter(st);};
-  pc.onconnectionstatechange=()=>{if(pc.connectionState==='failed')vcDrop(id);};
+  const au=document.createElement('audio');au.autoplay=true;au.playsInline=true;au.setAttribute('playsinline','');VC.box.appendChild(au);
+  const now=Date.now();
+  p={id,pc,tr:offerer?pc.addTransceiver('audio',{direction:'sendrecv'}):null,au,meter:null,rx:null,t:now,ch:now,cs:'new',off:!!offerer,c:offerer?rid(4):'',n:0,rs:0,ok:false,turn,relay};
+  VC.peers.set(id,p);vcAttach(p);vcSess();
+  pc.ontrack=e=>{const st=(e.streams&&e.streams[0])||new MediaStream([e.track]);p.rx=e.receiver||p.rx;
+   /* B2: the same stream again (a repeated ontrack): leave the player alone */
+   if(!au.srcObject||au.srcObject.id!==st.id){au.srcObject=st;if(p.meter){try{p.meter.src.disconnect();}catch(x){}p.meter=null;}}
+   au.muted=!(vcHears(id));vcPlay(p);
+   /* C2: a small playout target where supported (Chrome, Android, Firefox; Safari has no such setting) */
+   try{if(p.rx&&'jitterBufferTarget' in p.rx)p.rx.jitterBufferTarget=60;}catch(x){}
+   /* C4: the speaking ring reads the call's own audio level; only browsers without it get the old analyser */
+   if(!(p.rx&&typeof p.rx.getSynchronizationSources==='function')&&!p.meter)p.meter=vcMeter(st);
+   /* B3: sound resumes -> play; the track ends -> redial */
+   const tk=e.track;if(tk){tk.onmute=()=>{p.mut=1;};tk.onunmute=()=>{p.mut=0;vcPlay(p);};tk.onended=()=>{p.dead=1;};}};
+  /* A3: a route that drops is repaired with an ICE restart (after 4 s 'disconnected', or at once on 'failed'); p.ch = last change */
+  const onst=()=>{if(VC.peers.get(id)!==p)return;const cs=pc.connectionState||pc.iceConnectionState;if(cs===p.cs)return;p.cs=cs;p.ch=Date.now();
+   if(cs==='connected'||cs==='completed'){p.ok=true;p.rs=0;delete VC.fails[id];clearTimeout(p.dT);vcTune(p);vcPlay(p);}
+   else if(cs==='disconnected'){clearTimeout(p.dT);p.dT=setTimeout(()=>{const s=pc.connectionState||pc.iceConnectionState;if(VC.peers.get(id)===p&&(s==='disconnected'||s==='failed'))vcRestart(id,p);},4000);}
+   else if(cs==='failed'){clearTimeout(p.dT);if(!p.ok)VC.fails[id]=(VC.fails[id]|0)+1;vcRestart(id,p);}};
+  pc.addEventListener('connectionstatechange',onst);pc.addEventListener('iceconnectionstatechange',onst);
   return p;}
- function vcDrop(id){const p=VC.peers.get(id);if(!p)return;VC.peers.delete(id);try{p.pc.close();}catch(e){}try{p.au.srcObject=null;p.au.remove();}catch(e){}try{p.meter&&p.meter.src.disconnect();}catch(e){}delete VC.lv[id];}
- async function vcCall(id){const p=vcPeer(id,true);try{await p.pc.setLocalDescription(await p.pc.createOffer());await vcWait(p.pc);if(VC.peers.get(id)!==p)return;vcSend(id,{t:'offer',sdp:p.pc.localDescription.sdp});}catch(e){vcDrop(id);}}
- async function vcSignal(from,d){if(!vcAvail()||!d||!from||from===myId||!seated(from)||isCpuP(seatOf(from)))return;
-  try{if(d.t==='offer'){vcDrop(from);const p=vcPeer(from,false);await p.pc.setRemoteDescription({type:'offer',sdp:String(d.sdp)});
-    p.tr=p.pc.getTransceivers()[0];if(p.tr){p.tr.direction='sendrecv';vcAttach(p);}
-    await p.pc.setLocalDescription(await p.pc.createAnswer());await vcWait(p.pc);if(VC.peers.get(from)!==p)return;vcSend(from,{t:'answer',sdp:p.pc.localDescription.sdp});}
-   else if(d.t==='answer'){const p=VC.peers.get(from);if(p&&p.pc.signalingState==='have-local-offer')await p.pc.setRemoteDescription({type:'answer',sdp:String(d.sdp)});}}catch(e){vcDrop(from);}}
+ function vcDrop(id){const p=VC.peers.get(id);if(!p)return;VC.peers.delete(id);clearInterval(p.rT);clearTimeout(p.dT);try{p.pc.close();}catch(e){}try{p.au.srcObject=null;p.au.remove();}catch(e){}try{p.meter&&p.meter.src.disconnect();}catch(e){}delete VC.lv[id];vcSess();if(!VC.peers.size)vcChip(false);}
+ function vcRedial(id){vcDrop(id);vcCall(id);}
+ /* only the caller (the lower id) repairs: an ICE restart on the same call, twice at most; then (or if it never connected) a fresh call */
+ function vcRestart(id,p){if(VC.peers.get(id)!==p||!p.off)return;
+  if(!p.ok||p.rs>=2){if(p.ok)VC.fails[id]=(VC.fails[id]|0)+1;if(p.ok||Date.now()-p.t>5000)vcRedial(id);return;}
+  p.rs++;p.ch=Date.now();try{if(p.pc.restartIce)p.pc.restartIce();}catch(e){}vcOffer(id,p,true);}
+ async function vcOffer(id,p,restart){const pc=p.pc;clearInterval(p.rT);
+  try{const o=await pc.createOffer(restart?{iceRestart:true}:{});if(VC.peers.get(id)!==p)return;await pc.setLocalDescription(o);await vcWait(pc,p.turn);
+   if(VC.peers.get(id)!==p||pc.signalingState!=='have-local-offer')return;
+   const m={t:'offer',sdp:vcOpus(pc.localDescription.sdp),c:p.c,n:++p.n};p.om=m;vcSend(id,m);
+   /* A4: no answer within 4 s: the same offer again, 3 times at most, through the other broker each time */
+   let k=0;clearInterval(p.rT);p.rT=setInterval(()=>{if(VC.peers.get(id)!==p||pc.signalingState!=='have-local-offer'||p.om!==m||++k>3){clearInterval(p.rT);return;}vcSend(id,m,k);},4000);}
+  catch(e){if(VC.peers.get(id)===p){if(restart)vcRedial(id);else vcDrop(id);}}}
+ async function vcCall(id){if(VC.peers.has(id)||VC.pend.has(id))return;VC.pend.add(id);let ice;try{ice=await vcIce();}catch(e){ice=ICE;}VC.pend.delete(id);
+  if(VC.peers.has(id)||!vcAvail())return;vcOffer(id,vcPeer(id,true,ice),false);}
+ /* signals from one player are handled one at a time, in order */
+ function vcSignal(from,d){if(!d||!from||from===myId)return;const prev=VC.sq.get(from)||Promise.resolve();
+  const nx=prev.then(()=>vcSig(from,d)).catch(()=>{});VC.sq.set(from,nx);nx.then(()=>{if(VC.sq.get(from)===nx)VC.sq.delete(from);});}
+ async function vcSig(from,d){
+  /* A4: an offer that arrives before the table state shows that player is kept for 5 s instead of dropped */
+  if(!vcAvail()||!(seated(from)&&!isCpuP(seatOf(from)))){if(d.t==='offer'&&vcSupported()&&(!!role))vcQueue(from,d);return;}
+  const c=typeof d.c==='string'?d.c.slice(0,16):'',n=d.n|0;
+  try{if(d.t==='offer'){let p=VC.peers.get(from);const same=!!(p&&c&&p.c===c&&!p.off);
+    if(same&&n<=p.n){if(n===p.n&&p.am)vcSend(from,p.am);return;}   /* a resent offer we already answered: answer again */
+    if(!same){vcDrop(from);let ice;try{ice=await vcIce();}catch(e){ice=ICE;}if(VC.peers.has(from)||!vcAvail())return;p=vcPeer(from,false,ice);p.c=c;}
+    p.n=n;p.am=null;await p.pc.setRemoteDescription({type:'offer',sdp:String(d.sdp)});
+    if(!p.tr)p.tr=p.pc.getTransceivers()[0]||null;if(p.tr){p.tr.direction='sendrecv';vcAttach(p);}
+    await p.pc.setLocalDescription(await p.pc.createAnswer());await vcWait(p.pc,p.turn);if(VC.peers.get(from)!==p)return;
+    const a={t:'answer',sdp:vcOpus(p.pc.localDescription.sdp)};if(c){a.c=c;a.n=n;}p.am=a;vcSend(from,a);vcTune(p);}
+   else if(d.t==='answer'){const p=VC.peers.get(from);if(!p||!p.off||(d.c&&d.c!==p.c)||(d.n&&(d.n|0)!==p.n))return;
+    if(p.pc.signalingState==='have-local-offer'){clearInterval(p.rT);await p.pc.setRemoteDescription({type:'answer',sdp:String(d.sdp)});vcTune(p);}}}
+  catch(e){vcDrop(from);}}
+ function vcQueue(from,d){if(VC.q.size>=8&&!VC.q.has(from))return;VC.q.set(from,{d,t:Date.now()});if(!VC.qT)VC.qT=setInterval(vcFlushQ,400);}
+ function vcFlushQ(){const now=Date.now();VC.q.forEach((x,from)=>{if(now-x.t>5000){VC.q.delete(from);return;}if(vcAvail()&&(seated(from)&&!isCpuP(seatOf(from)))){VC.q.delete(from);vcSignal(from,x.d);}});
+  if(!VC.q.size&&VC.qT){clearInterval(VC.qT);VC.qT=0;}}
+ /* every 3 s and whenever the table changes (A7): call anyone new (the lower id calls); redial a call that stays down
+    (15 s if it never connected, 10 s after the last change once it had) */
+ function vcRedials(ids){const now=Date.now();
+  ids.forEach(id=>{const p=VC.peers.get(id);if(!p){if(myId<id)vcCall(id);return;}
+   const cs=p.pc.connectionState||p.pc.iceConnectionState,up=cs==='connected'||cs==='completed';
+   if(myId<id){if(p.dead||(cs==='failed'&&!p.ok&&now-p.t>5000)||(!up&&now-p.ch>(p.ok?10000:15000))){if(!p.dead&&!up&&cs!=='new'&&cs!=='failed')VC.fails[id]=(VC.fails[id]|0)+1;vcRedial(id);return;}}
+   else if(p.dead||((cs==='failed'||cs==='closed')&&now-p.ch>20000)){vcDrop(id);return;}
+   p.au.muted=!(vcHears(id));});
+  if(VC.q.size)vcFlushQ();vcSess();}
+ var vcSoonT=0;
+ function vcSoon(){if(!vcSoonT)vcSoonT=setTimeout(()=>{vcSoonT=0;try{vcLoop();}catch(e){}},40);}
+ /* C4: a remote player's level from the call itself (RTP audio level; Safari 12.1+, Chrome); the analyser only as a fallback */
+ function vcPeerLevel(p){if(!p||p.mut)return 0;const r=p.rx;
+  if(!p.meter&&r&&typeof r.getSynchronizationSources==='function'){try{const s=r.getSynchronizationSources()[0];if(!s)return 0;
+    if(typeof s.audioLevel!=='number'){if(p.au.srcObject)p.meter=vcMeter(p.au.srcObject);return 0;}
+    const pn=performance.now(),ts=+s.timestamp||0,age=Math.min(Math.abs(pn-ts),Math.abs(Date.now()-ts),Math.abs((performance.timeOrigin||0)+pn-ts));
+    return age>600?0:Math.min(1,s.audioLevel*5);}catch(e){return 0;}}
+  return vcLevel(p.meter);}
+ /* C5: ?vcdebug=1 shows each call's state, route (host/srflx/relay), round trip and jitter buffer, to check real phones */
+ const VC_DBG=/[?&]vcdebug=1(&|$)/.test(location.search);
+ async function vcDebug(){let b=VC.dbg;if(!b){b=VC.dbg=document.createElement('pre');b.className='vc-dbg';b.setAttribute('aria-hidden','true');
+   b.style.cssText='position:fixed;left:4px;bottom:calc(env(safe-area-inset-bottom,0px) + 4px);z-index:2147483001;max-width:calc(100vw - 8px);box-sizing:border-box;margin:0;padding:5px 7px;background:rgba(0,0,0,.8);color:#8f8;font:10px/1.35 ui-monospace,Menlo,Consolas,monospace;border-radius:6px;pointer-events:none;white-space:pre-wrap;word-break:break-all';document.body.appendChild(b);}
+  const s=navigator.audioSession,L=['voice · mic '+(VC.on?'on':'off')+' · relay '+(!vcTurnOn()?'off':TURN.ice&&Date.now()<TURN.exp?'ready':'none')+' · audio '+(s?s.type:'-')];
+  for(const [id,p] of VC.peers){let route='-',rtt='-',jb='-',lost='-';
+   try{const r=await p.pc.getStats(),by={};let pair=null;r.forEach(x=>{by[x.id]=x;});
+    r.forEach(x=>{if(x.type==='transport'&&x.selectedCandidatePairId&&by[x.selectedCandidatePairId])pair=by[x.selectedCandidatePairId];});
+    if(!pair)r.forEach(x=>{if(!pair&&x.type==='candidate-pair'&&(x.selected||(x.nominated&&x.state==='succeeded')))pair=x;});
+    if(pair){const lc=by[pair.localCandidateId],rc=by[pair.remoteCandidateId];route=(lc?lc.candidateType+(lc.protocol?'/'+lc.protocol:''):'?')+'>'+(rc?rc.candidateType:'?');
+     if(typeof pair.currentRoundTripTime==='number')rtt=Math.round(pair.currentRoundTripTime*1000)+'ms';}
+    r.forEach(x=>{if(x.type==='inbound-rtp'&&(x.kind||x.mediaType)==='audio'){if(x.jitterBufferEmittedCount)jb=Math.round(x.jitterBufferDelay/x.jitterBufferEmittedCount*1000)+'ms';if(x.packetsLost!=null)lost=x.packetsLost;}});}catch(e){}
+   L.push(String(nameOf(id)||id).slice(0,12)+' '+(p.pc.connectionState||p.pc.iceConnectionState)+' '+route+' rtt '+rtt+' jb '+jb+' lost '+lost+(p.relay?' [relay only]':'')+(p.au.paused&&p.au.srcObject?' [paused]':'')+((VC.fails[id]|0)?' fails '+VC.fails[id]:''));}
+  const t=L.join('\n');if(b.textContent!==t)b.textContent=t;}
+ if(VC_DBG)setInterval(()=>{vcDebug().catch(()=>{});},2000);
+ /* D2: inside the app the mic permission lives in the phone's Settings, not in a browser */
+ const vcApp=()=>{const C=window.Capacitor;try{return !!(C&&(typeof C.isNativePlatform!=='function'||C.isNativePlatform()));}catch(e){return false;}};
+ function vcAppSteps(){const C=window.Capacitor;let pl='';try{pl=C&&C.getPlatform?C.getPlatform():'';}catch(e){}
+  return pl==='android'?'<li>Open your phone’s <b>Settings</b> → <b>Apps</b> → <b>Dhivehi Games</b> → <b>Permissions</b>.</li><li>Set <b>Microphone</b> to <b>Allow</b>.</li><li>Come back to the game and tap the mic again.</li>'
+   :'<li>Open the iPhone <b>Settings</b> app → <b>Apps</b> → <b>Dhivehi Games</b>.</li><li>Turn <b>Microphone</b> on.</li><li>Come back to the game and tap the mic again.</li>';}
  function vcStop(){[...VC.peers.keys()].forEach(vcDrop);if(VC.stream){VC.stream.getTracks().forEach(t=>t.stop());VC.stream=null;}try{VC.me&&VC.me.src.disconnect();}catch(e){}VC.me=null;VC.on=false;VC.lv={};VC.code=null;
-  if(window.__vcRec){window.__vcRec=false;try{if(navigator.audioSession)navigator.audioSession.type='ambient';}catch(e){}}vcUI();}
- function vcMicHelp(e){window.__vcRec=false;try{if(navigator.audioSession)navigator.audioSession.type='ambient';}catch(x){}const nm=(e&&e.name)||'Error';
+  window.__vcRec=false;vcSess();vcChip(false);vcUI();}
+ function vcMicHelp(e){window.__vcRec=false;vcSess();const nm=(e&&e.name)||'Error',app=vcApp();
   const ios=/iP(hone|ad|od)/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1),crios=/CriOS/.test(navigator.userAgent);
   if(nm==='NotReadableError'||nm==='AbortError'){toast('Your mic is busy. End any phone or WhatsApp call, then try again.',5000);return;}
   if(nm==='NotFoundError'||nm==='OverconstrainedError'){toast('No microphone found on this device.',4500);return;}
-  const steps=ios?(crios?'<li>Open the iPhone <b>Settings</b> app → <b>Apps</b> → <b>Chrome</b>.</li><li>Turn <b>Microphone</b> on.</li><li>Come back and reload the game.</li>'
+  const steps=app?vcAppSteps():ios?(crios?'<li>Open the iPhone <b>Settings</b> app → <b>Apps</b> → <b>Chrome</b>.</li><li>Turn <b>Microphone</b> on.</li><li>Come back and reload the game.</li>'
    :'<li>In Safari, tap the <b>page settings</b> button on the left of the address bar (or <b>aA</b>).</li><li>Tap <b>Website Settings</b> → <b>Microphone</b> → <b>Allow</b>.</li><li>Reload the game and tap the mic again.</li>')
    :'<li>Tap the <b>lock</b> or <b>settings</b> icon next to the address.</li><li>Set <b>Microphone</b> to <b>Allow</b>.</li><li>Reload the game and tap the mic again.</li>';
-  notice('Allow the microphone',`<p>Your browser blocked the mic for this game. To talk:</p><ol>${steps}</ol><p style="font-size:12px">You can still hear everyone without a mic. (${esc(nm)})</p>`,true);}
+  notice('Allow the microphone',`<p>${app?'The app isn’t allowed to use the microphone.':'Your browser blocked the mic for this game.'} To talk:</p><ol>${steps}</ol><p style="font-size:12px">You can still hear everyone without a mic. (${esc(nm)})</p>`,true);}
  async function vcMic(){if(vcTable()&&!vcSupported()){const why=!window.isSecureContext?'this page isn’t opened over a secure (https) link':!window.RTCPeerConnection?'this browser can’t make voice calls':'this browser doesn’t allow microphone access';
    notice('Voice chat isn’t available here',`<p>Voice needs a browser that supports it, and ${why}. Update your browser, and open the game from its normal link, not inside WhatsApp, Instagram or Facebook.</p>`,true);return;}
   if(!vcAvail()){toast(T&&T.quick&&!CPU?'Voice chat is for friends tables, not Quick Match.':'Voice chat works for players at the table.');return;}
-  vcAC();VC.peers.forEach(p=>{if(p.au.paused&&p.au.srcObject)p.au.play().catch(()=>{});});
+  vcAC();vcPlayAll();
   /* iPhone: an 'ambient' audio session forbids recording, so switch to play-and-record first */
   if(!VC.stream){window.__vcRec=true;try{if(navigator.audioSession)navigator.audioSession.type='play-and-record';}catch(e){}
    try{VC.stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true}});}
@@ -897,15 +1039,15 @@ function create(cfg){
  function openVoice(){ensureUI();if(!vcTable()){toast(T&&T.quick&&!CPU?'Voice chat is for friends tables, not Quick Match.':'Voice chat works for players at the table.');return;}
   const t=$i('dgnTray');if(!t.hidden&&t.dataset.k==='voice'){closeTray();return;}t.hidden=false;renderVoice();} function vcLevel(m){if(!m)return 0;m.an.getByteTimeDomainData(m.buf);let s=0;for(let i=0;i<m.buf.length;i++){const v=(m.buf[i]-128)/128;s+=v*v;}return Math.min(1,Math.sqrt(s/m.buf.length)*5);}
  function avatarEl(id){let el=null;if(UI.roomOn){el=document.querySelector(`.dgn-plist li[data-pid="${CSS.escape(id)}"] .av,.dgn-st[data-pid="${CSS.escape(id)}"] .av`);}if(!el&&cfg.avatarEl){try{el=cfg.avatarEl(id);}catch(e){}}return el||null;}
- setInterval(()=>{if(!vcAvail()){if(VC.peers.size||VC.stream)vcStop();return;}
+ function vcLoop(){if(!vcAvail()){if(VC.peers.size||VC.stream)vcStop();return;}
   if(VC.code&&VC.code!==T.code)vcStop();VC.code=T.code;
   const ids=T.players.filter(p=>p.id!==myId&&!p.gone&&!p.cpu).map(p=>p.id);
   [...VC.peers.keys()].forEach(id=>{if(!ids.includes(id))vcDrop(id);});
-  ids.forEach(id=>{const p=VC.peers.get(id);if(!p){if(myId<id)vcCall(id);return;}
-   const cs=p.pc.connectionState;if(myId<id&&cs!=='connected'&&Date.now()-p.t>15000){vcDrop(id);vcCall(id);}p.au.muted=!vcHears(id);});
+  vcRedials(ids);
   if(VC.on&&!(T.mic&&T.mic[myId]))vcShare();
-  vcUI();},3000);
- document.addEventListener('pointerdown',()=>{if(!VC.peers.size)return;vcAC();VC.peers.forEach(p=>{if(p.au.paused&&p.au.srcObject)p.au.play().catch(()=>{});});},{passive:true,capture:true});
+  vcUI();}
+ setInterval(vcLoop,3000);
+ document.addEventListener('pointerdown',()=>{if(VC.peers.size)vcPlayAll();},{passive:true,capture:true});
  /* v5 speaking ring: a .dgn-ring element around each seat avatar, scaled and faded with the voice level (~18 readings
     a second; it rises at once and fades about 0.3 s after the talking stops). Plus a crossed-out mic badge on anyone
     whose mic is off (or who I muted). Games re-render their seats, so the ring and badge are put back when missing. */
@@ -927,7 +1069,7 @@ function create(cfg){
   if(!T||!role||(!tbl&&!talk)){if(VC.lit){decoClear();VC.lit=false;}return;}
   const slow=(++vcTick%6)===0;VC.lit=true;
   T.players.forEach(q=>{if(q.cpu)return;const fk=VC.fake&&VC.fake[q.id];
-   const raw=q.gone?0:fk!=null?+fk:q.id===myId?(VC.on?vcLevel(VC.me):0):(vcHears(q.id)?vcLevel((VC.peers.get(q.id)||{}).meter):0);
+   const raw=q.gone?0:fk!=null?+fk:q.id===myId?(VC.on?vcLevel(VC.me):0):(vcHears(q.id)?vcPeerLevel(VC.peers.get(q.id)):0);
    const lv=VC.lv[q.id]=Math.max(raw,(VC.lv[q.id]||0)*.6);const el=avatarEl(q.id);if(!el||!el.isConnected)return;
    const d=decoFor(el);if(!d)return;if(slow||d.lv<0)decoPlace(el,d);
    const on=lv>.06;el.style.setProperty('--dgn-vl',lv.toFixed(2));if(el.classList.contains('dgn-talk')!==on)el.classList.toggle('dgn-talk',on);
@@ -1210,6 +1352,9 @@ ${cfg.rulesNote?`<p class="dgn-fine">${esc(cfg.rulesNote)}</p>`:''}
  if(LOCAL){window.__NET=R;R._vc=()=>({on:VC.on,deaf:VC.deaf,stream:!!VC.stream,mute:[...VC.mute],mic:T&&T.mic||{},peers:[...VC.peers].map(([id,p])=>[id,p.pc.connectionState,!!p.au.srcObject])});
   /* fake voice levels for tests: R._vcFake({pid:0..1}) or null; R._vcMic(on) sets my shared mic state without a real mic */
   R._vcFake=o=>{VC.fake=o||null;};R._vcMic=on=>{VC.on=!!on;vcShare();vcUI();};
+  /* voice fixes: R._vcLose(n) loses the next n offers; R._vcX() per-call details; R._vcT internals for tests */
+  R._vcLose=k=>{VC.lose=k|0;};R._vcX=()=>[...VC.peers].map(([id,p])=>({id,cs:p.pc.connectionState,ok:p.ok,off:p.off,c:p.c,n:p.n,rs:p.rs,relay:p.relay,turn:p.turn,src:!!p.au.srcObject,paused:p.au.paused,lv:vcPeerLevel(p),meter:!!p.meter,tuned:!!p.tuned}));
+  R._vcT={ice:vcIce,opus:vcOpus,turnList:vcTurnList,TURN,fails:()=>VC.fails,q:()=>VC.q.size,chip:()=>!!VC.chip&&VC.chip.style.display!=='none',sess:()=>({rec:!!window.__vcRec,at:!!window.__vcAt}),help:vcMicHelp,peers:()=>VC.peers,restart:id=>{const p=VC.peers.get(id);if(p)vcRestart(id,p);},redial:vcRedial,sig:vcSignal,mic:vcMic,play:vcPlayAll};
   R._quick=()=>({qEnd:T&&T.qEnd,qAsk:T&&T.qAsk,autoAt:T&&T.autoAt,players:T?T.players.map(p=>({id:p.id,name:p.name,cpu:!!p.cpu,gone:!!p.gone})):[],wait:T?T.wait.map(w=>w.id):[]});}   /* localhost test hooks */
  return R;}
 

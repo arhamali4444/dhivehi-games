@@ -119,6 +119,8 @@ img.boli{display:inline-block;width:18px;height:18px;object-fit:contain;vertical
 .hsc:after{content:"";position:absolute;left:0;right:0;bottom:-2px;height:90px;background:linear-gradient(180deg,rgba(20,10,20,0),#140A14)}
 .hsc.mo:after{background:linear-gradient(180deg,rgba(234,246,243,0),#EAF6F3)}
 .hhero{height:clamp(236px,calc((min(100vw,390px) - 32px)*.71),276px);pointer-events:none}
+/* short screens (iPhone SE, 320x568, landscape): a shorter jetty hero (the scene slides up 100px, its sky is cropped) and a tighter title block, so Quick Match is on screen without scrolling */
+@media (max-height:700px){.home .hhero{height:calc(clamp(236px,calc((min(100vw,390px) - 32px)*.71),276px) - 100px)}.hsc{--H0:clamp(360px,calc((var(--pw) - 32px)*1.04),400px);--SH:max(calc(var(--pw)*400/390),var(--H0));--H:calc(var(--H0) - 100px)}.hsc svg{top:calc(env(safe-area-inset-top,0px) - 100px)}.page.home .lace{display:none}.home .mseg{margin-top:10px}.home .mhint{font-size:12px;line-height:1.35;margin-top:6px;min-height:0}.home .dtitle .dv{line-height:1.2}}
 /* the only ambient motion on the home: the water shimmer and the drum-beat ripple (transform/opacity) */
 .hsc .shim{opacity:.6;animation:hshim 4.2s ease-in-out infinite}
 @keyframes hshim{0%,100%{opacity:.25}50%{opacity:.95}}
@@ -358,6 +360,8 @@ main.table>*{width:100%;max-width:640px;margin-left:auto;margin-right:auto}
 .sheet .row{margin-top:12px}
 .sheet .row .btn{flex:1}
 .mlist{display:flex;flex-direction:column;gap:8px;margin-top:12px}
+/* short screens (320x568, landscape): two of the menu buttons share a row, so Quit to lobby fits without scrolling */
+@media (max-height:640px){.mlist{display:grid;grid-template-columns:1fr 1fr}.mlist>*{grid-column:1/-1}.mlist>[data-a=menuRules],.mlist>[data-a=howto]{grid-column:auto}}
 .hist{margin:12px 0 0;display:flex;flex-direction:column;gap:6px}
 .hist div{display:flex;justify-content:space-between;gap:10px;font-size:12.5px;padding:8px 12px;border-radius:12px;background:#231514}
 .hist .u{color:var(--us);font-weight:800}.hist .t{color:var(--them);font-weight:800}
@@ -483,7 +487,7 @@ main.table>*{width:100%;max-width:640px;margin-left:auto;margin-right:auto}
 <script src="../shared/avatar.js?v=10"></script>
 <script src="../shared/cosmetics.js?v=2"></script>
 <script src="../shared/sponsors.js?v=6"></script>
-<script src="../shared/net.js?v=5"></script>
+<script src="../shared/net.js?v=6"></script>
 <script>
 /* =====================================================================
    ENGINE: Dhihaeh + Thaas (Dhivehi Games). Pure: no DOM, no clock, no Math.random.
@@ -726,7 +730,7 @@ sound:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="
 /* ---------- audio: soft WebAudio, Bodu Beru drum on the big moments. On unless muted (shared key dd-sfx: '0'/'off' = muted) ---------- */
 const AU=(()=>{let ctx=null,out=null;
 function get(){if(!ctx){const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return null;try{ctx=new AC({latencyHint:'interactive'});}catch(e){try{ctx=new AC();}catch(x){return null;}}out=ctx.createGain();out.gain.value=.8;out.connect(ctx.destination);}return ctx;}
-function unlock(){if(document.hidden||!sfxOn())return;const c=get();if(!c)return;try{if(navigator.audioSession)navigator.audioSession.type='ambient';}catch(e){}if(c.state!=='running'){try{const p=c.resume();p&&p.catch&&p.catch(()=>{});}catch(e){}}
+function unlock(){if(document.hidden||!sfxOn())return;const c=get();if(!c)return;try{const s=navigator.audioSession,t=window.__vcRec?'play-and-record':window.__vcAt?'playback':'ambient';if(s&&s.type!==t)s.type=t;}catch(e){}/* never 'ambient' at a voice table: it cuts the iPhone mic and obeys the silent switch (net.js vcSess) */if(c.state!=='running'){try{const p=c.resume();p&&p.catch&&p.catch(()=>{});}catch(e){}}
 /* iOS Safari: playing a silent buffer inside the gesture unlocks the output */
 if(!c._primed||c.state!=='running'){c._primed=1;try{const b=c.createBuffer(1,1,22050),s=c.createBufferSource();s.buffer=b;s.connect(c.destination);s.start(0);}catch(e){}}}
 function sleep(){if(ctx&&ctx.state==='running'){try{const p=ctx.suspend();p&&p.catch&&p.catch(()=>{});}catch(e){}}}

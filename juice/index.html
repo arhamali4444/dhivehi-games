@@ -326,6 +326,8 @@ main.table>*{width:100%;max-width:640px;margin-left:auto;margin-right:auto}
 .sheet .row{margin-top:12px}
 .sheet .row .btn{flex:1}
 .mlist{display:flex;flex-direction:column;gap:8px;margin-top:12px}
+/* short screens (320x568, landscape): two of the menu buttons share a row, so Quit to lobby fits without scrolling */
+@media (max-height:640px){.mlist{display:grid;grid-template-columns:1fr 1fr}.mlist>*{grid-column:1/-1}.mlist>[data-a=menuRules],.mlist>[data-a=sfx]{grid-column:auto}}
 .toast{position:fixed;left:50%;top:calc(14px + env(safe-area-inset-top));transform:translateX(-50%);background:#123532;color:#fff;padding:10px 16px;border-radius:14px;font-size:13px;font-weight:600;z-index:80;max-width:90vw;box-shadow:0 12px 30px -10px rgba(0,0,0,.5);display:none;text-align:center}
 .toast.show{display:block;animation:drop2 .5s var(--spring)}
 @keyframes drop2{from{transform:translate(-50%,-20px);opacity:0}}
@@ -366,7 +368,7 @@ main.table>*{width:100%;max-width:640px;margin-left:auto;margin-right:auto}
 <script src="../shared/avatar.js?v=10"></script>
 <script src="../shared/cosmetics.js?v=2"></script>
 <script src="../shared/sponsors.js?v=6"></script>
-<script src="../shared/net.js?v=5"></script>
+<script src="../shared/net.js?v=6"></script>
 <script>
 /* =====================================================================
    JUICE ENGINE (pure, no DOM). Host-authoritative: one plain object N, changed only by
@@ -540,7 +542,7 @@ sound:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="
 /* ---------- audio: soft WebAudio effects (shares the site-wide dd-sfx mute) ---------- */
 const AU=(()=>{let ctx=null,out=null;
 function get(){if(!ctx){const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return null;try{ctx=new AC({latencyHint:'interactive'});}catch(e){try{ctx=new AC();}catch(x){return null;}}out=ctx.createGain();out.gain.value=.8;out.connect(ctx.destination);}return ctx;}
-function unlock(){if(document.hidden)return;const c=get();if(!c)return;try{if(navigator.audioSession)navigator.audioSession.type='ambient';}catch(e){}if(c.state!=='running'){try{const p=c.resume();p&&p.catch&&p.catch(()=>{});}catch(e){}}
+function unlock(){if(document.hidden)return;const c=get();if(!c)return;try{const s=navigator.audioSession,t=window.__vcRec?'play-and-record':window.__vcAt?'playback':'ambient';if(s&&s.type!==t)s.type=t;}catch(e){}/* never 'ambient' at a voice table: it cuts the iPhone mic and obeys the silent switch (net.js vcSess) */if(c.state!=='running'){try{const p=c.resume();p&&p.catch&&p.catch(()=>{});}catch(e){}}
 /* iOS Safari: playing a silent buffer inside the gesture unlocks the output */
 if(!c._primed||c.state!=='running'){c._primed=1;try{const b=c.createBuffer(1,1,22050),s=c.createBufferSource();s.buffer=b;s.connect(c.destination);s.start(0);}catch(e){}}}
 function sleep(){if(ctx&&ctx.state==='running'){try{const p=ctx.suspend();p&&p.catch&&p.catch(()=>{});}catch(e){}}}

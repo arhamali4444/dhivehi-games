@@ -482,6 +482,8 @@ button:disabled{cursor:default}
 #pls .pc .dgn-moff{right:auto;bottom:auto;left:-7px;top:-4px;width:15px;height:15px}
 /* at 320 px the voice dock shares the top bar: the turn line drops its small avatar to keep room for the words */
 @media (max-width:340px){.htop:has(#dgnSlot .dgn-dock:not([hidden])) .turn .dot{display:none}.htop:has(#dgnSlot .dgn-dock:not([hidden])) .turn{padding:4px 8px;font-size:12px}}
+/* short screens (320x568, landscape): the menu's Scoreboard / Trade log / How to play / Resources key go two by two, so Quit to lobby fits without scrolling */
+@media (max-height:640px){.mgrid{grid-template-columns:1fr 1fr}.mgrid>*{grid-column:1/-1}.mgrid>[data-m=score],.mgrid>[data-m=tlog],.mgrid>[data-m=rules],.mgrid>[data-m=legend]{grid-column:auto}}
 </style>
 </head>
 
@@ -540,7 +542,7 @@ button:disabled{cursor:default}
 <div id="fx" aria-hidden="true"></div>
 <script src="../shared/avatar.js?v=10"></script>
 <script src="../shared/sponsors.js?v=6"></script>
-<script src="../shared/net.js?v=5"></script>
+<script src="../shared/net.js?v=6"></script>
 <script src="../shared/dice.js?v=1"></script>
 
 <script>
@@ -1935,7 +1937,7 @@ function openScore(){const n=G.players.length,tgt=G.opts.target;const who=k=>G[k
 function openMenu(){openSheet('menu',`<div class="grab"></div><div class="sh"><h2 id="sheetTitle">Menu</h2>${X}</div>
  <button class="tg" type="button" role="switch" aria-checked="${SND.on}" data-m="sound"><span class="tt"><b>Sound</b><small>Soft effects for dice, building and trades</small></span><span class="sw2"></span></button>
  <button class="tg" type="button" role="switch" aria-checked="${SPEEDF<1}" data-m="speed"><span class="tt"><b>Fast computer players</b><small>Shorter pauses between their moves</small></span><span class="sw2"></span></button>
- <div style="display:grid;gap:8px;margin-top:12px"><button class="btn alt" type="button" data-m="score">Scoreboard</button><button class="btn alt" type="button" data-m="tlog">Trade log</button><button class="btn alt" type="button" data-m="rules">How to play</button>
+ <div class="mgrid" style="display:grid;gap:8px;margin-top:12px"><button class="btn alt" type="button" data-m="score">Scoreboard</button><button class="btn alt" type="button" data-m="tlog">Trade log</button><button class="btn alt" type="button" data-m="rules">How to play</button>
  <button class="btn alt" type="button" data-m="legend">Resources key</button>${ONLINE?`<button class="btn red" type="button" data-m="leave">Leave table</button>${ME>=0&&G&&G.phase!=='over'?'<p style="font:500 12px/1.4 Inter;color:var(--muted);margin:2px 2px 0">If you leave, the computer plays your seat to the end of the game.</p>':''}`:'<button class="btn alt" type="button" data-m="home">Save &amp; quit</button><button class="btn red" type="button" data-m="quit">Quit to lobby</button>'}</div>`);}
 /* vs Computer: quit without saving, after a confirm (the themed sheet from net.js, or a second tap without it) */
 async function quitAsk(t){let ok=false;if(NET&&NET.ask){closeSheet(true);ok=await NET.ask({title:'Quit this game?',text:'This game ends and is not saved. You go back to the lobby.',ok:'Quit to lobby',cancel:'Keep playing'});}

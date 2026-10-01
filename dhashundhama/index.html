@@ -400,7 +400,7 @@ a.hsp{box-shadow:inset 0 0 0 1px var(--edge)}
 <script src="../shared/avatar.js?v=10"></script>
 <script src="../shared/cosmetics.js?v=2"></script>
 <script src="../shared/sponsors.js?v=6"></script>
-<script src="../shared/net.js?v=5"></script>
+<script src="../shared/net.js?v=6"></script>
 <script>
 (function(){
 'use strict';
@@ -533,7 +533,7 @@ const fullDeck=()=>{const d=[];SUITS.forEach(s=>{for(let r=1;r<=13;r++)d.push(r+
 /* ---------- sound: soft WebAudio (mute is shared with Digu: dd-sfx) ---------- */
 const AU=(()=>{let ctx=null,out=null;const quiet=p=>{if(p&&p.catch)p.catch(()=>{});};
 function get(){if(!ctx){const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return null;try{ctx=new AC({latencyHint:'interactive'});}catch(e){ctx=new AC();}out=ctx.createGain();out.gain.value=.8;out.connect(ctx.destination);}return ctx;}
-function unlock(){if(document.hidden)return;const c=get();if(!c)return;try{if(navigator.audioSession)navigator.audioSession.type='ambient';}catch(e){}if(c.state!=='running'){try{quiet(c.resume());}catch(e){}}
+function unlock(){if(document.hidden)return;const c=get();if(!c)return;try{const s=navigator.audioSession,t=window.__vcRec?'play-and-record':window.__vcAt?'playback':'ambient';if(s&&s.type!==t)s.type=t;}catch(e){}/* never 'ambient' at a voice table: it cuts the iPhone mic and obeys the silent switch (net.js vcSess) */if(c.state!=='running'){try{quiet(c.resume());}catch(e){}}
 /* iOS Safari: playing a silent buffer inside the gesture unlocks the output */
 if(!c._primed||c.state!=='running'){c._primed=1;try{const b=c.createBuffer(1,1,22050),s=c.createBufferSource();s.buffer=b;s.connect(c.destination);s.start(0);}catch(e){}}}
 function sleepA(){if(ctx&&ctx.state==='running'){try{quiet(ctx.suspend());}catch(e){}}}

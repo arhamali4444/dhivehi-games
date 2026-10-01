@@ -211,6 +211,8 @@ main.table>*{width:100%;max-width:640px;margin-left:auto;margin-right:auto}
 .goal>span{display:inline-block;max-width:100%;font-size:12px;font-weight:700;background:rgba(22,10,18,.8);padding:9px 14px;border-radius:99px;box-shadow:inset 0 0 0 1px rgba(245,214,140,.25);text-align:center;line-height:1.25}
 .goal b{color:#F4D57E}
 @media (max-width:374px){.goal .gx{display:none}}
+/* the round pill keeps to one line: "· fewest Jokers wins" drops whenever the space between the top-bar buttons is too narrow (375 px phones, the voice dock in online games), not only below 375 px */
+.goal{container-type:inline-size}.goal>span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}@container (max-width:250px){.goal .gx{display:none}}
 .stage .slbl b{color:#fff}
 .tools{display:flex;gap:6px;flex:none}
 .arena{position:relative;flex:1;min-height:0;z-index:2}
@@ -350,6 +352,8 @@ main.table>*{width:100%;max-width:640px;margin-left:auto;margin-right:auto}
 .sheet .row{margin-top:12px}
 .sheet .row .btn{flex:1}
 .mlist{display:flex;flex-direction:column;gap:8px;margin-top:12px}
+/* short screens (320x568, landscape): two of the menu buttons share a row, so Quit to lobby fits without scrolling */
+@media (max-height:640px){.mlist{display:grid;grid-template-columns:1fr 1fr}.mlist>*{grid-column:1/-1}.mlist>[data-a=menuRules],.mlist>[data-a=sfx]{grid-column:auto}}
 .btn.danger{background:rgba(224,54,78,.12);color:#FF9AA8;box-shadow:inset 0 0 0 1.5px rgba(255,90,110,.55)}
 .mlist .mnote{font-size:12px;margin:2px 2px 0}
 .toast{position:fixed;left:50%;top:calc(14px + env(safe-area-inset-top));transform:translateX(-50%);background:#FFF3D6;color:#2A1606;padding:10px 16px;border-radius:13px;font-size:13px;font-weight:600;z-index:80;max-width:90vw;box-shadow:0 12px 30px -10px rgba(0,0,0,.8);display:none;text-align:center}
@@ -394,7 +398,7 @@ main.table>*{width:100%;max-width:640px;margin-left:auto;margin-right:auto}
 <script src="../shared/avatar.js?v=10"></script>
 <script src="../shared/cosmetics.js?v=2"></script>
 <script src="../shared/sponsors.js?v=6"></script>
-<script src="../shared/net.js?v=5"></script>
+<script src="../shared/net.js?v=6"></script>
 <script>
 /* =====================================================================
    JOKER ENGINE (pure, no DOM). Host-authoritative: the whole round is one plain object N,
@@ -564,7 +568,7 @@ sound:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="
 /* ---------- audio: soft WebAudio effects (shares the site-wide dd-sfx mute) ---------- */
 const AU=(()=>{let ctx=null,out=null;
 function get(){if(!ctx){const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return null;try{ctx=new AC({latencyHint:'interactive'});}catch(e){try{ctx=new AC();}catch(x){return null;}}out=ctx.createGain();out.gain.value=.8;out.connect(ctx.destination);}return ctx;}
-function unlock(){if(document.hidden)return;const c=get();if(!c)return;try{if(navigator.audioSession)navigator.audioSession.type='ambient';}catch(e){}if(c.state!=='running'){try{const p=c.resume();p&&p.catch&&p.catch(()=>{});}catch(e){}}
+function unlock(){if(document.hidden)return;const c=get();if(!c)return;try{const s=navigator.audioSession,t=window.__vcRec?'play-and-record':window.__vcAt?'playback':'ambient';if(s&&s.type!==t)s.type=t;}catch(e){}/* never 'ambient' at a voice table: it cuts the iPhone mic and obeys the silent switch (net.js vcSess) */if(c.state!=='running'){try{const p=c.resume();p&&p.catch&&p.catch(()=>{});}catch(e){}}
 /* iOS Safari: playing a silent buffer inside the gesture unlocks the output */
 if(!c._primed||c.state!=='running'){c._primed=1;try{const b=c.createBuffer(1,1,22050),s=c.createBufferSource();s.buffer=b;s.connect(c.destination);s.start(0);}catch(e){}}}
 function sleep(){if(ctx&&ctx.state==='running'){try{const p=ctx.suspend();p&&p.catch&&p.catch(()=>{});}catch(e){}}}

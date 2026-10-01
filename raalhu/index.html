@@ -332,7 +332,7 @@ html.watching .watch{display:flex}
 
 <script src="../shared/avatar.js?v=10"></script>
 <script src="../shared/sponsors.js?v=6"></script>
-<script src="../shared/net.js?v=5"></script>
+<script src="../shared/net.js?v=6"></script>
 <script src="engine.js?v=3"></script>
 <script src="art/atlas.js?v=3"></script>
 <script src="render.js?v=3"></script>
@@ -392,7 +392,7 @@ const AU=(()=>{let ctx=null,out=null,nb=null,amb=null;
  function get(){if(!ctx){const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return null;try{ctx=new AC({latencyHint:'interactive'});}catch(e){try{ctx=new AC();}catch(x){return null;}}
   const comp=ctx.createDynamicsCompressor();comp.threshold.value=-14;comp.ratio.value=5;out=ctx.createGain();out.gain.value=.8;out.connect(comp);comp.connect(ctx.destination);
   nb=ctx.createBuffer(1,ctx.sampleRate*2,ctx.sampleRate);const d=nb.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;}return ctx;}
- function unlock(){if(document.hidden)return;const c=get();if(!c)return;try{if(navigator.audioSession)navigator.audioSession.type='ambient';}catch(e){}
+ function unlock(){if(document.hidden)return;const c=get();if(!c)return;try{const s=navigator.audioSession,t=window.__vcRec?'play-and-record':window.__vcAt?'playback':'ambient';if(s&&s.type!==t)s.type=t;}catch(e){}/* never 'ambient' at a voice table: it cuts the iPhone mic and obeys the silent switch (net.js vcSess) */
   if(c.state!=='running'){try{const p=c.resume();p&&p.catch&&p.catch(()=>{});}catch(e){}}}
  function sleep(){if(ctx&&ctx.state==='running'){try{const p=ctx.suspend();p&&p.catch&&p.catch(()=>{});}catch(e){}}}
  const ready=()=>{if(!sfxOn()||document.hidden||!ctx||ctx.state!=='running')return null;return ctx.currentTime+.01;};

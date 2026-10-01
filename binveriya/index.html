@@ -559,6 +559,8 @@ button:disabled{cursor:default}
 .switch i:after{content:"";position:absolute;left:3px;top:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:transform .2s var(--out)}
 .switch[aria-checked="true"] i{background:#155E43}.switch[aria-checked="true"] i:after{transform:translateX(18px)}
 .menu{display:grid;gap:8px}
+/* short screens (320x568, landscape): Game log and How to play share a row, so Quit to lobby fits without scrolling */
+@media (max-height:640px){.menu{grid-template-columns:1fr 1fr}.menu>*{grid-column:1/-1}.menu>[data-a=log],.menu>[data-a=rules]{grid-column:auto}}
 /* Sandbank choice: three big buttons */
 .choices{display:grid;gap:10px;margin-top:10px}
 .choice{display:flex;align-items:center;gap:12px;width:100%;min-height:74px;padding:10px 14px;border:0;border-radius:18px;background:#fff;box-shadow:inset 0 0 0 1px var(--line),0 4px 0 #CDBB97;text-align:left;color:var(--ink);transition:transform .12s var(--out)}
@@ -687,7 +689,7 @@ button:disabled{cursor:default}
 <div id="toasts" aria-live="polite"></div>
 <script src="../shared/avatar.js?v=10"></script>
 <script src="../shared/sponsors.js?v=6"></script>
-<script src="../shared/net.js?v=5"></script>
+<script src="../shared/net.js?v=6"></script>
 
 <script>
 'use strict';
