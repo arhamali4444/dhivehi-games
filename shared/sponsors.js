@@ -2,6 +2,8 @@
    Include with <script src="/shared/sponsors.js"></script> (or ../shared/sponsors.js from a game folder).
 
    EDIT THE LIST BELOW to add or change ads. Fields:
+     id         : a short stable name for the ad counts (a-z, 0-9, '-'; never change or reuse it once it has run)
+     from, to   : first and last day it shows, 'YYYY-MM-DD' in Maldives time ('' = no limit)
      title, sub : text          cta  : button text ('' = no button)
      url        : where a tap goes ('' = nowhere). Relative links are relative to the SITE ROOT (e.g. 'digu/').
      logo       : 2-3 letters or an emoji, or an image path/URL (site-root relative or https://)
@@ -14,10 +16,16 @@
 
    API
      DGSponsors.list            the array above (read only)
+     DGSponsors.active()        the ones showing today (from/to)        DGSponsors.byId(id)
      DGSponsors.AD_MS           ms each slide stays up
-     DGSponsors.box(el)         renders the homepage "ripple reveal" sponsor box INTO el (any block element;
+     DGSponsors.box(el, opts)   renders the homepage "ripple reveal" sponsor box INTO el (any block element;
                                 it gets class dgs-box). Swipe left/right, press-and-hold pauses, story bars,
                                 iris reveal from the button. Returns {show(i), destroy()}.
+                                opts.place / opts.game tag it for the ad counts (default: 'home_box' on the
+                                home page, 'game_box' in a game; the game comes from the address).
+     DGSponsors.adAttr(s, place, game)  ' data-ad="id" data-ad-place=".." data-ad-game=".."' for a slot's HTML
+     DGSponsors.tag(el, s, place, game) the same on an existing element (s = null clears it)
+                                (counted by shared/adstats.js: place = plaque | credit | raalhu | home_box | game_box)
      DGSponsors.felt(n)         the n-th felt:true sponsor (cycles), or null when there are none
      DGSponsors.logoHTML(s)     <span class="dgs-lg"> with the logo image or letters
      DGSponsors.href(s)         resolved url ('' when none)
@@ -26,13 +34,24 @@
 (function (root) {
   'use strict';
   var SPONSORS = [
-    { title: 'Your brand here', sub: 'The main sponsor spot on Dhivehi Games', cta: '', url: '', logo: '/icons/favicon.svg', colors: ['#0E4C6B', '#1E8A8A', '#E9C476'], label: 'Advertise' },
-    { title: 'Binveriya', sub: 'Own the islands. Bend the rules.', cta: 'Play', url: 'binveriya/', logo: '/icons/binveriya.svg', colors: ['#0A6E8C', '#1BA7BF', '#F2C94C'], label: 'New', house: true, kicker: 'New' },
-    { title: 'Bondi', sub: 'Noir card duel. Don\'t be the last one holding.', cta: 'Play', url: 'bondi/', logo: '♠', colors: ['#0B0B0D', '#2A2A30', '#C9A45C'], label: 'New', house: true, kicker: 'New' },
-    { title: 'Digu Blitz', sub: '5 players, 5 seconds a turn. Keep up?', cta: 'Play', url: 'digu/', logo: '⚡', colors: ['#6A2C1A', '#C4552C', '#F2B35B'], label: 'New', house: true, kicker: 'Try' },
-    { title: 'Dhogu is online', sub: 'Spot the lie with friends, any network', cta: 'Play', url: 'dhogu/', logo: '?', colors: ['#1B1B3A', '#4B3AA8', '#E68AB8'], label: 'New', house: true, kicker: 'Now online' }
+    { id: 'advertise', from: '', to: '', title: 'Your brand here', sub: 'The main sponsor spot on Dhivehi Games', cta: '', url: '', logo: '/icons/favicon.svg', colors: ['#0E4C6B', '#1E8A8A', '#E9C476'], label: 'Advertise' },
+    { id: 'h-binveriya', from: '', to: '', title: 'Binveriya', sub: 'Own the islands. Bend the rules.', cta: 'Play', url: 'binveriya/', logo: '/icons/binveriya.svg', colors: ['#0A6E8C', '#1BA7BF', '#F2C94C'], label: 'New', house: true, kicker: 'New' },
+    { id: 'h-bondi', from: '', to: '', title: 'Bondi', sub: 'Noir card duel. Don\'t be the last one holding.', cta: 'Play', url: 'bondi/', logo: '♠', colors: ['#0B0B0D', '#2A2A30', '#C9A45C'], label: 'New', house: true, kicker: 'New' },
+    { id: 'h-blitz', from: '', to: '', title: 'Digu Blitz', sub: '5 players, 5 seconds a turn. Keep up?', cta: 'Play', url: 'digu/', logo: '⚡', colors: ['#6A2C1A', '#C4552C', '#F2B35B'], label: 'New', house: true, kicker: 'Try' },
+    { id: 'h-dhogu', from: '', to: '', title: 'Dhogu is online', sub: 'Spot the lie with friends, any network', cta: 'Play', url: 'dhogu/', logo: '?', colors: ['#1B1B3A', '#4B3AA8', '#E68AB8'], label: 'New', house: true, kicker: 'Now online' }
   ];
   var AD_MS = 5000;
+  /* showing today? (from/to are Maldives dates, UTC+5) */
+  function today() { return new Date(Date.now() + 5 * 3600e3).toISOString().slice(0, 10); }
+  function live(s) { var d = today(); return !!s && (!s.from || d >= s.from) && (!s.to || d <= s.to); }
+  function active() { return SPONSORS.filter(live); }
+  function adAttr(s, place, game) { if (!s || !s.id) return ''; return ' data-ad="' + esc(s.id) + '" data-ad-place="' + esc(place || '') + '"' + (game ? ' data-ad-game="' + esc(game) + '"' : ''); }
+  function tag(el, s, place, game) {
+    if (!el) return; var id = s && s.id ? s.id : '';
+    try { if (root.DGAds && root.DGAds.place) { root.DGAds.place(el, id, place, game); return; } } catch (e) { }
+    if (!id) { el.removeAttribute('data-ad'); return; }
+    el.setAttribute('data-ad', id); el.setAttribute('data-ad-place', place || ''); if (game) el.setAttribute('data-ad-game', game); else el.removeAttribute('data-ad-game');
+  }
 
   var doc = root.document;
   var reduce = !!(root.matchMedia && root.matchMedia('(prefers-reduced-motion: reduce)').matches);
@@ -75,8 +94,11 @@
     if (!doc || doc.getElementById('dgs-css')) return;
     var st = doc.createElement('style'); st.id = 'dgs-css'; st.textContent = CSS; (doc.head || doc.documentElement).appendChild(st);
   }
-  function box(el) {
+  function box(el, opts) {
     if (!el) throw new Error('DGSponsors.box: container element required');
+    opts = opts || {};
+    var place = opts.place || ((root.location && /^\/?(index\.html)?$/.test(root.location.pathname || '/')) ? 'home_box' : 'game_box');
+    var LIST = active();
     injectCSS();
     el.classList.add('dgs-box'); el.innerHTML = '';
     el.setAttribute('aria-roledescription', 'carousel'); if (!el.getAttribute('aria-label')) el.setAttribute('aria-label', 'Sponsors');
@@ -84,7 +106,7 @@
     var rip = doc.createElement('span'); rip.className = 'dgs-rip'; rip.setAttribute('aria-hidden', 'true');
     el.appendChild(bars); el.appendChild(rip);
     var ai = 0, az = 1, adT = 0, adStart = 0, adLeft = AD_MS, dead = false, drag = null, swiped = 0;
-    var ads = SPONSORS.map(function (s) {
+    var ads = LIST.map(function (s) {
       var u = abs(s.url), a = doc.createElement(u ? 'a' : 'div'); a.className = 'dgs-ad'; if (u) { a.href = u; if (/^https?:/i.test(s.url || '')) { a.target = '_blank'; a.rel = 'noopener sponsored'; } }
       var c = s.colors || ['#0E4C6B', '#1E8A8A', '#E9C476'];
       a.style.background = 'linear-gradient(120deg,' + c[0] + ',' + c[1] + ' 60%,' + c[2] + ')';
@@ -96,7 +118,7 @@
     function schedule(ms) { clearTimeout(adT); if (dead || ads.length < 2 || reduce) return; adLeft = ms; adStart = Date.now(); adT = setTimeout(function () { if (doc.hidden) { schedule(AD_MS); return; } show(ai + 1); }, ms); }
     function show(n, first) {
       if (!ads.length) return;
-      ai = ((n % ads.length) + ads.length) % ads.length; var a = ads[ai]; a.style.zIndex = String(++az);
+      ai = ((n % ads.length) + ads.length) % ads.length; var a = ads[ai]; a.style.zIndex = String(++az); tag(el, LIST[ai], place, opts.game);
       ads.forEach(function (x, i) { if (i !== ai) { x.tabIndex = -1; x.setAttribute('aria-hidden', 'true'); } });
       a.removeAttribute('aria-hidden'); a.tabIndex = 0;
       if (!first && !reduce) { a.classList.remove('dgs-in'); void a.offsetWidth; a.classList.add('dgs-in'); rip.classList.remove('dgs-go2'); void rip.offsetWidth; rip.classList.add('dgs-go2'); }
@@ -114,14 +136,18 @@
     show(0, true);
     return {
       show: function (i) { show(i); },
-      destroy: function () { dead = true; clearTimeout(adT); el.removeEventListener('pointerdown', down); el.removeEventListener('pointermove', move); el.removeEventListener('pointerup', up); el.removeEventListener('pointercancel', up); el.removeEventListener('click', click, true); el.removeEventListener('keydown', key); el.innerHTML = ''; el.classList.remove('dgs-box', 'dgs-hold'); }
+      destroy: function () { dead = true; clearTimeout(adT); tag(el, null); el.removeEventListener('pointerdown', down); el.removeEventListener('pointermove', move); el.removeEventListener('pointerup', up); el.removeEventListener('pointercancel', up); el.removeEventListener('click', click, true); el.removeEventListener('keydown', key); el.innerHTML = ''; el.classList.remove('dgs-box', 'dgs-hold'); }
     };
   }
   /* paid sponsors (felt:true) own the table; with none, our own game promos (house:true) fill it instead */
-  function feltList() { var paid = SPONSORS.filter(function (s) { return s.felt === true; }); return paid.length ? paid : SPONSORS.filter(function (s) { return s.house === true; }); }
+  function feltList() { var on = active(), paid = on.filter(function (s) { return s.felt === true; }); return paid.length ? paid : on.filter(function (s) { return s.house === true; }); }
   root.DGSponsors = {
-    version: 1,
+    version: 2,
     list: SPONSORS,
+    active: active,
+    byId: function (id) { for (var i = 0; i < SPONSORS.length; i++) if (SPONSORS[i].id === id) return SPONSORS[i]; return null; },
+    adAttr: adAttr,
+    tag: tag,
     AD_MS: AD_MS,
     box: box,
     felt: function (n) { var l = feltList(); return l.length ? l[((n | 0) % l.length + l.length) % l.length] : null; },

@@ -401,7 +401,7 @@ html[data-ranga="1"]{--dgn-acc:#FF3D96;--dgn-acc-fg:#fff;--dgn-talk:rgba(255,61,
 <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs><linearGradient id="dgGold" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F7DE92"/><stop offset=".55" stop-color="#D9A94A"/><stop offset="1" stop-color="#A97A26"/></linearGradient></defs></svg>
 <script src="../shared/avatar.js?v=10"></script>
 <script src="../shared/cosmetics.js?v=2"></script>
-<script src="../shared/sponsors.js?v=6"></script>
+<script src="../shared/sponsors.js?v=7"></script>
 <script src="../shared/net.js?v=6"></script>
 <script>
 (function(){
@@ -881,7 +881,7 @@ app.innerHTML=`<main class="table${S&&S.ranga?' ranga':''}"><div class="tlayer" 
 </main>`;bindHand();layoutArena();if(mode==='online'&&NET)NET.updDock();}
 function tableAd(){const w=$('#tadw');if(!w||!S||!window.DGSponsors)return;let s=null;try{s=DGSponsors.felt(Math.max(0,(S.handNo||1)-1));}catch(e){}const k=(s?s.title:'')+'|'+S.handNo;if(w._k===k)return;w._k=k;
 /* the ad is a slim engraved silver plaque set into the leather rail, below the play area */
-w.innerHTML=s?`<div class="tad plaque" style="left:${TBL.at[0]}px;top:${TBL.at[1]}px"><span><b>${esc(s.title)}</b></span></div>`:'';}
+w.innerHTML=s?`<div class="tad plaque"${DGSponsors.adAttr?DGSponsors.adAttr(s,'plaque',S.ranga?'ranga':'bondi'):''} style="left:${TBL.at[0]}px;top:${TBL.at[1]}px"><span><b>${esc(s.title)}</b></span></div>`:'';}
 function seatOrder(){const n=S.players.length,m=Math.max(0,meIdx()),o=[];for(let i=1;i<n;i++)o.push((m+i)%n);return o;}
 const SEAT_ANG=[[],[90],[140,40],[156,90,24],[166,122,58,14]];
 function layoutArena(){const a=$('#arena');if(!a||!S)return;const W=a.clientWidth,H=a.clientHeight;if(!W||!H)return;
@@ -1165,6 +1165,6 @@ else if(LOCAL&&Q.get('play')==='1'){if(Q.get('bots'))nBots=Math.max(1,Math.min(4
 else{renderHome();if(NET)NET.boot();if(hadOld)setTimeout(()=>toast('New scoring: going out early now earns points. Your unfinished game was cleared, so start a fresh one.',6000),500);}
 })();
 </script>
-<script src="../shared/stats.js" defer></script>
+<script src="../shared/stats.js?v=2" defer></script><script src="../shared/adstats.js?v=1" defer></script>
 </body>
 </html>

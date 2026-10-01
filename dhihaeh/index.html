@@ -486,7 +486,7 @@ main.table>*{width:100%;max-width:640px;margin-left:auto;margin-right:auto}
 <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs><linearGradient id="dgGold" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F7DE92"/><stop offset=".55" stop-color="#D9A94A"/><stop offset="1" stop-color="#A97A26"/></linearGradient></defs></svg>
 <script src="../shared/avatar.js?v=10"></script>
 <script src="../shared/cosmetics.js?v=2"></script>
-<script src="../shared/sponsors.js?v=6"></script>
+<script src="../shared/sponsors.js?v=7"></script>
 <script src="../shared/net.js?v=6"></script>
 <script>
 /* =====================================================================
@@ -1144,7 +1144,7 @@ app.innerHTML=`<main class="table"><div class="tlayer" aria-hidden="true"><div c
 <section class="me"><div class="mebar"><div class="meinfo" id="meinfo"></div><div class="acts" id="acts"></div></div><div class="hand" id="hand"></div></section>
 </main>`;bindHand();layoutArena();document.documentElement.dataset.net=mode==='online'?'1':'0';if(mode==='online'&&NET)NET.updDock();}
 function tableAd(){const w=$('#tadw');if(!w||!S||!window.DGSponsors)return;let s=null;try{s=DGSponsors.felt(Math.max(0,(S.handNo||1)-1));}catch(e){}const k=(s?s.title:'')+'|'+S.handNo;if(w._k===k)return;w._k=k;
- w.innerHTML=s?`<div class="tad plate" style="left:${TBL.at[0]}px;top:${TBL.at[1]}px"><b>${esc(s.title)}</b></div>`:'';}
+ w.innerHTML=s?`<div class="tad plate"${DGSponsors.adAttr?DGSponsors.adAttr(s,'plaque',S.mode==='thaas'?'thaas':'dhihaeh'):''} style="left:${TBL.at[0]}px;top:${TBL.at[1]}px"><b>${esc(s.title)}</b></div>`:'';}
 const rel=k=>(k-Math.max(0,vIdx())+4)%4;   /* 0 you (bottom), 1 left, 2 partner (top), 3 right */
 function layoutArena(){const a=$('#arena');if(!a||!S)return;const W=a.clientWidth,H=a.clientHeight;if(!W||!H)return;
  const top=40,bot=42,g=TBL.g,ar=g[3]/g[2];
@@ -1417,6 +1417,6 @@ if(NET&&/^[A-Z]{4}$/i.test(Q.get('t')||'')){renderHome();NET.boot();}   /* invit
 else if(LOCAL&&Q.get('play')==='1')startSolo();else{renderHome();if(NET)NET.boot();}
 })();
 </script>
-<script src="../shared/stats.js" defer></script>
+<script src="../shared/stats.js?v=2" defer></script><script src="../shared/adstats.js?v=1" defer></script>
 </body>
 </html>

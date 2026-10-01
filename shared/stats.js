@@ -10,7 +10,11 @@
    Loads after the page is idle, never blocks, and gives up silently on any error.
    Skipped on localhost / file: (but counted inside the phone app, which runs at https://localhost or capacitor://localhost), on test namespaces (?ns=), for bots, and with Do Not Track / Global Privacy Control.
    Rules: see extras/firestore-rules-admin.txt (match /stats/{period}/visitors/{id}).
-   Pages can report an in-page game switch with DGStats.mark('ranga'). */
+   Pages can report an in-page game switch with DGStats.mark('ranga').
+   Also kept here, in memory only, for shared/adstats.js (which sends it with the ad counts):
+     time in game: seconds per game while the page is visible, paused 2 minutes after the last touch, click or key
+     (the home page is not a game and is not timed); the platform (ios / android in the phone app, web otherwise).
+   DGStats.fb() reuses this file's anonymous account (no second sign-in); DGStats.uid() gives just its id. */
 (function(){
 'use strict';
 if(window.DGStats)return;
@@ -19,12 +23,12 @@ var APP=!!(window.DG_APP||location.protocol==='capacitor:'||(window.Capacitor&&w
 var LOCAL=!APP&&(/^(localhost|127\.\d+\.\d+\.\d+|\[::1\])$/.test(H)||/\.(localhost|test)$/.test(H)||location.protocol==='file:');
 var OFF=LOCAL||Q.has('ns')||navigator.doNotTrack==='1'||window.doNotTrack==='1'||navigator.globalPrivacyControl===true||
  /bot|crawl|spider|slurp|lighthouse|headless|prerender/i.test(navigator.userAgent||'')||!window.Promise||!window.localStorage;
-var KEYS=['home','digu','dhogu','bondi','ranga','dhashundhama','binveriya','atolls','dhihaeh','thaas','joker','juice','raalhu'];
+var KEYS=['home','digu','dhogu','bondi','ranga','dhashundhama','binveriya','atolls','dhihaeh','thaas','joker','juice','raalhu','quiz'];
 var FBV='https://www.gstatic.com/firebasejs/12.19.0/';
 var CFG={apiKey:'AIzaSyCl9Xz5r80755hYX0ww2GRaB6TZTH6sayE',authDomain:'dhivehi-digu.firebaseapp.com',projectId:'dhivehi-digu',storageBucket:'dhivehi-digu.firebasestorage.app',messagingSenderId:'778464006205',appId:'1:778464006205:web:7dce5d63707c6b2d0eda54'};
 var LSK='dg-stats';
 
-function gameFromUrl(){var seg=(location.pathname.split('/').filter(Boolean)[0]||'').toLowerCase(),mode=(Q.get('mode')||'').toLowerCase();
+function gameFromUrl(q){var seg=(location.pathname.split('/').filter(Boolean)[0]||'').toLowerCase(),mode=((q||Q).get('mode')||'').toLowerCase();
  if(!seg||seg==='index.html')return 'home';
  if(seg==='bondi')return mode==='ranga'?'ranga':'bondi';
  if(seg==='dhihaeh')return mode==='thaas'?'thaas':'dhihaeh';
@@ -85,6 +89,29 @@ function mark(g){if(OFF)return;g=String(g||'').toLowerCase();if(KEYS.indexOf(g)<
  if(st.d===d&&st.dOk&&(st.dg||[]).indexOf(g)>=0&&st.mOk&&(st.mg||[]).indexOf(g)>=0&&st.m==='month-'+now.slice(0,7).replace(/-/g,'')){queue=queue.filter(function(x){return x!==g;});return;}
  schedule(4000);}
 
-window.DGStats={mark:mark,off:OFF};
+/* ---------- platform: ios / android inside the phone app, web everywhere else ---------- */
+function platform(){try{var C=window.Capacitor,p=C&&C.getPlatform&&C.getPlatform();if(p==='ios'||p==='android')return p;}catch(e){}
+ if(!APP)return 'web';var ua=navigator.userAgent||'';return /android/i.test(ua)?'android':/iphone|ipad|ipod|macintosh/i.test(ua)?'ios':'web';}
+
+/* ---------- time in game: only while the page is showing, and not after 2 minutes with no touch, click or key ----------
+   The current game is read from the address each time (Bondi/Ranga and Dhihaeh/Thaas switch it with ?mode=). */
+var IDLE=120000,tm={acc:{},last:Date.now(),input:Date.now()};
+function nowGame(){try{return gameFromUrl(new URLSearchParams(location.search));}catch(e){return '';}}
+function tick(force){var now=Date.now(),from=tm.last;tm.last=now;if(document.hidden&&!force)return;
+ var to=Math.min(now,tm.input+IDLE),g=nowGame();if(to<=from||!g||g==='home')return;
+ tm.acc[g]=(tm.acc[g]||0)+Math.min(to-from,60000)/1000;}
+function takeTime(){var out={};if(OFF)return out;tick();for(var g in tm.acc){var s=Math.floor(tm.acc[g]);if(s>0){out[g]=s;tm.acc[g]-=s;}}return out;}
+function peekTime(){if(OFF)return 0;tick();var n=0;for(var g in tm.acc)n+=tm.acc[g];return Math.floor(n);}
+function giveBack(t){if(OFF||!t)return;for(var g in t)if(KEYS.indexOf(g)>0)tm.acc[g]=(tm.acc[g]||0)+(+t[g]||0);}
+if(!OFF){
+ var poke=function(){tm.input=Date.now();};
+ ['pointerdown','keydown','wheel','touchstart'].forEach(function(t){addEventListener(t,poke,{capture:true,passive:true});});
+ document.addEventListener('visibilitychange',function(){if(document.hidden)tick(true);else{tm.last=Date.now();tm.input=Date.now();}});
+ setInterval(tick,5000);}
+
+window.DGStats={mark:mark,off:OFF,
+ fb:function(){return OFF?Promise.reject(new Error('stats off')):fb();},
+ uid:function(){return OFF?Promise.reject(new Error('stats off')):fb().then(function(f){return f.uid;});},
+ platform:platform,game:nowGame,takeTime:takeTime,peekTime:peekTime,giveBack:giveBack};
 mark(gameFromUrl());
 })();

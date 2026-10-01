@@ -397,7 +397,7 @@ main.table>*{width:100%;max-width:640px;margin-left:auto;margin-right:auto}
 </defs></svg>
 <script src="../shared/avatar.js?v=10"></script>
 <script src="../shared/cosmetics.js?v=2"></script>
-<script src="../shared/sponsors.js?v=6"></script>
+<script src="../shared/sponsors.js?v=7"></script>
 <script src="../shared/net.js?v=6"></script>
 <script>
 /* =====================================================================
@@ -926,7 +926,7 @@ app.innerHTML=`<main class="table"><div class="tlayer" aria-hidden="true"><div c
 <section class="me"><div class="facebar" id="faces" hidden></div><div class="mebar"><div class="meinfo" id="meinfo"></div><div class="acts" id="acts"></div></div><div class="hand" id="hand"></div></section>
 </main>`;bindStage();layoutArena();document.documentElement.dataset.net=mode==='online'?'1':'0';if(mode==='online'&&NET)NET.updDock();}
 function tableAd(){const w=$('#tadw');if(!w||!S||!window.DGSponsors)return;let s=null;try{s=DGSponsors.felt('joker');}catch(e){}const k=s?s.title:'';if(w._k===k)return;w._k=k;
-w.innerHTML=s?`<div class="tad ticket" style="left:${TBL.at[0]}px;top:${TBL.at[1]}px"><b>${esc(s.title)}</b></div>`:'';}
+w.innerHTML=s?`<div class="tad ticket"${DGSponsors.adAttr?DGSponsors.adAttr(s,'plaque','joker'):''} style="left:${TBL.at[0]}px;top:${TBL.at[1]}px"><b>${esc(s.title)}</b></div>`:'';}
 function seatOrder(){const n=S.players.length,m=Math.max(0,vIdx()),o=[];for(let i=1;i<n;i++)o.push((m+i)%n);return o;}
 /* your left neighbour sits on the left (166°), the rest go round over the top to your right */
 const SEAT_ANG=[[],[90],[150,30],[156,90,24],[166,122,58,14]];
@@ -1206,6 +1206,6 @@ else if(LOCAL&&Q.get('play')==='1'){if(Q.get('bots'))nBots=Math.max(1,Math.min(4
 else{renderHome();if(NET)NET.boot();}
 })();
 </script>
-<script src="../shared/stats.js" defer></script>
+<script src="../shared/stats.js?v=2" defer></script><script src="../shared/adstats.js?v=1" defer></script>
 </body>
 </html>

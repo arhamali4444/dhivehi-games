@@ -955,7 +955,7 @@ main.table.land .seat .crown{top:-11px}
 <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs><linearGradient id="dgGold" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F7DE92"/><stop offset=".55" stop-color="#D9A94A"/><stop offset="1" stop-color="#A97A26"/></linearGradient></defs></svg>
 <script src="../shared/avatar.js?v=10"></script>
 <script src="../shared/cosmetics.js?v=2"></script>
-<script src="../shared/sponsors.js?v=6"></script>
+<script src="../shared/sponsors.js?v=7"></script>
 <script src="../shared/table.js?v=1"></script>
 <script>
 (function(){
@@ -1207,7 +1207,8 @@ const u=safeUrl(MAIN_SPONSOR.url),inner=sponInner(MAIN_SPONSOR);return `<div cla
 /* one sponsor per hand: printed on the felt, and credited on the end-of-hand card */
 const handSponsor=()=>window.DGSponsors&&S?DGSponsors.felt(Math.max(0,(S.handNo||1)-1)):null;
 function sponsorLineHTML(){const s=handSponsor();if(!s)return '';const u=DGSponsors.href(s),ext=/^https?:/i.test(s.url||''),inner=`<span class="muted">${s.house?esc(s.kicker||"From Dhivehi Games"):"Hand sponsored by"}</span>${DGSponsors.logoHTML(s,'sm')}<b>${esc(s.title)}</b>`;
-return u?`<a class="hsp" href="${esc(u)}"${ext?' target="_blank" rel="noopener sponsored"':''}>${inner}</a>`:`<div class="hsp">${inner}</div>`;}
+const ad=DGSponsors.adAttr?DGSponsors.adAttr(s,'credit','digu'):'';
+return u?`<a class="hsp"${ad} href="${esc(u)}"${ext?' target="_blank" rel="noopener sponsored"':''}>${inner}</a>`:`<div class="hsp"${ad}>${inner}</div>`;}
 let spCtl=null;function mountSponsors(){const el=$('#spbox');if(el&&window.DGSponsors){try{spCtl=DGSponsors.box(el);}catch(e){}}}
 const SUITSVG={
 S:'<path d="M12 2.2c-2.6 3-8.3 6.9-8.3 11.4 0 2.6 2 4.5 4.4 4.5 1.3 0 2.4-.5 3.1-1.3-.2 1.9-.9 3.4-2.4 5h6.4c-1.5-1.6-2.2-3.1-2.4-5 .7.8 1.8 1.3 3.1 1.3 2.4 0 4.4-1.9 4.4-4.5 0-4.5-5.7-8.4-8.3-11.4z"/>',
@@ -2098,7 +2099,7 @@ function tablePickHTML(){const cur=equippedId('table');return `<div class="tpick
 function tadHTML(T,s){if(!s)return '';const t=esc(s.title),sub=esc(s.house?(s.kicker||''):(s.label==='Sponsored'?'':s.sub||'')),lg=window.DGSponsors?DGSponsors.logoHTML(s,'tl'):'';
 const tx=`<span class="tt"><b>${t}</b>${sub?`<small>${sub}</small>`:''}</span>`;
 return T.ad==='plaque'?`<i class="sc"></i><i class="sc"></i><i class="sc"></i><i class="sc"></i>${tx}`:T.ad==='sand'?tx:T.ad==='crate'?`<i class="nl"></i>${lg}${tx}`:`${lg}${tx}`;}
-function tableAd(force){const w=$('#tad');if(!w||!S)return;const T=tableOf(),s=handSponsor(),k=(s?s.title:'')+'|'+S.handNo+'|'+T.c;w.className='tad '+T.ad;if(!force&&w._k===k)return;w._k=k;w.innerHTML=tadHTML(T,s);}
+function tableAd(force){const w=$('#tad');if(!w||!S)return;const T=tableOf(),s=handSponsor(),k=(s?s.title:'')+'|'+S.handNo+'|'+T.c;w.className='tad '+T.ad;if(!force&&w._k===k)return;w._k=k;w.innerHTML=tadHTML(T,s);if(window.DGSponsors&&DGSponsors.tag)DGSponsors.tag(w,s,'plaque','digu');}
 const setTC=c=>{const m=document.querySelector('meta[name="theme-color"]');if(m&&m.content!==c)m.content=c;};
 function applyTable(){const m=document.querySelector('main.table');if(!m)return;const id=equippedId('table'),T=tableOf();
 /* the flying cards live in #fx (outside the table), so it wears the theme too: same card backs mid-flight */
@@ -3546,6 +3547,6 @@ if((!DG_IN_APP&&/^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname)))wi
 })();
 </script>
 <script>if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("/sw.js").catch(()=>{}));</script>
-<script src="../shared/stats.js" defer></script>
+<script src="../shared/stats.js?v=2" defer></script><script src="../shared/adstats.js?v=1" defer></script>
 </body>
 </html>

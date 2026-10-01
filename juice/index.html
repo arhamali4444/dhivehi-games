@@ -367,7 +367,7 @@ main.table>*{width:100%;max-width:640px;margin-left:auto;margin-right:auto}
 <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs><linearGradient id="dgGold" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F7DE92"/><stop offset=".55" stop-color="#D9A94A"/><stop offset="1" stop-color="#A97A26"/></linearGradient></defs></svg>
 <script src="../shared/avatar.js?v=10"></script>
 <script src="../shared/cosmetics.js?v=2"></script>
-<script src="../shared/sponsors.js?v=6"></script>
+<script src="../shared/sponsors.js?v=7"></script>
 <script src="../shared/net.js?v=6"></script>
 <script>
 /* =====================================================================
@@ -905,7 +905,7 @@ app.innerHTML=`<main class="table"><div class="tlayer" aria-hidden="true"><div c
 <button class="slot stack" id="mystack" data-a="flip"></button><div class="slot hold" id="myhold" aria-live="polite"></div><button class="slot open" id="myopen" data-a="mine"></button></div></div></section>
 </main>`;layoutArena();document.documentElement.dataset.net=mode==='online'?'1':'0';if(mode==='online'&&NET)NET.updDock();}
 function tableAd(){const w=$('#tadw');if(!w||!S||!window.DGSponsors)return;let s=null;try{s=DGSponsors.felt('juice');}catch(e){}const k=s?s.title:'';if(w._k===k)return;w._k=k;
-w.innerHTML=s?`<div class="tad tag" style="left:${TBL.at[0]}px;top:${TBL.at[1]}px"><b>${esc(s.title)}</b></div>`:'';}
+w.innerHTML=s?`<div class="tad tag"${DGSponsors.adAttr?DGSponsors.adAttr(s,'plaque','juice'):''} style="left:${TBL.at[0]}px;top:${TBL.at[1]}px"><b>${esc(s.title)}</b></div>`:'';}
 function seatOrder(){const n=S.players.length,m=Math.max(0,vIdx()),o=[];for(let i=1;i<n;i++)o.push((m+i)%n);return o;}
 const SEAT_ANG=[[],[90],[150,30],[160,90,20],[168,124,56,12]];
 function layoutArena(){const a=$('#arena');if(!a||!S)return;const W=a.clientWidth,H=a.clientHeight;if(!W||!H)return;
@@ -1178,6 +1178,6 @@ else if(LOCAL&&Q.get('play')==='1'){if(Q.get('bots'))nBots=Math.max(1,Math.min(4
 else{renderHome();if(NET)NET.boot();}
 })();
 </script>
-<script src="../shared/stats.js" defer></script>
+<script src="../shared/stats.js?v=2" defer></script><script src="../shared/adstats.js?v=1" defer></script>
 </body>
 </html>

@@ -331,7 +331,7 @@ html.watching .watch{display:flex}
 <div id="rot" role="alert"><div class="ph"><i></i></div><h3>Turn your phone upright</h3><p>Raalhu Rumble is a portrait race: hold your phone the tall way to run.</p></div>
 
 <script src="../shared/avatar.js?v=10"></script>
-<script src="../shared/sponsors.js?v=6"></script>
+<script src="../shared/sponsors.js?v=7"></script>
 <script src="../shared/net.js?v=6"></script>
 <script src="engine.js?v=3"></script>
 <script src="art/atlas.js?v=3"></script>
@@ -467,7 +467,7 @@ function renderHome(){show('home');MYCH=myChar();const nm=myName();
  $('#meChip').innerHTML=`<span class="av">${avSVG(MYCH,48)}</span><span>${nm?esc(nm):'Set your name'}</span>`;$('#meChip').setAttribute('aria-label','Your name: '+(nm||'not set')+'. Change');
  $('#boliPill').innerHTML=`<img src="../bondi/boli.webp" alt="" width="20" height="20"><span>${compact(shells())}</span>`;$('#boliPill').setAttribute('aria-label',shells()+' Boli');
  sfxBtn();if(!DEMO)newDemo();
- const box=$('#hsp');if(!spCtl&&box&&window.DGSponsors){try{spCtl=DGSponsors.box(box);}catch(e){}}}
+ const box=$('#hsp');if(!spCtl&&box&&window.DGSponsors){try{spCtl=DGSponsors.box(box,{place:'raalhu',game:'raalhu'});}catch(e){}}}
 const SET={n:clamp(+ls.get('rr2-n')||4,2,6),diff:['easy','normal','hard'].includes(ls.get('rr2-diff'))?ls.get('rr2-diff'):'normal'};
 let suRunner=null;
 function renderSetup(){show('setup');if(!DEMO)newDemo();$('#suName').textContent=myName()||'You';
@@ -914,6 +914,6 @@ V.load('art/',p=>{$('#ldBar').style.width=Math.round(p*100)+'%';$('#ldTx').textC
 }).catch(err=>{$('#ldTx').textContent='Couldn’t load the beach. Check your connection and reload.';console.error(err);});
 })();
 </script>
-<script src="../shared/stats.js" defer></script>
+<script src="../shared/stats.js?v=2" defer></script><script src="../shared/adstats.js?v=1" defer></script>
 </body>
 </html>
