@@ -51,7 +51,7 @@ a{color:var(--deep)}
 .ibtn:hover{background:rgba(255,255,255,.12)}
 .ibtn svg{width:16px;height:16px}
 .tabs{position:sticky;top:calc(58px + env(safe-area-inset-top));z-index:19;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
-.tabs .wrap{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:2px;padding-top:8px;padding-bottom:8px}
+.tabs .wrap{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:2px;padding-top:8px;padding-bottom:8px}
 .tab{position:relative;height:38px;border:0;border-radius:10px;background:transparent;color:var(--muted);font-weight:600;font-size:12.5px;display:flex;align-items:center;justify-content:center;gap:4px;padding:0 2px;min-width:0}
 .tab .dot{position:absolute;top:-3px;right:-2px}
 @media (min-width:420px){.tab .dot{position:static}}
@@ -268,6 +268,176 @@ dialog::backdrop{background:rgba(20,8,10,.55);backdrop-filter:blur(2px)}
 .spin{width:16px;height:16px;border:2px solid currentColor;border-right-color:transparent;border-radius:50%;animation:sp .7s linear infinite;display:inline-block}
 @keyframes sp{to{transform:rotate(360deg)}}
 .more{display:flex;justify-content:center;padding-top:12px}
+/* tabs: six now. Phones scroll the tab row sideways (the page itself never scrolls sideways) */
+.tab .sh{display:none}
+@media (min-width:480px) and (max-width:759px){.tab .lg{display:none}.tab .sh{display:inline}}
+@media (max-width:479px){.tabs .wrap{display:flex;gap:2px;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch}.tabs .wrap::-webkit-scrollbar{display:none}
+ .tabs .wrap::after{content:"";flex:none;width:8px}.tab{flex:none;padding:0 11px}}
+
+/* ===== Advertisers: minimalist. Soft greys, one accent (coral), big numbers, quiet motion ===== */
+.adv{--a:#FF6B4E;--a2:#E8553A;--asoft:#FFF0EB;--g0:#F7F5F4;--g1:#EFECEA;--g2:#E2DEDB;--g3:#B9B2AE;--g4:#8B8480;--gi:#2B2627;
+ display:grid;gap:14px;min-width:0}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .adv{--a:#FF7E64;--a2:#FF9A85;--asoft:#3A211C;--g0:#1F1A1B;--g1:#2A2425;--g2:#3A3334;--g3:#6E6566;--g4:#A39A9B;--gi:#F4EEEC}}
+.adv .card{box-shadow:none;border-color:var(--g1);border-radius:18px;padding:18px}
+.adv .card h2{font:700 15px/1.3 var(--tx);letter-spacing:0}
+.adv .muted{color:var(--g4)}
+.adv .chead{margin-bottom:14px}
+.adv .lbl{font-size:11px;font-weight:600;color:var(--g4);text-transform:uppercase;letter-spacing:.07em}
+.adv .btn{border-color:var(--g2);background:transparent}
+.adv .btn.pri{background:var(--a);border-color:var(--a);color:#fff}
+.adv .btn.pri:hover{filter:none;background:var(--a2);border-color:var(--a2)}
+.adv .btn svg{width:15px;height:15px}
+.adv select.sel{width:100%;min-width:0;background:var(--card);border-color:var(--g2)}
+.actl{display:grid;gap:12px;grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+.actl label{display:grid;gap:6px;min-width:0}
+.actl .acts{grid-column:1/-1;display:flex;gap:8px;flex-wrap:wrap}
+.actl .acts .btn{flex:1 1 140px}
+@media (min-width:760px){.actl{grid-template-columns:minmax(0,1.3fr) minmax(0,1fr) auto;align-items:end}.actl .acts{grid-column:auto;flex-wrap:nowrap}.actl .acts .btn{flex:none}}
+.ahead{display:flex;align-items:center;gap:12px;margin-top:16px;padding-top:16px;border-top:1px solid var(--g1);min-width:0}
+.ahead .nm{font:700 17px/1.25 var(--hd);display:flex;gap:8px;align-items:center;flex-wrap:wrap;min-width:0}
+.ahead .sub{font-size:12px;color:var(--g4);margin-top:2px;overflow-wrap:anywhere}
+.alogo{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;color:#fff;font:800 15px/1 var(--hd);flex:none;overflow:hidden}
+.alogo img{width:100%;height:100%;object-fit:cover;display:block;background:#fff}
+.apill{display:inline-flex;align-items:center;gap:6px;height:22px;padding:0 9px;border-radius:11px;font-size:11px;font-weight:600;background:var(--g0);color:var(--g4);white-space:nowrap;border:1px solid var(--g1)}
+.apill i{width:6px;height:6px;border-radius:50%;background:var(--g3)}
+.apill.on{color:var(--gi)}.apill.on i{background:var(--a)}
+.apill.hs{color:var(--a2);background:var(--asoft);border-color:transparent}
+/* KPI tiles */
+.akpi{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.akpi .t:first-child{grid-column:1/-1}
+@media (min-width:640px){.akpi{grid-template-columns:repeat(3,minmax(0,1fr))}.akpi .t:first-child{grid-column:auto}}
+@media (min-width:980px){.akpi{grid-template-columns:repeat(5,minmax(0,1fr))}}
+.akpi .t{background:var(--card);border:1px solid var(--g1);border-radius:18px;padding:16px;min-width:0}
+.akpi .v{font:700 30px/1.1 var(--hd);letter-spacing:-.02em;margin-top:8px;font-variant-numeric:tabular-nums;color:var(--gi);overflow-wrap:anywhere}
+.akpi .t:first-child .v{font-size:40px;color:var(--a)}
+.akpi .s{font-size:12px;color:var(--g4);margin-top:4px}
+.dl{font-weight:600;white-space:nowrap}.dl.up{color:var(--a2)}.dl.dn{color:var(--g4)}
+/* charts */
+.achart{width:100%;height:auto;display:block;touch-action:pan-y}
+.achart text{font:500 10.5px var(--tx);fill:var(--g4)}
+.achart .gl{stroke:var(--g1);stroke-width:1}
+.achart .b{fill:var(--g2);transition:fill .25s}
+.achart .b.has{fill:var(--a)}
+.achart .b.on{fill:var(--a2)}
+.achart .hl{fill:var(--g0)}
+.achart .hit{fill:transparent;cursor:pointer}
+.adv .readout{background:var(--g0);border-radius:12px;font-size:13px;margin-top:10px;padding:10px 12px}
+.adv .readout b{font-variant-numeric:tabular-nums}
+/* breakdown rows */
+.arows{display:grid}
+.arow{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 12px;padding:10px 4px;border-top:1px solid var(--g1);align-items:center;border-radius:10px;transition:background .3s}
+.arow:first-child{border-top:0}
+.arow .nm{font-weight:600;font-size:13px;min-width:0;overflow-wrap:anywhere}
+.arow .nm small{display:block;font-weight:400;color:var(--g4);font-size:11.5px}
+.arow .val{font:700 14px/1.2 var(--tx);text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.arow .val small{display:block;font:500 11px var(--tx);color:var(--g4)}
+.arow .trk{grid-column:1/-1;height:6px;border-radius:3px;background:var(--g1);overflow:hidden}
+.arow .trk i{display:block;height:100%;border-radius:3px;background:var(--a);transform-origin:0 50%}
+/* platform split + audience */
+.apbar{display:flex;gap:3px;height:12px;border-radius:6px;overflow:hidden}
+.apbar i{display:block;height:100%;transform-origin:0 50%}
+.apleg{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:14px}
+.apleg div{min-width:0}
+.apleg .l{font-size:12px;color:var(--g4);display:flex;align-items:center;gap:6px}
+.apleg .l i{width:8px;height:8px;border-radius:50%;flex:none}
+.apleg b{display:block;font:700 22px/1.2 var(--hd);font-variant-numeric:tabular-nums;margin-top:4px;color:var(--gi)}
+.apleg small{font-size:11px;color:var(--g4)}
+.aaud{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px 12px}
+.aaud .v{font:700 24px/1.15 var(--hd);font-variant-numeric:tabular-nums;color:var(--gi);margin-top:4px}
+.aaud .s{font-size:11.5px;color:var(--g4)}
+.anvr{margin-top:16px}
+.anvr .l{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;font-size:12px;color:var(--g4);margin-top:8px}
+/* sponsor list */
+.asrow{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:4px 12px;align-items:center;width:100%;padding:12px 8px;border:0;border-top:1px solid var(--g1);background:transparent;text-align:left;border-radius:12px;transition:background .3s}
+.asrow:first-of-type{border-top:0}
+.asrow.on{background:var(--g0)}
+.asrow .alogo{grid-row:span 2;width:36px;height:36px;border-radius:11px;font-size:13px}
+.asrow .nm{font-weight:600;font-size:13.5px;min-width:0;overflow-wrap:anywhere}
+.asrow .dt{grid-column:2/4;font-size:12px;color:var(--g4);display:flex;flex-wrap:wrap;gap:4px 12px}
+.asrow .dt b{color:var(--gi);font-weight:600}
+.agrp{font-size:11px;font-weight:600;color:var(--g4);text-transform:uppercase;letter-spacing:.07em;padding:14px 8px 4px}
+.adv .tap:focus-visible,.adv .asrow:focus-visible{outline:2px solid var(--a);outline-offset:1px}
+.adv .tap:active,.asrow:active{background:var(--g0)}
+/* empty state */
+.aempty{text-align:center;padding:34px 16px 30px}
+.aempty .dot{width:14px;height:14px;border-radius:50%;background:var(--a);margin:0 auto 18px;box-shadow:0 0 0 0 rgba(255,107,78,.45);animation:aping 2.4s ease-out infinite}
+.aempty h3{font:700 22px/1.2 var(--hd);margin:0 0 8px;color:var(--gi)}
+.aempty p{margin:0 auto;max-width:440px;color:var(--g4);font-size:13.5px}
+.aempty ul{list-style:none;margin:18px auto 0;padding:0;display:grid;gap:8px;max-width:360px;text-align:left;font-size:13px;color:var(--gi)}
+.aempty li{display:flex;gap:10px;align-items:center}.aempty li i{width:6px;height:6px;border-radius:50%;background:var(--g3);flex:none}
+.anone{padding:22px 10px;text-align:center;color:var(--g4);font-size:13px;border:1px dashed var(--g2);border-radius:14px}
+.afoot{font-size:12px;color:var(--g4);display:flex;gap:8px 14px;flex-wrap:wrap;align-items:center}
+.afoot .sp{flex:1}
+/* motion: numbers count up, bars grow in, soft highlight on tap */
+@keyframes aping{0%{box-shadow:0 0 0 0 rgba(255,107,78,.45)}80%,100%{box-shadow:0 0 0 14px rgba(255,107,78,0)}}
+@keyframes agrow{from{transform:scaleY(0)}}
+@keyframes afill{from{transform:scaleX(0)}}
+@keyframes aflash{from{background:var(--asoft)}}
+.adv .grow{transform-box:fill-box;transform-origin:50% 100%;animation:agrow .7s cubic-bezier(.2,.8,.2,1) both}
+.adv .fill{animation:afill .8s cubic-bezier(.2,.8,.2,1) both}
+.adv .flash{animation:aflash .9s ease-out}
+@media (prefers-reduced-motion:reduce){.adv .grow,.adv .fill,.adv .flash,.aempty .dot{animation:none}.arow,.asrow,.achart .b{transition:none}}
+
+/* ===== the monthly report: one minimal A4 page (always light, like paper) ===== */
+.rwrap{overflow:hidden;border-radius:10px;border:1px solid var(--g1);background:#fff}
+.rp{--ri:#211C1D;--rm:#857D79;--rl:#ECE8E6;--rg:#F6F4F3;--ra:#FF6B4E;--a:#FF6B4E;--g1:#ECE8E6;--g2:#E2DEDB;--g3:#B9B2AE;--g4:#857D79;--gi:#211C1D;
+ width:794px;height:1123px;background:#fff;color:var(--ri);font:12px/1.5 var(--tx);transform-origin:0 0;display:flex;flex-direction:column;
+ padding:46px 52px 34px;gap:22px;overflow:hidden;color-scheme:light;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.rp *{box-sizing:border-box}
+.rp-h{display:flex;align-items:flex-start;gap:16px;border-bottom:1px solid var(--rl);padding-bottom:20px}
+.rp-b{display:flex;align-items:center;gap:12px;flex:1;min-width:0}
+.rp-b img{width:42px;height:42px;border-radius:11px}
+.rp-b b{display:block;font:800 21px/1.05 var(--hd);letter-spacing:-.02em}
+.rp-b span{font-size:11px;color:var(--rm)}
+.rp-m{text-align:right}
+.rp-m span{display:block;font-size:10px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--ra)}
+.rp-m b{display:block;font:700 22px/1.15 var(--hd);margin-top:3px;white-space:nowrap}
+.rp-m small{font-size:10.5px;color:var(--rm)}
+.rp-for{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);gap:20px;align-items:center}
+.rp .k{font-size:9.5px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--rm)}
+.rp-co{display:flex;align-items:center;gap:12px;margin-top:8px;min-width:0}
+.rp-co b{font:700 20px/1.15 var(--hd);display:block}
+.rp-co span{font-size:11px;color:var(--rm)}
+.rp-for dl{margin:0;display:grid;grid-template-columns:auto minmax(0,1fr);gap:5px 14px;font-size:11px}
+.rp-for dt{color:var(--rm)}.rp-for dd{margin:0;font-weight:600}
+.rp-kpi{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));border-top:1px solid var(--rl);border-bottom:1px solid var(--rl)}
+.rp-kpi>div{padding:16px 14px 16px 0;min-width:0}
+.rp-kpi>div+div{padding-left:16px;border-left:1px solid var(--rl)}
+.rp-kpi b{display:block;font:700 30px/1.05 var(--hd);letter-spacing:-.02em;margin-top:6px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.rp-kpi>div:first-child b{color:var(--ra)}
+.rp-kpi small{display:block;font-size:10.5px;color:var(--rm);margin-top:4px}
+.rp h4{font:600 9.5px/1 var(--tx);letter-spacing:.14em;text-transform:uppercase;color:var(--rm);margin:0 0 10px;display:flex;justify-content:space-between;gap:8px}
+.rp h4 span{letter-spacing:0;text-transform:none;font-weight:500}
+.rp svg{display:block;width:100%;height:auto}
+.rp svg text{font:500 9px var(--tx);fill:var(--rm)}
+.rp svg .gl{stroke:var(--rl)}.rp svg .b{fill:var(--ra)}.rp svg .b0{fill:#E4DFDC}
+.rp-two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:30px}
+.rp-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:3px 10px;padding:6px 0;font-size:11px}
+.rp-row .n{font-weight:600;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rp-row .v{font-variant-numeric:tabular-nums;color:var(--rm);white-space:nowrap}
+.rp-row .tk{grid-column:1/-1;height:5px;border-radius:3px;background:var(--rg);overflow:hidden}
+.rp-row .tk i{display:block;height:100%;background:var(--ra);border-radius:3px}
+.rp-pl .apbar{height:10px}
+.rp-pl .apleg{margin-top:10px;gap:8px}
+.rp-pl .apleg .l{color:var(--rm);font-size:10.5px}
+.rp-pl .apleg b{font-size:17px;color:var(--ri)}
+.rp-pl .apleg small{color:var(--rm);font-size:10px}
+.rp-au{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 14px}
+.rp-au b{display:block;font:700 18px/1.15 var(--hd);font-variant-numeric:tabular-nums}
+.rp-au span{font-size:10px;color:var(--rm)}
+.rp-none{border:1px dashed var(--rl);border-radius:14px;padding:46px 20px;text-align:center;color:var(--rm);font-size:13px}
+.rp-f{margin-top:auto;display:flex;align-items:flex-end;gap:16px;border-top:1px solid var(--rl);padding-top:14px;font-size:10px;color:var(--rm)}
+.rp-f .pr{display:flex;gap:8px;align-items:center;flex:1;min-width:0;color:var(--ri);font-weight:600;font-size:10.5px}
+.rp-f .pr svg{width:15px;height:15px;flex:none;color:var(--ra)}
+.rp-f .ct{text-align:right;line-height:1.5}
+#printRoot{display:none}
+@media print{
+ @page{size:A4;margin:0}
+ html.print-report,html.print-report body{background:#fff!important;min-height:0}
+ html.print-report body>*:not(#printRoot){display:none!important}
+ html.print-report #printRoot{display:block}
+ html.print-report #printRoot .rp{width:210mm;height:297mm;transform:none!important}
+}
 </style>
 </head>
 <body>
@@ -284,6 +454,7 @@ dialog::backdrop{background:rgba(20,8,10,.55);backdrop-filter:blur(2px)}
  <button class="tab" role="tab" data-a="tab" data-t="tables" aria-selected="false">Tables <span class="dot" id="tDot" hidden></span></button>
  <button class="tab" role="tab" data-a="tab" data-t="players" aria-selected="false">Players <span class="dot" id="pDot" hidden></span></button>
  <button class="tab" role="tab" data-a="tab" data-t="inbox" aria-selected="false">Inbox <span class="dot" id="iDot" hidden></span></button>
+ <button class="tab" role="tab" data-a="tab" data-t="ads" aria-selected="false"><span class="lg">Advertisers</span><span class="sh">Ads</span></button>
 </div></nav>
 
 <div id="view"></div>
@@ -295,6 +466,7 @@ dialog::backdrop{background:rgba(20,8,10,.55);backdrop-filter:blur(2px)}
 </form></dialog>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
+<script src="/shared/sponsors.js?v=7"></script>
 <script type="module">
 /* =====================================================================================
    Dhivehi Games · private admin panel (not linked from anywhere, noindex).
@@ -302,7 +474,8 @@ dialog::backdrop{background:rgba(20,8,10,.55);backdrop-filter:blur(2px)}
    in isAdmin() can read the inboxes or change players. This page only hides the UI.
    Localhost-only test switches: ?mock=1 (fake data, fake sign-in, writes stay in memory),
    ?mock=1&live=1 (fake sign-in, REAL read-only presence/players/tables, all writes disabled),
-   &as=guest (show "Not authorised"), &rules=0 (pretend the admin rules are not published), &auto=1 (auto sign-in).
+   &as=guest (show "Not authorised"), &rules=0 (pretend the admin rules are not published), &auto=1 (auto sign-in),
+   &ads=empty (Advertisers tab on its first day: nothing counted yet).
    ===================================================================================== */
 'use strict';
 
@@ -383,7 +556,7 @@ service cloud.firestore {
       allow read: if true;
       allow create, update: if request.auth != null
         && request.auth.uid == uid
-        && game in ['digu', 'dhogu', 'bondi', 'thaas', 'dhashundhama', 'binveriya', 'atolls', 'dhihaeh', 'joker', 'juice', 'raalhu']
+        && game in ['digu', 'dhogu', 'bondi', 'thaas', 'dhashundhama', 'binveriya', 'atolls', 'dhihaeh', 'joker', 'juice', 'raalhu', 'quiz']
         && request.resource.data.keys().hasOnly(['t'])
         && request.resource.data.t == request.time;
       allow delete: if request.auth != null && request.auth.uid == uid;
@@ -427,14 +600,57 @@ service cloud.firestore {
         && request.resource.data.t == request.time
         && request.resource.data.n is bool
         && request.resource.data.g is list
-        && request.resource.data.g.size() <= 13
-        && request.resource.data.g.hasOnly(['home','digu','dhogu','bondi','ranga','dhashundhama','binveriya','atolls','dhihaeh','thaas','joker','juice','raalhu']);
+        && request.resource.data.g.size() <= 14
+        && request.resource.data.g.hasOnly(['home','digu','dhogu','bondi','ranga','dhashundhama','binveriya','atolls','dhihaeh','thaas','joker','juice','raalhu','quiz']);
       allow update: if request.auth != null
         && request.auth.uid == id
         && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['g'])
         && request.resource.data.g is list
-        && request.resource.data.g.size() <= 13
-        && request.resource.data.g.hasOnly(['home','digu','dhogu','bondi','ranga','dhashundhama','binveriya','atolls','dhihaeh','thaas','joker','juice','raalhu']);
+        && request.resource.data.g.size() <= 14
+        && request.resource.data.g.hasOnly(['home','digu','dhogu','bondi','ranga','dhashundhama','binveriya','atolls','dhihaeh','thaas','joker','juice','raalhu','quiz']);
+    }
+
+    // ad counts and time played (shared/adstats.js): one doc per device per day, "adstats/day-YYYYMMDD/dev/{id}",
+    // written only by that device's own anonymous stats account. Counts only: no names, no IP, no device details.
+    // Each write may add at most 400 views, 60 taps and 900 seconds, and at most 300 writes a day.
+    // Only the admin can read or delete them.
+    match /adstats/{day}/dev/{id} {
+      function adDoc(d) {
+        return d.keys().hasOnly(['p','v','k','m','r','y','sv','sk','sm','c','t'])
+          && d.keys().hasAll(['p','sv','sk','sm','c','t'])
+          && d.p in ['web','ios','android']
+          && d.t == request.time
+          && d.sv is int && d.sk is int && d.sm is int && d.c is int
+          && d.sv <= 20000 && d.sk <= 2000 && d.sm <= 86400 && d.c <= 300
+          && (!('v' in d) || (d.v is map && d.v.size() <= 150))
+          && (!('k' in d) || (d.k is map && d.k.size() <= 150))
+          && (!('m' in d) || (d.m is map && d.m.size() <= 14 && d.m.keys().hasOnly(['home','digu','dhogu','bondi','ranga','dhashundhama','binveriya','atolls','dhihaeh','thaas','joker','juice','raalhu','quiz'])))
+          && (!('r' in d) || (d.r is map && d.r.size() <= 40))
+          && (!('y' in d) || (d.y is map && d.y.size() <= 40));
+      }
+      allow read, delete: if isAdmin();
+      allow create: if request.auth != null
+        && request.auth.uid == id
+        && day.matches('^day-[0-9]{8}$')
+        && adDoc(request.resource.data)
+        && request.resource.data.c == 1
+        && request.resource.data.sv <= 400
+        && request.resource.data.sk <= 60
+        && request.resource.data.sm <= 900;
+      allow update: if request.auth != null
+        && request.auth.uid == id
+        && adDoc(request.resource.data)
+        && request.resource.data.p == resource.data.p
+        && request.resource.data.c == resource.data.c + 1
+        && request.resource.data.sv >= resource.data.sv && request.resource.data.sv <= resource.data.sv + 400
+        && request.resource.data.sk >= resource.data.sk && request.resource.data.sk <= resource.data.sk + 60
+        && request.resource.data.sm >= resource.data.sm && request.resource.data.sm <= resource.data.sm + 900;
+    }
+
+    // daily totals of the ad counts ("adstats/sum-YYYYMMDD"), made by the admin page once each day is over
+    match /adstats/{id} {
+      allow read, delete: if isAdmin();
+      allow create, update: if isAdmin() && id.matches('^sum-[0-9]{8}$');
     }
   }
 }
@@ -529,7 +745,12 @@ const Real={
  /* visitor counts: aggregation count = 1 read per 1,000 docs counted (min 1) */
  async count(period,f){await fbInit();const F=FB.F;let q=F.collection(FB.db,'stats',period,'visitors');
   if(f&&f.n)q=F.query(q,F.where('n','==',true));if(f&&f.g)q=F.query(q,F.where('g','array-contains',f.g));
-  const r=await F.getCountFromServer(q);return r.data().count|0;}
+  const r=await F.getCountFromServer(q);return r.data().count|0;},
+ /* ad counts: the daily sums (adstats/sum-YYYYMMDD), one finished day's device docs, and writing a sum */
+ async adSums(from,to){await fbInit();const F=FB.F;const s=await F.getDocs(F.query(F.collection(FB.db,'adstats'),F.where(F.documentId(),'>=','sum-'+from),F.where(F.documentId(),'<=','sum-'+to)));
+  return s.docs.map(d=>Object.assign({},d.data(),{id:d.id}));},
+ async adDay(day){await fbInit();const F=FB.F;const s=await F.getDocs(F.collection(FB.db,'adstats','day-'+day,'dev'));return s.docs.map(d=>Object.assign({},d.data(),{id:d.id}));},
+ async putSum(day,data){const F=FB.F;await F.setDoc(F.doc(FB.db,'adstats','sum-'+day),data);}
 };
 
 /* ---------- mock (localhost only) ---------- */
@@ -592,8 +813,31 @@ function makeMock(){
    let tot=isM?(period.endsWith(today.slice(8,10))?640:410):Math.round((70+22*Math.sin(i/2.2)+(24-i)*2.1+(new Date(Date.now()-i*864e5).getDay()%6===5?25:0))*(i===0?.62:1));
    if(f&&f.n)return Math.round(tot*(isM?.46:(i>20?.6:.17)));
    const W={home:.78,digu:.42,dhogu:.12,bondi:.16,ranga:.07,dhashundhama:.09,binveriya:.11,atolls:.1,dhihaeh:.08,thaas:.05,joker:.07,juice:.06,raalhu:0};
-   if(f&&f.g)return Math.round(tot*(W[f.g]||0)*(isM?1.4:1));return tot;}
+   if(f&&f.g)return Math.round(tot*(W[f.g]||0)*(isM?1.4:1));return tot;},
+  /* ad counts (localhost mock): sum docs live in memory; each day's device docs are made up from the day's date,
+     always the same for the same day, plus one tampered doc a day that the adding-up must leave out.
+     &ads=empty = the first day: nothing counted yet. */
+  async adSums(from,to){if(LIVE)return Real.adSums(from,to);if(Q.get('rules')==='0')throw{code:'permission-denied'};await new Promise(r=>setTimeout(r,30));
+   return [...AS.entries()].filter(([d])=>d>=from&&d<=to).map(([d,x])=>Object.assign(JSON.parse(JSON.stringify(x)),{id:'sum-'+d}));},
+  async adDay(day){if(LIVE)return Real.adDay(day);if(Q.get('rules')==='0')throw{code:'permission-denied'};return mockAdDocs(day);},
+  async putSum(day,data){await block();AS.set(day,JSON.parse(JSON.stringify(data)));}
  };
+ const AS=new Map();
+ function mockAdDocs(day){if(Q.get('ads')==='empty'||day<ADS_START)return [];
+  let sd=0;for(const c of day)sd=(sd*31+c.charCodeAt(0))%2147483647;sd=sd||7;const R=()=>(sd=(sd*16807)%2147483647)/2147483647;
+  const iso=dIso(day),cat=adCatalog().filter(s=>(!s.from||iso>=s.from)&&(!s.to||iso<=s.to));
+  const G=['digu','digu','digu','bondi','ranga','dhashundhama','dhihaeh','thaas','joker','juice','binveriya','atolls','dhogu','quiz'],TBL=['digu','digu','bondi','dhashundhama','dhihaeh','joker','juice'];
+  const dow=new Date(iso+'T00:00:00Z').getUTCDay(),n=Math.round((26+R()*10)*(dow===5||dow===6?1.35:1)),out=[];
+  for(let i=0;i<n;i++){const p=R()<.52?'web':R()<.55?'android':'ios',v={},k={},m={},r={},y={};
+   const add=(o,key,c)=>{o[key]=(o[key]||0)+c;};
+   cat.forEach(s=>{if(R()>.55)return;const pick=R(),g=G[Math.floor(R()*G.length)];
+    const key=pick<.3?s.id+'~home_box~home':pick<.65?s.id+'~game_box~'+g:pick<.85?s.id+'~plaque~'+TBL[Math.floor(R()*TBL.length)]:pick<.95?s.id+'~credit~'+(R()<.7?'digu':'dhashundhama'):s.id+'~raalhu~raalhu';
+    add(v,key,1+Math.floor(R()*3));if(s.url&&!/~plaque~/.test(key)&&R()<.07)add(k,key,1);if(R()<.3){r[s.id]=1;if(R()<.5)y[s.id]=1;}});
+   const g1=G[Math.floor(R()*G.length)];if(R()<.85)m[g1]=60+Math.floor(R()*1500);if(R()<.3){const g2=G[Math.floor(R()*G.length)];m[g2]=(m[g2]||0)+30+Math.floor(R()*600);}
+   const t=o=>Object.values(o).reduce((a,x)=>a+x,0);
+   out.push({id:'dev'+i,p,v,k,m,r,y,sv:t(v),sk:t(k),sm:t(m),c:1+Math.floor(R()*4)});}
+  out.push({id:'tampered',p:'web',v:{'advertise~home_box~home':5000},k:{},m:{},sv:1,sk:0,sm:0,c:1});
+  return out;}
  return M;}
 
 const DL=MOCK?makeMock():Real;
@@ -608,7 +852,7 @@ const ST={players:new Map(),playersAt:0,playersErr:'',loadingPlayers:false,
  reports:null,support:null,notes:new Map(),inboxErr:'',inboxKind:'reports',inboxFilter:'open',
  q:'',sort:'wins',shown:60,openRow:'',dupSel:{},xpMode:'max',tFilter:'all'};
 const TB=new Map();const brokerUp=[false,false];let mq=[];
-if(MOCK)window.__dga={TB,ST};   /* localhost test hook only */
+if(MOCK)window.__dga={TB,ST,get AD(){return AD;},get DL(){return DL;},get sumDay(){return sumDay;},get adAgg(){return adAgg;},get adAud(){return adAud;}};   /* localhost test hook only */
 
 /* =====================================================================================
    VIEWS
@@ -650,14 +894,18 @@ function viewPanel(){chrome(true);
   <section class="sec" id="s-tables" ${tab!=='tables'?'hidden':''}><div id="tables"></div></section>
   <section class="sec" id="s-players" ${tab!=='players'?'hidden':''}><div id="pnote"></div><div class="grid2"><div id="dups"></div><div id="tests"></div></div><div id="plist"></div></section>
   <section class="sec" id="s-inbox" ${tab!=='inbox'?'hidden':''}><div id="inbox"></div></section>
+  <section class="sec" id="s-ads" ${tab!=='ads'?'hidden':''}><div id="ads"></div></section>
  </div></main>`);
  document.querySelectorAll('.tab').forEach(b=>b.setAttribute('aria-selected',String(b.dataset.t===tab)));
+ {const w=$('.tabs .wrap'),b=document.querySelector('.tab[data-t="'+tab+'"]');if(w&&b&&w.scrollWidth>w.clientWidth)w.scrollLeft=Math.max(0,b.offsetLeft+b.offsetWidth-w.clientWidth+8);}
  renderAll();}
 function setTab(t){tab=t;try{sessionStorage.setItem('dga-tab',t);}catch(e){}
  document.querySelectorAll('.tab').forEach(b=>b.setAttribute('aria-selected',String(b.dataset.t===t)));
- ['overview','stats','tables','players','inbox'].forEach(k=>{const s=$('#s-'+k);if(s)s.hidden=k!==t;});
- if(t==='tables')renderTables();if(t==='stats'){if(!TR.at&&!TR.loading)loadTraffic();else renderTraffic();}window.scrollTo({top:0});}
-function renderAll(){renderSetup();renderStats();renderOnline();renderTables();renderPlayers();renderInbox();renderTraffic();if(tab==='stats'&&!TR.at&&!TR.loading)loadTraffic();}
+ ['overview','stats','tables','players','inbox','ads'].forEach(k=>{const s=$('#s-'+k);if(s)s.hidden=k!==t;});
+ if(t==='tables')renderTables();if(t==='stats'){if(!TR.at&&!TR.loading)loadTraffic();else renderTraffic();}
+ if(t==='ads'){if(!AD.at&&!AD.loading)loadAds();else renderAds();}
+ {const b=document.querySelector('.tab[data-t="'+t+'"]');if(b&&b.scrollIntoView)try{b.scrollIntoView({block:'nearest',inline:'nearest'});}catch(e){}}window.scrollTo({top:0});}
+function renderAll(){renderSetup();renderStats();renderOnline();renderTables();renderPlayers();renderInbox();renderTraffic();renderAds();if(tab==='stats'&&!TR.at&&!TR.loading)loadTraffic();if(tab==='ads'&&!AD.at&&!AD.loading)loadAds();}
 
 /* ---------- setup card (UID + one-time rules) ---------- */
 function renderSetup(){const el=$('#setup');if(!el)return;const uid=user?user.uid:'';
@@ -898,6 +1146,261 @@ function perGameTable(){const days=TR.days.slice(0,7);const rows=TKEYS.filter(g=
   <tbody>${rows.map(g=>`<tr><td class="g"><span class="gdot" style="background:${g==='home'?'var(--muted)':(GAMES[g]||{c:'#999'}).c};margin-right:6px"></span>${esc(TNAME(g))}</td>${days.map(d=>cell(g,(TR.pg[g]||{})[d.k]||0)).join('')}<td class="mo">${fmt(TR.mon.g[g]||0)}</td></tr>`).join('')}</tbody></table></div>
   <p class="small muted" style="margin:8px 0 0">Darker = more players. “Home page” counts visits to the front page; a device that opens three games counts once in each.</p>`;}
 
+/* ---------- advertisers: ad counts from shared/adstats.js (days in Maldives time, UTC+5) ----------
+   Devices write adstats/day-YYYYMMDD/dev/{id}. Once a day is over, this page reads that day's device docs ONCE,
+   adds them up into adstats/sum-YYYYMMDD (plus that day's visitor counts) and from then on reads only the sums
+   (about 30 reads for a month). A device doc whose totals don't match its own counts is left out (tampered). */
+const ADS_START=MOCK?(Q.get('ads')==='empty'?dayKey(0):dayKey(75)):'20261001';   /* the first counted day */
+const AD_PLACES={home_box:['Homepage box','The rotating box on the home page'],game_box:['Game home screens','The sponsor box on each game’s home screen'],
+ raalhu:['Raalhu Rumble home','The sponsor card on the Raalhu Rumble home'],plaque:['Table plaque','Printed on the table during play'],credit:['Sponsor line','“Hand sponsored by” / “Presented by” at the end of a hand or game']};
+const AD_PLATS=[['ios','iPhone app'],['android','Android app'],['web','Website']];
+const AD_SHADE={ios:'var(--a)',android:'var(--g3)',web:'var(--g2)'};
+const MN=['January','February','March','April','May','June','July','August','September','October','November','December'];
+const RM=matchMedia('(prefers-reduced-motion: reduce)');
+function dayKey(off){return new Date(Date.now()+5*3600e3-(off||0)*864e5).toISOString().slice(0,10).replace(/-/g,'');}
+const dIso=d=>d.slice(0,4)+'-'+d.slice(4,6)+'-'+d.slice(6,8);
+const dNice=d=>(+d.slice(6,8))+' '+MN[+d.slice(4,6)-1].slice(0,3)+' '+d.slice(0,4);
+const mName=m=>MN[+m.slice(4,6)-1]+' '+m.slice(0,4);
+const mShort=m=>MN[+m.slice(4,6)-1].slice(0,3);
+const prevMonth=m=>{const y=+m.slice(0,4),n=+m.slice(4,6);return n===1?(y-1)+'12':y+String(n-1).padStart(2,'0');};
+const daysIn=m=>new Date(Date.UTC(+m.slice(0,4),+m.slice(4,6),0)).getUTCDate();
+const sMax=(a,b)=>a>b?a:b,sMin=(a,b)=>a<b?a:b;
+const pctS=(a,b,d=0)=>b?(a/b*100).toFixed(d)+'%':'–';
+const adGame=k=>k==='quiz'?'Dhivehi Quiz':k==='home'?'Homepage':TNAME(k);
+const AD={at:0,loading:false,err:'',sums:new Map(),mon:{},reads:0,built:0,unsaved:0,from:'',sp:'',per:'',sel:-1,cat:null};
+
+/* the sponsor list comes from shared/sponsors.js (the same one the site shows) */
+function adCatalog(){if(AD.cat)return AD.cat;const L=(window.DGSponsors&&DGSponsors.list?DGSponsors.list:[]).map(s=>Object.assign({},s));
+ if(MOCK&&Q.get('ads')!=='empty'){L.push({id:'mock-coffee',title:'Test Coffee (mock)',sub:'Morning brew, every hand',url:'https://example.com/',logo:'TC',colors:['#6B3E26','#A86A45'],label:'Sponsored',felt:true,from:dIso(dayKey(40)),to:dIso(dayKey(-30))},
+  {id:'mock-travel',title:'Old Travel (mock)',sub:'Island hops for two',url:'https://example.com/t',logo:'OT',colors:['#0F7BA8','#4FB0D6'],label:'Sponsored',felt:true,from:dIso(dayKey(70)),to:dIso(dayKey(45))});}
+ return AD.cat=L;}
+function adSponsors(){const L=adCatalog().slice(),have=new Set(L.map(s=>s.id));
+ AD.sums.forEach(S=>Object.keys(S.v||{}).forEach(k=>{const id=k.split('~')[0];if(!have.has(id)){have.add(id);L.push({id,title:id+' (no longer listed)',colors:['#8B8480','#B9B2AE'],logo:id.slice(0,2).toUpperCase(),gone:true});}}));
+ return L;}
+const adOwn=s=>!!(s.house||s.label==='Advertise'||s.id==='advertise');
+function adStatus(s){if(s.gone)return['Removed',''];if(s.house)return['House promo','hs'];if(s.id==='advertise')return['Placeholder',''];
+ const t=dIso(dayKey(0));if(s.from&&t<s.from)return['Scheduled',''];if(s.to&&t>s.to)return['Ended',''];return['Active','on'];}
+const adPill=s=>{const[t,c]=adStatus(s);return `<span class="apill ${c}"><i></i>${esc(t)}</span>`;};
+const adDates=s=>s.gone?'Not in shared/sponsors.js any more':(!s.from&&!s.to)?(s.house?'Always on, fills empty slots':'Always on'):((s.from?dNice(s.from.replace(/-/g,'')):'Any time')+' – '+(s.to?dNice(s.to.replace(/-/g,'')):'no end date'));
+function adLogo(s){const c=s.colors||['#8B8480','#B9B2AE'],l=String(s.logo||'');
+ const img=/^(https?:|data:|\/|\.)/.test(l)||/\.(png|jpe?g|webp|svg|gif)$/i.test(l);
+ return `<span class="alogo" style="background:linear-gradient(140deg,${esc(c[0])},${esc(c[1]||c[0])})" aria-hidden="true">${img?`<img src="${esc(/^(https?:|data:|\/)/.test(l)?l:'/'+l)}" alt="">`:esc(l.slice(0,3))}</span>`;}
+
+/* ---- one finished day: add up every device's doc ---- */
+const AD_KEY=/^[a-z0-9-]{1,32}~(home_box|game_box|raalhu|plaque|credit)~[a-z]{2,14}$/;
+function sumDay(docs){const S={ver:1,n:0,bad:0,md:0,pd:{web:0,ios:0,android:0},v:{},k:{},m:{},r:{},y:{},rd:{},pv:{}};
+ const ok=x=>Number.isInteger(x)&&x>=0;
+ const tot=m=>{let n=0;for(const k in m||{}){if(!ok(m[k]))return -1;n+=m[k];}return n;};
+ for(const d of docs||[]){
+  const v=d.v||{},k=d.k||{},m=d.m||{};
+  const good=ok(d.sv)&&ok(d.sk)&&ok(d.sm)&&tot(v)===d.sv&&tot(k)===d.sk&&tot(m)===d.sm&&d.sv<=20000&&d.sk<=2000&&d.sm<=86400
+   &&Object.keys(v).every(x=>AD_KEY.test(x))&&Object.keys(k).every(x=>AD_KEY.test(x));
+  if(!good){S.bad++;continue;}
+  const p=['web','ios','android'].includes(d.p)?d.p:'web';S.n++;S.pd[p]++;
+  const saw=new Set();
+  for(const x in v){const n=v[x],id=x.split('~')[0];S.v[x]=(S.v[x]||0)+n;if(n>0)saw.add(id);const P=S.pv[id]||(S.pv[id]={web:0,ios:0,android:0});P[p]+=n;}
+  saw.forEach(id=>S.rd[id]=(S.rd[id]||0)+1);
+  for(const x in k)S.k[x]=(S.k[x]||0)+k[x];
+  let any=0;for(const g in m){if(m[g]>0){S.m[g]=(S.m[g]||0)+m[g];any=1;}}S.md+=any;
+  for(const id in d.r||{})if(/^[a-z0-9-]{1,32}$/.test(id))S.r[id]=(S.r[id]||0)+1;
+  for(const id in d.y||{})if(/^[a-z0-9-]{1,32}$/.test(id))S.y[id]=(S.y[id]||0)+1;}
+ return S;}
+
+/* ---- one sponsor over a month ('YYYYMM') or this year ('year') ---- */
+function adAgg(sid,per){const yr=dayKey(0).slice(0,4),inP=d=>per==='year'?d.slice(0,4)===yr:d.slice(0,6)===per;
+ const days=[...AD.sums.keys()].filter(inP).sort(),pre=sid+'~';
+ const o={views:0,taps:0,reach:0,n:days.length,daily:new Map(),pl:{},games:{},plat:{web:0,ios:0,android:0}};
+ for(const d of days){const S=AD.sums.get(d)||{};let v=0,t=0;
+  for(const x in S.v||{})if(x.startsWith(pre)){const n=S.v[x],[,pl,g]=x.split('~');v+=n;(o.pl[pl]=o.pl[pl]||{v:0,t:0}).v+=n;o.games[g]=(o.games[g]||0)+n;}
+  for(const x in S.k||{})if(x.startsWith(pre)){const n=S.k[x],pl=x.split('~')[1];t+=n;(o.pl[pl]=o.pl[pl]||{v:0,t:0}).t+=n;}
+  const pv=(S.pv||{})[sid]||{};for(const p in o.plat)o.plat[p]+=pv[p]||0;
+  o.views+=v;o.taps+=t;o.reach+=per==='year'?((S.y||{})[sid]||0):((S.r||{})[sid]||0);
+  o.daily.set(d,{v,t,r:(S.rd||{})[sid]||0,mr:(S.r||{})[sid]||0});}
+ return o;}
+/* bars: every day of the month (days not finished yet stay empty), or every month of the year */
+function adBars(o,per){const out=[],y=dayKey(1);
+ if(per==='year'){const yr=dayKey(0).slice(0,4),cm=+dayKey(0).slice(4,6);for(let i=1;i<=cm;i++){const m=yr+String(i).padStart(2,'0');let v=0,t=0,r=0,any=false;
+   o.daily.forEach((x,d)=>{if(d.slice(0,6)===m){v+=x.v;t+=x.t;r+=x.mr;any=true;}});out.push({k:m,lbl:mShort(m),v,t,r,done:any});}}
+ else{for(let i=1;i<=daysIn(per);i++){const d=per+String(i).padStart(2,'0'),x=o.daily.get(d);out.push({k:d,lbl:String(i),v:x?x.v:0,t:x?x.t:0,r:x?x.r:0,done:!!x&&d<=y});}}
+ return out;}
+/* site-wide audience for the period (everyone, not just one ad) */
+function adAud(per){const yr=dayKey(0).slice(0,4),inP=d=>per==='year'?d.slice(0,4)===yr:d.slice(0,6)===per;
+ const days=[...AD.sums.keys()].filter(inP);let dau=0,nd=0,sec=0,md=0;
+ days.forEach(d=>{const S=AD.sums.get(d);if(S.aud&&S.aud.dau!=null){dau+=S.aud.dau;nd++;}for(const g in S.m||{})sec+=S.m[g];md+=S.md||0;});
+ const o={avg:nd?Math.round(dau/nd):null,min:md?sec/md/60:null,days:days.length};
+ if(per==='year'){const ms=Object.keys(AD.mon).filter(m=>m.slice(0,4)===yr&&AD.mon[m]);
+  o.players=ms.length?Math.round(ms.reduce((a,m)=>a+AD.mon[m].all,0)/ms.length):null;o.nw=ms.length?ms.reduce((a,m)=>a+AD.mon[m].neu,0):null;o.ret=null;}
+ else{const M=AD.mon[per];o.players=M?M.all:null;o.nw=M?Math.min(M.neu,M.all):null;o.ret=M?Math.max(0,M.all-M.neu):null;}
+ return o;}
+
+/* ---- loading: sums for this year (+ last month), build the missing finished days, monthly visitor counts ---- */
+async function loadAds(){if(AD.loading)return;AD.loading=true;AD.err='';renderAds();
+ try{const today=dayKey(0),yest=dayKey(1),cm=today.slice(0,6);
+  const from=sMax(ADS_START,sMin(today.slice(0,4)+'0101',prevMonth(cm)+'01'));
+  let reads=0,built=0,unsaved=0;const sums=new Map();
+  if(from<=yest){const got=await DL.adSums(from,yest);reads+=Math.max(1,got.length);got.forEach(x=>{const d=String(x.id||'').slice(4);if(/^\d{8}$/.test(d))sums.set(d,x);});}
+  const lo=sMax(ADS_START,dayKey(62)),need=[];for(let i=1;i<=62;i++){const d=dayKey(i);if(d<lo)break;if(!sums.has(d))need.push(d);}
+  for(const d of need.slice(0,40)){
+   const docs=await DL.adDay(d);reads+=Math.max(1,docs.length);const S=sumDay(docs);
+   try{S.aud={dau:await DL.count('day-'+d),nw:await DL.count('day-'+d,{n:true})};reads+=2;}catch(e){S.aud=null;}
+   S.at=Date.now();try{await DL.putSum(d,S);}catch(e){console.warn(e);unsaved++;}
+   sums.set(d,S);built++;}
+  const mon={};let m=from.slice(0,6);for(let i=0;i<30&&m<=cm;i++){try{mon[m]={all:await DL.count('month-'+m),neu:await DL.count('month-'+m,{n:true})};reads+=2;}catch(e){mon[m]=null;}
+   const y=+m.slice(0,4),n=+m.slice(4,6);m=n===12?(y+1)+'01':y+String(n+1).padStart(2,'0');}
+  Object.assign(AD,{sums,mon,reads,built,unsaved,from,at:Date.now()});
+  if(!AD.per||!adPeriods().some(p=>p[0]===AD.per)){const withData=[...sums.entries()].filter(([,S])=>S.n>0).map(([d])=>d.slice(0,6)).sort();AD.per=withData.length?withData[withData.length-1]:cm;}
+  if(!AD.sp||!adSponsors().some(s=>s.id===AD.sp))AD.sp=adDefaultSp();
+ }catch(e){console.warn(e);AD.err=e&&e.code==='permission-denied'?'Ad counts are private. Publish the admin rules (Overview → Your account & one-time setup) to see them.':'Couldn’t load the ad counts: '+(e.message||e.code||e);}
+ AD.loading=false;renderAds();}
+function adPeriods(){const cm=dayKey(0).slice(0,6),out=[];let m=cm;const lo=(AD.from||ADS_START).slice(0,6);
+ for(let i=0;i<24&&m>=lo;i++){out.push([m,mName(m)]);m=prevMonth(m);}out.push(['year','This year ('+cm.slice(0,4)+')']);return out;}
+function adDefaultSp(){const L=adSponsors(),v=s=>adAgg(s.id,AD.per||dayKey(0).slice(0,6)).views;
+ const paid=L.filter(s=>!adOwn(s)&&!s.gone&&adStatus(s)[0]==='Active').sort((a,b)=>v(b)-v(a));if(paid.length)return paid[0].id;
+ const any=L.slice().sort((a,b)=>v(b)-v(a));return any.length?any[0].id:'';}
+const adHas=()=>[...AD.sums.values()].some(S=>S.n>0);
+
+/* ---- drawing ---- */
+function adNum(v,f){return f==='p'?v.toFixed(2)+'%':f==='d'?v.toFixed(1):f==='m'?Math.round(v)+' min':fmt(Math.round(v));}
+const cuN=(v,f)=>`<span data-cu="${v}" data-f="${f||''}">${adNum(v,f)}</span>`;
+function countUp(root){if(RM.matches||!root)return;root.querySelectorAll('[data-cu]').forEach(el=>{const to=+el.dataset.cu,f=el.dataset.f,fin=el.textContent,t0=performance.now(),D=750;
+ if(!isFinite(to)||to<=0)return;let done=false;const end=()=>{if(!done){done=true;el.textContent=fin;}};
+ const step=t=>{if(done)return;const k=Math.min(1,(t-t0)/D),e=1-Math.pow(1-k,3);if(k>=1){end();return;}el.textContent=adNum(to*e,f);requestAnimationFrame(step);};
+ el.textContent=adNum(0,f);requestAnimationFrame(step);setTimeout(end,D+250);});}
+function niceTop(v){if(v<=4)return 4;const e=Math.pow(10,Math.floor(Math.log10(v))),f=v/e;return (f<=1?1:f<=2?2:f<=2.5?2.5:f<=5?5:10)*e;}
+const kf=v=>v>=1000?(v/1000).toFixed(v%1000?1:0).replace(/\.0$/,'')+'k':String(v);
+function barsSVG(B,W,H,o){o=o||{};const L=30,T=8,Bt=22,pw=W-L-2,ph=H-T-Bt,n=B.length,mx=niceTop(Math.max(1,...B.map(b=>b.v))),slot=pw/n,gap=Math.max(1.5,Math.min(6,slot*.28)),bw=Math.max(1,slot-gap);
+ let s=`<svg class="${o.cls||'achart'}" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" role="img" aria-label="${esc(o.label||'')}">`;
+ for(let i=0;i<=2;i++){const y=T+ph-ph*i/2;s+=`<line class="gl" x1="${L}" x2="${W-2}" y1="${y}" y2="${y}"/><text x="${L-6}" y="${y+3.5}" text-anchor="end">${kf(mx*i/2)}</text>`;}
+ const every=n>20?5:1;
+ B.forEach((b,i)=>{const x=L+i*slot+gap/2,h=b.v?Math.max(2,ph*b.v/mx):(b.done?1.5:0),y=T+ph-h;
+  if(o.hit&&i===o.sel)s+=`<rect class="hl" x="${L+i*slot}" y="${T}" width="${slot}" height="${ph}" rx="4"/>`;
+  if(h>0)s+=`<rect class="${o.rep?(b.v?'b':'b0'):'b'+(b.v?' has':'')+(i===o.sel?' on':'')}${o.rep?'':' grow'}" x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${bw.toFixed(1)}" height="${h.toFixed(1)}" rx="${Math.min(2.5,bw/2).toFixed(1)}"${o.rep?'':` style="animation-delay:${Math.round(i*14)}ms"`}/>`;
+  if(n<=20||i===0||(i+1)%every===0)s+=`<text x="${(x+bw/2).toFixed(1)}" y="${H-7}" text-anchor="middle">${esc(b.lbl)}</text>`;
+  if(o.hit)s+=`<rect class="hit" data-a="adday" data-i="${i}" x="${L+i*slot}" y="0" width="${slot}" height="${H}"><title>${esc(b.lbl)}: ${fmt(b.v)} views</title></rect>`;});
+ return s+'</svg>';}
+function platHTML(p,views,cls){const tot=Math.max(1,p.web+p.ios+p.android);
+ return `<div class="${cls||''}"><div class="apbar" role="img" aria-label="${AD_PLATS.map(([k,n])=>n+' '+pctS(p[k],tot)).join(', ')}">${AD_PLATS.map(([k])=>p[k]?`<i class="fill" style="flex:${p[k]};background:${AD_SHADE[k]}"></i>`:'').join('')}</div>
+  <div class="apleg">${AD_PLATS.map(([k,n])=>`<div><span class="l"><i style="background:${AD_SHADE[k]}"></i>${n}</span><b>${pctS(p[k],tot)}</b><small>${fmt(p[k])} views</small></div>`).join('')}</div></div>`;}
+function delta(c,p,lbl){if(p==null||!lbl)return '';if(!p)return c?` <span class="dl up">new vs ${esc(lbl)}</span>`:'';const d=Math.round((c-p)/p*100);
+ return ` <span class="dl ${d>=0?'up':'dn'}">${d>=0?'▲ +':'▼ '}${d}% vs ${esc(lbl)}</span>`;}
+
+function renderAds(){const el=$('#ads');if(!el)return;
+ if(AD.err){el.innerHTML=`<div class="adv"><div class="card"><div class="chead"><h2>Advertisers</h2></div><div class="note">${IC.warn}<div>${esc(AD.err)}</div></div><div class="dfoot"><span class="sp"></span><button class="btn sm" data-a="adreload">Try again</button></div></div></div>`;return;}
+ if(!AD.at){el.innerHTML=`<div class="adv"><div class="card"><div class="chead"><h2>Advertisers</h2><span class="spin"></span></div><div class="anone">Adding up the ad counts…</div></div></div>`;return;}
+ const L=adSponsors(),s=L.find(x=>x.id===AD.sp)||L[0]||{id:'',title:'No sponsors',colors:[]},per=AD.per,yr=per==='year';
+ const a=adAgg(s.id,per),has=adHas(),hasA=a.views>0||a.taps>0,link=!!s.url;
+ const pm=yr?null:prevMonth(per),pa=pm?adAgg(s.id,pm):null,pl=pa&&pa.n?mShort(pm):'',pv=pa&&pa.n?pa:null;
+ const perTxt=yr?'this year':mName(per);
+ const ctl=`<div class="card"><div class="actl">
+   <label><span class="lbl">Sponsor</span><select class="sel" id="adSp" aria-label="Sponsor">${[['Sponsors',L.filter(x=>!adOwn(x)&&!x.gone)],['Our own promos',L.filter(x=>adOwn(x)&&!x.gone)],['No longer listed',L.filter(x=>x.gone)]]
+     .filter(g=>g[1].length).map(([g,xs])=>`<optgroup label="${esc(g)}">${xs.map(x=>`<option value="${esc(x.id)}" ${x.id===s.id?'selected':''}>${esc(x.title)}</option>`).join('')}</optgroup>`).join('')}</select></label>
+   <label><span class="lbl">Period</span><select class="sel" id="adPer" aria-label="Period">${adPeriods().map(([k,n])=>`<option value="${k}" ${k===per?'selected':''}>${esc(n)}</option>`).join('')}</select></label>
+   <div class="acts"><button class="btn pri" data-a="adpdf" ${hasA?'':'disabled'}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg>Download PDF</button>
+    <button class="btn" data-a="adcsv" ${hasA?'':'disabled'}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h10l4 4v12H5z"/><path d="M8 13h8M8 17h5"/></svg>Download CSV</button></div></div>
+  <div class="ahead">${adLogo(s)}<div style="min-width:0"><div class="nm">${esc(s.title)} ${adPill(s)}</div><div class="sub">${esc(adDates(s))}${s.url?' · '+esc(String(s.url).replace(/^https?:\/\//,'').replace(/\/$/,'')):''}</div></div></div></div>`;
+ const list=sponsorListHTML(L,per);
+ const foot=`<div class="afoot"><span>Daily totals ${AD.sums.size?'up to '+esc(dNice(dayKey(1))):'start after the first full day'}${AD.built?` · ${AD.built} new day${AD.built===1?'':'s'} added up just now`:''}${AD.unsaved?` · ${AD.unsaved} not saved (read-only)`:''} · about ${fmt(AD.reads)} reads</span><span class="sp"></span><button class="btn sm ghost" data-a="adreload">Check again</button></div>`;
+ if(!has){el.innerHTML=`<div class="adv">${ctl}<div class="card aempty"><div class="dot" aria-hidden="true"></div><h3>${ADS_START>=dayKey(0)?'Counting starts today':'Counting has started'}</h3>
+   <p>Ad views, taps and time played are counted from ${esc(dNice(ADS_START))}. The numbers show here the morning after each day ends (Maldives time). Nothing is estimated or made up.</p>
+   <ul><li><i></i>Views and players reached, per sponsor</li><li><i></i>Taps and tap rate</li><li><i></i>Placements, games and devices</li><li><i></i>A one-page monthly report for each company</li></ul></div>${list}${foot}</div>`;bindAds();return;}
+ const freq=a.reach?a.views/a.reach:0,tr=a.views?a.taps/a.views*100:0,A=adAud(per);
+ const kpi=[['Ad views',cuN(a.views),hasA?(delta(a.views,pv&&pv.views,pl)||`${a.n} day${a.n===1?'':'s'} counted`):'none yet'],
+  ['Players reached',cuN(a.reach),(A.players?pctS(a.reach,A.players)+' of '+(yr?'avg monthly':'monthly')+' players':'devices that saw it')+delta(a.reach,pv&&pv.reach,pl)],
+  ['Taps',cuN(a.taps),link?(delta(a.taps,pv&&pv.taps,pl)||'opened the link'):'this ad has no link'],
+  ['Tap rate',link?cuN(tr,'p'):'–',link?'taps ÷ views':'no link'],
+  ['Views per player',cuN(freq,'d'),'views ÷ players reached']];
+ const B=adBars(a,per);if(AD.sel>=B.length)AD.sel=-1;
+ const pls=Object.entries(a.pl).sort((x,y)=>y[1].v-x[1].v),pmax=Math.max(1,...pls.map(p=>p[1].v));
+ let gs=Object.entries(a.games).sort((x,y)=>y[1]-x[1]);if(gs.length>8){const rest=gs.slice(7);gs=gs.slice(0,7).concat([['_other',rest.reduce((t,g)=>t+g[1],0),rest.length]]);}
+ const gmax=Math.max(1,...gs.map(g=>g[1]));
+ el.innerHTML=`<div class="adv">${ctl}
+  <section class="akpi" aria-label="Headline numbers">${kpi.map(k=>`<div class="t"><div class="lbl">${k[0]}</div><div class="v">${k[1]}</div><div class="s">${k[2]}</div></div>`).join('')}</section>
+  <div class="card"><div class="chead"><h2>${yr?'Ad views per month':'Ad views per day'}</h2><span class="small muted">${esc(perTxt)}</span></div><div id="adChart"></div><div class="readout" id="adRead"></div></div>
+  <div class="grid2">
+   <div class="card"><div class="chead"><h2>By placement</h2><span class="small muted">views · taps</span></div><div class="arows">${pls.length?pls.map(([k,v],i)=>`<div class="arow tap" tabindex="0"><div class="nm">${esc((AD_PLACES[k]||[k])[0])}<small>${esc((AD_PLACES[k]||['',''])[1])}</small></div><div class="val">${fmt(v.v)}<small>${k==='plaque'?'not tappable':link?fmt(v.t)+' taps · '+pctS(v.t,v.v,1):'no link'}</small></div><div class="trk"><i class="fill" style="width:${(v.v/pmax*100).toFixed(1)}%;animation-delay:${i*60}ms"></i></div></div>`).join(''):'<div class="anone">No views in this period</div>'}</div></div>
+   <div class="card"><div class="chead"><h2>By game</h2><span class="small muted">views · share</span></div><div class="arows">${gs.length?gs.map(([k,v,nn],i)=>`<div class="arow tap" tabindex="0"><div class="nm">${k==='_other'?'Other games':esc(adGame(k))}</div><div class="val">${fmt(v)}<small>${pctS(v,a.views,1)}</small></div><div class="trk"><i class="fill" style="width:${(v/gmax*100).toFixed(1)}%;animation-delay:${i*60}ms"></i></div></div>`).join(''):'<div class="anone">No views in this period</div>'}</div></div>
+  </div>
+  <div class="grid2">
+   <div class="card"><div class="chead"><h2>Platform split</h2><span class="small muted">share of views</span></div>${a.views?platHTML(a.plat,a.views):'<div class="anone">No views in this period</div>'}</div>
+   <div class="card"><div class="chead"><h2>Site-wide audience</h2><span class="small muted">everyone, ${esc(perTxt)}</span></div>
+    <div class="aaud"><div><div class="lbl">${yr?'Avg monthly players':'Monthly players'}</div><div class="v">${A.players!=null?cuN(A.players):'–'}</div><div class="s">unique devices</div></div>
+     <div><div class="lbl">Avg daily players</div><div class="v">${A.avg!=null?cuN(A.avg):'–'}</div><div class="s">per finished day</div></div>
+     <div><div class="lbl">New players</div><div class="v">${A.nw!=null?cuN(A.nw):'–'}</div><div class="s">${A.nw!=null&&A.players&&!yr?pctS(A.nw,A.players)+' first visit':'first visit'}</div></div>
+     <div><div class="lbl">Avg minutes played</div><div class="v">${A.min!=null?cuN(A.min,'m'):'–'}</div><div class="s">per player, per day they play</div></div></div>
+    ${!yr&&A.players?`<div class="anvr"><div class="apbar" role="img" aria-label="New ${pctS(A.nw,A.players)}, returning ${pctS(A.ret,A.players)}"><i class="fill" style="flex:${A.nw||0};background:var(--a)"></i><i class="fill" style="flex:${A.ret||0};background:var(--g2)"></i></div>
+     <div class="l"><span>New ${fmt(A.nw)} (${pctS(A.nw,A.players)})</span><span>Returning ${fmt(A.ret)} (${pctS(A.ret,A.players)})</span></div></div>`:''}</div>
+  </div>
+  <div class="card"><div class="chead"><h2>Monthly report</h2><span class="small muted">${hasA?'Download PDF saves exactly this page':'nothing to report for this period'}</span></div><div class="rwrap" id="adRwrap"><div id="adRep">${reportHTML(s,per,a,A)}</div></div></div>
+  ${list}${foot}</div>`;
+ bindAds();drawAdChart();fitReport();countUp(el);}
+function sponsorListHTML(L,per){const row=x=>{const v=adAgg(x.id,per).views;return `<button type="button" class="asrow tap${x.id===AD.sp?' on':''}" data-a="adsp" data-id="${esc(x.id)}">${adLogo(x)}<span class="nm">${esc(x.title)}</span>${adPill(x)}<span class="dt"><span>${esc(adDates(x))}</span><span><b>${v?fmt(v):'–'}</b> views ${per==='year'?'this year':'in '+esc(mShort(per))}</span></span></button>`;};
+ const paid=L.filter(x=>!adOwn(x)&&!x.gone),own=L.filter(x=>adOwn(x)&&!x.gone),gone=L.filter(x=>x.gone);
+ return `<div class="card"><div class="chead"><h2>Sponsors</h2><span class="small muted">from shared/sponsors.js · tap one to open it</span></div>
+  <div class="agrp">Sponsors</div>${paid.length?paid.map(row).join(''):'<div class="anone">No paid sponsors yet. Add one in shared/sponsors.js (with an id and from/to dates).</div>'}
+  ${own.length?'<div class="agrp">Our own promos</div>'+own.map(row).join(''):''}${gone.length?'<div class="agrp">No longer listed</div>'+gone.map(row).join(''):''}</div>`;}
+function drawAdChart(){const box=$('#adChart');if(!box)return;const s=AD.sp,a=adAgg(s,AD.per),B=adBars(a,AD.per),W=Math.max(260,Math.round(box.clientWidth||600));
+ box.innerHTML=barsSVG(B,W,W<500?170:210,{hit:1,sel:AD.sel,label:'Ad views per '+(AD.per==='year'?'month':'day')});
+ const r=$('#adRead'),d=B[AD.sel];if(!r)return;
+ if(d)r.innerHTML=`<b>${AD.per==='year'?esc(mName(d.k)):esc(dNice(d.k))}</b> · <b>${fmt(d.v)}</b> views · <b>${fmt(d.r)}</b> players · <b>${fmt(d.t)}</b> taps${d.v&&d.t?' ('+pctS(d.t,d.v,2)+')':''}`;
+ else{const b=B.reduce((x,y)=>y.v>x.v?y:x,B[0]||{v:0});r.innerHTML=b&&b.v?`Best ${AD.per==='year'?'month':'day'}: <b>${AD.per==='year'?esc(mName(b.k)):esc(dNice(b.k))}</b> with <b>${fmt(b.v)}</b> views. Tap a bar for its numbers.`:'No views in this period yet.';}}
+function bindAds(){const sp=$('#adSp'),pe=$('#adPer');
+ if(sp)sp.onchange=e=>{AD.sp=e.target.value;AD.sel=-1;renderAds();};
+ if(pe)pe.onchange=e=>{AD.per=e.target.value;AD.sel=-1;renderAds();};}
+function fitReport(){const w=$('#adRwrap'),p=w&&w.querySelector('.rp');if(!w||!p)return;const s=Math.min(1,(w.clientWidth||794)/794);
+ p.style.transform=s<1?`scale(${s})`:'';w.style.height=Math.ceil(1123*s)+'px';}
+
+/* ---- the A4 report (also the print view) ---- */
+function reportHTML(s,per,a,A){const yr=per==='year',has=a.views>0||a.taps>0,link=!!s.url;
+ const today=dayKey(0),perN=yr?'Year to date '+today.slice(0,4):mName(per);
+ const days=[...AD.sums.keys()].filter(d=>yr?d.slice(0,4)===today.slice(0,4):d.slice(0,6)===per).sort();
+ const range=days.length?dNice(days[0])+' – '+dNice(days[days.length-1]):'–';
+ const pls=Object.keys(a.pl).length?Object.keys(a.pl):[];
+ const head=`<article class="rp" aria-label="Sponsor report"><header class="rp-h"><div class="rp-b"><img src="/icons/favicon.svg" alt=""><div><b>Dhivehi Games</b><span>dhivehi.games</span></div></div>
+  <div class="rp-m"><span>${yr?'Sponsor report':'Monthly sponsor report'}</span><b>${esc(perN)}</b><small>Issued ${esc(dNice(today))}</small></div></header>
+  <section class="rp-for"><div><div class="k">Prepared for</div><div class="rp-co">${adLogo(s)}<div style="min-width:0"><b>${esc(s.title)}</b>${s.sub?`<span>${esc(s.sub)}</span>`:''}</div></div></div>
+   <dl><dt>Campaign</dt><dd>${esc(adDates(s))}</dd><dt>Report period</dt><dd>${esc(range)}</dd><dt>Placements</dt><dd>${pls.length?esc(pls.map(k=>(AD_PLACES[k]||[k])[0]).join(', ')):'–'}</dd></dl></section>`;
+ const foot=`<footer class="rp-f"><div class="pr"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 3v6c0 4.5-3.4 8.2-8 9-4.6-.8-8-4.5-8-9V6z"/><path d="m8.5 12 2.5 2.5 4.5-5"/></svg>All figures are anonymous counts. No personal data is collected.</div>
+  <div class="ct"><b>Dhivehi Games</b> · dhivehi.games<br>rasewgaming@outlook.com</div></footer></article>`;
+ if(!has)return head+`<div class="rp-none">No ad views were counted for ${esc(s.title)} in ${esc(yr?'this year':mName(per))}.</div>`+foot;
+ const B=adBars(a,per),best=B.reduce((x,y)=>y.v>x.v?y:x,B[0]);
+ const gs=Object.entries(a.games).sort((x,y)=>y[1]-x[1]).slice(0,5),gm=Math.max(1,...gs.map(g=>g[1]));
+ const ps=Object.entries(a.pl).sort((x,y)=>y[1].v-x[1].v).slice(0,5),pm=Math.max(1,...ps.map(p=>p[1].v));
+ const tr=a.views?a.taps/a.views*100:0;
+ return head+`<section class="rp-kpi"><div><div class="k">Ad views</div><b>${fmt(a.views)}</b><small>${a.reach?(a.views/a.reach).toFixed(1)+' per player reached':'&nbsp;'}</small></div>
+   <div><div class="k">Players reached</div><b>${fmt(a.reach)}</b><small>${A.players?pctS(a.reach,A.players)+' of '+(yr?'avg monthly':'monthly')+' players':'unique devices'}</small></div>
+   <div><div class="k">Taps</div><b>${link?fmt(a.taps):'–'}</b><small>${link?'visits to your link':'no link on this ad'}</small></div>
+   <div><div class="k">Tap rate</div><b>${link?tr.toFixed(2)+'%':'–'}</b><small>taps ÷ views</small></div></section>
+  <section><h4>${yr?'Ad views per month':'Ad views per day'}<span>Best: ${esc(yr?mName(best.k):dNice(best.k))}, ${fmt(best.v)}</span></h4>${barsSVG(B,690,170,{cls:'rpc',rep:1,label:'Ad views'})}</section>
+  <section class="rp-two"><div><h4>Top games</h4>${gs.map(([k,v])=>`<div class="rp-row"><span class="n">${esc(adGame(k))}</span><span class="v">${fmt(v)} · ${pctS(v,a.views)}</span><span class="tk"><i style="width:${(v/gm*100).toFixed(1)}%"></i></span></div>`).join('')}</div>
+   <div><h4>Placements<span>views · tap rate</span></h4>${ps.map(([k,v])=>`<div class="rp-row"><span class="n">${esc((AD_PLACES[k]||[k])[0])}</span><span class="v">${fmt(v.v)} · ${k==='plaque'?'–':link?pctS(v.t,v.v,1):'no link'}</span><span class="tk"><i style="width:${(v.v/pm*100).toFixed(1)}%"></i></span></div>`).join('')}</div></section>
+  <section class="rp-two"><div class="rp-pl"><h4>Device</h4>${platHTML(a.plat,a.views)}</div>
+   <div><h4>Audience snapshot<span>whole site, ${esc(yr?today.slice(0,4):MN[+per.slice(4,6)-1])}</span></h4><div class="rp-au">
+    <div><b>${A.players!=null?fmt(A.players):'–'}</b><span>${yr?'average monthly players':'monthly players'}</span></div>
+    <div><b>${A.avg!=null?fmt(A.avg):'–'}</b><span>average daily players</span></div>
+    <div><b>${A.nw!=null?fmt(A.nw):'–'}</b><span>new players</span></div>
+    <div><b>${A.min!=null?Math.round(A.min)+' min':'–'}</b><span>average play time per player per day</span></div></div></div></section>`+foot;}
+function adPrint(){const s=adSponsors().find(x=>x.id===AD.sp);if(!s)return;const a=adAgg(s.id,AD.per);
+ let r=$('#printRoot');if(!r){r=document.createElement('div');r.id='printRoot';document.body.appendChild(r);}
+ r.innerHTML=reportHTML(s,AD.per,a,adAud(AD.per));document.documentElement.classList.add('print-report');
+ const done=()=>{document.documentElement.classList.remove('print-report');removeEventListener('afterprint',done);};addEventListener('afterprint',done);
+ toast('Choose “Save as PDF” in the print window',3000);setTimeout(()=>{try{window.print();}catch(e){}},250);}
+
+/* ---- CSV: the same numbers as the screen ---- */
+function adCSV(){const s=adSponsors().find(x=>x.id===AD.sp);if(!s)return;const per=AD.per,yr=per==='year',a=adAgg(s.id,per),A=adAud(per),B=adBars(a,per).filter(b=>b.done||b.v);
+ const q=v=>{v=String(v==null?'':v);return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v;},L=[],rate=(t,v)=>v?(t/v*100).toFixed(2):'';
+ L.push('# Dhivehi Games sponsor report. All figures are anonymous counts. No personal data is collected.');
+ L.push(['sponsor',s.title].map(q).join(','));L.push(['sponsor_id',s.id].map(q).join(','));L.push(['period',yr?'This year '+dayKey(0).slice(0,4):mName(per)].map(q).join(','));L.push(['generated',dIso(dayKey(0))].join(','));
+ L.push('');L.push([yr?'month':'date','views','players_reached','taps','tap_rate_pct'].join(','));
+ B.forEach(b=>L.push([yr?b.k.slice(0,4)+'-'+b.k.slice(4,6):dIso(b.k),b.v,b.r,b.t,rate(b.t,b.v)].join(',')));
+ L.push(['total',a.views,a.reach,a.taps,rate(a.taps,a.views)].join(','));
+ L.push('');L.push('placement,views,taps,tap_rate_pct');Object.entries(a.pl).sort((x,y)=>y[1].v-x[1].v).forEach(([k,v])=>L.push([q((AD_PLACES[k]||[k])[0]),v.v,v.t,rate(v.t,v.v)].join(',')));
+ L.push('');L.push('game,views,share_pct');Object.entries(a.games).sort((x,y)=>y[1]-x[1]).forEach(([k,v])=>L.push([q(adGame(k)),v,a.views?(v/a.views*100).toFixed(1):''].join(',')));
+ const pt=a.plat.web+a.plat.ios+a.plat.android;L.push('');L.push('platform,views,share_pct');AD_PLATS.forEach(([k,n])=>L.push([n,a.plat[k],pt?(a.plat[k]/pt*100).toFixed(1):''].join(',')));
+ L.push('');L.push('site_audience,value');L.push([yr?'avg_monthly_players':'monthly_players',A.players==null?'':A.players].join(','));L.push(['avg_daily_players',A.avg==null?'':A.avg].join(','));
+ L.push(['new_players',A.nw==null?'':A.nw].join(','));if(!yr)L.push(['returning_players',A.ret==null?'':A.ret].join(','));L.push(['avg_minutes_per_player_day',A.min==null?'':A.min.toFixed(1)].join(','));
+ const blob=new Blob([L.join('\n')+'\n'],{type:'text/csv'}),u=URL.createObjectURL(blob),x=document.createElement('a');
+ x.href=u;x.download=`dhivehi-games-${s.id}-${yr?'year-'+dayKey(0).slice(0,4):per.slice(0,4)+'-'+per.slice(4,6)}.csv`;document.body.appendChild(x);x.click();x.remove();setTimeout(()=>URL.revokeObjectURL(u),3000);toast('CSV saved');}
+
 /* =====================================================================================
    LOADERS
    ===================================================================================== */
@@ -1029,10 +1532,10 @@ document.addEventListener('click',async e=>{const b=e.target.closest('[data-a]')
   case 'tab':setTab(b.dataset.t);break;
   case 'signout':try{await DL.signOut();}catch(x){}break;
   case 'google':authErr='';try{await DL.signInGoogle();}catch(x){const el=$('#lerr');if(el)el.textContent=authMsg(x);}break;
-  case 'refresh':toast('Refreshing…',1200);loadPlayers();loadPresence();if(rulesOK!==false)loadInbox();if(tab==='stats'){TR.at=0;loadTraffic(true);}break;
+  case 'refresh':toast('Refreshing…',1200);loadPlayers();loadPresence();if(rulesOK!==false)loadInbox();if(tab==='stats'){TR.at=0;loadTraffic(true);}if(tab==='ads'){AD.at=0;loadAds();}break;
   case 'copy-uid':copy(user.uid);break;
   case 'copy-rules':copy(RULES.split("['OWNER_UID']").join("['"+(user&&!MOCK?user.uid:'OWNER_UID')+"']"));break;
-  case 'probe':rulesOK=null;renderSetup();await probe();if(rulesOK){loadInbox();TR.at=0;TR.err='';}else renderInbox();toast(rulesOK?'Admin rules are active.':'Not active yet. Publish the rules, wait a minute, try again.',3500);break;
+  case 'probe':rulesOK=null;renderSetup();await probe();if(rulesOK){loadInbox();TR.at=0;TR.err='';AD.at=0;AD.err='';}else renderInbox();toast(rulesOK?'Admin rules are active.':'Not active yet. Publish the rules, wait a minute, try again.',3500);break;
   case 'copy':copy(b.dataset.v);break;
   case 'tfilter':ST.tFilter=b.dataset.g;renderTables();break;
   case 'xpmode':ST.xpMode=b.dataset.v;renderDups();break;
@@ -1052,6 +1555,11 @@ document.addEventListener('click',async e=>{const b=e.target.closest('[data-a]')
   case 'clean-presence':doCleanPresence();break;
   case 'daysel':TR.sel=+b.dataset.i;renderTraffic();break;
   case 'traffic':TR.at=0;loadTraffic(true);break;
+  case 'adreload':AD.at=0;loadAds();break;
+  case 'adsp':AD.sp=b.dataset.id;AD.sel=-1;renderAds();{const h=document.querySelector('.ahead');if(h)h.scrollIntoView({behavior:RM.matches?'auto':'smooth',block:'center'});}break;
+  case 'adday':AD.sel=+b.dataset.i;drawAdChart();{const r=$('#adRead');if(r&&!RM.matches){r.classList.remove('flash');void r.offsetWidth;r.classList.add('flash');}}break;
+  case 'adpdf':adPrint();break;
+  case 'adcsv':adCSV();break;
  }});
 document.addEventListener('toggle',e=>{const d=e.target;if(d.classList&&d.classList.contains('dgroup')){if(d.open)ST.dupOpen=d.dataset.k;else if(ST.dupOpen===d.dataset.k)ST.dupOpen='';}},true);
 
@@ -1074,7 +1582,7 @@ async function onUser(u){user=u||null;stopTimers();
  timers.push(setInterval(()=>{if(!document.hidden&&tab==='tables')renderTables();},3000));
  timers.push(setInterval(()=>{if(!document.hidden&&Date.now()-ST.playersAt>5*60e3)loadPlayers();},60e3));}
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&isAdmin){loadPresence();renderTables();}});
-let rsT=0,lastW=innerWidth;addEventListener('resize',()=>{clearTimeout(rsT);rsT=setTimeout(()=>{if(innerWidth!==lastW){lastW=innerWidth;if(TR.at)renderTraffic();}},200);});
+let rsT=0,lastW=innerWidth;addEventListener('resize',()=>{clearTimeout(rsT);rsT=setTimeout(()=>{if(innerWidth!==lastW){lastW=innerWidth;if(TR.at)renderTraffic();if(AD.at&&tab==='ads'){drawAdChart();fitReport();}}},200);});
 
 (async()=>{
  if(MOCK){const mb=$('#mockbar');mb.hidden=false;mb.textContent=LIVE?'TEST MODE · fake sign-in · real read-only data · all writes disabled':'MOCK MODE · fake data · nothing is sent to Firebase';}
