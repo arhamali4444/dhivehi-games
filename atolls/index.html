@@ -459,7 +459,7 @@ button:disabled{cursor:default}
 #logBtn{position:absolute;left:6px;z-index:5;width:44px;height:44px;display:grid;place-items:center}
 #logBtn span{width:32px;height:32px;border-radius:50%;display:grid;place-items:center;color:var(--ink)}#logBtn svg{width:16px;height:16px}
 /* thrown dice (shared/dice.js): over the visible board (layoutView sets top / height), under the bars */
-#dtray{position:absolute;left:0;right:0;top:0;height:0;z-index:5}
+#dtray{position:absolute;left:0;right:0;top:0;height:0;z-index:5;pointer-events:none}   /* the dice tray lies over the board: it must never take a tap or a pinch (shared/dice.js only adds its own pointer-events:none on the first roll, and setup placement comes before any roll) */
 @media (max-width:360px){.tile small{font-size:10.5px}.ban2 .btn{font-size:13.5px}.tchip{font-size:12px}}
 /* short screens (a phone on its side): the banner keeps the sentence and the buttons, without the picture of the deal */
 @media (max-height:520px){.ban2 .deal{display:none}.ban2 .bb3{margin-top:10px}.ban2 .btn{min-height:44px}}
@@ -543,7 +543,7 @@ button:disabled{cursor:default}
 <script src="../shared/avatar.js?v=10"></script>
 <script src="../shared/sponsors.js?v=7"></script>
 <script src="../shared/net.js?v=6"></script>
-<script src="../shared/dice.js?v=1"></script>
+<script src="../shared/dice.js?v=2"></script>
 
 <script>
 'use strict';
@@ -1749,7 +1749,17 @@ async function animate(evs){for(const ev of evs){switch(ev.t){
 /* the dice are thrown onto the visible board (shared/dice.js): the result shows only once they land. Computer players
    throw a little faster; a tap on the board plays the rest fast; reduced motion: the result at once, with one knock. */
 let ROLLING=false,PREVD=null;
-function diceOpt(p){return {size:[28,54],k:.12,lite:isSmooth(),speed:p===ME&&!AUTO?1:1.25,tapHosts:[ov,$('#acts'),$('#hand')]};}
+/* where the dice roll: like a dice cup at the side of a Monopoly board, they tumble in the biggest free strip of sea next to
+ the island (below it on a phone, beside it on a wide screen), never across the hexes. No strip at least two dice wide -> the
+ whole board area, as before. Measured at each roll from the island's screen box, so it follows pan and zoom. */
+function diceZone(){const tray=$('#dtray');if(!tray||!BB||!G)return null;const tr=tray.getBoundingClientRect(),pad=12;
+ const [x0,y0]=w2s(BB.x0,BB.y0),[x1,y1]=w2s(BB.x1,BB.y1);const L=VIEW.l+pad,T=VIEW.t+pad,R=VIEW.r-pad,Bm=VIEW.b-pad;
+ const bands=[{k:'below',box:[L,Math.max(T,y1+pad),R,Bm]},{k:'above',box:[L,T,R,Math.min(Bm,y0-pad)]},{k:'right',box:[Math.max(L,x1+pad),T,R,Bm]},{k:'left',box:[L,T,Math.min(R,x0-pad),Bm]}];
+ /* a strip must be at least ~2 dice thick (64 px); the one by the action bar (below) is preferred, like dice rolled next to your hand */
+ let best=null,bs=0;for(const b of bands){const w=b.box[2]-b.box[0],h=b.box[3]-b.box[1];if(w<64||h<64)continue;const a=w*h*(b.k==='below'?1.6:b.k==='above'?.8:1);if(a>bs){bs=a;best=b;}}
+ if(!best)return null;return {box:best.box.map((v,i)=>v-(i%2?tr.top:tr.left)),along:best.k==='below'||best.k==='above'?'x':'y'};}
+function diceOpt(p){const z=diceZone();const o={size:z?[26,48]:[28,54],k:z?.42:.12,lite:isSmooth(),speed:p===ME&&!AUTO?1:1.25,tapHosts:[ov,$('#acts'),$('#hand')]};
+ if(z){o.box=z.box;o.free=true;const d=Math.random()<.5?1:-1;o.vec=z.along==='x'?{vx:d*920,vy:-140}:{vx:d*140,vy:-920};}return o;}
 async function throwDice(ev){if(FAST)return;const tray=$('#dtray');
  if(!window.DGDice||!tray){SND.dice();await wait(RM.matches?0:600);return;}
  try{await DGDice.roll(tray,ev.d,diceOpt(ev.p));}catch(e){console.error(e);}}

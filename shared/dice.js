@@ -29,7 +29,8 @@
      DGDice.skip()   DGDice.end()   DGDice.rolling   DGDice.prepare(trayEl, opts) -> {W,H,D,box,lite}
      Building blocks (Binveriya's names): cubeHTML simThrow diceRot diceDraw diceBox SAFE FACE_R PIPS DPERS
      foley(sim, rate)   sfx: {on, unlock, rattle, hit, settle, dice, knock, tick, begin, end, cut, level}
-   The tray needs no CSS of its own: .dtray / .d3 styles are added once, on first use (scoped to .dtray).
+   The tray needs no CSS of its own: .dtray / .d3 styles are added once, when this file loads (scoped to .dtray).
+     o.box  = [l,t,r,b] in tray px: roll only inside this zone (e.g. the sea beside the island)   o.free = throw in any direction
    ===================================================================================== */
 (function(){'use strict';
 if(window.DGDice)return;
@@ -122,7 +123,7 @@ function simThrow(W,H,D,vec,o={}){const box=o.box||[4,4,W-4,H-4],lite=!!o.lite,P
  const lim=(z,a0,a1,O)=>{const zc=z+D*.71,kc=P/(P-zc),r=E*P/(P-(zc+E));let lo=O+(a0+r-O)/kc,hi=O+(a1-r-O)/kc;if(lo>hi)lo=hi=(lo+hi)/2;return [lo,hi];};
  let ang,spd;const vs=vec?Math.hypot(vec.vx,vec.vy):0;
  if(vs>260){ang=Math.atan2(vec.vy,vec.vx);spd=Math.min(1350,Math.max(760,vs*.85));}else{ang=-Math.PI/2+(Math.random()-.5)*.7;spd=880+Math.random()*240;}
- if(Math.sin(ang)>-.35)ang=-Math.PI/2+(Math.cos(ang)>=0?.95:-.95);/* always thrown away from the player */
+ if(!o.free&&Math.sin(ang)>-.35)ang=-Math.PI/2+(Math.cos(ang)>=0?.95:-.95);/* always thrown away from the player (o.free: any direction, e.g. along a strip of sea) */
  if(lite)spd*=.72;
  const cx=(bx0+bx1)/2,cy=(by0+by1)/2,ca=Math.cos(ang),sa=Math.sin(ang);
  const dies=[0,1].map(k=>{const a=ang+(k?.15:-.15)+(Math.random()-.5)*.14,s=spd*sc*(.88+Math.random()*.24),off=(k?1:-1)*D*.62,z=D*(lite?.5:1+Math.random()*.4);
@@ -163,7 +164,9 @@ function diceDraw(sim,rot,nodes,D){const lite=sim.lite;return function(t){const 
 /* ---------------------------------------------------------------- one throw, start to finish */
 function isLite(){const v=ls.get('dd-smooth');if(v==='1')return true;if(v==='0')return false;return RM.matches||document.documentElement.classList.contains('dg-lite');}
 /* the size and walls a throw in this tray would use now */
-function prepare(tray,o){o=o||{};const W=tray.clientWidth,H=tray.clientHeight,lite=o.lite!=null?!!o.lite:isLite(),box=diceBox(tray,o.pad==null?4:o.pad);
+function prepare(tray,o){o=o||{};const W=tray.clientWidth,H=tray.clientHeight,lite=o.lite!=null?!!o.lite:isLite();let box=diceBox(tray,o.pad==null?4:o.pad);
+ /* o.box = a zone chosen by the page (tray px), e.g. the sea beside the island; clipped to what is visible */
+ if(o.box&&o.box.length===4){const v=box,b=o.box.map(Number);box=[Math.max(v[0],b[0]),Math.max(v[1],b[1]),Math.min(v[2],b[2]),Math.min(v[3],b[3])];if(box[2]-box[0]<40||box[3]-box[1]<40)box=v;}
  const bw=box[2]-box[0],bh=box[3]-box[1],sz=o.size||[28,54],D=Math.round(Math.max(sz[0],Math.min(sz[1],Math.min(bw,bh)*(o.k||.12))));return {W,H,D,box,lite};}
 let CUR=null;const TT=new WeakMap();
 function clearTray(tray){(TT.get(tray)||[]).forEach(clearTimeout);TT.set(tray,[]);tray.classList.remove('on','fade','dbl');tray.innerHTML='';}
@@ -173,7 +176,7 @@ function roll(tray,d,o){o=o||{};css();if(CUR)CUR.end();if(!tray)return Promise.r
  if(rm||document.hidden||!tray.clientWidth||!tray.clientHeight){if(snd)sfx.knock();return Promise.resolve({instant:true});}
  const pr=prepare(tray,o),{W,H,D,box,lite}=pr;tray.style.setProperty('--d',D+'px');
  tray.innerHTML=`<div class="d3">${cubeHTML()}</div><div class="d3">${cubeHTML()}</div>`;tray.classList.add('on');
- const sim=simThrow(W,H,D,o.vec||null,{box,lite}),rot=diceRot(d,sim);
+ const sim=simThrow(W,H,D,o.vec||null,{box,lite,free:!!o.free}),rot=diceRot(d,sim);
  /* fit the playback to ~1.1-1.5 s (never slower than 0.8x; smooth mode: at most 0.8 s); the sound follows the same clock */
  const Tp=(lite?Math.min(sim.T,.8):Math.min(1.5,Math.max(sim.T,Math.min(1.1,sim.T/.8))))/(o.speed||1),rate=sim.T/Tp;
  const fx=snd?foley(sim,rate):null;
@@ -192,6 +195,8 @@ function roll(tray,d,o){o=o||{};css();if(CUR)CUR.end();if(!tray)return Promise.r
    later(tray,()=>res({D,box,sim}),o.hold==null?200:o.hold);later(tray,()=>tray.classList.add('fade'),1100);later(tray,()=>{tray.classList.remove('on','fade','dbl');tray.innerHTML='';},1600);}
   let safety=setTimeout(fin,Tp*1000+300);requestAnimationFrame(fr);});}
 
-window.DGDice={version:1,PIPS,FACE_R,DPERS,pipsHTML,cubeHTML,SAFE,diceBox,simThrow,diceRot,diceDraw,foley,sfx,isLite,prepare,roll,css,last:null,
+/* the tray styles go in at load, not on the first roll: a page's tray must never catch taps while it waits for a roll */
+try{css();}catch(e){}
+window.DGDice={version:2,PIPS,FACE_R,DPERS,pipsHTML,cubeHTML,SAFE,diceBox,simThrow,diceRot,diceDraw,foley,sfx,isLite,prepare,roll,css,last:null,
  skip(){if(CUR)CUR.skip();},end(){if(CUR)CUR.end();},get rolling(){return !!CUR;}};
 })();
