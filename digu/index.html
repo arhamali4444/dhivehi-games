@@ -476,6 +476,14 @@ main.table>*{width:100%;max-width:640px;margin-left:auto;margin-right:auto}
 .rules p{color:var(--muted);font-size:13px;margin:6px 0}
 .sheet .row{margin-top:12px}
 .sheet .row .btn{flex:1}
+/* in-game menu: the action row stays at the top of the sheet, the long content scrolls under it */
+.sheet-b.gmenu:not(.tall){padding:0;display:flex;flex-direction:column;overflow:hidden}
+.sheet-b.gmenu>.mhead{flex:none;padding:10px 18px 12px;border-bottom:1px solid var(--line)}
+.sheet-b.gmenu>.mhead .grab{margin-bottom:10px}
+.sheet .row.mact{margin-top:0}
+.sheet .row.mact .btn{flex:1 1 0;min-width:0;min-height:48px;padding:10px 8px;font-size:14px;line-height:1.15}
+.toast{pointer-events:none} /* a passing notice never blocks a tap on the menu buttons under it */
+.sheet-b.gmenu>.mbody{flex:1 1 auto;min-height:0;overflow:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;padding:14px 18px calc(22px + env(safe-area-inset-bottom))}
 .toast{position:fixed;left:50%;top:calc(14px + env(safe-area-inset-top));transform:translateX(-50%);background:#fff;color:var(--ink);padding:10px 16px;border-radius:14px;font-size:13px;font-weight:600;z-index:80;max-width:90vw;box-shadow:0 12px 30px -10px rgba(0,0,0,.45);display:none}
 .toast.show{display:block;animation:drop .5s var(--spring)}
 @keyframes drop{from{transform:translate(-50%,-20px);opacity:0}}
@@ -2740,18 +2748,19 @@ try{const q=new URLSearchParams(location.search).get('t');if(q&&/^[A-Za-z]{4}$/.
 function runPending(){if(!pendingCode||S)return;if(!needName(()=>runPending()))return;const code=pendingCode;pendingCode=null;renderFriends();const i=$('#code');if(i)i.value=code;const b=document.querySelector('[data-a="join"]');if(b)join(b,code);}
 
 /* ---------- sheet ---------- */
-function sheet(h){if(charB){charB.destroy();charB=null;}const sb=$('#sheetB');sb.classList.remove('tall');sb.innerHTML=h;$('#sheet').classList.add('open');}
+function sheet(h){if(charB){charB.destroy();charB=null;}const sb=$('#sheetB');sb.classList.remove('tall','gmenu');sb.innerHTML=h;$('#sheet').classList.add('open');}
 function closeSheet(){$('#sheet').classList.remove('open');}
-function openMenu(){const cur=S.players[S.turn];
-sheet(`<div class="grab"></div><div class="row" style="justify-content:space-between"><h2>Scores</h2><span class="tag">${mode==='solo'?'Solo':'Table '+esc(S.code)}</span></div>${scoresHTML()}
+function openMenu(){const cur=S.players[S.turn];const pb=$('#sheet').classList.contains('open')?$('#sheetB>.mbody'):null,keep=pb?pb.scrollTop:0;
+sheet(`<div class="mhead"><div class="grab"></div>${mode==='solo'?`<div class="row mact"><button class="btn primary" data-a="close">Resume</button><button class="btn soft" data-a="leave">Save &amp; quit</button><button class="btn soft danger" data-a="quitAsk">Quit to lobby</button></div>`:`<div class="row mact"><button class="btn primary" data-a="close">Back to game</button><button class="btn soft danger" data-a="quitAsk">${meIdx()<0?'Leave table':'Quit to lobby'}</button></div>`}</div>
+<div class="mbody"><div class="row" style="justify-content:space-between;margin-top:0"><h2>Scores</h2><span class="tag">${mode==='solo'?'Solo':'Table '+esc(S.code)}</span></div>${scoresHTML()}
 <button class="lbbox" data-a="top10" aria-label="Top players, see the top 10"><span class="lbh">Top players</span><div id="menulb"><p class="muted lbmsg">Loading the leaderboard…</p></div></button>
 <label class="f" style="margin-top:2px">Your table</label>${tablePickHTML()}
 <div class="rules">${S.blitz?'<p><b>Digu Blitz</b>: 5 seconds a turn. If you draw face down, discard face down; if you draw face up, discard face up.</p>':''}<p>Gin: after your discard, all 10 cards are in melds. Big gin: all 11 meld right after you draw. Melds are 3 or more of a rank, or 3 or more in a row of one suit, aces low. You can’t discard the card you just took from the discard pile.</p><p>Scoring: melded cards count for you, cards left out count against you. Aces 15, J, Q and K 10, other cards their number. Gin adds ${GIN}, big gin ${BIG}. Play 3, 5 or 10 hands. Most points at the end wins; a tie plays one more hand.</p><p>Tap a card to lift it, then tap Discard or the discard pile. You can also drag it onto the pile. Cards with a gold edge and a tick are already a set or run. When you can go gin, a gold GIN button appears.</p></div>
 ${(mode==='online'||(mode==='p2p'&&isHost))&&S.hostId===myId&&S.status==='playing'&&S.turn!==meIdx()?`<div class="row"><button class="btn soft" data-a="skip">Play ${esc(cur.name)}’s turn for them</button></div>`:''}
 <div class="row"><button class="btn soft" data-a="music" aria-pressed="${Music.on}">Music: ${Music.on?'On':'Off'}</button><button class="btn soft" data-a="sfx" aria-pressed="${sfxOn()}">Sound effects: ${sfxOn()?'On':'Off'}</button></div>
 <div class="row"><button class="btn soft" data-a="smoothToggle" aria-pressed="${isSmooth()}">Smooth mode: ${isSmooth()?'On':'Off'}</button></div>
-<div class="row"><button class="btn soft" data-a="emute" aria-pressed="${!emotesMuted()}">Reactions: ${emotesMuted()?'Muted':'On'}</button>${mode==='p2p'?`<button class="btn soft" data-a="chatToggle" aria-pressed="${!chatOff()}">Chat: ${chatOff()?'Off':'On'}</button>`:''}</div>
-${mode==='solo'?`<div class="row"><button class="btn soft" data-a="leave">Save &amp; quit</button><button class="btn soft danger" data-a="quitAsk">Quit to lobby</button></div><div class="row"><button class="btn primary" data-a="close">Back to game</button></div>`:`<div class="row"><button class="btn soft danger" data-a="quitAsk">${meIdx()<0?'Leave table':'Quit to lobby'}</button><button class="btn primary" data-a="close">Back to game</button></div>`}`);loadMenuLb();}
+<div class="row"><button class="btn soft" data-a="emute" aria-pressed="${!emotesMuted()}">Reactions: ${emotesMuted()?'Muted':'On'}</button>${mode==='p2p'?`<button class="btn soft" data-a="chatToggle" aria-pressed="${!chatOff()}">Chat: ${chatOff()?'Off':'On'}</button>`:''}</div></div>`);
+$('#sheetB').classList.add('gmenu');if(keep){const nb=$('#sheetB>.mbody');if(nb)nb.scrollTop=keep;}loadMenuLb();}
 /* Quit to lobby, with a confirm step. vs Computer: the game is not kept (Save & quit keeps it). Online: you leave the table;
    at a Quick Match table a computer takes your seat, at a friends' table an AI Rookie finishes your hand. */
 function quitAsk(){if(!S){renderHome();return;}const solo=mode==='solo',me=meIdx()>=0,live=S.status==='playing'||S.status==='handover';
