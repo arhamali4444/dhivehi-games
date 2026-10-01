@@ -482,6 +482,8 @@ const ls={get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const buzz=ms=>{try{if(navigator.userActivation&&!navigator.userActivation.hasBeenActive)return;navigator.vibrate&&navigator.vibrate(ms)}catch(e){}};
 const TURN_MS=15000,DAILY_CAP=500,SAVE_KEY='juice-solo',JUICE_MS=FAST?600:3000;
+/* games vs the computer are not saved (Oct 2026): clear an old saved game so it never comes back */
+ls.del(SAVE_KEY);
 const STEP=FAST?30:620;
 const SPRING=(()=>{try{if(CSS.supports('animation-timing-function','linear(0,1)'))return 'linear(0,.009,.035 2.1%,.141 4.4%,.723 12.9%,.938 16.7%,1.017 19.4%,1.067,1.089 25.4%,1.084 28.1%,1.029 35.3%,1.003 41.2%,.994 47.9%,1 60.1%,1)';}catch(e){}return 'cubic-bezier(.34,1.4,.5,1)';})();
 const myId=(()=>{if(window.DGNet&&DGNet.local&&/^[a-z0-9_-]{2,24}$/i.test(Q.get('pid')||''))return Q.get('pid');   /* localhost tests: one player per tab */
@@ -621,7 +623,6 @@ function act(a,who,now){if(!S)return false;if(who==null)who=meIdx();const N=clon
 function commit(N){const prev=S,b=screen==='table'?snap():null;
  if(!(mode==='online'&&!isHostOn())&&(!prev||N.turn!==prev.turn||N.phase!==prev.phase||N.status!==prev.status||(N.ev&&prev.ev&&N.ev.seq!==prev.ev.seq)))N.turnAt=Date.now();
  S=N;if(N.phase==='juice'&&N.jw&&(!jwL||jwL.k!==N.jw.until))jwL={k:N.jw.until,at:Date.now(),called:false,done:false};
- if(mode==='solo'){clearTimeout(saveT);if(N.status==='over')ls.del(SAVE_KEY);else saveT=setTimeout(()=>{if(mode==='solo'&&S&&S.status==='playing')ls.set(SAVE_KEY,JSON.stringify(S));},400);}
  draw();if(b)animate(prev,N,b);events(prev,N);schedule();
  if(isHostOn()){NET.sync();hostAfter();}}
 /* when the Juice! window ends on this screen */
@@ -792,9 +793,6 @@ function initNet(){if(!window.DGNet)return;NET=DGNet.create({game:'juice',title:
 let nBots=Math.max(1,Math.min(4,+(ls.get('juice-bots')||3)||3)),diff=DIFF[ls.get('juice-diff')]?ls.get('juice-diff'):'normal';
 function meP(){return{id:myId,name:myName()||'You',ch:myChar(),ring:myRing(),col:'#FF7A45'};}
 function heroFan(){return `<div class="dhero" aria-hidden="true">${cardHTML(null)}${cardHTML(null)}${cardHTML('11-H')}<span class="fr f1">${FRUIT.lime}</span><span class="fr f2">${FRUIT.melon}</span><span class="fr f3">${FRUIT.ice}</span></div>`;}
-function savedGame(){try{const d=JSON.parse(ls.get(SAVE_KEY)||'null');if(d&&d.game==='juice'&&d.players&&d.status==='playing'&&d.v===1)return d;}catch(e){}return null;}
-function resumeHTML(){const d=savedGame();if(!d)return '';const k=d.players.findIndex(q=>q.id===myId);const n=k>=0?JU.total(d,k):0;
-return `<button class="resume" data-a="resume"><span>Unfinished game: <b>${n} card${n===1?'':'s'} left</b> to go</span><span class="go">Resume</span></button>`;}
 let spCtl=null;
 function offTable(){document.documentElement.dataset.scr=screen;if(spCtl){try{spCtl.destroy();}catch(e){}spCtl=null;}}
 function renderHome(){screen='home';offTable();closeOv();closeRules();
@@ -810,7 +808,6 @@ ${heroFan()}
 <button class="mode sm" data-a="goComputer"><span class="mi">${HI.bot}</span><span class="mt"><b>vs Computer</b><small>Works offline</small></span></button>
 <button class="mode sm" data-a="howto"><span class="mi">${HI.book}</span><span class="mt"><b>How to play</b><small>Rules, pictures</small></span></button>
 </section>
-${resumeHTML()}
 <div class="homebelow"><div class="spbox" id="spbox"></div></div>
 <p class="snote">Part of <a href="../">Dhivehi Games</a>. Boli you earn here spend in the Digu store.</p>
 </main>`;
@@ -821,7 +818,6 @@ function paintLive(n){const e=$('#qlive');if(!e)return;n=n|0;e.classList.toggle(
 function renderComputer(){screen='computer';offTable();closeOv();
 app.innerHTML=`<main class="page">
 <div class="subtop"><button class="icon-btn" data-a="goHome" aria-label="Back">${HI.back}</button><h1>vs Computer</h1></div>
-${resumeHTML()}
 <section class="panel"><h2>New game</h2><p class="muted" style="margin:4px 0 14px;font-size:13px">Works offline too.</p>
 <label class="f">Players at the table</label>
 <div class="pick">${[1,2,3,4].map(n=>`<button class="btn sm soft" data-a="bots" data-n="${n}" aria-pressed="${n===nBots}" aria-label="${n+1} players">${n+1}</button>`).join('')}</div>
@@ -874,10 +870,6 @@ const bots=pool.slice(0,nBots).map((b,i)=>{let ch=null;const A=DGA();if(A){try{c
 const seed=LOCAL&&Q.get('seed')?(+Q.get('seed')>>>0):0;
 mode='solo';S=JU.create({players:[me].concat(bots),seed:seed,juiceMs:JUICE_MS});S.diff=diff;buildTable();draw();openRules();
 if(AUTO)setTimeout(()=>{if(S&&S.status==='lobby'){closeRules();act({k:'start'});}},400);}
-function resume(){const d=savedGame();if(!d){renderHome();return;}mode='solo';
-const k=d.players.findIndex(p=>p.id===myId);if(k>=0){const me=meP();d.players[k].ch=me.ch;d.players[k].ring=me.ring;d.players[k].name=me.name;}
-/* a Juice window that was open when you left is closed now; your timer starts fresh */
-if(d.phase==='juice'&&d.jw){d.jw.until=0;}d.turnAt=Date.now();S=d;buildTable();draw();schedule();}
 
 /* =====================================================================
    TABLE
@@ -1104,13 +1096,13 @@ function standingsHTML(){const rows=S.players.map((p,j)=>({p:p,j:j,t:S.status===
 return `<div class="scores">${rows.map(({p,j,t})=>`<div class="srow">${avatarHTML(p,j,30)}<div class="n">${esc(p.name)}<small>${p.wins|0} win${(p.wins|0)===1?'':'s'} ${mode==='online'?'this match':'this session'}</small></div><b>${t} card${t===1?'':'s'}</b></div>`).join('')}${(S.left||[]).map(p=>`<div class="srow" style="opacity:.55">${avatarHTML(p,0,30)}<div class="n">${esc(p.name)}<small>left the match · ${p.wins|0} win${(p.wins|0)===1?'':'s'}</small></div><b></b></div>`).join('')}</div>`;}
 function openMenu(){if(!S)return;sheet(`<div class="grab"></div><h2>Juice</h2><p class="muted" style="margin:4px 0 0">Game ${Math.max(1,S.gameNo)} · first to empty wins · ${DIFF[S.diff||'normal'].name}</p>
 ${standingsHTML()}
-<div class="mlist"><button class="btn soft wide" data-a="menuRules">Rules</button><button class="btn soft wide" data-a="sfx" aria-pressed="${sfxOn()}">Sound: ${sfxOn()?'On':'Off'}</button>${mode==='online'?`<button class="btn danger wide" data-a="netLeave">${meIdx()>=0?'Leave table':'Stop watching · leave table'}</button>${meIdx()>=0&&S.status==='playing'?'<p class="muted" style="font-size:12px;margin:2px 2px 0">If you leave, a computer player finishes this game for you and you can’t rejoin this match.</p>':''}`:`${S.status==='playing'?'<button class="btn soft wide" data-a="leave">Save &amp; quit</button>':''}<button class="btn danger wide" data-a="quitAsk">Quit to lobby</button>`}</div>`);}
-/* vs Computer: "Quit to lobby" asks first; quitting drops this game (Save & quit keeps it) */
-function quitAsk(){sheet(`<div class="grab"></div><h2>Quit to lobby?</h2><p class="muted" style="margin:6px 0 0">${S&&S.status==='playing'?'This game ends and won’t be saved. Use Save &amp; quit to finish it later.':'You’ll go back to the Juice home.'}</p>
+<div class="mlist"><button class="btn soft wide" data-a="menuRules">Rules</button><button class="btn soft wide" data-a="sfx" aria-pressed="${sfxOn()}">Sound: ${sfxOn()?'On':'Off'}</button>${mode==='online'?`<button class="btn danger wide" data-a="netLeave">${meIdx()>=0?'Leave table':'Stop watching · leave table'}</button>${meIdx()>=0&&S.status==='playing'?'<p class="muted" style="font-size:12px;margin:2px 2px 0">If you leave, a computer player finishes this game for you and you can’t rejoin this match.</p>':''}`:`<button class="btn danger wide" data-a="quitAsk">Quit to lobby</button>`}</div>`);}
+/* vs Computer: "Quit to lobby" asks first; quitting ends this game (games vs the computer are never saved) */
+function quitAsk(){sheet(`<div class="grab"></div><h2>Quit to lobby?</h2><p class="muted" style="margin:6px 0 0">${S&&S.status==='playing'?'This game will end. Games vs the computer aren’t saved.':'You’ll go back to the Juice home.'}</p>
 <div class="row"><button class="btn ghost" data-a="close">Stay</button><button class="btn dangerf" data-a="quitYes">Quit to lobby</button></div>`);}
 function quitSolo(){clearTimeout(botT);clearTimeout(turnT);clearTimeout(warnT);clearTimeout(saveT);callT.forEach(clearTimeout);if(mode==='solo')ls.del(SAVE_KEY);closeSheet();closeRules();closeOv();S=null;mode=null;renderHome();}
 function toggleSfx(){ls.set('dd-sfx',sfxOn()?'0':'1');document.querySelectorAll('[data-a="sfx"]').forEach(b=>{b.setAttribute('aria-pressed',String(sfxOn()));if(b.classList.contains('btn'))b.textContent='Sound: '+(sfxOn()?'On':'Off');});if(sfxOn()){AU.unlock();SFX.turn();}}
-function leave(){clearTimeout(botT);clearTimeout(turnT);clearTimeout(warnT);callT.forEach(clearTimeout);if(mode==='online'&&NET&&NET.isOnline()){closeSheet();closeOv();NET.leave();return;}if(mode==='solo'&&S&&S.status==='playing')ls.set(SAVE_KEY,JSON.stringify(S));closeSheet();closeRules();closeOv();S=null;mode=null;renderHome();}
+function leave(){clearTimeout(botT);clearTimeout(turnT);clearTimeout(warnT);callT.forEach(clearTimeout);if(mode==='online'&&NET&&NET.isOnline()){closeSheet();closeOv();NET.leave();return;}closeSheet();closeRules();closeOv();S=null;mode=null;renderHome();}
 
 /* ---------- one click handler for everything ---------- */
 /* audio may only start after a gesture: resume on the first tap / key press anywhere */
@@ -1126,7 +1118,6 @@ case 'saveName':saveName();break;
 case 'bots':nBots=+b.dataset.n;renderComputer();break;
 case 'diff':diff=b.dataset.d;renderComputer();break;
 case 'solo':startSolo();break;
-case 'resume':resume();break;
 case 'rulesDeal':closeRules();if(mode!=='online')act({k:'start'});else if(isHostOn())hostDeal();break;
 case 'online':if(NET)NET.open();else toast('Online play needs a newer browser.');break;
 case 'quick':if(NET)NET.quick();else toast('Online play needs a newer browser.');break;
@@ -1156,7 +1147,6 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'){if($('#sheet').clas
 let rzT=0;window.addEventListener('resize',()=>{if(rzT)return;rzT=requestAnimationFrame(()=>{rzT=0;if(screen==='table'&&S){layoutArena();renderTable();}});});
 document.addEventListener('visibilitychange',()=>{if(document.hidden){AU.sleep();if(mode!=='online'){clearTimeout(botT);clearTimeout(turnT);clearTimeout(warnT);}}
 else if(S&&screen==='table'){if(mode!=='online'&&S.status==='playing'&&S.players[S.turn]&&S.players[S.turn].id===myId){S.turnAt=Date.now();renderTable();}schedule();}});
-window.addEventListener('pagehide',()=>{if(mode==='solo'&&S&&S.status==='playing')ls.set(SAVE_KEY,JSON.stringify(S));});
 /* the Juice! button disappears by itself when the window runs out */
 setInterval(()=>{if(S&&screen==='table'&&S.phase==='juice'){renderJuice();
  /* online guest: tell the host when your own 3 seconds are over, so the window can close without waiting */

@@ -645,7 +645,7 @@ let best=h[0],sc=-1;h.forEach(c=>{const v=val(c)+(bySuit[P(c).s].length===1?6:0)
 let botT=null,turnT=null,warnT=null,saveT=null;
 function act(type,arg,who){if(!S)return false;if(who==null)who=meIdx();const N=clone(S);if(!step(N,type,arg,who))return false;if(mode==='online')fixOver(N);commit(N);return true;}
 function commit(N){const prev=S,b=screen==='table'?snap():null;S=N;
-if(mode==='solo'){clearTimeout(saveT);if(N.status==='over')ls.del(SAVE_KEY);else saveT=setTimeout(()=>{if(mode==='solo'&&S&&S.status!=='lobby')ls.set(SAVE_KEY,JSON.stringify(S));},300);}
+
 draw();if(b)animate(prev,N,b);events(prev,N);schedule();
 if(isHostOn()){NET.sync();hostAfter();}}
 function schedule(){clearTimeout(botT);botT=null;clearTimeout(turnT);clearTimeout(warnT);turnT=warnT=null;
@@ -768,11 +768,6 @@ const modeName=r=>r?'Ranga Bondi':'Bondi';
 function setMode(r){ranga=!!r;ls.set('bondi-mode',ranga?'ranga':'bondi');document.documentElement.dataset.ranga=ranga?'1':'0';try{const u=new URL(location.href);u.searchParams.set('mode',ranga?'ranga':'bondi');history.replaceState(null,'',u.pathname+u.search);}catch(e){}}
 function meP(){return{id:myId,name:myName()||'You',ch:myChar(),ring:myRing(),col:'#E5604D',score:0};}
 function heroFan(){const cs=ranga?['9-H','12-D','14-S']:['13-S','12-S','14-S'];return `<div class="dhero${ranga?' ranga':''}" aria-hidden="true">${cs.map(c=>`<div class="card${c===ACE_S?' glint':''}">${faceHTML(c)}</div>`).join('')}</div>`;}
-function savedGame(){try{const d=JSON.parse(ls.get(SAVE_KEY)||'null');if(d&&d.game==='bondi'&&d.players&&d.status!=='over'&&d.sv===SCORE_V)return d;}catch(e){}return null;}
-/* saves from before placement scoring hold penalty-only totals that can't be converted: clear them once, gently */
-function oldSave(){try{const d=JSON.parse(ls.get(SAVE_KEY)||'null');if(d&&d.game==='bondi'&&d.sv!==SCORE_V){ls.del(SAVE_KEY);return d.status!=='over';}}catch(e){ls.del(SAVE_KEY);}return false;}
-function resumeHTML(){const d=savedGame();if(!d)return '';const me=d.players.find(q=>q.id===myId);
-return `<button class="resume" data-a="resume"><span>Unfinished ${modeName(d.ranga)}: <b>Round ${Math.min(d.handNo||1,d.rounds)} of ${d.rounds}</b>${me?`, ${fmt(me.score)} point${me.score===1?'':'s'}`:''}</span><span class="go">Resume</span></button>`;}
 let spCtl=null;
 function offTable(){document.documentElement.dataset.scr=screen;if(spCtl){try{spCtl.destroy();}catch(e){}spCtl=null;}}
 function renderHome(){screen='home';offTable();closeOv();closeRules();document.documentElement.dataset.ranga=ranga?'1':'0';
@@ -788,7 +783,6 @@ ${heroFan()}
 <button class="mode row2" data-a="friends"><span class="mi">${HI.friends}</span><span class="mt"><b>Play with Friends</b><small>Create a table, or use a code</small></span>${HI.chev}</button>
 <button class="mode row3" data-a="goComputer"><span class="mi">${HI.bot}</span><span class="mt"><b>vs Computer</b><small>2 to 5 players · works offline</small></span>${HI.chev}</button>
 </section>
-${resumeHTML()}
 <button class="howlink" data-a="howto">${HI.book}How to play ${modeName(ranga)}</button>
 <div class="homebelow"><div class="spbox" id="spbox"></div></div>
 <p class="snote">Part of <a href="../">Dhivehi Games</a>. Boli you earn here spend in the Digu store.</p>
@@ -801,7 +795,6 @@ function liveText(){return liveN>0?liveN+' playing now':'Be the first to play';}
 function renderComputer(){screen='computer';offTable();closeOv();
 app.innerHTML=`<main class="page">
 <div class="subtop"><button class="icon-btn" data-a="goHome" aria-label="Back">${HI.back}</button><h1>vs Computer</h1></div>
-${resumeHTML()}
 <section class="panel"><h2>New game</h2><p class="muted" style="margin:4px 0 14px;font-size:13px">Works offline too.</p>
 <label class="f">Game</label>
 <div class="seg" role="group" aria-label="Game"><button data-a="mode" data-v="0" aria-pressed="${!ranga}">Bondi</button><button data-a="mode" data-v="1" aria-pressed="${ranga}">Ranga Bondi</button></div>
@@ -851,9 +844,6 @@ const me=meP();const nmL=me.name.toLowerCase();const pool=BOTS.filter(b=>b[0].to
 const bots=pool.slice(0,nBots).map((b,i)=>{let ch=null;const A=DGA();if(A){try{ch=A.presets[b[1]]||A.random(b[0]);}catch(e){}}return{id:'bot'+i,name:b[0],bot:true,ch:ch,col:b[2],score:0};});
 mode='solo';S=null;const N=newGame([me].concat(bots),ranga,nRounds);S=N;buildTable();draw();openRules();
 if(AUTO)setTimeout(()=>{if(S&&S.status==='lobby'){closeRules();act('start');}},400);}
-function resume(){const d=savedGame();if(!d){renderHome();return;}mode='solo';
-const k=d.players.findIndex(p=>p.id===myId);if(k>=0){const me=meP();d.players[k].ch=me.ch;d.players[k].ring=me.ring;d.players[k].name=me.name;}
-d.turnAt=Date.now();ranga=d.ranga;S=d;buildTable();draw();schedule();}
 
 /* =====================================================================
    TABLE
@@ -1095,13 +1085,13 @@ function closeSheet(){$('#sheet').classList.remove('open');}
 let toastT=0;function toast(t,ms){const e=$('#toast');e.textContent=t;e.classList.remove('show');void e.offsetWidth;e.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>e.classList.remove('show'),ms||2600);}
 function openMenu(){if(!S)return;sheet(`<div class="grab"></div><h2>${modeName(S.ranga)}</h2><p class="muted" style="margin:4px 0 0">${S.status==='lobby'?S.rounds+' rounds':'Round '+S.handNo+' of '+S.rounds} · highest total wins</p>
 ${S.handNo?scoresHTML():''}
-<div class="mlist"><button class="btn soft wide" data-a="menuRules">Rules</button><button class="btn soft wide" data-a="sfx" aria-pressed="${sfxOn()}">Sound: ${sfxOn()?'On':'Off'}</button>${mode==='online'?`<button class="btn danger wide" data-a="netLeave">Leave table</button>${meIdx()>=0&&S.status==='playing'?'<p class="muted" style="font-size:12px;margin:2px 2px 0">If you leave, a computer player finishes this round for you and you can’t rejoin this match.</p>':''}`:`${S.status==='playing'?'<button class="btn ghost wide" data-a="leave">Save &amp; quit</button>':''}<button class="btn danger wide" data-a="quitAsk">Quit to lobby</button>`}</div>`);}
-/* vs Computer: quitting ends the game (no save) after a confirm; "Save & quit" keeps it for Resume */
-function openQuit(){if(!S)return;sheet(`<div class="grab"></div><h2>Quit to lobby?</h2><p class="muted" style="margin:6px 0 0">${S.status==='playing'?'This game ends and won’t be saved. Use Save &amp; quit to finish it later.':'You’ll go back to the Bondi home.'}</p>
+<div class="mlist"><button class="btn soft wide" data-a="menuRules">Rules</button><button class="btn soft wide" data-a="sfx" aria-pressed="${sfxOn()}">Sound: ${sfxOn()?'On':'Off'}</button>${mode==='online'?`<button class="btn danger wide" data-a="netLeave">Leave table</button>${meIdx()>=0&&S.status==='playing'?'<p class="muted" style="font-size:12px;margin:2px 2px 0">If you leave, a computer player finishes this round for you and you can’t rejoin this match.</p>':''}`:`<button class="btn danger wide" data-a="quitAsk">Quit to lobby</button>`}</div>`);}
+/* vs Computer: quitting ends the game after a confirm (games vs the computer are never saved) */
+function openQuit(){if(!S)return;sheet(`<div class="grab"></div><h2>Quit to lobby?</h2><p class="muted" style="margin:6px 0 0">${S.status==='playing'?'This game will end. Games vs the computer aren’t saved.':'You’ll go back to the Bondi home.'}</p>
 <div class="row"><button class="btn ghost" data-a="close">Stay</button><button class="btn danger fill" data-a="quitYes">Quit to lobby</button></div>`);}
 function quitToLobby(){clearTimeout(botT);clearTimeout(turnT);clearTimeout(warnT);clearTimeout(saveT);if(mode==='solo')ls.del(SAVE_KEY);closeSheet();closeRules();closeOv();S=null;mode=null;renderHome();}
 function toggleSfx(){ls.set('dd-sfx',sfxOn()?'0':'1');document.querySelectorAll('[data-a="sfx"]').forEach(b=>{b.setAttribute('aria-pressed',String(sfxOn()));if(b.classList.contains('btn'))b.textContent='Sound: '+(sfxOn()?'On':'Off');});if(sfxOn()){AU.unlock();SFX.turn();}}
-function leave(){clearTimeout(botT);clearTimeout(turnT);clearTimeout(warnT);if(mode==='solo'&&S&&S.status!=='over'&&S.status!=='lobby')ls.set(SAVE_KEY,JSON.stringify(S));closeSheet();closeRules();closeOv();S=null;mode=null;renderHome();}
+function leave(){clearTimeout(botT);clearTimeout(turnT);clearTimeout(warnT);closeSheet();closeRules();closeOv();S=null;mode=null;renderHome();}
 
 /* ---------- one click handler for everything ---------- */
 /* audio may only start after a gesture: resume on the first tap / key press anywhere */
@@ -1126,7 +1116,6 @@ case 'saveName':saveName();break;
 case 'bots':nBots=+b.dataset.n;renderComputer();break;
 case 'rounds':nRounds=+b.dataset.n;renderComputer();break;
 case 'solo':startSolo();break;
-case 'resume':resume();break;
 case 'rulesDeal':closeRules();if(mode==='online'){if(isHostOn())hostDeal();}else act('start');break;
 case 'menu':openMenu();break;
 case 'menuRules':sheet(`<div class="grab"></div>${rulesCardHTML(S)}<div class="row"><button class="btn primary" data-a="close">Back to the game</button></div>`);break;
@@ -1142,7 +1131,6 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'){if($('#sheet').clas
 let rzT=0;window.addEventListener('resize',()=>{if(rzT)return;rzT=requestAnimationFrame(()=>{rzT=0;if(screen==='table'&&S){layoutHand();layoutArena();}});});
 document.addEventListener('visibilitychange',()=>{if(document.hidden){AU.sleep();if(mode!=='online'){clearTimeout(botT);clearTimeout(turnT);clearTimeout(warnT);}}
 else if(S&&screen==='table'){if(mode!=='online'&&S.status==='playing'&&S.phase==='play'&&S.players[S.turn]&&S.players[S.turn].id===myId){S.turnAt=Date.now();renderTable();}schedule();}});
-window.addEventListener('pagehide',()=>{if(mode==='solo'&&S&&S.status!=='over'&&S.status!=='lobby')ls.set(SAVE_KEY,JSON.stringify(S));});
 
 /* test hooks (used by the automated checks; harmless in normal play) */
 window.__bondi={get S(){return S;},get mode(){return mode;},get NET(){return NET;},
@@ -1158,11 +1146,12 @@ window.__bondi={get S(){return S;},get mode(){return mode;},get NET(){return NET
  start(o){o=o||{};if(o.ranga!=null)setMode(o.ranga);if(o.bots)nBots=o.bots;if(o.rounds)nRounds=o.rounds;startSolo();closeRules();act('start');}};
 
 /* ---------- boot ---------- */
-const hadOld=oldSave();
+/* games vs the computer are not saved (Oct 2026): clear an old saved game so it never comes back */
+ls.del(SAVE_KEY);
 initNet();
 if(NET&&/^[A-Z]{4}$/i.test(Q.get('t')||'')){renderHome();NET.boot();}   /* invite link ?t=CODE */
 else if(LOCAL&&Q.get('play')==='1'){if(Q.get('bots'))nBots=Math.max(1,Math.min(4,+Q.get('bots')||3));if(Q.get('rounds'))nRounds=ROUND_OPTS.includes(+Q.get('rounds'))?+Q.get('rounds'):nRounds;startSolo();}
-else{renderHome();if(NET)NET.boot();if(hadOld)setTimeout(()=>toast('New scoring: going out early now earns points. Your unfinished game was cleared, so start a fresh one.',6000),500);}
+else{renderHome();if(NET)NET.boot();}
 })();
 </script>
 <script src="../shared/stats.js?v=2" defer></script><script src="../shared/adstats.js?v=1" defer></script>

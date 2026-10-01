@@ -648,7 +648,6 @@ button:disabled{cursor:default}
  <div class="hbtns">
   <button class="btn qmb" id="quickBtn" type="button"><span class="gi" aria-hidden="true"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M13 2 4 14h7l-1 8 9-12h-7z"/></svg></span><span class="qt"><b>Quick Match</b><small>Play real people now</small><span class="lv" id="qLive"><span class="first">Be the first to play</span></span></span></button>
   <button class="btn frb" id="friendsBtn" type="button"><span class="gi" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.2"/><path d="M3.5 19c.6-3.2 2.8-5 5.5-5s4.9 1.8 5.5 5"/><circle cx="16.5" cy="9" r="2.6"/><path d="M15.5 14.2c2.6-.3 4.6 1.3 5 4.8"/></svg></span><span class="qt"><b>Play with Friends</b><small>Create a table, or use a code</small></span></button>
-  <button class="btn em" id="resumeBtn" type="button" hidden><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg><span class="col">Resume game<small id="resumeSub"></small></span></button>
   <div class="row">
    <button class="btn cpub" id="playBtn" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"><rect x="5" y="7" width="14" height="12" rx="3"/><path d="M12 3v4M9.5 12h.01M14.5 12h.01M9.5 16h5" stroke-linecap="round"/></svg>vs Computer</button>
    <button class="btn cpub" id="howBtn" type="button">How to play</button>
@@ -712,7 +711,7 @@ const GROUPS={
    Board "Layout B · 4 transports": 28 spaces, 6 per side; every side is a pair of islands, a transport and a group of 3
    (side 4 mirrors it: 3, transport, 2). lab: tile label, \n = line break,   keeps words together.
    rent: [base, 1 gh, 2 gh, 3 gh, 4 gh, resort], taken from ONE curve by price  ·  loan = price/2, repay loan +10% */
-const BOARD_ID='b2-4t';/* saves from another board cannot be resumed */
+const BOARD_ID='b2-4t';
 const RENT_BY_PRICE={60:[2,10,30,90,160,250],80:[4,20,60,180,320,450],100:[6,30,90,270,400,550],120:[8,40,100,300,450,600],
  140:[10,50,150,450,625,750],160:[12,60,180,500,700,900],180:[14,70,200,550,750,950],200:[16,80,220,600,800,1000],
  220:[18,90,250,700,875,1050],240:[20,100,300,750,925,1100],260:[22,110,330,800,975,1150],280:[24,120,360,850,1025,1200],
@@ -2122,7 +2121,7 @@ function openMenu(){const p=meP();if(ONLINE){const m=NET.meta()||{};openSheet('m
  <button class="switch" role="switch" aria-checked="${speedPref}" data-a="tspeed">Fast computer turns<i></i></button>
  <button class="switch" role="switch" aria-checked="${!!p.mute}" data-a="tmute">Mute trade offers from computer players<i></i></button>
  <button class="btn lite sm" data-a="log">Game log</button><button class="btn lite sm" data-a="rules">How to play</button>
- <button class="btn lite sm" data-a="home">Save &amp; quit</button><button class="btn lite sm" data-a="newgame">Abandon and start a new game</button>
+ <button class="btn lite sm" data-a="newgame">Abandon and start a new game</button>
  <button class="btn sm quitb" data-a="quit">Quit to lobby</button></div>`);}
 function openLog(){openSheet('log',shead('Game log','')+`<div class="logl">${G.log.slice().reverse().map(l=>`<div>${esc(human(l.s))}</div>`).join('')}</div>`);}
 const RULES=`<div class="rules"><p><b>Binveriya</b> (ބިންވެރިޔާ, "landowner") is a Maldivian island property game for 2 to 5 players.</p>
@@ -2254,17 +2253,17 @@ const H={
  tmute(b){const on=!meP().mute;doAct({t:'mute',on},true);b.setAttribute('aria-checked',on);toast(on?'Trade offers from computer players are muted':'Trade offers are back on');pump(true);},
  log(){openLog();},rules(){openRules();},
  tipsagain(b){GUIDE.reset();b.textContent='Tips are on';toast('Tips are back on');},
- home(){closeSheet();if(ONLINE){NET.leave();return;}saveGame();showHome();},
+ home(){closeSheet();if(ONLINE){NET.leave();return;}G=null;showHome();},
  /* online, from the table menu: confirm, then leave (a seated player's seat goes to the computer as before) */
  async leave(){closeSheet();if(!ONLINE||!NET)return;const p=meP(),live=!!G&&!G.over&&ME>=0&&!p.out;
   const ok=await NET.ask({title:'Leave the table?',text:live?'The computer plays one more round for you. Then your buildings are removed, loans cleared and your islands are auctioned. You can’t come back to this game.':ME>=0?'You’ll leave this table.':'You’ll stop watching this table.',ok:'Leave table',cancel:'Stay'});
   if(ok&&ONLINE)NET.leave();},
- /* vs Computer: confirm, then back to the home without saving */
- async quit(){closeSheet();if(ONLINE)return;const t={title:'Quit to lobby?',text:'This game ends and won’t be saved.',ok:'Quit',cancel:'Keep playing'};
+ /* vs Computer: confirm, then back to the home; the game ends (games vs the computer are never saved) */
+ async quit(){closeSheet();if(ONLINE)return;const t={title:'Quit to lobby?',text:'This game will end. Games vs the computer aren’t saved.',ok:'Quit',cancel:'Keep playing'};
   const ok=NET&&NET.ask?await NET.ask(t):confirm(t.title+' '+t.text);if(!ok||ONLINE)return;ls.del('bv-save');G=null;showHome();},
  newgame(b){if(ONLINE)return;if(!b.dataset.sure){b.dataset.sure=1;b.textContent='Tap again to abandon this game';return;}ls.del('bv-save');closeSheet();G=null;showHome();openSetup();},
  again(){closeSheet();if(ONLINE){NET.again();return;}ls.del('bv-save');showHome();openSetup();},
- oldnew(){closeSheet();ls.del('bv-save');showHome();openSetup();},results(){openOver();},
+ results(){openOver();},
  watch(){WATCH=true;ACTKEY='';render();schedule();}};
 function refreshSheet(){const k=SH.key||'';if(k==='manage')openManage();else if(k.startsWith('info:'))openInfo(+k.slice(5));else if(SH.debt!=null||k.startsWith('debt')){const pe=G.pend;if(pe&&pe.t==='debt')openDebt(pe,k);}}
 function onClick(e){const b=e.target.closest('[data-a]');if(!b||b.disabled)return;SND.unlock();const f=H[b.dataset.a];if(f)f(b);}
@@ -2371,7 +2370,7 @@ let PUMPING=false,DIRTY=false,PASSED=false;
 async function pump(force){if(!G)return;if(PUMPING){DIRTY=true;return;}PUMPING=true;let any=false;
  try{for(let guard=0;guard<50;guard++){const evs=E.drain();if(!evs.length)break;any=true;document.body.classList.add('pumping');for(const ev of evs){if(!G)break;try{await play(ev);}catch(err){console.error(err);}}if(!G)break;}}
  finally{PUMPING=false;document.body.classList.remove('pumping');}
- if(!G)return;if(any||force||DIRTY){DIRTY=false;G.players.forEach((p,i)=>{VIEW.pos[i]=p.pos;VIEW.cash[i]=p.cash;});render();saveGame();if(G.over)onOver();}schedule();}
+ if(!G)return;if(any||force||DIRTY){DIRTY=false;G.players.forEach((p,i)=>{VIEW.pos[i]=p.pos;VIEW.cash[i]=p.cash;});render();if(G.over)onOver();}schedule();}
 async function play(ev){const slow=ev.p!=null&&isBot(ev.p)&&!WATCH?1:1;
  switch(ev.t){
   case 'dice':await animDice(ev.d);break;
@@ -2437,12 +2436,9 @@ function clock(){const now=performance.now();let dt=Math.min(1000,now-lastT);las
  const o=G.offers.find(x=>x.st==='open'&&x.to===ME);if(!o&&BAN&&BAN.key.startsWith('offer:'))clearBanner();if(BAN&&BAN.key==='sale'&&(!G.sale||G.sale.seller===ME))clearBanner('sale');}
 setInterval(clock,FAST?60:250);
 
-/* ---------------------------------------------------------------- save / resume, rewards */
-function saveGame(){if(!G||AUTO||ONLINE||FAST&&!Q.has('save'))return;if(G.over){ls.del('bv-save');return;}ls.set('bv-save',JSON.stringify({v:1,G,ME,at:Date.now()}));}
-function loadSave(){try{const d=JSON.parse(ls.get('bv-save')||'null');if(d&&d.v===1&&d.G&&d.G.players&&!d.G.over){if(!E.sameBoard(d.G))d.old=true;return d;}}catch(e){}return null;}
-/* a save from the old board cannot be mapped onto this one: say so and offer a new game */
-function openOldSave(){openSheet('oldsave',shead('A new board!','')+`<p>This game was saved on the old Binveriya board, so it can't be resumed. The new board has four transports and a Sandbank choice.</p>
- <div class="acts"><button class="btn em" data-a="oldnew" data-focus>Start a new game</button><button class="btn lite" data-a="close">Not now</button></div>`);}
+/* ---------------------------------------------------------------- rewards */
+/* games vs the computer are not saved (Oct 2026): clear an old saved game so it never comes back */
+ls.del('bv-save');
 function awardBoli(){if(!G||!G.over||AUTO||FAST||G.round<8||ONLINE&&(NET.test||ME<0||meP().left))return null;const win=G.over.winner===ME;const key='bv:'+G.id;let d=null;try{d=JSON.parse(ls.get('dd-inv')||'null');}catch(e){}
  if(!d||d.v!==1)d={v:1,shells:100,xp:0,owned:{},eq:{},hist:[{id:'welcome',t:Date.now(),how:'gift',shells:100}],stats:{},aw:[],day:'',dayEarned:0};
  d.aw=Array.isArray(d.aw)?d.aw:[];if(d.aw.includes(key))return null;d.aw.push(key);if(d.aw.length>80)d.aw.shift();
@@ -2465,7 +2461,6 @@ function openOver(){if(!G||!G.over)return;const o=G.over,w=o.winner,win=w===ME&&
 /* ---------------------------------------------------------------- home + setup */
 let MODE=ls.get('bv-mode')==='classic'?'classic':'quick',HOMEBV=null;
 function showHome(){SCREEN='home';GUIDE.hide();clearBanner();closeDraw(true);$('#game').hidden=true;$('#home').hidden=false;$('#boliN').textContent=boliCount().toLocaleString('en-US');
- const s=loadSave();$('#resumeBtn').hidden=!s;if(s)$('#resumeSub').textContent=s.old?'Saved on the old board':`${s.G.mode==='quick'?'Quick game':s.G.target?'Goal '+fmt(s.G.target):'Classic'} · round ${s.G.round} · ${s.G.players.length} players`;
  $$('.modes button').forEach(b=>b.setAttribute('aria-checked',b.dataset.mode===MODE));homeLive();
  if(!HOMEBV){HOMEBV=LAYOUT.build($('#tilt'));const demo={27:[0,5],26:[0,2],12:[1,0],13:[1,1],5:[2,3],6:[2,0],17:[3,0]};
   Object.entries(demo).forEach(([i,[o,h]])=>deco(HOMEBV,+i,{o,h,m:false},PCOL[o],'YIMH'[o]));
@@ -2611,7 +2606,6 @@ const TZ=(()=>{
 $$('.modes button').forEach(b=>b.addEventListener('click',()=>{MODE=b.dataset.mode;ls.set('bv-mode',MODE);$$('.modes button').forEach(x=>x.setAttribute('aria-checked',x===b));}));
 $('#playBtn').addEventListener('click',()=>{SND.unlock();openSetup();});
 $('#howBtn').addEventListener('click',openRules);
-$('#resumeBtn').addEventListener('click',()=>{const s=loadSave();if(!s)return;SND.unlock();if(s.old)return openOldSave();const g=E.load(s.G);GUIDE.resume(g);startWith(g,s.ME);toast('Welcome back!');});
 let SETUP={n:4,tok:ls.get('bv-tok')||'dhoni'};
 /* Classic win target (net worth); 0 = Last one standing */
 const GOALS=[3000,5000,7000,10000,0],GOAL_DEFAULT=7000;/* ~40 rounds with 4 players: about 30-40 minutes with a human */

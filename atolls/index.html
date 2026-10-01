@@ -506,7 +506,6 @@ button:disabled{cursor:default}
   <button class="btn alt fr" id="onlineBtn" type="button"><span class="gi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.2"/><path d="M3 19c.6-3.2 3-5 6-5s5.4 1.8 6 5"/><path d="M15.5 5.2a3 3 0 010 5.6M17.5 14.3c1.8.6 3 2.3 3.4 4.7"/></svg></span><span class="qt"><b>Play with Friends</b><small>Create a table, or use a code</small></span></button>
   <div class="vc">
    <button class="btn ghost" id="playBtn" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="8" width="14" height="11" rx="3"/><path d="M12 4v4M9.5 13h.01M14.5 13h.01"/></svg>vs Computer</button>
-   <button class="btn ghost" id="resumeBtn" type="button" hidden><span class="col">Resume game<small id="resumeSub"></small></span></button>
   </div>
   <button class="lnk" id="howBtn" type="button">How to play</button>
  </div>
@@ -1288,6 +1287,8 @@ const esc=s=>String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;'
 const f1=n=>Math.round(n*10)/10;
 const S=36;                                   // world px per hex radius
 const SAVE_KEY='atolls-solo';
+/* games vs the computer are not saved (Oct 2026): clear an old saved game so it never comes back */
+ls.del(SAVE_KEY);
 const PCOL=['#ff453a','#0a84ff','#ffcc00','#bf5af2','#30d158','#ff9f0a','#ff6fb5','#2c3e66'];
 const BOTS=[['Aisha','aisha'],['Ibrahim','ibrahim'],['Mariyam','mariyam'],['Hussain','hussain'],['Ali','ali'],['Ahmed',null],['Shifa',null],['Moosa',null],['Hawwa',null],['Naseem',null],['Zahir',null],['Aminath',null]];
 let SPEEDF=ls.get('atolls-speed')==='fast'?.5:1;
@@ -1659,7 +1660,7 @@ async function run(p,a){if(!G)return 'no game';
  /* online guest: the host plays the move and sends back the new state (or an error) */
  if(netGuest()){if(p!==ME||ME<0)return 'not you';NET.send(a);return null;}
  const g=G;if(a&&a.t==='offer')a=Object.assign({},a,{now:Date.now()});if(a&&G.players[p]&&G.players[p].afk)a=Object.assign({bot:true},a);const err=E.act(G,p,a);if(err){if(p===ME&&!isBot(p)){SND.err();toast(errText(err),true);}return err;}
- const evs=E.drain();if(netHost()){hostEvents(evs);NET.sync();}BUSY=true;renderActs();try{await animate(evs);}catch(e){console.error(e);}BUSY=false;if(G!==g)return null;renderAll();save();kick();return null;}
+ const evs=E.drain();if(netHost()){hostEvents(evs);NET.sync();}BUSY=true;renderActs();try{await animate(evs);}catch(e){console.error(e);}BUSY=false;if(G!==g)return null;renderAll();kick();return null;}
 function errText(e){return ({closed:'That ask has closed',answered:'You already answered','no asks':'No asks left this turn','too soon':'Wait a moment before asking again','no deal':'That answer is not a deal',same:'Pick different resources to give and get',bad:'That offer does not work',cost:'Not enough resources','none left':'No pieces left',illegal:"You can't build there",'not now':'Not now','one per turn':'One Raajje card per turn','bank short':'The bank has run out of that',empty:'No Raajje cards left'})[e]||e;}
 function kick(ms){clearTimeout(PUMPT);PUMPT=setTimeout(pump,ms==null?40:ms);}
 /* computer players answer an ask 1 to 4 s after it opens, one at a time, like people answering */
@@ -1948,9 +1949,9 @@ function openMenu(){openSheet('menu',`<div class="grab"></div><div class="sh"><h
  <button class="tg" type="button" role="switch" aria-checked="${SND.on}" data-m="sound"><span class="tt"><b>Sound</b><small>Soft effects for dice, building and trades</small></span><span class="sw2"></span></button>
  <button class="tg" type="button" role="switch" aria-checked="${SPEEDF<1}" data-m="speed"><span class="tt"><b>Fast computer players</b><small>Shorter pauses between their moves</small></span><span class="sw2"></span></button>
  <div class="mgrid" style="display:grid;gap:8px;margin-top:12px"><button class="btn alt" type="button" data-m="score">Scoreboard</button><button class="btn alt" type="button" data-m="tlog">Trade log</button><button class="btn alt" type="button" data-m="rules">How to play</button>
- <button class="btn alt" type="button" data-m="legend">Resources key</button>${ONLINE?`<button class="btn red" type="button" data-m="leave">Leave table</button>${ME>=0&&G&&G.phase!=='over'?'<p style="font:500 12px/1.4 Inter;color:var(--muted);margin:2px 2px 0">If you leave, the computer plays your seat to the end of the game.</p>':''}`:'<button class="btn alt" type="button" data-m="home">Save &amp; quit</button><button class="btn red" type="button" data-m="quit">Quit to lobby</button>'}</div>`);}
-/* vs Computer: quit without saving, after a confirm (the themed sheet from net.js, or a second tap without it) */
-async function quitAsk(t){let ok=false;if(NET&&NET.ask){closeSheet(true);ok=await NET.ask({title:'Quit this game?',text:'This game ends and is not saved. You go back to the lobby.',ok:'Quit to lobby',cancel:'Keep playing'});}
+ <button class="btn alt" type="button" data-m="legend">Resources key</button>${ONLINE?`<button class="btn red" type="button" data-m="leave">Leave table</button>${ME>=0&&G&&G.phase!=='over'?'<p style="font:500 12px/1.4 Inter;color:var(--muted);margin:2px 2px 0">If you leave, the computer plays your seat to the end of the game.</p>':''}`:'<button class="btn red" type="button" data-m="quit">Quit to lobby</button>'}</div>`);}
+/* vs Computer: quit after a confirm (the themed sheet from net.js, or a second tap without it); games vs the computer are never saved */
+async function quitAsk(t){let ok=false;if(NET&&NET.ask){closeSheet(true);ok=await NET.ask({title:'Quit this game?',text:'This game will end. Games vs the computer aren’t saved.',ok:'Quit to lobby',cancel:'Keep playing'});}
  else if(t&&t.dataset.sure)ok=true;else{if(t){t.dataset.sure='1';t.textContent='Tap again to quit';}return;}
  if(!ok||ONLINE)return;ls.del(SAVE_KEY);G=null;showHome();}
 /* online: leave the table after a confirm; the computer plays a seated player's seat on */
@@ -2030,7 +2031,7 @@ $('#sheet').addEventListener('click',async e=>{if(e.target.closest('[data-lr]'))
   const i=+t.dataset.d,need=G.discard[ME];if(DSC.includes(i))DSC=DSC.filter(x=>x!==i);else if(DSC.length<need)DSC.push(i);SND.tick();renderDiscard();return;}
  if(t.dataset.v!=null&&SHEET==='steal'){closeSheet(true);await run(ME,{t:'steal',from:+t.dataset.v});return;}
  if(t.dataset.m){const m=t.dataset.m;if(m==='sound'){SND.set(!SND.on);openMenu();if(SND.on)SND.tick();}else if(m==='speed'){SPEEDF=SPEEDF<1?1:.5;ls.set('atolls-speed',SPEEDF<1?'fast':'normal');openMenu();}
-  else if(m==='score')openScore();else if(m==='tlog')openLog();else if(m==='rules')openRules();else if(m==='legend'){closeSheet();LEGEND.show();}else if(m==='home'){if(ONLINE){leaveAsk();return;}save();showHome();}else if(m==='leave'){leaveAsk();}else if(m==='quit'){if(ONLINE)return;quitAsk(t);}return;}
+  else if(m==='score')openScore();else if(m==='tlog')openLog();else if(m==='rules')openRules();else if(m==='legend'){closeSheet();LEGEND.show();}else if(m==='home'){if(ONLINE){leaveAsk();return;}G=null;showHome();}else if(m==='leave'){leaveAsk();}else if(m==='quit'){if(ONLINE)return;quitAsk(t);}return;}
  if(t.dataset.s)setupClick(t);
  if(t.dataset.a){if(t.dataset.a==='again'){closeSheet(true);if(ONLINE)NET.again();else newGame(LASTSETUP);}else if(t.dataset.a==='home'){if(ONLINE)leaveAsk();else{closeSheet(true);showHome();}}else if(t.dataset.a==='score')openScore();}});
 
@@ -2074,9 +2075,7 @@ function openRules(){const pic=(inner,vb)=>`<svg viewBox="${vb||'-42 -42 84 84'}
  openSheet('rules',`<div class="grab"></div><div class="sh"><h2 id="sheetTitle">How to play</h2>${X}</div><svg width="0" height="0" style="position:absolute">${defs}</svg>${R.map(r=>`<div class="rule"><div class="pic">${r[2]}</div><div class="rt"><b>${r[0]}</b>${r[1]}</div></div>`).join('')}
  <div class="goal">Options: Fair map, Harbour Master, Friendly pirate (no robbing players with 2 points or fewer), Fair dice (a shuffled deck of all 36 rolls) and points to win.</div>`);}
 
-/* ================================================================ SAVE, REWARDS, SPONSOR */
-function save(){if(!G||AUTO||ONLINE||(FAST&&!Q.has('save')))return;if(G.phase==='over'){ls.del(SAVE_KEY);return;}try{ls.set(SAVE_KEY,JSON.stringify({v:1,G,ME,at:Date.now()}));}catch(e){}}
-function loadSave(){try{const d=JSON.parse(ls.get(SAVE_KEY)||'null');if(d&&d.v===1&&d.G&&d.G.players&&d.G.phase!=='over'&&MODES[d.G.mode])return d;}catch(e){}return null;}
+/* ================================================================ REWARDS, SPONSOR */
 function awardBoli(){if(!G||!G.over||AUTO||FAST||G.round<5||ONLINE&&(NET.test||ME<0||G.players[ME].afk))return null;const win=G.over.winner===ME;const key='at:'+G.id;let d=null;try{d=JSON.parse(ls.get('dd-inv')||'null');}catch(e){}
  if(!d||d.v!==1)d={v:1,shells:100,xp:0,owned:{},eq:{},hist:[{id:'welcome',t:Date.now(),how:'gift',shells:100}],stats:{},aw:[],day:'',dayEarned:0};
  d.aw=Array.isArray(d.aw)?d.aw:[];if(d.aw.includes(key))return null;d.aw.push(key);if(d.aw.length>80)d.aw.shift();
@@ -2111,16 +2110,14 @@ function modesHTML(){return `<div class="modes" role="radiogroup" aria-label="Ga
 /* "N playing now" on the Quick Match button (0: "Be the first to play") */
 function paintLive(n){const e=$('#qmLive');if(!e)return;n=n|0;e.innerHTML=n>0?`<i></i>${n.toLocaleString('en-US')} playing now`:'<span class="first">Be the first to play</span>';}
 function showHome(){SCREEN='home';LEGEND.hide();TMR.stop();clearTimeout(PUMPT);endSel();closeSheet(true);clearBanner();closeConfirm();if(window.DGDice)DGDice.end();$('#game').hidden=true;$('#home').hidden=false;$('#loading').hidden=true;$('#storm').classList.remove('on');GLR.setDim(0);
- GLR.setMode('home');$('#boliN').textContent=boliCount().toLocaleString('en-US');const s=loadSave();$('#resumeBtn').hidden=!s;$('#home .vc').classList.toggle('two',!!s);
+ GLR.setMode('home');$('#boliN').textContent=boliCount().toLocaleString('en-US');
  if(NET)NET.playing(paintLive);
- if(s)$('#resumeSub').textContent=`${MODES[s.G.mode].name} · round ${Math.max(1,s.G.round)}`;
  if(!SPC&&window.DGSponsors&&DGSponsors.box){try{SPC=DGSponsors.box($('#spbox'));}catch(e){SPC=null;}}
  homeFrame();}
 function homeFrame(){$('#home .brk').style.bottom='calc(var(--sab) + '+($('#home .hstack').offsetHeight+26)+'px)';}   /* the drone frame ends above the menu */
 let SPC=null;   /* the home sponsor card (shared/sponsors.js), made once and kept */
 $('#playBtn').addEventListener('click',()=>{SND.unlock();openSetup();});
 $('#howBtn').addEventListener('click',openRules);
-$('#resumeBtn').addEventListener('click',()=>{const s=loadSave();if(!s)return;SND.unlock();startWith(s.G,s.ME);toast('Welcome back!');});
 let SETUP={n:4,target:0,map:'fair',hm:false,friendly:false,fairDice:false,timer:false};try{Object.assign(SETUP,JSON.parse(ls.get('atolls-setup')||'{}'));}catch(e){}
 let ROSTER=null;function roster(){const pre=BOTS.slice(0,5).sort(()=>Math.random()-.5),rest=BOTS.slice(5).sort(()=>Math.random()-.5);return pre.concat(rest);}
 function botAv(b){if(!window.DGAvatar)return null;try{return b[1]&&DGAvatar.presets&&DGAvatar.presets[b[1]]?DGAvatar.presets[b[1]]:DGAvatar.random(b[0]+'-atolls');}catch(e){return null;}}
@@ -2168,7 +2165,6 @@ function startWith(g,me){E.use(g);G=g;ME=me;SCREEN='game';SEL=null;BUSY=false;RO
  if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>{if(SCREEN==='game'){layoutView();applyCam();}});
  if(G.phase==='setup'&&E.cur()!==ME)toast(`${esc(G.players[E.cur()].name)} places first`);kick(FAST?0:500);}
 addEventListener('resize',()=>{if(SCREEN==='home')homeFrame();if(SCREEN==='game'&&G){renderTele();fitNames();layoutView();if(Date.now()-userCamT>6000)Object.assign(CAM,defaultCam());applyCam();}});
-addEventListener('pagehide',save);document.addEventListener('visibilitychange',()=>{if(document.hidden)save();});
 
 /* ================================================================ ONLINE (shared/net.js)
    The host runs the engine and the computer players and sends each player the game with the secrets

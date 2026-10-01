@@ -610,13 +610,13 @@ function send(a,p){if(!S)return false;
  if(a&&a.k==='deal'&&isHostOn()&&(S.status==='ready'||S.status==='gameover')){NET.handBreak();NET.handBreak(false);}
  const N=clone(S);if(!E.act(N,p==null?meIdx():p,a,Date.now()))return false;commit(N);return true;}
 const DHLOG=[];
-function commit(N){const e=N.last;S=N;save();
+function commit(N){const e=N.last;S=N;
  if(LOCAL&&e&&e.seq>seen){const tot=N.stacks[0].length+N.stacks[1].length+N.pile.length;DHLOG.push({t:e.t,p:e.p,c:e.c,under:e.under,match:e.match,pick:e.pick&&e.pick.n,n:e.n,why:e.why,end:e.end,w:e.w,g:N.gameNo,tot:tot,st:N.status,wins:N.wins.slice(),clock:E.clock(N,Date.now())});if(DHLOG.length>5000)DHLOG.shift();}
  if(e&&e.seq>seen){if(e.seq===seen+1)EQ.push(e);else{EQ.length=0;snap();}seen=e.seq;}
  pump();if(!busy)drawStatic();
  if(isHostOn()){NET.sync();hostAfter();}}
-function save(){if(!S||online)return;if(S.status==='matchover'){ls.del('dh-solo');return;}const T=clone(S);E.pause(T,Date.now());ls.set('dh-solo',JSON.stringify(T));}
-function loadSave(){try{const d=JSON.parse(ls.get('dh-solo')||'null');if(d&&d.v===1&&Array.isArray(d.players)&&d.players.length===2&&d.stacks&&d.status!=='matchover')return d;}catch(e){}return null;}
+/* matches vs the computer are not saved (Oct 2026): clear an old saved match so it never comes back */
+ls.del('dh-solo');
 function hostTick(){if(screen!=='table'||!S||(!online&&pauses.size))return;const now=Date.now();updateClock(now);
  if(online&&!isHostOn()){clientTick(now);return;}
  if(S.status!=='playing'||!S.runAt)return;
@@ -628,7 +628,7 @@ function hostTick(){if(screen!=='table'||!S||(!online&&pauses.size))return;const
  /* online: a remote player gets a little extra for the network before their card flips itself */
  if(now>=S.turnAt+S.turnMs+(online&&pl.id!==myId?GRACE:0)){send({k:'flip',why:'timeout'},p);if(online&&S.status==='playing'&&NET.strike(pl.id))netForfeit(pl.id,'afk');}}
 setInterval(hostTick,80);
-function pauseGame(r){if(online)return;pauses.add(r);if(S&&screen==='table'&&S.runAt){E.pause(S,Date.now());save();}}
+function pauseGame(r){if(online)return;pauses.add(r);if(S&&screen==='table'&&S.runAt){E.pause(S,Date.now());}}
 function resumeGame(r){pauses.delete(r);if(online)return;if(!pauses.size&&S&&screen==='table'&&S.status==='playing'){E.resume(S,Date.now());drawStatic();}}
 function myFlip(src){if(!S||screen!=='table')return;AU.unlock();
  if(online&&!seatedMe())return;
@@ -723,8 +723,6 @@ function mountSponsors(){const el=$('#spbox');if(el&&window.DGSponsors){try{spCt
 function unmountSponsors(){if(spCtl){try{spCtl.destroy();}catch(e){}spCtl=null;}}
 function leaveScreen(){unmountSponsors();closeOv();closeRules();closeSheet(true);const fl=$('#flyl');if(fl)fl.innerHTML='';const fx=$('#fxl');if(fx)fx.innerHTML='';}
 function heroHTML(){return `<div class="dhero" aria-hidden="true"><div class="card">${backHTML()}</div><div class="card">${faceHTML('7-S-0')}</div><div class="card">${faceHTML('7-H-0')}</div><span class="stkr">DHASHUN!</span></div>`;}
-function resumeHTML(){const d=loadSave();if(!d)return '';const o=d.players[1]||{},g=Math.max(1,d.gameNo||1);
- return `<button class="resume" data-a="resume"><span>Unfinished match: <b>Game ${g}</b>, you ${d.wins[0]}–${d.wins[1]} ${esc(o.name||'Computer')}</span><span class="go">Resume</span></button>`;}
 function renderHome(){leaveScreen();screen='home';setTbl(false);S=null;
  const nm=myName(),n=inv().shells|0;
  app.innerHTML=`<main class="page enter">
@@ -737,15 +735,14 @@ ${heroHTML()}
 <button class="mode sm" data-a="goSetup"><span class="mi">${IC.bot}</span><b>vs Computer</b><small>Best of 3 or 5 · offline</small></button>
 <button class="mode sm" data-a="howto"><span class="mi">${IC.book}</span><b>How to play</b><small>The rules in 30 seconds</small></button>
 </section>
-${resumeHTML()}
 <div class="homebelow"><div class="spbox" id="spbox"></div></div>
 <p class="snote">Win games to earn Boli ${BOLI}, up to ${DAILY_CAP} a day across Dhivehi Games.</p>
 </main>`;mountSponsors();if(NET)NET.playing(setLive);window.scrollTo(0,0);}
 let setBest=ls.get('dh-best')==='5'?5:3,setBot=BOTS.some(b=>b.k===ls.get('dh-bot'))?ls.get('dh-bot'):'mariyam';
-function renderSetup(){leaveScreen();screen='setup';setTbl(false);S=null;const hasSave=!!loadSave();
+function renderSetup(){leaveScreen();screen='setup';setTbl(false);S=null;
  app.innerHTML=`<main class="page enter">
 <div class="subtop"><button class="icon-btn" data-a="goHome" aria-label="Back">${IC.back}</button><h1>vs Computer</h1></div>
-<section class="panel">${hasSave?resumeHTML():''}<h2${hasSave?' style="margin-top:14px"':''}>New match</h2><p class="muted" style="margin:4px 0 14px;font-size:13px">Works offline too. Your opponent flips on their own.</p>
+<section class="panel"><h2>New match</h2><p class="muted" style="margin:4px 0 14px;font-size:13px">Works offline too. Your opponent flips on their own.</p>
 <label class="f" id="lbBest">Match length</label>
 <div class="pick" role="group" aria-labelledby="lbBest">${[3,5].map(n=>`<button class="btn sm soft" data-a="best" data-n="${n}" aria-pressed="${n===setBest}">Best of ${n}<small>first to ${E.need(n)} games</small></button>`).join('')}</div>
 <div style="height:16px"></div>
@@ -754,17 +751,12 @@ function renderSetup(){leaveScreen();screen='setup';setTbl(false);S=null;const h
 <p class="hint">${PER} cards each, ${fmtLimit()} a game. It is all in the flip: nobody plays better than anyone else.</p>
 <div style="height:16px"></div>
 <button class="btn primary wide" data-a="start">${IC.play}<span>Start match</span></button>
-${hasSave?'<p class="hint">Starting a new match replaces your unfinished one.</p>':''}
 </section></main>`;window.scrollTo(0,0);}
 const fmtLimit=()=>GAME_MS>=60000&&GAME_MS%60000===0?(GAME_MS/60000)+' minute'+(GAME_MS===60000?'':'s'):Math.round(GAME_MS/1000)+' seconds';
 function startMatch(){const b=BOTS.find(x=>x.k===setBot)||BOTS[0];
  const players=[{id:myId,name:myName()||'You',ch:myChar()},{id:'bot-'+b.k,name:b.n,ai:true,ch:botChar(b.k)}];
  S=E.create({bestOf:setBest,players:players,first:Math.random()<.5?0:1,per:PER,limit:GAME_MS,turnMs:TURN_MS});
- seen=S.seq;ovKey='';save();buildTable();openRules();}
-function resumeMatch(){const d=loadSave();if(!d){renderHome();return;}S=d;seen=S.seq;ovKey='';
- /* refresh my own name and look in case they changed since */
- const me=S.players[0];if(me&&me.id===myId){me.name=myName()||'You';const ch=myChar();if(ch)me.ch=ch;}
- buildTable();if(S.status==='ready')openRules();else if(S.status==='playing'){E.resume(S,Date.now());drawStatic();}else showResult();}
+ seen=S.seq;ovKey='';buildTable();openRules();}
 
 /* ---------- the table ---------- */
 /* Beach Duel at Night: baked art (beach.webp, 375x812 scene units) + small live layers: fire, embers, moon glints, foam, stars */
@@ -959,7 +951,7 @@ function showResult(){if(!S||!S.result)return;const key=S.gid+':'+S.gameNo+':'+S
  const facts=[`DHASHUNs this game: ${S.dh[me]} – ${S.dh[op]}`];if(S.big[me]>=6||S.big[op]>=6)facts.push(`Biggest pickup ${Math.max(S.big[me],S.big[op])}`);
  const earn=TEST||online&&NET.test&&!spec?'<div class="earn muted">Test game: no Boli</div>':(sh||xp)?`<div class="earn">+${sh} ${BOLI} Boli and +${xp} XP${capped?' (daily Boli limit reached)':''}</div>`:'';
  const btns=!online?(over?`<button class="btn primary wide" data-a="again">${IC.play}<span>Play again</span></button><button class="btn ghost wide" style="margin-top:8px" data-a="goHome">Back to home</button>`
-  :`<button class="btn primary wide" data-a="next">${IC.play}<span>${draw?'Replay game':'Next game'}</span></button><button class="btn ghost wide" style="margin-top:8px" data-a="exit">Save and exit</button>`)
+  :`<button class="btn primary wide" data-a="next">${IC.play}<span>${draw?'Replay game':'Next game'}</span></button><button class="btn ghost wide" style="margin-top:8px" data-a="quitAsk">Quit to lobby</button>`)
   :over?(host?`<button class="btn primary wide" data-a="netAgain">${IC.play}<span>Play again</span></button>`:`<p class="muted" style="font-size:13px;margin:0 0 6px">${spec?'The table opens for the next match soon.':'Waiting for the host to start the next match…'}</p>`)+`<button class="btn ghost wide" style="margin-top:8px" data-a="netLeave">Leave table</button>`
   :(host?`<button class="btn primary wide" data-a="next">${IC.play}<span>${draw?'Replay game':'Next game'}</span></button>`:`<p class="muted" style="font-size:13px;margin:0 0 6px">The next game starts in a moment…</p>`)+`<button class="btn ghost wide" style="margin-top:8px" data-a="netLeave">Leave table</button>`;
  const o=$('#ov');
@@ -1012,10 +1004,9 @@ function openMenu(){if(!S)return;if(online){openNetMenu();return;}pauseGame('men
 <button class="btn soft" data-a="howto2">${IC.book}<span>How to play</span></button>
 <button class="btn soft" data-a="sound" data-lbl="1" aria-pressed="${SFX.on()}">${IC.sound}<span>Sound</span><span class="r">${SFX.on()?'On':'Off'}</span></button>
 <button class="btn soft" data-a="goSetup">${IC.cog}<span>New match</span></button>
-<button class="btn ghost" data-a="exit">${IC.home}<span>Save and exit</span></button>
 <button class="btn danger" data-a="quitAsk">${IC.exit}<span>Quit to lobby</span></button></div>`,()=>resumeGame('menu'));}
-/* vs Computer: quit this match (not saved) with a confirm step */
-function openQuitAsk(){sheet(`<div class="grab"></div><h2>Quit to lobby?</h2><p class="muted" style="margin:6px 0 0;font-size:13.5px">This match ends and is not saved. Use <b>Save and exit</b> to finish it later.</p>
+/* vs Computer: quit this match with a confirm step (matches vs the computer are never saved) */
+function openQuitAsk(){sheet(`<div class="grab"></div><h2>Quit to lobby?</h2><p class="muted" style="margin:6px 0 0;font-size:13.5px">This match will end. Matches vs the computer aren’t saved.</p>
 <div class="row"><button class="btn soft" data-a="quitNo">Stay</button><button class="btn primary" data-a="quitYes">Quit</button></div>`,()=>resumeGame('menu'));}
 /* online: leave the table with a confirm (net.js themed sheet) */
 function netLeaveAsk(){if(!NET||!online){renderHome();return;}closeSheet(true);
@@ -1060,11 +1051,10 @@ document.addEventListener('click',e=>{const b=e.target.closest('[data-a]');if(!b
  case 'best':setBest=+b.dataset.n===5?5:3;ls.set('dh-best',String(setBest));document.querySelectorAll('[data-a="best"]').forEach(x=>x.setAttribute('aria-pressed',String(+x.dataset.n===setBest)));break;
  case 'bot':setBot=b.dataset.k;ls.set('dh-bot',setBot);document.querySelectorAll('[data-a="bot"]').forEach(x=>x.setAttribute('aria-pressed',String(x.dataset.k===setBot)));break;
  case 'start':startMatch();break;
- case 'resume':resumeMatch();break;
  case 'deal':closeRules();AU.unlock();if(!online||isHostOn())send({k:'deal'});break;
  case 'next':closeOv();if(!online||isHostOn())send({k:'deal'});break;
  case 'again':{const bo=S?S.bestOf:setBest,bk=S&&S.players[1]?String(S.players[1].id).replace('bot-',''):setBot;setBest=bo;if(BOTS.some(x=>x.k===bk))setBot=bk;closeOv();startMatch();break;}
- case 'exit':closeSheet(true);pauses.clear();if(S)save();renderHome();break;
+ case 'exit':closeSheet(true);pauses.clear();S=null;renderHome();break;
  case 'menu':openMenu();break;
  case 'sound':setSound(!SFX.on());break;
  case 'auto':auto=!auto;ls.set('dh-auto',auto?'1':'0');b.setAttribute('aria-pressed',String(auto));toast(auto?'Auto is on: your cards flip for you.':'Auto is off.',1600);drawStatic();break;
@@ -1077,7 +1067,6 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'){if($('#sheet').clas
  else if(e.key==='a'||e.key==='A'){const ab=$('#autob');if(ab)ab.click();}});
 const NOPAUSE=LOCAL&&Q.has('nopause');   /* tests only: keep playing in a background tab */
 document.addEventListener('visibilitychange',()=>{if(document.hidden){if(!NOPAUSE)pauseGame('hidden');AU.sleep();}else{resumeGame('hidden');}});
-window.addEventListener('pagehide',()=>{if(S&&screen==='table')save();});
 
 /* ---------- test hooks (localhost only) ---------- */
 if(LOCAL){window.DH={state:()=>S,view:()=>V,busy:()=>busy,send:send,E:E,log:DHLOG,screen:()=>screen,flags:{FAST,GAME_MS,PER,TURN_MS,TEST},setAuto:v=>{auto=!!v;ls.set('dh-auto',auto?'1':'0');drawStatic();},

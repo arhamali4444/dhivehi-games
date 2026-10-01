@@ -1029,6 +1029,8 @@ function compactNum(n){
 }
 
 const ls={get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}},del(k){try{localStorage.removeItem(k)}catch(e){}}};
+/* games vs the computer are not saved (Oct 2026): clear an old saved game so it never comes back */
+ls.del('lg-solo');
 
 /* ---------- Firebase permanent player profiles ---------- */
 const FIREBASE_CONFIG={
@@ -1483,8 +1485,7 @@ setInterval(()=>{const st=document.getElementById('status');
  if(left<-800&&amAuthority())autoTurn();
  {const k=S.handNo+':'+S.turn+':'+turnSeen;if(thinkKey!==k&&left<turnMs()*.45&&left>1200){thinkKey=k;reactP(S.players[S.turn].id,'thinking',2200);}}
 },250);
-let soloSaveT=null;
-function commit(N){if(!S||N.turn!==S.turn||N.handNo!==S.handNo||N.status!==S.status||N.phase==='draw'&&S.phase!=='draw')N.turnAt=Date.now();apply(N);if(mode==='solo'){clearTimeout(soloSaveT);if(N.status==='over')ls.del('lg-solo');else soloSaveT=setTimeout(()=>{if(mode==='solo'&&S)ls.set('lg-solo',JSON.stringify(S));},400);scheduleBot();}if(mode==='p2p'&&isHost){broadcast();scheduleBot();hostFarewell();afkHostCheck();}if(ref){const snap=N;writeQ=writeQ.then(()=>ref.set(snap)).catch(e=>toast(errMsg(e)));}}
+function commit(N){if(!S||N.turn!==S.turn||N.handNo!==S.handNo||N.status!==S.status||N.phase==='draw'&&S.phase!=='draw')N.turnAt=Date.now();apply(N);if(mode==='solo'){scheduleBot();}if(mode==='p2p'&&isHost){broadcast();scheduleBot();hostFarewell();afkHostCheck();}if(ref){const snap=N;writeQ=writeQ.then(()=>ref.set(snap)).catch(e=>toast(errMsg(e)));}}
 function willAnim(prev,N){return !(screen!=='table'||!prev||!N.move||!prev.move||prev.status==='lobby'||N.handNo!==prev.handNo||N.move.seq===prev.move.seq);}
 function apply(N){vcSoon();const prev=S;
 if(!prev||N.turn!==prev.turn||N.handNo!==prev.handNo||N.status!==prev.status||N.turnAt!==prev.turnAt)turnSeen=Date.now()+(N.move&&N.move.t==='deal'&&!reduce?2600:0);
@@ -1841,10 +1842,6 @@ const HI={play:`<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
 function heroFan(){const row=(cs,d)=>cs.map((c,i)=>`<div class="card" style="animation-delay:${(d+i*.08).toFixed(2)}s">${faceHTML(c)}</div>`).join('');return `<div class="dhero meld" aria-hidden="true"><div class="row r1">${row(['7-H-0','8-H-0','9-H-0','10-H-0'],.05)}</div><div class="row r2">${row(['12-S-0','12-H-0','12-D-0'],.4)}</div><span class="stamp">DIGU!</span></div>`;}
 function acctCardHTML(){if(!authIsGuest())return '';
 return `<button class="acrow" data-a="acctNew"><span class="ai">${HI.user}</span><span class="at"><b>Save your progress</b><small>Create a free account or log in</small></span><span class="go" aria-hidden="true">${HI.chev}</span></button>`;}
-function resumeHTML(){let d=null;try{d=JSON.parse(ls.get('lg-solo')||'null');}catch(e){}if(!d||!d.players)return '';
-const me=d.players.find(q=>q.id===myId),best=Math.max(...d.players.filter(q=>q.id!==myId).map(q=>q.score|0));
-const lead=me?(me.score|0)-best:0,R=roundsOf(d);
-return `<button class="resume" data-a="resumeSolo"><span>Unfinished game: <b>Hand ${Math.min(d.handNo||1,R)} of ${R}</b>${me?(lead>0?`, you lead by ${lead}`:lead<0?`, ${-lead} behind`:', level'):''}</span><span class="go">Resume</span></button>`;}
 /* home (L3 Pastel, like the Dhivehi Games homepage): one big Play button first, then Online, then everything else */
 function storeSub(){const f=CATALOG.find(it=>it.feat&&!it.hidden&&itemState(it)==='owned');return f?'New and free: '+esc(f.name)+(f.cat==='frame'?' ring':''):'Card backs, rings, tables and avatar items';}
 function renderHome(){
@@ -1856,7 +1853,6 @@ ${heroFan()}
 <button class="qm" data-a="quick"><span class="pi">${HI.bolt}</span><span class="ptx"><b>Quick Match</b><small>Play real people now</small><span id="qlive">${liveHTML()}</span></span></button>
 <button class="fr" data-a="goFriends"><span class="oi">${HI.friends}</span><span class="rt"><b>Play with Friends</b><small>Create a table, or join with a code</small></span>${HI.chev}</button>
 <button class="vc" data-a="goComputer"><span class="oi">${HI.bot}</span><span class="rt"><b>vs Computer</b><small>1 to 5 opponents · works offline</small></span><span class="bz">Blitz at 5</span></button>
-${resumeHTML()}
 <div class="heb">More</div>
 <div class="hmlist">
 <button class="hmrow" data-a="top10"><span class="ri">${HI.trophy}</span><span class="rt"><b>Most wins</b><small id="lbsub">See who’s on top</small></span><span class="hpod" data-wins-board data-podium="mini" aria-hidden="true"></span>${HI.chev}</button>
@@ -1887,7 +1883,6 @@ function renderComputer(){
 screen='computer';offTable();closeOv();
 app.innerHTML=`<main class="page">
 <div class="subtop"><button class="icon-btn" data-a="goHome" aria-label="Back">${ICON.back}</button><h1>vs Computer</h1></div>
-${resumeHTML()}
 <section class="panel"><h2>New game</h2><p class="muted" style="margin:4px 0 14px;font-size:13px">Works offline too.</p>
 <label class="f">Computer opponents</label>
 <div class="pick">${[1,2,3,4,5].map(n=>`<button class="btn sm soft" data-a="bots" data-n="${n}" aria-pressed="${n===soloBots}">${n}</button>`).join('')}</div>
@@ -2769,7 +2764,7 @@ function runPending(){if(!pendingCode||S)return;if(!needName(()=>runPending()))r
 function sheet(h){if(charB){charB.destroy();charB=null;}const sb=$('#sheetB');sb.classList.remove('tall','gmenu');sb.innerHTML=h;$('#sheet').classList.add('open');}
 function closeSheet(){$('#sheet').classList.remove('open');}
 function openMenu(){const cur=S.players[S.turn];const pb=$('#sheet').classList.contains('open')?$('#sheetB>.mbody'):null,keep=pb?pb.scrollTop:0;
-sheet(`<div class="mhead"><div class="grab"></div>${mode==='solo'?`<div class="row mact"><button class="btn primary" data-a="close">Resume</button><button class="btn soft" data-a="leave">Save &amp; quit</button><button class="btn soft danger" data-a="quitAsk">Quit to lobby</button></div>`:`<div class="row mact"><button class="btn primary" data-a="close">Back to game</button><button class="btn soft danger" data-a="quitAsk">${meIdx()<0?'Leave table':'Quit to lobby'}</button></div>`}</div>
+sheet(`<div class="mhead"><div class="grab"></div>${mode==='solo'?`<div class="row mact"><button class="btn primary" data-a="close">Back to game</button><button class="btn soft danger" data-a="quitAsk">Quit to lobby</button></div>`:`<div class="row mact"><button class="btn primary" data-a="close">Back to game</button><button class="btn soft danger" data-a="quitAsk">${meIdx()<0?'Leave table':'Quit to lobby'}</button></div>`}</div>
 <div class="mbody"><div class="row" style="justify-content:space-between;margin-top:0"><h2>Scores</h2><span class="tag">${mode==='solo'?'Solo':'Table '+esc(S.code)}</span></div>${scoresHTML()}
 <button class="lbbox" data-a="top10" aria-label="Top players, see the top 10"><span class="lbh">Top players</span><div id="menulb"><p class="muted lbmsg">Loading the leaderboard…</p></div></button>
 <label class="f" style="margin-top:2px">Your table</label>${tablePickHTML()}
@@ -2779,12 +2774,12 @@ ${(mode==='online'||(mode==='p2p'&&isHost))&&S.hostId===myId&&S.status==='playin
 <div class="row"><button class="btn soft" data-a="smoothToggle" aria-pressed="${isSmooth()}">Smooth mode: ${isSmooth()?'On':'Off'}</button></div>
 <div class="row"><button class="btn soft" data-a="emute" aria-pressed="${!emotesMuted()}">Reactions: ${emotesMuted()?'Muted':'On'}</button>${mode==='p2p'?`<button class="btn soft" data-a="chatToggle" aria-pressed="${!chatOff()}">Chat: ${chatOff()?'Off':'On'}</button>`:''}</div></div>`);
 $('#sheetB').classList.add('gmenu');if(keep){const nb=$('#sheetB>.mbody');if(nb)nb.scrollTop=keep;}loadMenuLb();}
-/* Quit to lobby, with a confirm step. vs Computer: the game is not kept (Save & quit keeps it). Online: you leave the table;
+/* Quit to lobby, with a confirm step. vs Computer: the game ends (games are never saved). Online: you leave the table;
    at a Quick Match table a computer takes your seat, at a friends' table an AI Rookie finishes your hand. */
 function quitAsk(){if(!S){renderHome();return;}const solo=mode==='solo',me=meIdx()>=0,live=S.status==='playing'||S.status==='handover';
- const why=solo?'This game won’t be kept. Use Save &amp; quit if you want to finish it later.':!me?'You stop watching this table.':S.quick&&live?'A computer takes your seat so the others keep playing. You can’t rejoin this match.':S.status==='playing'?'An AI Rookie finishes your hand so the others keep playing. You can’t rejoin this match.':'You leave this table.';
+ const why=solo?'This game will end. Games vs the computer aren’t saved.':!me?'You stop watching this table.':S.quick&&live?'A computer takes your seat so the others keep playing. You can’t rejoin this match.':S.status==='playing'?'An AI Rookie finishes your hand so the others keep playing. You can’t rejoin this match.':'You leave this table.';
  sheet(`<div class="grab"></div><h2>Leave this game?</h2><p class="muted" style="margin:6px 0 14px">${why}</p><div class="row"><button class="btn soft" data-a="close">${solo?'Keep playing':'Stay'}</button><button class="btn primary" data-a="quitGo">${solo?'Quit':'Leave table'}</button></div>`);}
-function quitGo(){closeSheet();if(mode==='solo'){clearTimeout(soloSaveT);clearTimeout(botT);botT=null;ls.del('lg-solo');closeOv();closeRules();mode=null;S=null;renderHome();return;}leave();}
+function quitGo(){closeSheet();if(mode==='solo'){clearTimeout(botT);botT=null;closeOv();closeRules();mode=null;S=null;renderHome();return;}leave();}
 
 /* ---------- online play: encrypted relay ----------
    Phones talk through public MQTT relays over secure WebSockets, so players on mobile data
@@ -3390,7 +3385,7 @@ const me=d.players.find(q=>q.id===myId);if(!me)return;me.piece=pid;d.rev=(d.rev|
 async function startGame(){if(!S||S.hostId!==myId||S.players.length<2)return;
 if(mode==='p2p'){const d=clone(S);d.players.forEach(p=>p.score=0);deal(d);d.rev=(S.rev||0)+1;d.by=myId;commit(d);return;}
 try{const s=await ref.get();const d=clone(s.data());if(d.status!=='lobby')return;d.players.forEach(p=>p.score=0);deal(d);d.rev=(d.rev||0)+1;d.by=myId;commit(d);}catch(e){toast(errMsg(e));}}
-async function leave(){closeSheet();closeOv();closeRules();clearTimeout(botT);botT=null;if(mode==='solo'){clearTimeout(soloSaveT);if(S&&S.status==='over')ls.del('lg-solo');else if(S)ls.set('lg-solo',JSON.stringify(S));mode=null;S=null;renderHome();return;}
+async function leave(){closeSheet();closeOv();closeRules();clearTimeout(botT);botT=null;if(mode==='solo'){mode=null;S=null;renderHome();return;}
 if(mode==='p2p'){const n=net;quickRun++;
 /* host leaving: hand the table to the next player; if nobody else is here, the table closes */
 if(n&&n.role==='host'){const nx=nextHostId(myId);n.players.forEach((pl,tp)=>sendPlayer(tp,pl,nx?{k:'bye',next:nx}:{k:'bye'}));}else if(n&&S)joinSend({k:'leave'});
@@ -3491,7 +3486,6 @@ case 'buyBoli':buyBoli(+b.dataset.i);break;
 case 'adBoli':adBoli();break;
 case 'profColor':{profColor=b.dataset.c;document.querySelectorAll('.copt').forEach(x=>x.classList.toggle('sel',x.dataset.c===profColor));document.querySelectorAll('.popt .pz').forEach(x=>x.style.setProperty('--c',profColor));break;}
 case 'solo':openRules(soloBots+1,soloRounds,'Got it, deal!','rulesDeal');break;
-case 'resumeSolo':try{const d=JSON.parse(ls.get('lg-solo'));mode='solo';ref=null;S=null;apply(d);scheduleBot();}catch(err){ls.del('lg-solo');renderHome();}break;
 case 'join':join(b);break;
 case 'pick':openPicker();break;
 case 'setPiece':setPiece(b.dataset.p);break;
@@ -3523,7 +3517,7 @@ case 'drawStock':if(S&&S.blitz&&canDiscard()&&selected&&myHand().includes(select
 }});
 applyCosmetics();
 /* opened from the Dhivehi Games home page: go straight to the requested screen, no Digu intro in between */
-if(pendingOpen){const o=pendingOpen;pendingOpen=null;if(o==='resume'){try{const d=JSON.parse(ls.get('lg-solo'));if(!d)throw 0;mode='solo';ref=null;S=null;apply(d);scheduleBot();}catch(err){renderHome();}}else if(o==='profile')renderProfile();else if(o==='account'){renderProfile();openAccount(authIsGuest()?'register':undefined);}else if(o==='boli')renderBoliPage();else renderStore();}
+if(pendingOpen){const o=pendingOpen;pendingOpen=null;if(o==='resume')renderHome();/* no saved games any more (Oct 2026): an old resume link opens the Digu home */else if(o==='profile')renderProfile();else if(o==='account'){renderProfile();openAccount(authIsGuest()?'register':undefined);}else if(o==='boli')renderBoliPage();else renderStore();}
 else renderHome();
 initFirebase();
 
