@@ -159,8 +159,15 @@ h1.word span{display:inline-block;background:linear-gradient(180deg,#155E43,#0B2
 /* set switches run on Web Animations (see setCat); .snap places a new set without the glide */
 .flow.snap .fc,.flow.snap .fc .dim{transition:none}
 .fc{-webkit-user-drag:none;-webkit-touch-callout:none}
-/* swiping the tab bar switches the set: horizontal moves belong to the page script */
-.cats{touch-action:pan-y}
+/* press-and-slide on the tab bar (segmented-control scrub): every move on the bar belongs to the page script, so the page
+   never scrolls under it. While scrubbing the pill glides to the tab under the finger (quicker than a tap), that tab's
+   label darkens and the still-selected tab lets go of its bold look; the set itself changes only on release. */
+.cats{touch-action:none;user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent}
+.cats button{-webkit-tap-highlight-color:transparent}
+.cats.scrub .thumb{transition:transform .26s cubic-bezier(.3,1.25,.5,1),width .26s cubic-bezier(.3,1.25,.5,1)}
+.cats.scrub button[aria-selected="true"]:not(.hot){color:var(--muted);transform:scale(.95);opacity:.82;-webkit-text-stroke:0}
+.cats.scrub button[aria-selected="true"]:not(.hot) svg{color:inherit}
+.cats.scrub button.hot{color:var(--ink);transform:scale(1.08);opacity:1;transition:color .12s,opacity .12s,transform .3s var(--spring)}
 .fc .dim{position:absolute;inset:0;border-radius:inherit;background:#0B1A14;opacity:var(--dim,0);transition:opacity .5s ease;pointer-events:none}
 .flow.dragging .fc .dim{transition:none}
 .fc img{position:absolute;left:50%;top:16px;width:96px;height:96px;margin-left:-48px;border-radius:24px;box-shadow:0 12px 20px -8px rgba(0,0,0,.5);-webkit-user-drag:none;pointer-events:none}
@@ -942,21 +949,34 @@ function setCat(c,dir,land){
   return el.animate(MOVE?[{opacity:op,translate:'0px 0',scale:'1'},{opacity:0,translate:(-dir*56)+'px 0',scale:'.94'}]:[{opacity:op},{opacity:0}],
    {duration:MOVE?140:110,easing:'cubic-bezier(.4,0,1,1)',fill:'forwards'});});
  const t={phase:'out',anims,cat:c,land};t.timer=setTimeout(()=>{if(tx!==t)return;stopTx(false);enter(c,land,dir);},MOVE?140:110);tx=t;}
-/* a soft bounce at the ends (Cards first, Kids last) when swiping the tab bar */
-function nudge(d){if(!catsEl.animate||reduce)return;catsEl.animate([{translate:'0 0'},{translate:(-d*8)+'px 0'},{translate:'0 0'}],{duration:340,easing:'cubic-bezier(.3,.7,.4,1)'});}
 catBtns.forEach(b=>b.addEventListener('click',()=>setCat(b.dataset.cat)));
 /* tabs keyboard: arrow keys, Home and End move between the tabs and select them */
 catsEl.addEventListener('keydown',e=>{const i=catBtns.indexOf(document.activeElement);if(i<0)return;let j=-1;
  if(e.key==='ArrowRight')j=(i+1)%catBtns.length;else if(e.key==='ArrowLeft')j=(i-1+catBtns.length)%catBtns.length;else if(e.key==='Home')j=0;else if(e.key==='End')j=catBtns.length-1;
  if(j<0)return;e.preventDefault();catBtns[j].focus();setCat(catBtns[j].dataset.cat);});
-/* swiping the tab bar switches the set too (left = next); the tap that ends a swipe does not also select a tab */
+/* press-and-slide on the tab bar (iOS segmented-control scrub): press anywhere on the bar and drag; the pill follows the
+   finger (transform only, leaning a little towards it) and snaps to the tab under it. Release opens that set with the
+   usual switch; releasing on the current set does nothing. The pointer is captured once the press moves, so drifting off
+   the bar (up or down) still counts until release. A plain tap stays a click on the tab. Tab rects are read once per press. */
 let cs=null,csAt=0;
-catsEl.addEventListener('pointerdown',e=>{if(e.button>0)return;cs={x:e.clientX,y:e.clientY,id:e.pointerId,moved:false};});
-catsEl.addEventListener('pointermove',e=>{if(!cs||e.pointerId!==cs.id)return;const dx=e.clientX-cs.x;
- if(!cs.moved&&Math.abs(dx)>10&&Math.abs(dx)>Math.abs(e.clientY-cs.y)){cs.moved=true;try{catsEl.setPointerCapture(e.pointerId);}catch(_){}}});
-function csEnd(e,cancel){if(!cs||e.pointerId!==cs.id)return;const s=cs;cs=null;if(!s.moved)return;csAt=Date.now();if(cancel)return;
- const dx=e.clientX-s.x;if(Math.abs(dx)<28)return;const d=dx<0?1:-1,n=nb(cat,d);if(n)setCat(n,d,0);else nudge(d);}
+function csTab(x){const r=cs.r;let i=0;while(i<r.length-1&&x>=r[i].l+r[i].w)i++;return i;}
+function csPaint(x){const b=catBtns[cs.i],r=cs.r[cs.i],lean=Math.max(-10,Math.min(10,(x-(r.l+r.w/2))*.22));
+ if(thumb){thumb.style.width=r.w+'px';thumb.style.transform='translateX('+(r.ol+(reduce?0:lean)).toFixed(1)+'px) scale(1.08)';}
+ catBtns.forEach(o=>o.classList.toggle('hot',o===b));}
+catsEl.addEventListener('pointerdown',e=>{if(e.button>0||(cs&&cs.moved))return;const L=catsEl.getBoundingClientRect().left+catsEl.clientLeft;
+ cs={x:e.clientX,y:e.clientY,id:e.pointerId,moved:false,i:-1,r:catBtns.map(b=>({l:L+b.offsetLeft,w:b.offsetWidth,ol:b.offsetLeft}))};});
+catsEl.addEventListener('pointermove',e=>{if(!cs||e.pointerId!==cs.id)return;
+ if(!cs.moved){if(Math.abs(e.clientX-cs.x)<6&&Math.abs(e.clientY-cs.y)<6)return;cs.moved=true;catsEl.classList.add('scrub');
+  try{catsEl.setPointerCapture(e.pointerId);}catch(_){}}
+ const i=csTab(e.clientX);if(i!==cs.i){const first=cs.i<0;cs.i=i;if(!first&&navigator.vibrate)try{navigator.vibrate(8);}catch(_){}}
+ csPaint(e.clientX);});
+function csEnd(e,cancel){if(!cs||e.pointerId!==cs.id)return;const s=cs;cs=null;if(!s.moved)return;csAt=Date.now();
+ catsEl.classList.remove('scrub');catBtns.forEach(o=>o.classList.remove('hot'));
+ const c=cancel||s.i<0?cat:CATS[s.i];if(c!==cat){lastTouch=Date.now();setCat(c,0,0);}else moveThumb();}
 catsEl.addEventListener('pointerup',e=>csEnd(e,false));catsEl.addEventListener('pointercancel',e=>csEnd(e,true));
+/* capture lost without a pointerup (e.g. the bar is hidden mid-scrub): settle where the pill is. Only the bar's own
+   capture counts: a touch's implicit capture on a tab is handed to the bar when the scrub starts. */
+catsEl.addEventListener('lostpointercapture',e=>{if(e.target===catsEl&&cs&&cs.moved&&e.pointerId===cs.id)csEnd(e,false);});
 catsEl.addEventListener('click',e=>{if(Date.now()-csAt<400){e.preventDefault();e.stopPropagation();}},true);
 addEventListener('resize',moveThumb);if(document.fonts&&document.fonts.ready)document.fonts.ready.then(moveThumb);
 /* the carousel: touch, pen and mouse (pointer events); past an end with no neighbouring set it stretches (rubber band) */
