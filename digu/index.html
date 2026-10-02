@@ -1154,7 +1154,7 @@ a.hsp,.hsp{color:var(--ink)}
 <div class="ov" id="rov" role="dialog" aria-modal="true" aria-label="Table rules"></div>
 <div class="caus" aria-hidden="true"></div><div class="caus c2" aria-hidden="true"></div>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs><linearGradient id="dgGold" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F7DE92"/><stop offset=".55" stop-color="#D9A94A"/><stop offset="1" stop-color="#A97A26"/></linearGradient></defs></svg>
-<script src="../shared/avatar.js?v=10"></script>
+<script src="../shared/avatar.js?v=12"></script>
 <script src="../shared/cosmetics.js?v=2"></script>
 <script src="../shared/sponsors.js?v=8"></script>
 <script src="../shared/table.js?v=1"></script>
@@ -1771,7 +1771,8 @@ if(!lun){const key=nm.toLowerCase();
   if(!$('#pnm'))return;}}
 ls.set('lg-name',nm);if(lun)fbQueueSave();ls.set('dd-piece',profPick);if(profColor)ls.set('dd-color',profColor);setAvMode(profMode);cacheAvatar();closeSheet();lookChanged();
 const f=profileAfter;profileAfter=null;if(f)f();else rerenderMenu();}
-function cacheAvatar(){try{ls.set('dg-av',JSON.stringify({c:myColor()||PC[0],s:(PIECES[myPiece()]||PIECES.manta).s}));}catch(e){}}
+/* the old homepage icon avatar ('dg-av') is retired: nothing writes it any more and an old copy is removed */
+function cacheAvatar(){try{localStorage.removeItem('dg-av');}catch(e){}}
 function needName(then){if(myName())return true;openProfile(then,'Choose a name so other players know who you are.');return false;}
 /* in a lobby, tell the table about a new look */
 function lookChanged(){if(!S||S.status!=='lobby'||meIdx()<0)return;const cos=myCos(),pc=myPiece();
@@ -2640,11 +2641,12 @@ const avOwned=()=>[...AVIDS]; /* every avatar item is free for now (prices stay 
 function avMode(){const m=ls.get('dd-avmode');if(!DGA())return 'sea';if(m==='char'||m==='sea')return m;return DGA().load()?'char':(ls.get('dd-piece')?'sea':'char');}
 function myChar(){const A=DGA();if(!A)return null;let c=A.load();
 if(!c){try{const o=JSON.parse(ls.get('dd-char')||'null');if(o&&typeof o==='object')c=A.normalize(o);}catch(e){}}
-return A.validate(c||A.random(myId),avOwned());}
+return A.validate(c||(A.starter?A.starter():A.random(myId)),avOwned());}
 function saveChar(c){const A=DGA();if(!A)return;const v=A.save(c);ls.set('dd-char',JSON.stringify(v));}
 /* the home page shows dg-char first, so it is only kept while you use the character */
 function setAvMode(m){ls.set('dd-avmode',m);const A=DGA();if(!A)return;
-if(m==='char'){if(!A.load())saveChar(myChar());}
+/* back to the character: restore the one kept in dd-char; with none, nothing is saved, so you keep the starter until you make yours */
+if(m==='char'){if(!A.load()&&ls.get('dd-char'))saveChar(myChar());}
 else{const c=A.load();if(c){ls.set('dd-char',JSON.stringify(c));ls.del('dg-char');try{window.dispatchEvent(new CustomEvent('dg-char-change',{detail:null}));}catch(e){}}}}
 /* a character sent by another player: size-capped, then validated (all catalog items allowed, conflicts fixed) */
 function cleanChar(c){const A=DGA();if(!A||!c||typeof c!=='object')return null;try{if(JSON.stringify(c).length>900)return null;}catch(e){return null;}return A.validate(c,AVIDS);}

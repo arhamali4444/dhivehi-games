@@ -404,7 +404,7 @@ html[data-ranga="1"]{--dgn-acc:#FF3D96;--dgn-acc-fg:#fff;--dgn-talk:rgba(255,61,
 <div class="ov" id="rov" role="dialog" aria-modal="true" aria-label="Table rules"></div>
 <div class="caus" aria-hidden="true"></div><div class="caus c2" aria-hidden="true"></div>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs><linearGradient id="dgGold" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F7DE92"/><stop offset=".55" stop-color="#D9A94A"/><stop offset="1" stop-color="#A97A26"/></linearGradient></defs></svg>
-<script src="../shared/avatar.js?v=10"></script>
+<script src="../shared/avatar.js?v=12"></script>
 <script src="../shared/cosmetics.js?v=2"></script>
 <script src="../shared/sponsors.js?v=8"></script>
 <script src="../shared/net.js?v=6"></script>
@@ -526,7 +526,7 @@ win(){const t=ready();if(t==null)return;thump(t,.45);thump(t+.17,.26,true);thump
 const BOTS=[['Aisha','aisha','#9363D1'],['Ibrahim','ibrahim','#E8B232'],['Mariyam','mariyam','#16A3A3'],['Hussain','hussain','#EB7FA8'],['Ali','ali','#2D86C9']];
 const PC=['#E5604D','#2D86C9','#E8B232','#34A064','#9363D1'];
 const myName=()=>((window.DGNet&&DGNet.testName())||ls.get('lg-name')||'').trim();
-function myChar(){const A=DGA();if(!A)return null;try{let c=A.load();if(!c){const o=JSON.parse(ls.get('dd-char')||'null');if(o&&typeof o==='object')c=A.normalize(o);}return c||A.random(myId);}catch(e){return null;}}
+function myChar(){const A=DGA();if(!A)return null;try{let c=A.load();if(!c){const o=JSON.parse(ls.get('dd-char')||'null');if(o&&typeof o==='object')c=A.normalize(o);}return c||(A.starter?A.starter():A.random(myId));}catch(e){return null;}}
 function myRing(){const d=invRead(),f=d&&d.eq&&d.eq.frame;return f&&f!=='f-classic'?f:'';}
 const EXPR=()=>{const A=DGA();return A&&A.expressions||[];};
 function avInner(p,k,size,expr){const A=DGA();if(A&&p.ch){try{const o={size:size>56?96:64,animate:!reduce};if(expr)o.expression=expr;return `<span class="pz chr">${A.render(p.ch,o)}</span>`;}catch(e){}}

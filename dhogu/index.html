@@ -666,7 +666,7 @@ html.eb .sheet .inp.nmi:focus{box-shadow:inset 0 0 0 2px #2A1C10}
 </head>
 <body>
 <div id="app"></div>
-<script src="../shared/avatar.js?v=10"></script>
+<script src="../shared/avatar.js?v=12"></script>
 <script src="../shared/sponsors.js?v=8"></script>
 <script>
 (()=>{
@@ -690,7 +690,8 @@ const authName=()=>AS?'':cleanName(ls.get('dd-auth-username'));
 const myName=()=>authName()||cleanName(ls.get(NMK))||(AS?'Tester '+AS:'');
 const shownName=()=>myName()||'You';
 const netName=()=>myName()||('Guest '+myId.slice(-3).toUpperCase());
-function avColor(){try{const a=JSON.parse(ls.get('dg-av')||'null');if(a&&/^#[0-9a-f]{6}$/i.test(a.c))return a.c;}catch(e){}return '#FF7FAE';}
+/* the old icon avatar ('dg-av') is retired: it is never read or shown any more */
+function avColor(){return '#FF7FAE';}
 /* ================= cartoon suspects (inline SVG) ================= */
 const SKIN=['#FAD7B5','#EDB98A','#C98B5B','#8E5B3A'],HAIR=['#2B1B12','#6B3E1F','#1D1A33','#B5562B'];
 const LOOKS=['hair','beanie','bun','scarf','cap','specs'];
@@ -726,12 +727,12 @@ function cleanBadge(s){if(typeof s!=='string'||!s||s.length>4000)return '';try{c
  return walk(r).slice(0,6000);}catch(e){return '';}}
 function vf(a,id){a=a&&typeof a==='object'?a:{};
  if(a.ch&&typeof a.ch==='object'&&DGA){try{if(JSON.stringify(a.ch).length<=1500)return{ch:DGA.validate(a.ch,ALLIDS)};}catch(e){}}
- if(a.bd&&typeof a.bd==='object'){const s=cleanBadge(a.bd.s);if(s)return{bd:{c:/^#[0-9a-f]{6}$/i.test(a.bd.c)?a.bd.c:'#FF7FAE',s}};}
+ /* old clients may still send an icon badge (bd): it is no longer shown; that player gets a character instead */
  return DGA?{ch:DGA.random(String(id||'guest'))}:{c:'#FFC93C',k:'hair'};}
-/* my character: saved character, else the Island Buddy badge (Digu badge mode), else the same seeded character the homepage shows. Dhogu writes 'dg-char' only from the shared builder (tap your name on the home screen). */
+/* my character: the saved character, else the shared starter character (the same one the homepage shows). The old icon badges are retired.
+   Dhogu writes 'dg-char' only from the shared builder (tap your name on the home screen). */
 function myFace(){const ch=DGA&&DGA.load();if(ch)return{ch};
- if(ls.get('dg-char')==null){let old=null;try{old=JSON.parse(ls.get('dg-av')||'null');}catch(e){}if(old&&old.s){const s=cleanBadge(old.s);if(s)return{bd:{c:/^#[0-9a-f]{6}$/i.test(old.c)?old.c:'#FF7FAE',s}};}}
- return DGA?{ch:DGA.random(myId)}:{c:avColor(),k:'hair'};}
+ return DGA?{ch:DGA.starter?DGA.starter():DGA.random(myId)}:{c:avColor(),k:'hair'};}
 /* ================= cards ================= */
 const SUIT={S:'<path d="M50 6C32 30 8 42 8 62C8 78 26 84 42 72C40 80 36 88 30 94H70C64 88 60 80 58 72C74 84 92 78 92 62C92 42 68 30 50 6Z"/>',
  H:'<path d="M50 90C22 68 5 52 5 33C5 18 16 8 29 8C39 8 46 14 50 23C54 14 61 8 71 8C84 8 95 18 95 33C95 52 78 68 50 90Z"/>',
@@ -866,7 +867,7 @@ function saveName(){const i=$('#pnm');if(!i||authName()){closeSheet();return;}co
 let charB=null;
 function openChar(){if(!DGA||!DGA.openBuilder){toast('The character builder could not load.');return;}
  const o=sheet('<div class="dgbw" id="dgbw"></div>','char');o.querySelector('.sheet').classList.add('tall');
- try{charB=DGA.openBuilder($('#dgbw'),{cfg:DGA.load()||DGA.random(myId),owned:true,boli:inv().shells|0,boliManaged:true,boliIcon:'<i class="bi" aria-hidden="true"></i>',title:'Your character',
+ try{charB=DGA.openBuilder($('#dgbw'),{cfg:DGA.load()||(DGA.starter?DGA.starter():DGA.random(myId)),owned:true,boli:inv().shells|0,boliManaged:true,boliIcon:'<i class="bi" aria-hidden="true"></i>',title:'Your character',
   onBoli:()=>{location.href='../digu/?open=store';},
   onBuy:()=>{toast('Unlock special items in the Store.');return false;},
   onSave:c=>{DGA.save(c);closeSheet();if(screen==='home')renderHome();toast('Character saved');},
@@ -1577,7 +1578,7 @@ addEventListener('pagehide',()=>{const n=net;if(!n)return;
   n.clients.forEach(o=>{try{o.c.publish(NS+n.code+'/i','',true);}catch(e){}});(n.lc||[]).forEach(o=>{try{o.c.publish(NS+'lobby/'+n.code,'',true);}catch(e){}});}
  else joinSend({k:'leave'});});
 addEventListener('pageshow',e=>{if(e.persisted&&net)endOnline('You left the table.');});
-addEventListener('storage',e=>{if((e.key==='dg-char'||e.key==='dg-av')&&screen==='home')renderHome();});
+addEventListener('storage',e=>{if(e.key==='dg-char'&&screen==='home')renderHome();});
 document.addEventListener('visibilitychange',()=>{if(!document.hidden){netWake();if(screen==='home'&&!net)warmUp();presence();}else presenceOff();});
 /* ---------- lobby screen ---------- */
 const inviteLink=()=>location.origin+location.pathname+'?t='+(G?G.code:'');

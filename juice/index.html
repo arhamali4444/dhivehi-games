@@ -386,7 +386,7 @@ main.table>*{width:100%;max-width:640px;margin-left:auto;margin-right:auto}
 <div class="toast" id="toast" role="status"></div>
 <div class="ov" id="rov" role="dialog" aria-modal="true" aria-label="Table rules"></div>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs><linearGradient id="dgGold" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F7DE92"/><stop offset=".55" stop-color="#D9A94A"/><stop offset="1" stop-color="#A97A26"/></linearGradient></defs></svg>
-<script src="../shared/avatar.js?v=10"></script>
+<script src="../shared/avatar.js?v=12"></script>
 <script src="../shared/cosmetics.js?v=2"></script>
 <script src="../shared/sponsors.js?v=8"></script>
 <script src="../shared/net.js?v=6"></script>
@@ -605,7 +605,7 @@ const PC=['#FF7A45','#2D86C9','#E8B232','#34A064','#9363D1'];
 const DGC=()=>window.DGCosmetics||null,DGA=()=>window.DGAvatar||null;
 function invRead(){try{const d=JSON.parse(ls.get('dd-inv')||'null');if(d&&d.v===1)return d;}catch(e){}return null;}
 const myName=()=>((window.DGNet&&DGNet.testName())||ls.get('lg-name')||'').trim();
-function myChar(){const A=DGA();if(!A)return null;try{let c=A.load();if(!c){const o=JSON.parse(ls.get('dd-char')||'null');if(o&&typeof o==='object')c=A.normalize(o);}return c||A.random(myId);}catch(e){return null;}}
+function myChar(){const A=DGA();if(!A)return null;try{let c=A.load();if(!c){const o=JSON.parse(ls.get('dd-char')||'null');if(o&&typeof o==='object')c=A.normalize(o);}return c||(A.starter?A.starter():A.random(myId));}catch(e){return null;}}
 function myRing(){const d=invRead(),f=d&&d.eq&&d.eq.frame;return f&&f!=='f-classic'?f:'';}
 function avInner(p,k,size){const A=DGA();if(A&&p.ch){try{return `<span class="pz chr">${A.render(p.ch,{size:size>56?96:64,animate:!reduce})}</span>`;}catch(e){}}
 return `<span class="pz" style="--c:${p.col||PC[k%PC.length]}">${esc((p.name||'?').slice(0,1).toUpperCase())}</span>`;}

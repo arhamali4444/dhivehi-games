@@ -551,7 +551,7 @@ button:disabled{cursor:default}
 <div id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle" tabindex="-1" hidden></div>
 <div id="fx" aria-hidden="true"></div>
 <div id="rot" role="alert"><div class="ph"><i></i></div><h3>Turn your phone upright</h3><p>Atolls is played the tall way. The game waits while your phone is sideways.</p></div>
-<script src="../shared/avatar.js?v=10"></script>
+<script src="../shared/avatar.js?v=12"></script>
 <script src="../shared/sponsors.js?v=8"></script>
 <script src="../shared/net.js?v=6"></script>
 <script src="../shared/dice.js?v=2"></script>
@@ -1416,7 +1416,7 @@ function rrTxt(o){return RES.filter(r=>o&&o[r]).map(r=>o[r]+' '+RNAME[r]).join('
 function avHTML(i,size=34,expr,anim){const p=G&&G.players[i];if(!p)return '';if(window.DGAvatar&&p.av){try{return DGAvatar.render(p.av,{size,expression:expr||null,animate:!!anim&&!RM.matches});}catch(e){}}
  return `<svg viewBox="0 0 10 10" width="${size}" height="${size}"><circle cx="5" cy="5" r="5" fill="${p.col}"/><text x="5" y="6.7" font-size="4.6" text-anchor="middle" fill="#fff" font-family="Inter" font-weight="800">${esc(p.name[0])}</text></svg>`;}
 function react(i,expr,ms){if(RM.matches||FAST)return;const el=document.querySelector(`[data-pl="${i}"] .av`);if(!el||!window.DGAvatar||!DGAvatar.react)return;try{DGAvatar.react(el,expr,ms||1600);}catch(e){}}
-function myAvatar(){if(!window.DGAvatar)return null;try{return DGAvatar.load()||DGAvatar.defaults||DGAvatar.random('me-atolls');}catch(e){return null;}}
+function myAvatar(){if(!window.DGAvatar)return null;try{return DGAvatar.load()||(DGAvatar.starter?DGAvatar.starter():DGAvatar.defaults);}catch(e){return null;}}
 
 /* ---------------------------------------------------------------- toasts, big messages */
 function toast(s,dark){if(SCREEN==='game'&&$('#toasts').style.top==='auto')$('#toasts').style.bottom=(innerHeight-$('#bot').getBoundingClientRect().top+10)+'px';   /* sit just above the bar, whatever it holds now */

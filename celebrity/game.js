@@ -97,7 +97,7 @@ const PC = ['#f0b544', '#8A78F0', '#35B08F', '#E8A23A', '#2D86C9', '#C8326A'];
 function myName() { const t = window.DGNet && DGNet.testName(); if (t) return t; const n = (ls.get('lg-name') || '').trim(), reg = (ls.get('dd-auth-username') || '').trim();
   if (reg && n.toLowerCase() !== reg.toLowerCase()) return reg; return n; }
 const isReg = () => !!(ls.get('dd-auth-username') || '').trim() && !(window.DGNet && DGNet.testName());
-function myChar() { const A = DGA(); if (!A) return null; try { let c = A.load(); if (!c) { const o = JSON.parse(ls.get('dd-char') || 'null'); if (o && typeof o === 'object') c = A.normalize(o); } return c || A.random(myId); } catch (e) { return null; } }
+function myChar() { const A = DGA(); if (!A) return null; try { let c = A.load(); if (!c) { const o = JSON.parse(ls.get('dd-char') || 'null'); if (o && typeof o === 'object') c = A.normalize(o); } return c || (A.starter ? A.starter() : A.random(myId)); } catch (e) { return null; } }
 function lookCh(l) { const A = DGA(); if (!A || !l || typeof l !== 'object' || !l.ch) return null; try { return A.normalize(l.ch); } catch (e) { return null; } }
 const CPUS = ['Aminath', 'Ibrahim', 'Hawwa', 'Mariyam', 'Ahmed', 'Zara', 'Ismail', 'Leena', 'Moosa', 'Shifa', 'Hassan', 'Nasih'];
 function cpuChar(name) { const A = DGA(); if (!A) return null; try { const l = (A.looks || []).find(x => x.name === name); return l ? A.normalize(l.cfg) : A.random(name); } catch (e) { return null; } }

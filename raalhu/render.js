@@ -54,7 +54,8 @@ var HAIRMAP={crop:'short',short:'short',sidepart:'short',quiff:'short',slick:'sh
  fade:'fade',buzz:'fade',cornrows:'fade',bald:'bald',afro:'afro',curly:'curly',curlytop:'curly',mohawk:'mohawk',
  waves:'long',sleek:'long',long:'long',fringelong:'long',curtain:'long',sidefringe:'long',sideswept:'long',halfup:'long',wavy:'mid',
  bob:'bob',sleekbob:'bob',ponytail:'pony',fringepony:'pony',topbun:'bun',highbun:'bun',bun:'bun',manbun:'bun',lowbun:'lowbun',braids:'braids',dreads:'locs',
- hijab:'hijab',shayla:'hijab',khimar:'hijab',headscarf:'hijab',turban:'turban'};
+ hijab:'hijab',shayla:'hijab',khimar:'hijab',niqab:'hijab',headscarf:'hijab',turban:'turban',
+ fcurly:'curly',curtainb:'long',mlong:'long',mlongw:'mid',mlongc:'curly'};
 var HATMAP={cap:'cap',capback:'cap',fisher:'cap',police:'cap',pilot:'cap',captain:'cap',helmet:'cap',gradcap:'cap',
  bucket:'brim',straw:'brim',cowboy:'brim',deerstalker:'brim',pirate:'brim',tophat:'brim',beanie:'beanie',chef:'beanie',headband:'band',headphones:'band',kulhi:'wrap'};
 var OUTFITC={tee:'#2F7FD1',blouse:'#F3EFE7',libaas:'#179C93',wrap:'#8E2F45',blazer:'#253766',hoodie:'#7B4FD6',mvjersey:'#D21034',polo:'#1E8A5E',mlinen:'#E9DFC9',shirt:'#8FB8E0',

@@ -330,12 +330,12 @@ html.watching .watch{display:flex}
 </div>
 <div id="rot" role="alert"><div class="ph"><i></i></div><h3>Turn your phone upright</h3><p>Raalhu Rumble is a portrait race: hold your phone the tall way to run.</p></div>
 
-<script src="../shared/avatar.js?v=10"></script>
+<script src="../shared/avatar.js?v=12"></script>
 <script src="../shared/sponsors.js?v=8"></script>
 <script src="../shared/net.js?v=6"></script>
 <script src="engine.js?v=3"></script>
 <script src="art/atlas.js?v=3"></script>
-<script src="render.js?v=3"></script>
+<script src="render.js?v=4"></script>
 <script>
 (function(){
 'use strict';
@@ -370,7 +370,7 @@ const myId=(()=>{if(window.DGNet&&DGNet.local&&/^[a-z0-9_-]{2,24}$/i.test(Q.get(
 const regName=()=>(ls.get('dd-auth-username')||'').trim();
 const myName=()=>{const t=window.DGNet&&DGNet.testName&&DGNet.testName();if(t)return t;const r=regName(),n=(ls.get('lg-name')||'').trim();if(r)return n.toLowerCase()===r.toLowerCase()?n:r;return n;};
 const DGA=()=>window.DGAvatar||null;
-function myChar(){const A=DGA();if(!A)return null;try{let c=A.load();if(!c){const o=JSON.parse(ls.get('dd-char')||'null');if(o&&typeof o==='object')c=A.normalize(o);}return c||A.random(myId);}catch(e){return null;}}
+function myChar(){const A=DGA();if(!A)return null;try{let c=A.load();if(!c){const o=JSON.parse(ls.get('dd-char')||'null');if(o&&typeof o==='object')c=A.normalize(o);}return c||(A.starter?A.starter():A.random(myId));}catch(e){return null;}}
 let MYCH=myChar();
 function invRead(){try{const d=JSON.parse(ls.get('dd-inv')||'null');if(d&&d.v===1)return d;}catch(e){}return null;}
 function award(key,n){let d=invRead();if(!d)d={v:1,shells:100,xp:0,owned:{},eq:{},hist:[],stats:{},aw:[],day:'',dayEarned:0};

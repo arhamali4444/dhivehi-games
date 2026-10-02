@@ -409,7 +409,7 @@ main.table>*{width:100%;max-width:640px;margin-left:auto;margin-right:auto}
 <radialGradient id="jkArch" cx=".5" cy=".42" r=".7"><stop offset="0" stop-color="#9C1830"/><stop offset=".7" stop-color="#4E0816"/><stop offset="1" stop-color="#26040C"/></radialGradient>
 <pattern id="jkHarl" width="8" height="10" patternUnits="userSpaceOnUse" x="2" y="0"><rect width="8" height="10" fill="#1A1016"/><path d="M4 0 8 5 4 10 0 5Z" fill="#A3182E"/><path d="M4 0 8 5 4 10 0 5Z" fill="none" stroke="#D9AE55" stroke-width=".35"/></pattern>
 </defs></svg>
-<script src="../shared/avatar.js?v=10"></script>
+<script src="../shared/avatar.js?v=12"></script>
 <script src="../shared/cosmetics.js?v=2"></script>
 <script src="../shared/sponsors.js?v=8"></script>
 <script src="../shared/net.js?v=6"></script>
@@ -621,7 +621,7 @@ const PC=['#C4262E','#2D86C9','#E8B232','#34A064','#9363D1'];
 const DGC=()=>window.DGCosmetics||null,DGA=()=>window.DGAvatar||null;
 function invRead(){try{const d=JSON.parse(ls.get('dd-inv')||'null');if(d&&d.v===1)return d;}catch(e){}return null;}
 const myName=()=>((window.DGNet&&DGNet.testName())||ls.get('lg-name')||'').trim();
-function myChar(){const A=DGA();if(!A)return null;try{let c=A.load();if(!c){const o=JSON.parse(ls.get('dd-char')||'null');if(o&&typeof o==='object')c=A.normalize(o);}return c||A.random(myId);}catch(e){return null;}}
+function myChar(){const A=DGA();if(!A)return null;try{let c=A.load();if(!c){const o=JSON.parse(ls.get('dd-char')||'null');if(o&&typeof o==='object')c=A.normalize(o);}return c||(A.starter?A.starter():A.random(myId));}catch(e){return null;}}
 function myRing(){const d=invRead(),f=d&&d.eq&&d.eq.frame;return f&&f!=='f-classic'?f:'';}
 function avInner(p,k,size){const A=DGA();if(A&&p.ch){try{return `<span class="pz chr">${A.render(p.ch,{size:size>56?96:64,animate:!reduce})}</span>`;}catch(e){}}
 return `<span class="pz" style="--c:${p.col||PC[k%PC.length]}">${esc((p.name||'?').slice(0,1).toUpperCase())}</span>`;}
