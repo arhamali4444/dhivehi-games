@@ -319,7 +319,7 @@ button:disabled{cursor:default}
 /* ---------- sheets ---------- */
 .dim{position:fixed;inset:0;background:rgba(3,20,26,.55);z-index:50;animation:fade .25s ease-out}
 @keyframes fade{from{opacity:0}}
-.sheet{position:fixed;left:0;right:0;bottom:0;z-index:51;max-height:calc(100% - var(--sat) - 24px);overflow:auto;overscroll-behavior:contain;border-radius:28px 28px 0 0;background:var(--paper);color:var(--ink);padding:10px 16px calc(var(--sab) + 22px);animation:up .55s var(--spring) both;margin:0 auto;max-width:560px}
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:51;max-height:calc(100% - var(--sat) - 24px);overflow:auto;overscroll-behavior:contain;border-radius:28px 28px 0 0;background:var(--paper);color:var(--ink);--spb:calc(var(--sab) + 22px);padding:10px 16px var(--spb);animation:up .55s var(--spring) both;margin:0 auto;max-width:560px}
 @keyframes up{from{transform:translateY(100%)}}
 .sheet:focus{outline:none}
 .grab{display:block;width:44px;height:5px;border-radius:99px;background:#D9CBB0;margin:0 auto 10px;border:0;padding:0}
@@ -343,6 +343,9 @@ button:disabled{cursor:default}
 .rent .cur{color:var(--emerald);font-weight:900}
 .rent .sep{grid-column:1/-1;height:1px;background:var(--line);margin:4px 0}
 .acts{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
+/* a decision sheet's buttons stay pinned to the sheet's bottom edge, so on short screens (phone landscape) Buy island / Auction never scroll out of sight */
+.sheet .sacts{position:sticky;bottom:calc(-1 * var(--spb));z-index:3;margin:0 -16px calc(-1 * var(--spb));padding:0 16px var(--spb);background:var(--paper)}
+.sheet .sacts::before{content:'';position:absolute;left:0;right:0;top:-14px;height:14px;background:linear-gradient(rgba(247,241,230,0),var(--paper));pointer-events:none}
 .acts.one{grid-template-columns:1fr}
 .acts.three{grid-template-columns:1fr 1fr 1fr}
 .price{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:12px;font-size:13px;color:var(--muted)}
@@ -593,7 +596,8 @@ button:disabled{cursor:default}
  #game{grid-template-columns:auto minmax(0,1fr);grid-template-rows:auto minmax(0,1fr);grid-template-areas:"stage bar" "stage side"}
  .stage{padding:8px 4px 8px 10px}
  .side{padding-top:4px;width:100%;max-width:500px}
- .sheet{left:50%;right:auto;bottom:50%;width:min(440px,calc(100vw - 32px));transform:translate(-50%,50%);border-radius:26px;max-height:calc(100vh - 24px);animation:pop .45s var(--spring) both;padding-bottom:18px}
+ .sheet{left:50%;right:auto;bottom:50%;width:min(440px,calc(100vw - 32px));transform:translate(-50%,50%);border-radius:26px;max-height:calc(100vh - 24px);animation:pop .45s var(--spring) both;--spb:18px;padding-bottom:var(--spb)}
+ .sheet .iart{height:96px}/* phone landscape: a shorter deed picture so more of the deed fits */
  @keyframes pop{from{transform:translate(-50%,50%) scale(.9);opacity:0}}
  .grab{display:none}
 }
@@ -1501,6 +1505,9 @@ const RM=matchMedia('(prefers-reduced-motion: reduce)');
 const ls={get(k){try{return localStorage.getItem(k);}catch(e){return null;}},set(k,v){try{localStorage.setItem(k,v);}catch(e){}},del(k){try{localStorage.removeItem(k);}catch(e){}}};
 const esc=s=>String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 const fmt=n=>'MVR '+Math.round(n).toLocaleString('en-US');/* no-break space: an amount never splits across lines */
+/* Boli amounts: plain number with commas (1,234); abbreviated only from 100,000 (100K, 1.2M). Same rule on every page. */
+function boliNum(n){n=Math.round(Number(n)||0);const a=Math.abs(n),f=(v,u)=>String(v>=100?Math.round(v):Math.round(v*10)/10).replace(/\.0$/,'')+u;
+ return a>=999500?f(n/1e6,'M'):a>=100000?f(n/1000,'K'):n.toLocaleString('en-US');}
 const sleep=ms=>(FAST||ms<=0)?Promise.resolve():new Promise(r=>setTimeout(r,ms));
 const macro=f=>{const c=new MessageChannel();c.port1.onmessage=()=>{c.port1.onmessage=null;c.port1.close();c.port2.close();f();};c.port2.postMessage(0);};
 let G=null,ME=0,SCREEN='home',WATCH=false;
@@ -1991,10 +1998,10 @@ function rentPop(ev){if(FAST||AUTO||SCREEN!=='game')return Promise.resolve();con
    SND.coins(ev.amt);setTimeout(fin,(ev.p===ME?2100:1600)*Math.max(.6,Math.min(1.3,UI_SPEED())));});
   setTimeout(fin,6000);});}
 function openBuy(pe,k){const s=SP[pe.sp],p=meP(),can=p.cash>=s.price;
- openSheet(k,`<div class="grab" aria-hidden="true"></div><h2 id="sheetTitle" class="sr">Buy ${esc(s.name)}?</h2>${spaceCard(pe.sp)}<div class="price">You rolled ${G.dice[0]} + ${G.dice[1]} and landed here<span><b>${fmt(s.price)}</b></span></div>
+ openSheet(k,`<div class="grab" aria-hidden="true"></div><h2 id="sheetTitle" class="sr">Buy ${esc(s.name)}?</h2>${spaceCard(pe.sp)}<div class="sacts"><div class="price">You rolled ${G.dice[0]} + ${G.dice[1]} and landed here<span><b>${fmt(s.price)}</b></span></div>
  ${can?'':`<p style="color:#8A2B2B;font-weight:700">You have ${fmt(p.cash)}. Take a loan or sell buildings in My islands, or send it to auction.</p>`}
  <div class="acts"><button class="btn em" data-a="buy" ${can?'data-focus':'disabled'}>Buy island</button><button class="btn lite" data-a="decline">Auction</button></div>
- ${can?'':'<div class="acts one"><button class="btn soft sm" style="color:var(--ink);background:#EDE3D0" data-a="manage">My islands</button></div>'}`,{decision:1});if(DEEDK!==k){DEEDK=k;deedIn(pe.sp);}else GUIDE.hook('buyopen');}
+ ${can?'':'<div class="acts one"><button class="btn soft sm" style="color:var(--ink);background:#EDE3D0" data-a="manage">My islands</button></div>'}</div>`,{decision:1});if(DEEDK!==k){DEEDK=k;deedIn(pe.sp);}else GUIDE.hook('buyopen');}
 /* legacy saves only: rent is now paid automatically */
 function openRent(pe,k){const s=SP[pe.sp];
  openSheet(k,`<div class="grab" aria-hidden="true"></div><h2 id="sheetTitle" class="sr">Rent due</h2><div class="pcard">${cardHead(pe.sp)}${ART.draw(s.art,pe.sp)}</div>${ownerRow(pe.sp,pe.amt)}
@@ -2036,9 +2043,9 @@ function auctionHTML(pe){const s=SP[pe.sp],p=meP(),by=pe.by>=0?G.players[pe.by]:
  <p data-live="left" style="text-align:center;font-weight:800;font-size:12px;color:var(--muted);margin:0">${Math.ceil(left/1000)} s left · each bid adds time</p>
  <div class="abds">${who}</div>
  ${GUIDE.on&&!out&&!top?`<p class="ahint">Tap a price to bid it, or <b>Pass</b>. The top bid when the timer runs out wins the island.</p>`:''}
- ${out?`<p style="text-align:center;font-weight:700">You passed. Watching the bidding…</p>`:top?`<p style="text-align:center;font-weight:800;color:var(--emerald)">You are the top bidder!</p>`:
+ <div class="sacts">${out?`<p style="text-align:center;font-weight:700">You passed. Watching the bidding…</p>`:top?`<p style="text-align:center;font-weight:800;color:var(--emerald)">You are the top bidder!</p>`:
  `<div class="acts three">${inc.map(v=>`<button class="btn em sm" data-a="bid" data-v="${v}" ${v>p.cash?'disabled':''}>${fmt(v)}</button>`).join('')}</div><div class="acts one"><button class="btn lite sm" data-a="pass">Pass</button></div>`}
- <p style="font-size:11.5px;color:var(--muted);text-align:center">You have ${fmt(p.cash)}</p>`;}
+ <p style="font-size:11.5px;color:var(--muted);text-align:center;margin-bottom:0">You have ${fmt(p.cash)}</p></div>`;}
 function openAuction(pe,k){openSheet(k,auctionHTML(pe),{decision:1,auc:pe.id,sig:[pe.high,pe.by,pe.out.length].join()});}
 function updLive(){if(!G)return;const pe=G.pend;
  if(SH.auc&&pe&&pe.t==='auction'&&pe.id===SH.auc){const sig=[pe.high,pe.by,pe.out.length,meP().cash].join();if(sig!==SH.sig){openAuction(pe,SH.key);return;}
@@ -2373,7 +2380,7 @@ function showChecks(title,sub,res){if(FAST)return Promise.resolve();return new P
 /* ---------------------------------------------------------------- event playback */
 let PUMPING=false,DIRTY=false,PASSED=false;
 async function pump(force){if(!G)return;if(PUMPING){DIRTY=true;return;}PUMPING=true;let any=false;
- try{for(let guard=0;guard<50;guard++){const evs=E.drain();if(!evs.length)break;any=true;document.body.classList.add('pumping');if(G.pend&&G.pend.p===ME)renderActions();for(const ev of evs){if(!G)break;try{const q=ev.p!=null?ev.p:ev.from;if(q!=null&&q!==ME&&q!==PLAYP){PLAYP=q;if(G.pend&&G.pend.p===ME)renderActions();}await play(ev);}catch(err){console.error(err);}}if(!G)break;}}
+ try{for(let guard=0;guard<50;guard++){const evs=E.drain();if(!evs.length)break;any=true;document.body.classList.add('pumping');if(G.pend&&G.pend.p===ME)renderActions();for(const ev of evs){if(!G)break;try{const q=ev.p!=null?ev.p:ev.from;if(q!=null&&q!==ME&&q!==PLAYP){PLAYP=q;if(G.pend&&G.pend.p===ME)renderActions();}if(soloPaused())await whenShown();if(!G)break;await play(ev);}catch(err){console.error(err);}}if(!G)break;}}
  finally{PUMPING=false;document.body.classList.remove('pumping');PLAYP=null;}
  if(!G)return;if(any||force||DIRTY){DIRTY=false;G.players.forEach((p,i)=>{VIEW.pos[i]=p.pos;VIEW.cash[i]=p.cash;});render();if(G.over)onOver();}schedule();}
 async function play(ev){const slow=ev.p!=null&&isBot(ev.p)&&!WATCH?1:1;
@@ -2418,9 +2425,18 @@ async function play(ev){const slow=ev.p!=null&&isBot(ev.p)&&!WATCH?1:1;
 
 /* ---------------------------------------------------------------- scheduling (AI turns, decisions) */
 let aiTimer=null,aiSeq=-1,HBK='';
+/* vs the computer the game waits while the page is hidden (app switch, lock, a call): computer turns, trade offers,
+   auctions and the match clock all stop, the same as Digu and Dhogu. Online tables keep their own timing. */
+const soloPaused=()=>!ONLINE&&document.hidden;
+let SHOWN=[];const whenShown=()=>new Promise(r=>SHOWN.push(r));
+document.addEventListener('visibilitychange',()=>{
+ if(document.hidden){if(!ONLINE){clearTimeout(aiTimer);aiTimer=null;aiSeq=-1;}return;}
+ lastT=performance.now();const w=SHOWN;SHOWN=[];w.forEach(r=>r());
+ if(G&&!ONLINE&&!G.over&&SCREEN==='game')pump(true);});
 /* the safe default when a computer player makes no move */
 const FALLBACK=pe=>({turn:{t:'roll'},buy:{t:'decline'},rent:{t:'pay'},debt:{t:'bankrupt'},post:{t:pe.again?'roll':'end'},draw:{t:'draw'},card:{t:'cardok'},sandbank:{t:'sandbank',c:'relax'},court:{t:'court'}}[pe.t]||null);
 function schedule(){if(!G||G.over||SCREEN!=='game')return;const pe=G.pend;syncDecision();
+ if(soloPaused()){clearTimeout(aiTimer);aiTimer=null;aiSeq=-1;return;}
  if(netGuest()){guestAuto(pe);return;}   /* online guest: the host runs the computer players and the clock */
  /* fast test mode: draw and accept my own cards automatically */
  if(FAST&&pe&&pe.p===ME&&!isBot(ME)&&(pe.t==='draw'||pe.t==='card')){const key='me:'+G.seq+':'+pe.t;if(aiSeq===key)return;aiSeq=key;
@@ -2431,11 +2447,11 @@ function schedule(){if(!G||G.over||SCREEN!=='game')return;const pe=G.pend;syncDe
  if(pe.t==='turn'&&netHost()&&G.players[pe.p].cpu){const hk=G.id+':'+G.tn+':'+pe.p;if(HBK!==hk){HBK=hk;if(NET.handBreak(G.players[pe.p].id)>0&&!isBot(pe.p)){pump(true);return;}}}
  if(!['turn','buy','rent','debt','post','draw','card','sandbank','court'].includes(pe.t))return;const key=G.seq+':'+pe.t;if(aiSeq===key)return;aiSeq=key;clearTimeout(aiTimer);
  const base={turn:650,buy:900,rent:1000,debt:700,post:600,draw:700,card:1900,sandbank:1100,court:1000}[pe.t]*UI_SPEED()*.75;
- const run=()=>{if(!G||G.pend!==pe||SCREEN!=='game')return;const s0=G.seq;AI.step(pe.p);
+ const run=()=>{if(!G||G.pend!==pe||SCREEN!=='game')return;if(soloPaused()){aiSeq=-1;return;}const s0=G.seq;AI.step(pe.p);
   if(G.pend===pe&&G.seq===s0)E.act(pe.p,FALLBACK(pe));aiSeq=-1;pump(true);};
  if(FAST)macro(run);else aiTimer=setTimeout(run,base);}
 let lastT=performance.now();
-function clock(){const now=performance.now();let dt=Math.min(1000,now-lastT);lastT=now;if(!G||G.over||SCREEN!=='game')return;
+function clock(){const now=performance.now();let dt=Math.min(1000,now-lastT);lastT=now;if(!G||G.over||SCREEN!=='game'||soloPaused())return;
  if(netGuest()){G.now+=dt;if(G.limit&&!G.final)G.elapsed=Math.min(G.limit,G.elapsed+dt);pump();renderClock();updLive();decisionClock();return;}
  if(FAST)dt*=12;E.tick(dt);AI.tick(isBot);if(netHost())hostTimers();pump();renderClock();updLive();if(ONLINE)decisionClock();
  const o=G.offers.find(x=>x.st==='open'&&x.to===ME);if(!o&&BAN&&BAN.key.startsWith('offer:'))clearBanner();if(BAN&&BAN.key==='sale'&&(!G.sale||G.sale.seller===ME))clearBanner('sale');}
@@ -2466,7 +2482,7 @@ function openOver(){if(!G||!G.over)return;const o=G.over,w=o.winner,win=w===ME&&
 
 /* ---------------------------------------------------------------- home + setup */
 let MODE=ls.get('bv-mode')==='classic'?'classic':'quick',HOMEBV=null;
-function showHome(){SCREEN='home';GUIDE.hide();clearBanner();closeDraw(true);$('#game').hidden=true;$('#home').hidden=false;$('#boliN').textContent=boliCount().toLocaleString('en-US');
+function showHome(){SCREEN='home';GUIDE.hide();clearBanner();closeDraw(true);$('#game').hidden=true;$('#home').hidden=false;$('#boliN').textContent=boliNum(boliCount());
  $$('.modes button').forEach(b=>b.setAttribute('aria-checked',b.dataset.mode===MODE));homeLive();
  if(!HOMEBV){HOMEBV=LAYOUT.build($('#tilt'));const demo={27:[0,5],26:[0,2],12:[1,0],13:[1,1],5:[2,3],6:[2,0],17:[3,0]};
   Object.entries(demo).forEach(([i,[o,h]])=>deco(HOMEBV,+i,{o,h,m:false},PCOL[o],'YIMH'[o]));

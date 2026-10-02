@@ -632,7 +632,8 @@ main.table>*{width:100%;max-width:640px;margin-left:auto;margin-right:auto}
 @media (prefers-reduced-motion:reduce){*,*:before,*:after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition:none!important}.caus,.tsc .motes,.tsc .glints,.tsc .fish{display:none}.tmr b{animation-duration:var(--d,15s)!important}}
 .seat .cnt.tg{background:none;padding:0}
 html[data-tbl] .caus{display:none}
-.rfoot{position:sticky;bottom:-18px;margin:0 -18px -18px;padding:14px 18px 18px;background:linear-gradient(rgba(255,253,248,0),var(--panel) 26%)}
+/* z-index gives the sticky footer its own layer above the card corner indexes (.ix z-index:1) in Final hands, so they never paint over or take taps from its buttons */
+.rfoot{position:sticky;bottom:-18px;z-index:5;margin:0 -18px -18px;padding:14px 18px 18px;background:linear-gradient(rgba(255,253,248,0),var(--panel) 12px)}
 @media (max-height:700px){.rlist{gap:6px}.rlist li{padding:8px 10px;font-size:12.5px}.rcard h2{font-size:22px}.rcard .rbadge{width:44px;height:44px}}
 
 .spbox{margin:0 0 12px}
@@ -1076,6 +1077,14 @@ function compactNum(n){
   if(a>=1000000)return fmt(n/1000000,'M');
   if(a>=1000)return fmt(n/1000,'K');
   return String(Math.round(n));
+}
+/* Boli amounts: plain number with commas (1,234); abbreviated only from 100,000 (100K, 1.2M). Same rule on every page. */
+function boliNum(n){
+  n=Math.round(Number(n)||0); const a=Math.abs(n);
+  const f=(v,s)=>String(v>=100?Math.round(v):Math.round(v*10)/10).replace(/\.0$/,'')+s;
+  if(a>=999500)return f(n/1e6,'M');
+  if(a>=100000)return f(n/1000,'K');
+  return n.toLocaleString('en-US');
 }
 
 const ls={get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}},del(k){try{localStorage.removeItem(k)}catch(e){}}};
@@ -1909,7 +1918,7 @@ function storeSub(){const f=CATALOG.find(it=>it.feat&&!it.hidden&&itemState(it)=
 function renderHome(){
 screen='home';offTable();setBg('room');setTC('#2A2420');closeOv();const nm=myName(),t=BYID[equippedId('title')];
 app.innerHTML=`<main class="page">
-<div class="hometop"><a class="icon-btn dgh" href="../" aria-label="Back to Dhivehi Games">${ICON.back}<img class="dgmk" src="/icons/favicon.svg" alt="" width="24" height="24"></a><button class="profbtn" data-a="profile" aria-label="Your profile">${avatarHTML(meP(),0,'',38)}<span class="pwrap"><span class="pn">${nm?esc(nm):'Player'}</span><span class="ps">${esc(t?t.name:'Guest')}</span></span></button><button class="shellpill" data-a="goStore" aria-label="Store, ${INV.shells} Boli">${HI.shell}<span>${compactNum(INV.shells)}</span></button></div>
+<div class="hometop"><a class="icon-btn dgh" href="../" aria-label="Back to Dhivehi Games">${ICON.back}<img class="dgmk" src="/icons/favicon.svg" alt="" width="24" height="24"></a><button class="profbtn" data-a="profile" aria-label="Your profile">${avatarHTML(meP(),0,'',38)}<span class="pwrap"><span class="pn">${nm?esc(nm):'Player'}</span><span class="ps">${esc(t?t.name:'Guest')}</span></span></button><button class="shellpill" data-a="goStore" aria-label="Store, ${INV.shells} Boli">${HI.shell}<span>${boliNum(INV.shells)}</span></button></div>
 <div class="dboard"><span class="hrt" aria-hidden="true">♥</span>
 <div class="dtitle"><div class="eb">Tonight</div><h1>Digu</h1><span class="dv" lang="dv" dir="rtl">ޑިގު</span></div>
 ${chalkScoreHTML()}<span class="tray" aria-hidden="true"></span><span class="stick" aria-hidden="true"></span></div>
@@ -2575,7 +2584,7 @@ return DGA().normalize(c);}
 const avWorn=it=>{if(avMode()!=='char')return false;const c=myChar();return c[it.cat]===it.key;};
 function avState(it){return avWorn(it)?'equipped':'owned';}
 function stateOf(x){return x.av?avState(x.av):itemState(x.it);}
-function priceTag(p){return `<span class="pr">${HI.shell}${compactNum(p)}</span>`;}
+function priceTag(p){return `<span class="pr">${HI.shell}${boliNum(p)}</span>`;}
 function stateBadge(st,price){return st==='equipped'?'<span class="own">Equipped</span>':st==='owned'?'<span class="own o2">Free</span>':st==='buy'?priceTag(price):st==='locked'?'<span class="lock">Locked</span>':'<span class="lock">Soon</span>';}
 /* previews: small for tiles, big for the item sheet and the featured stage */
 function ringPrev(it,size){const p=Object.assign(meP(),{cos:Object.assign(myCos(),{f:it.id})});return `<span class="rgw">${avatarHTML(p,0,'',size)}</span>`;}
@@ -2603,7 +2612,7 @@ function renderStore(tab){if(tab)storeTab=tab;if(!CATS.some(c=>c[0]===storeTab))
 if(storeTab==='avatar'&&!DGA())storeTab='back';
 const list=storeList(storeTab),f=featOf(list),n=CATS.find(c=>c[0]===storeTab)[1];
 app.innerHTML=`<main class="page">
-<div class="subtop"><button class="icon-btn" data-a="goHome" aria-label="Back">${ICON.back}</button><h1>Store</h1><button class="shellpill" data-a="getBoli" aria-label="${INV.shells} Boli, get more">${HI.shell}<span>${compactNum(INV.shells)}</span></button></div>
+<div class="subtop"><button class="icon-btn" data-a="goHome" aria-label="Back">${ICON.back}</button><h1>Store</h1><button class="shellpill" data-a="getBoli" aria-label="${INV.shells} Boli, get more">${HI.shell}<span>${boliNum(INV.shells)}</span></button></div>
 <div class="stabs" role="tablist">${CATS.map(([c,nm])=>`<button class="stab" role="tab" data-a="stab" data-c="${c}" aria-selected="${c===storeTab}" aria-pressed="${c===storeTab}">${nm}</button>`).join('')}</div>
 ${f?featHTML(f):''}
 <div class="srt">${storeTab==='avatar'?'Featured':'All '+esc(n.toLowerCase())}<span>${storeTab==='avatar'?'Picked for you':'All free for now'}</span></div>
@@ -2613,7 +2622,7 @@ function sheetFoot(btn){return `${btn}<div class="row"><button class="btn ghost"
 function openItem(id){const it=BYID[id];if(!it)return;const st=itemState(it);const r=RAR[it.rarity]||RAR.common;let btn;
 if(st==='equipped')btn='<button class="btn soft wide" disabled>Equipped ✓</button>';
 else if(st==='owned')btn=`<button class="btn primary wide" data-a="equip" data-id="${it.id}">Equip</button>`;
-else if(st==='buy'){const need=it.shells-INV.shells;btn=need>0?`<button class="btn soft wide" data-a="getBoli">Need ${HI.shell} ${compactNum(need)} more</button>`:`<button class="btn gold wide" data-a="buy" data-id="${it.id}">Unlock for ${HI.shell} ${compactNum(it.shells)}</button>`;}
+else if(st==='buy'){const need=it.shells-INV.shells;btn=need>0?`<button class="btn soft wide" data-a="getBoli">Need ${HI.shell} ${boliNum(need)} more</button>`:`<button class="btn gold wide" data-a="buy" data-id="${it.id}">Unlock for ${HI.shell} ${boliNum(it.shells)}</button>`;}
 else if(st==='locked')btn=`<button class="btn soft wide" disabled>Reach ${LEVELS[it.unlock.level][1]} to unlock</button>`;
 else btn='<button class="btn soft wide" disabled>Not available right now</button>';
 sheet(`<div class="grab"></div><h2>${esc(it.name)}</h2><div class="iteminfo"><span style="color:${r.c};font-weight:800">${r.n}</span><span>${it.cat==='frame'?'Ring':it.cat==='back'?'Card back':it.cat==='table'?'Table':''}</span></div>
@@ -2622,7 +2631,7 @@ ${it.desc?`<p class="muted" style="margin:0 0 12px;font-size:13px">${esc(it.desc
 function openAvItem(id){const it=avItem(id);if(!it)return;const st=avState(it),r=RAR[it.rarity]||RAR.common;let btn;
 if(st==='equipped')btn='<button class="btn soft wide" disabled>Wearing it ✓</button>';
 else if(st==='owned')btn=`<button class="btn primary wide" data-a="avwear" data-id="${esc(it.id)}">Wear it</button>`;
-else{const need=it.price-INV.shells;btn=need>0?`<button class="btn soft wide" data-a="getBoli">Need ${HI.shell} ${compactNum(need)} more</button>`:`<button class="btn gold wide" data-a="avbuy" data-id="${esc(it.id)}">Unlock for ${HI.shell} ${compactNum(it.price)}</button>`;}
+else{const need=it.price-INV.shells;btn=need>0?`<button class="btn soft wide" data-a="getBoli">Need ${HI.shell} ${boliNum(need)} more</button>`:`<button class="btn gold wide" data-a="avbuy" data-id="${esc(it.id)}">Unlock for ${HI.shell} ${boliNum(it.price)}</button>`;}
 sheet(`<div class="grab"></div><h2>${esc(it.name)}</h2><div class="iteminfo"><span style="color:${r.c};font-weight:800">${r.n}</span><span>${esc(DGA().categories[it.cat]||'')}</span></div>
 <div class="bigprev b-avatar">${avThumb(it,true)}</div><p class="muted" style="margin:0 0 12px;font-size:13px">Shown on your cartoon character. Change anything else in the character builder.</p>${sheetFoot(btn+'<button class="btn soft wide" style="margin-top:8px" data-a="charEditStore">Open the character builder</button>')}`);}
 function rerenderMenu(){if(screen==='store')renderStore();else if(screen==='home')renderHome();else if(screen==='profile')renderProfile();}
@@ -2647,12 +2656,12 @@ const pct=next?Math.round((INV.xp-LEVELS[li][2])/(next[2]-LEVELS[li][2])*100):10
 const badges=[['🏆','First Win',st.wins>=1],['🌊','10 Gins',st.gins>=10],['🐋','Big Gin',st.big>=1],['👥','Online Player',st.online>=1],['🎴','50 Games',st.games>=50],['🐚','Collector',Object.keys(INV.owned).length>=10]];
 const how=h=>h.how==='buy'?`for ${HI.shell} ${h.shells}`:h.how==='level'?'from levelling up':h.how==='gift'?`+${HI.shell} ${h.shells}`:h.how==='event'?'event reward':h.how==='ranked'?'ranked reward':'';
 app.innerHTML=`<main class="page">
-<div class="subtop"><button class="icon-btn" data-a="goHome" aria-label="Back">${ICON.back}</button><h1>Profile</h1><button class="shellpill" data-a="goStore" aria-label="Store, ${INV.shells} Boli">${HI.shell}<span>${compactNum(INV.shells)}</span></button></div>
+<div class="subtop"><button class="icon-btn" data-a="goHome" aria-label="Back">${ICON.back}</button><h1>Profile</h1><button class="shellpill" data-a="goStore" aria-label="Store, ${INV.shells} Boli">${HI.shell}<span>${boliNum(INV.shells)}</span></button></div>
 <section class="panel phead"><div class="avw">${avatarHTML(meP(),0,'',96)}</div><h2>${esc(myName()||'Set your name')}</h2><div style="margin-top:8px"><span class="badge-t">${esc(eqT.name)}</span></div>
 <div class="xpbar"><i style="width:${pct}%"></i></div><p class="muted" style="margin:0;font-size:12px">${INV.xp} XP${next?`, ${next[2]-INV.xp} XP to ${next[1]}`:', top level reached'}</p>
 ${DGA()?`<div class="seg" role="group" aria-label="Your look" style="margin-top:16px"><button data-a="lookMode" data-v="char" aria-pressed="${md==='char'}">Character</button><button data-a="lookMode" data-v="sea" aria-pressed="${md==='sea'}">Island Buddy</button></div>`:''}
 <div class="lookrow">${DGA()?'<button class="btn primary" data-a="charEdit">Edit character</button>':''}<button class="btn soft" data-a="editProfile">Name &amp; badge</button></div></section>
-<section class="panel"><div class="row" style="justify-content:space-between;margin:0"><h2 class="shh">${HI.shell}${compactNum(INV.shells)} Boli</h2><button class="btn primary sm" data-a="goStore">Store</button></div><p class="muted" style="margin:6px 0 0;font-size:12px">Earn Boli by playing hands and winning games, up to ${DAILY_CAP} a day. Online games earn more.</p></section>
+<section class="panel"><div class="row" style="justify-content:space-between;margin:0"><h2 class="shh">${HI.shell}${boliNum(INV.shells)} Boli</h2><button class="btn primary sm" data-a="goStore">Store</button></div><p class="muted" style="margin:6px 0 0;font-size:12px">Earn Boli by playing hands and winning games, up to ${DAILY_CAP} a day. Online games earn more.</p></section>
 <section class="panel"><h2>Equipped</h2>${[['back','Card back'],['frame','Ring'],['table','Table']].map(([c,n])=>`<div class="eqrow"><span><small>${n}</small>${esc(BYID[equippedId(c)].name)}</span><button class="btn soft sm" data-a="stab" data-c="${c}">Change</button></div>`).join('')}</section>
 <section class="panel"><h2>Stats</h2><div class="stats">${[[st.games,'Games'],[st.wins,'Wins'],[st.hands,'Hands'],[st.gins,'Gins'],[st.big,'Big gins'],[st.online,'Online games']].map(([v,l])=>`<div class="stat"><b>${v}</b><span>${l}</span></div>`).join('')}</div><p class="muted" style="font-size:12px;margin:10px 0 0">Best hand: ${st.best==null?'none yet':fmt(st.best)+' points'}</p></section>
 <section class="panel"><h2>Badges</h2><div class="badges">${badges.map(([ic,n,ok])=>`<div class="bdg${ok?'':' off'}"><i>${ic}</i>${n}</div>`).join('')}</div></section>
@@ -2735,9 +2744,9 @@ const BOLI_PACKS=[{b:250,p:'$0.99'},{b:550,p:'$1.99',x:'+10%'},{b:1500,p:'$4.99'
 function boliBody(){const packs=BOLI_PACKS.map((k,i)=>`<button class="bpack" data-a="buyBoli" data-i="${i}"${PAY_ENABLED?'':' aria-disabled="true"'}><span class="bq">${HI.shell}<b>${k.b.toLocaleString('en-US')}</b>${k.x?`<small>${k.x} bonus</small>`:''}${k.tag?`<i>${k.tag}</i>`:''}</span><span class="bp">${k.p}</span></button>`).join('');
 return `<button class="bad" data-a="adBoli"${ADS_ENABLED?'':' aria-disabled="true"'}><span class="bi">▶</span><span class="bt"><b>Watch an ad</b><small>Get ${AD_REWARD} Boli free, up to ${AD_DAILY} times a day</small></span><span class="bx">${ADS_ENABLED?'Free':'Soon'}</span></button>
 <div class="bpacks">${packs}</div>${PAY_ENABLED&&ADS_ENABLED?'':'<p class="muted" style="font-size:12px;margin:10px 0 0;text-align:center">Boli packs and ads are coming with the app release. You can still earn Boli by playing.</p>'}`;}
-function openBoli(){sheet(`<div class="grab"></div><h2>Get more Boli</h2><p class="muted" style="margin:2px 0 12px">You have <b>${compactNum(INV.shells)}</b> Boli. Use them for decks, card backs, tables and rings.</p>${boliBody()}<div class="row"><button class="btn ghost" data-a="close">Close</button></div>`);}
+function openBoli(){sheet(`<div class="grab"></div><h2>Get more Boli</h2><p class="muted" style="margin:2px 0 12px">You have <b>${boliNum(INV.shells)}</b> Boli. Use them for decks, card backs, tables and rings.</p>${boliBody()}<div class="row"><button class="btn ghost" data-a="close">Close</button></div>`);}
 function renderBoliPage(){screen='boli';offTable();closeOv();
-app.innerHTML=`<main class="page"><div class="subtop"><button class="icon-btn" data-a="goHome" aria-label="Back">${ICON.back}</button><h1>Get Boli</h1><span class="shellpill" style="margin-left:auto" aria-label="${INV.shells} Boli">${HI.shell}<span>${compactNum(INV.shells)}</span></span></div>
+app.innerHTML=`<main class="page"><div class="subtop"><button class="icon-btn" data-a="goHome" aria-label="Back">${ICON.back}</button><h1>Get Boli</h1><span class="shellpill" style="margin-left:auto" aria-label="${INV.shells} Boli">${HI.shell}<span>${boliNum(INV.shells)}</span></span></div>
 <section class="panel"><p class="muted" style="margin:0 0 12px">Use Boli for card backs, rings and avatar items in the store.</p>${boliBody()}</section>
 <button class="btn soft wide" data-a="goStore" style="margin-top:14px">Browse the store</button></main>`;}
 function buyBoli(i){if(!PAY_ENABLED){toast('Boli packs are coming soon with the app release.');return;}}

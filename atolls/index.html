@@ -1305,6 +1305,9 @@ ls.del(SAVE_KEY);
 const PCOL=['#ff453a','#0a84ff','#ffcc00','#bf5af2','#30d158','#ff9f0a','#ff6fb5','#2c3e66'];
 const BOTS=[['Aisha','aisha'],['Ibrahim','ibrahim'],['Mariyam','mariyam'],['Hussain','hussain'],['Ali','ali'],['Ahmed',null],['Shifa',null],['Moosa',null],['Hawwa',null],['Naseem',null],['Zahir',null],['Aminath',null]];
 let SPEEDF=ls.get('atolls-speed')==='fast'?.5:1;
+/* Boli amounts: plain number with commas (1,234); abbreviated only from 100,000 (100K, 1.2M). Same rule on every page. */
+function boliNum(n){n=Math.round(Number(n)||0);const a=Math.abs(n),f=(v,u)=>String(v>=100?Math.round(v):Math.round(v*10)/10).replace(/\.0$/,'')+u;
+ return a>=999500?f(n/1e6,'M'):a>=100000?f(n/1000,'K'):n.toLocaleString('en-US');}
 const sleep=ms=>(FAST||ms<=0)?Promise.resolve():new Promise(r=>setTimeout(r,ms*SPEEDF));
 const wait=ms=>(FAST||ms<=0)?Promise.resolve():new Promise(r=>setTimeout(r,ms));
 let G=null,ME=0,SCREEN='home',BUSY=false,PUMPT=null;
@@ -1676,11 +1679,12 @@ async function run(p,a){if(!G)return 'no game';
  const evs=E.drain();if(netHost()){hostEvents(evs);NET.sync();}BUSY=true;renderActs();try{await animate(evs);}catch(e){console.error(e);}BUSY=false;if(G!==g)return null;renderAll();kick();return null;}
 function errText(e){return ({closed:'That ask has closed',answered:'You already answered','no asks':'No asks left this turn','too soon':'Wait a moment before asking again','no deal':'That answer is not a deal',same:'Pick different resources to give and get',bad:'That offer does not work',cost:'Not enough resources','none left':'No pieces left',illegal:"You can't build there",'not now':'Not now','one per turn':'One Raajje card per turn','bank short':'The bank has run out of that',empty:'No Raajje cards left'})[e]||e;}
 function kick(ms){clearTimeout(PUMPT);PUMPT=setTimeout(pump,ms==null?40:ms);}
-/* phone sideways (the #rot prompt is up): vs computer the game waits, and its clocks (ask, bot replies, turn timer) shift by the pause (QA M3) */
+/* phone sideways (the #rot prompt is up) or the page hidden (app switch, lock, a call): vs computer the game waits, and its
+   clocks (ask, bot replies, turn timer) shift by the pause (QA M3; hidden: QA regression 2026-10-02 #4). Online keeps its own timing. */
 const ROT_MQ=matchMedia('(orientation:landscape) and (max-height:520px) and (hover:none),(orientation:landscape) and (max-height:520px) and (pointer:coarse)');let ROTPZ=0;
-function rotCheck(){const on=ROT_MQ.matches&&!ONLINE&&!!G&&SCREEN==='game';if(on&&!ROTPZ)ROTPZ=Date.now();else if(!on&&ROTPZ){const d=Date.now()-ROTPZ;ROTPZ=0;
+function rotCheck(){const on=(ROT_MQ.matches||document.hidden)&&!ONLINE&&!!G&&SCREEN==='game';if(on&&!ROTPZ)ROTPZ=Date.now();else if(!on&&ROTPZ){const d=Date.now()-ROTPZ;ROTPZ=0;
  if(G&&G.offer&&G.offer.t0)G.offer.t0+=d;for(const k in BOTDUE.t)BOTDUE.t[k]+=d;if(TMR.key)TMR.t0+=d;kick();}}
-try{ROT_MQ.addEventListener('change',rotCheck);}catch(e){ROT_MQ.addListener&&ROT_MQ.addListener(rotCheck);}setInterval(rotCheck,500);
+try{ROT_MQ.addEventListener('change',rotCheck);}catch(e){ROT_MQ.addListener&&ROT_MQ.addListener(rotCheck);}setInterval(rotCheck,500);document.addEventListener('visibilitychange',rotCheck);
 /* computer players answer an ask 1 to 4 s after it opens, one at a time, like people answering */
 let BOTDUE={id:0,t:{}};
 function botDue(o,p){if(BOTDUE.id!==o.id){BOTDUE={id:o.id,t:{}};const bots=o.to.filter(isBot),ts=bots.map(()=>1000+Math.random()*3000).sort((a,b)=>a-b);
@@ -1839,7 +1843,7 @@ function whyTxt(w){if(!w)return '';const [k,r]=String(w).split(':');return k==='
 function asksLeft(){if(!G)return 0;const k=G.ask;return Math.max(0,E.ASKS-(k&&k.t===G.turnNo?k.n|0:0));}
 function offerLeft(o){o=o||(G&&G.offer);if(!o)return 0;const dur=o.dur||E.OFFER_MS;
  if(netGuest())return OFFER_RX.id===o.id?Math.max(0,OFFER_RX.ms-(Date.now()-OFFER_RX.at)):Math.max(0,o.ms!=null?o.ms:dur);
- return o.t0?Math.max(0,dur-(Date.now()-o.t0)):dur;}
+ return o.t0?Math.max(0,dur-((ROTPZ||Date.now())-o.t0)):dur;}/* paused (sideways or hidden, vs computer): the 20 s stands still */
 function myOffer(){const o=G&&G.offer;return o&&o.from===ME&&o.id!==TR.gone?o:null;}
 function openTrade(tab){if(!G||ME<0)return;TRSEEN=G.id+':'+G.turnNo;TR={tab:tab||'ask',give:{},get:{},bg:null,bw:null,sent:0,gone:0};renderTradeSheet(true);renderActs();}
 const trHead=t=>`<div class="grab"></div><div class="sh"><h2 id="sheetTitle">${t}</h2><span class="shb"><button class="x" type="button" data-tr="log" aria-label="Trade log">${IC.log}</button>${X}</span></div>`;
@@ -2129,7 +2133,7 @@ function modesHTML(){return `<div class="modes" role="radiogroup" aria-label="Ga
 /* "N playing now" on the Quick Match button (0: "Be the first to play") */
 function paintLive(n){const e=$('#qmLive');if(!e)return;n=n|0;e.innerHTML=n>0?`<i></i>${n.toLocaleString('en-US')} playing now`:'<span class="first">Be the first to play</span>';}
 function showHome(){SCREEN='home';LEGEND.hide();TMR.stop();clearTimeout(PUMPT);endSel();closeSheet(true);clearBanner();closeConfirm();if(window.DGDice)DGDice.end();$('#game').hidden=true;$('#home').hidden=false;$('#loading').hidden=true;$('#storm').classList.remove('on');GLR.setDim(0);
- GLR.setMode('home');$('#boliN').textContent=boliCount().toLocaleString('en-US');
+ GLR.setMode('home');$('#boliN').textContent=boliNum(boliCount());
  if(NET)NET.playing(paintLive);
  if(!SPC&&window.DGSponsors&&DGSponsors.box){try{SPC=DGSponsors.box($('#spbox'));}catch(e){SPC=null;}}
  homeFrame();}
