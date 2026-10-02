@@ -28,6 +28,10 @@ a.btn{font-size:34px}
 #map .isl b span{transform:translateY(-.14em)}   /* Muraka letters sit low in their line */
 #map .isl b span.st{font:400 .6em/1 var(--ui);transform:none}
 #map .isl[data-locked] b{background:#DDEBEA;color:#9DB3B1}
+#map #isles{position:absolute;inset:0}
+/* Miss Taatal on the map: stands by the island to play next (game.js moves her; she never takes a tap) */
+#map .mapt{position:absolute;left:0;top:0;width:clamp(84px,21vmin,130px);height:clamp(84px,21vmin,130px);pointer-events:none;will-change:transform;z-index:2}
+#map .mapt .tt{width:100%;height:100%}
 #map .isl em{position:absolute;left:50%;bottom:-30%;transform:translateX(-50%);font-style:normal;color:var(--sun);font-size:18px;white-space:nowrap;text-shadow:0 1px 2px rgba(0,0,0,.4)}
 /* play */
 #play .stage{flex:1;display:grid;grid-template-rows:auto 1fr auto;gap:12px;min-height:0}
@@ -52,6 +56,10 @@ a.btn{font-size:34px}
 .host .tt{position:absolute;left:0;bottom:0;width:clamp(130px,24vmin,200px);height:100%}
 .bub{position:absolute;left:clamp(130px,24vmin,200px);right:0;bottom:30%;background:#fff;border-radius:20px;padding:12px 16px;font:800 20px/1.3 var(--ui);box-shadow:0 10px 22px -12px rgba(0,60,60,.45);min-height:56px}
 .bub:empty{display:none}
+/* Taatal's magic (sparkles, stars, confetti, balloons) flies over her and the bubble but never over the letters or buttons */
+#play .card,#answers,#done .stars,#done .name,#done .btn{position:relative;z-index:5}
+#done .bub{z-index:5}
+#play .host{z-index:6}   /* her cheer hop goes over the tiles, not behind them */
 canvas.trace{position:absolute;inset:0;width:100%;height:100%;touch-action:none}
 /* done */
 #done{align-items:center;justify-content:center;text-align:center;gap:14px}
@@ -84,7 +92,7 @@ canvas.trace{position:absolute;inset:0;width:100%;height:100%;touch-action:none}
 </head><body>
 <section id="map" class="screen on" aria-label="Island map">
   <div class="bar"><a class="btn" href="../../" aria-label="Back to Dhivehi Games">‹</a><span class="pill" id="starTotal">⭐ 0</span><button class="btn" id="mute" aria-label="Sound on or off">🔊</button></div>
-  <div class="sea" id="sea"></div>
+  <div class="sea" id="sea"><div id="isles"></div><div class="mapt" id="mapt"><div class="tt" id="tt0"></div></div></div>
 </section>
 <section id="play" class="screen" aria-label="Island">
   <div class="stage">

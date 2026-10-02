@@ -1,15 +1,20 @@
 // dhivehi-games/kids/thaana/game.js
 import { LETTERS, ATOLL1, islandsFor, buildTurns, makeRng, starsFor, createProgress, idleAction, traceResult } from './logic.js';
 import { createTaatal } from './taatal.js';
+import { createTaatal3 } from './taatal3.js';
 import { createAudio, browserLoader, caption, estimateFor } from './audio.js';
+import { createSfx } from './sfx.js';
 
 const $ = s => document.querySelector(s);
 const store = (() => { try { return window.localStorage; } catch (e) { return null; } })();
 const progress = createProgress(store);
 const islands = islandsFor(ATOLL1);
 let muted = false; try { muted = store && store.getItem('tf-muted') === '1'; } catch (e) {}
-const audio = createAudio({ load: browserLoader, base: 'audio/', muted });
 const TEST = new URLSearchParams(location.search).has('test');
+const audio = createAudio({ load: browserLoader, base: 'audio/', muted });
+const sfx = createSfx({ muted });                    // Taatal's soft sound effects (Web Audio), woken by the first tap
+if (TEST) { const play = sfx.play; window.__sfxLog = []; sfx.play = (n, k) => { const ok = play(n, k); ok && window.__sfxLog.push([n, k == null ? null : k, Date.now()]); return ok; }; }   // test/video log
+['pointerdown', 'keydown'].forEach(t => document.addEventListener(t, () => sfx.unlock(), { capture: true, passive: true }));
 
 // island positions on the map (percent of the sea), bottom to top like a winding path;
 // a short landscape screen uses --wx/--wy instead: left to right, zig-zagging (see index.html)
@@ -19,7 +24,7 @@ let screen = 'map';
 function show(id) { screen = id; document.querySelectorAll('.screen').forEach(s => s.classList.toggle('on', s.id === id)); pauseHidden(); }
 
 function renderMap() {
-  const sea = $('#sea');
+  const sea = $('#isles');
   sea.innerHTML = islands.map((isl, i) => {
     const open = progress.isUnlocked(isl.id, islands), st = progress.best(isl.id);
     const label = isl.kind === 'review' ? '★' : LETTERS[isl.letters[0]].ch;
@@ -29,25 +34,67 @@ function renderMap() {
   }).join('');
   $('#starTotal').textContent = '⭐ ' + islands.reduce((n, i) => n + progress.best(i.id), 0);
   sea.querySelectorAll('.isl:not([data-locked])').forEach(b => b.addEventListener('click', () => startIsland(b.dataset.id)));
+  if (!travelling) placeMapTaatal(hereId());
 }
 
 $('#mute').addEventListener('click', () => {
-  muted = !muted; audio.setMuted(muted); $('#mute').textContent = muted ? '🔇' : '🔊'; $('#mute').setAttribute('aria-pressed', muted);
+  muted = !muted; audio.setMuted(muted); sfx.setMuted(muted); $('#mute').textContent = muted ? '🔇' : '🔊'; $('#mute').setAttribute('aria-pressed', muted);
   try { store && store.setItem('tf-muted', muted ? '1' : '0'); } catch (e) {}
 });
 $('#mute').textContent = muted ? '🔇' : '🔊';
 $('#mute').setAttribute('aria-pressed', muted);
 
-// Miss Taatal (play screen) and her twin on the done screen: each created once, the first time her screen is shown
-// (hidden elements have no size). The promise is kept so a quick quit + re-enter can't make a second one. If her
-// pictures can't load the game plays without her (every call checks `taatal &&`).
-let taatal = null, taatal2 = null, taatalP = null, taatal2P = null;
-const makeTaatal = sel => createTaatal($(sel), 'taatal/').catch(e => { console.warn('Taatal did not load; playing without her.', e); return null; });
-const getTaatal = () => taatalP || (taatalP = makeTaatal('#tt').then(t => { taatal = t; pauseHidden(); return t; }));
-const getTaatal2 = () => taatal2P || (taatal2P = makeTaatal('#tt2').then(t => { taatal2 = t; pauseHidden(); return t; }));
+// Miss Taatal: on the map (#tt0), in the island (#tt) and on the done screen (#tt2). Each is created once, the first
+// time her screen is shown (hidden elements have no size); the promise is kept so a quick quit + re-enter can't make
+// a second one. She is drawn from the painted poses (taatal3.js); if those can't load, the old one-picture Taatal
+// (taatal.js) stands in, and if that fails too the game plays without her (every call checks `taatal &&`).
+let taatal = null, taatal2 = null, taatal0 = null, taatalP = null, taatal2P = null;
+const makeTaatal = (sel, rest, opts = {}) => createTaatal3($(sel), 'poses/', { sfx, rest, ...opts })
+  .catch(e => { console.warn('Taatal poses did not load; using the one-picture Taatal.', e); return opts.map ? null : createTaatal($(sel), 'taatal/'); })
+  .catch(e => { console.warn('Taatal did not load; playing without her.', e); return null; });
+const getTaatal = () => taatalP || (taatalP = makeTaatal('#tt', 'teach').then(t => { taatal = t; pauseHidden(); return t; }));
+const getTaatal2 = () => taatal2P || (taatal2P = makeTaatal('#tt2', 'balloon').then(t => { taatal2 = t; pauseHidden(); return t; }));
 // each Taatal only moves while her screen is shown and the app is visible
-function pauseHidden() { const h = document.hidden; taatal && taatal.pause(h || screen !== 'play'); taatal2 && taatal2.pause(h || screen !== 'done'); }
+function pauseHidden() {
+  const h = document.hidden;
+  taatal && taatal.pause(h || screen !== 'play'); taatal2 && taatal2.pause(h || screen !== 'done'); taatal0 && taatal0.pause(h || screen !== 'map');
+}
+
+// ---------- the map: she waits by the island to play next, waves, plays with her ball, and runs to the next island ----------
+let travelling = 0, mapAt = null;             // travelling: the current run's token (0 = not running)
+const hereId = () => { const open = islands.filter(i => progress.isUnlocked(i.id, islands)); return (open.find(i => !progress.best(i.id)) || open[open.length - 1]).id; };
+function mapSpot(id) {   // her floor point (sea px): on the sand at one side of the island, the side where she hides less of its letter
+  const sea = $('#sea'), b = sea.querySelector(`.isl[data-id="${id}"]`), m = $('#mapt');
+  if (!b || !sea.clientWidth) return null;
+  const sr = sea.getBoundingClientRect(), r = b.getBoundingClientRect(), bd = b.querySelector('b').getBoundingClientRect(), w = m.offsetWidth, h = m.offsetHeight;
+  const cx = (r.left + r.right) / 2 - sr.left, cy = (r.top + r.bottom) / 2 - sr.top, out = cx < sr.width / 2 ? -1 : 1;
+  const at = s => Math.max(w * 0.5, Math.min(sr.width - w * 0.5, cx + s * (0.5 * r.width + 0.14 * w)));
+  const hides = x => Math.max(0, Math.min(x + 0.6 * w, bd.right - sr.left) - Math.max(x - 0.36 * w, bd.left - sr.left));   // her hello pose reaches further right (the wave)
+  const x = hides(at(out)) <= hides(at(-out)) ? at(out) : at(-out), y = Math.max(h, Math.min(sr.height - 4, cy + 0.32 * r.height));
+  return { x, y, tr: `translate(${x - w / 2}px,${y - 0.97 * h}px)` };
+}
+function placeMapTaatal(id) { mapAt = id; const s = mapSpot(id); if (s) { $('#mapt').style.transition = ''; $('#mapt').style.transform = s.tr; } }
+new ResizeObserver(() => requestAnimationFrame(() => { if (!travelling && mapAt) placeMapTaatal(mapAt); })).observe($('#sea'));
+function toMap() { travelling = 0; renderMap(); show('map'); taatal0 && taatal0.wave(1600); }
+// "Next island": back on the map she runs to it (legs flat out, moving slowly), then it starts. A tap on an island
+// during the run starts that island instead (startIsland cancels the run).
+function travel(fromId, toId) {
+  renderMap(); show('map');
+  const a = mapSpot(fromId), b = mapSpot(toId), m = $('#mapt');
+  if (!taatal0 || !a || !b) return startIsland(toId);
+  const tok = travelling = performance.now();
+  m.style.transition = ''; m.style.transform = a.tr; void m.offsetWidth;
+  m.style.transition = 'transform 2.6s linear'; m.style.transform = b.tr; mapAt = toId;
+  taatal0.run(true, b.x < a.x ? -1 : 1);
+  const arrive = () => {
+    if (travelling !== tok) return;
+    if (document.hidden) return setTimeout(arrive, 300);             // hidden: wait, start the island when she is seen again
+    travelling = 0; taatal0.run(false); startIsland(toId);
+  };
+  setTimeout(arrive, 2600);
+}
 renderMap();
+makeTaatal('#tt0', 'hello', { map: true, ballEvery: 20000 }).then(t => { taatal0 = t; if (t) { placeMapTaatal(mapAt || hereId()); t.wave(1600); } pauseHidden(); });
 
 
 // ---------- playing an island ----------
@@ -55,12 +102,21 @@ let run = null;           // { isl, turns, i, mistakes, missesThisTurn, busy, id
 const bub = $('#bub');
 
 // Taatal acts the line out as soon as it is said (not when the audio promise settles); with a real recording
-// her talking is then stretched to the clip's length
+// her talking is then stretched to the clip's length. "Here we gooo!" is a hello wave; a prompt is teaching (the
+// only pose with her stick); a right answer is a cheer; a miss is a flop and getting up; "You got this!" is up again.
+function act(key, ms) {
+  if (!taatal) return;
+  if (key === 'good') taatal.cheer();
+  else if (key === 'gotthis') taatal.getUp ? taatal.getUp() : taatal.oops();
+  else if (key.startsWith('oops')) taatal.oops();
+  else if (key === 'go' && taatal.wave) taatal.wave(ms);
+  else taatal.talk(ms);
+}
 function say(key) {
   bub.textContent = caption(key);
   const talk = key !== 'good' && !key.startsWith('oops') && key !== 'gotthis', est = estimateFor(key);
-  taatal && (key === 'good' ? taatal.cheer() : talk ? taatal.talk(est) : taatal.oops());
-  return audio.play(key).then(ms => { if (talk && ms !== est && taatal && taatal.state === 'talk') taatal.talk(ms); return ms; });
+  act(key, est);
+  return audio.play(key).then(ms => { if (talk && ms !== est && taatal && taatal.state === 'talk') act(key, ms); return ms; });
 }
 
 function renderBar() {
@@ -70,6 +126,7 @@ function renderBar() {
 
 async function startIsland(id) {
   const isl = islands.find(x => x.id === id);
+  travelling = 0;                                                   // a tap during her map run: this island wins
   stopFit(); $('#card').innerHTML = ''; $('#answers').innerHTML = ''; bub.textContent = '';   // nothing left over from the last island
   show('play');
   const seed = (Date.now() ^ id.length * 977) >>> 0;
@@ -180,11 +237,12 @@ function advance() {
   $('#next').textContent = nextId ? 'Next island ›' : 'Map ›';
   show('done'); audio.play('yippee');
   run = null;
-  getTaatal2().then(t => { t && screen === 'done' && t.cheer(); });
+  getTaatal2().then(t => { t && screen === 'done' && (t.celebrate ? t.celebrate(stars === 3) : t.cheer()); });   // dance, balloons; 3 stars: shell spin
+  doneId = isl.id;
 }
-let nextId = null;
-$('#next').onclick = () => { if (nextId) startIsland(nextId); else { renderMap(); show('map'); } };
-$('#quit').onclick = () => { audio.stopAll(); stopFit(); run = null; renderMap(); show('map'); };
+let nextId = null, doneId = null;
+$('#next').onclick = () => { if (screen !== 'done') return; if (nextId) travel(doneId, nextId); else toMap(); };
+$('#quit').onclick = () => { audio.stopAll(); stopFit(); run = null; toMap(); };
 
 // ---------- tracing ----------
 let trace = null;   // { canvas, ch, ctx, ink:[{x,y}], drawn:[{x,y}], tol }
@@ -240,12 +298,12 @@ function tick() {
   requestAnimationFrame(tick);
 }
 document.addEventListener('visibilitychange', () => {
-  pauseHidden();
+  pauseHidden(); sfx.pause(document.hidden);
   if (document.hidden) audio.stopAll();
   if (run) run.lastTick = performance.now();
 });
 
 if (TEST) window.__tf = {
   turn: () => run && run.turns[run.i], turnIndex: () => (run ? run.i : -1), mistakes: () => (run ? run.mistakes : -1), islandId: () => run && run.isl.id,
-  autoTrace: () => { trace.drawn = trace.ink.map(p => ({ x: p.x + 2, y: p.y + 2 })); }, ticking: () => ticking,
+  autoTrace: () => { trace.drawn = trace.ink.map(p => ({ x: p.x + 2, y: p.y + 2 })); }, ticking: () => ticking, get sfxLog() { return window.__sfxLog; },
 };
