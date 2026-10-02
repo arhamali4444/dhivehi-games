@@ -828,7 +828,7 @@ function foldHTML(v,cls,icon,title,sub){const o=openF===v;
  return `<section class="d1-f${o?' open':''}"><button class="mb ${cls}" data-a="tab" data-v="${v}" aria-expanded="${o}"${o?' aria-controls="tabbody"':''}><span class="mi">${icon}</span><span class="mt"><b>${title}</b><small>${sub}</small></span>${DI.chev}</button>${o?`<div id="tabbody" class="eb-fb" role="region" aria-label="${title}">${v==='cpu'?cpuHTML():onlineHTML()}</div>`:''}</section>`;}
 /* Quick Match first and biggest (sun yellow, CASE 01), with the live count; then Play with Friends; then a smaller vs Computer */
 function qmFolderHTML(){return `<button class="mb qm" data-a="quick"><span class="ctag" aria-hidden="true">CASE 01</span><span class="mi">${DI.bolt}</span><span class="mt"><b>Quick Match</b><small>Real suspects, right now</small><span id="qlive">${liveHTML()}</span></span></button>`;}
-function foldersHTML(){return qmFolderHTML()+foldHTML('online','r2',DI.friends,'Play with Friends','Your own table, or a code')+foldHTML('cpu','r3',DI.bot,'vs Computer','2 to 5 suspects at the table');}
+function foldersHTML(){return qmFolderHTML()+foldHTML('online','r2',DI.friends,'Play with Friends','Create or join a table')+foldHTML('cpu','r3',DI.bot,'vs Computer','2 to 5 suspects at the table');}
 function renderFolders(){const e=$('#ebacts');if(e)e.innerHTML=foldersHTML();}
 function revealOpen(){const fb=$('#tabbody');if(!fb)return;const fh=fb.parentNode.querySelector('.mb'),r=fb.getBoundingClientRect(),h=fh.getBoundingClientRect(),over=r.bottom-innerHeight+16;
  if(over>0){const dy=Math.min(over,h.top-24);if(dy>0)scrollBy({top:dy,behavior:RM&&RM.matches?'auto':'smooth'});}}
