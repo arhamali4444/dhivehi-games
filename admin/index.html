@@ -605,6 +605,14 @@ dialog::backdrop{background:rgba(31,28,25,.45);backdrop-filter:none}
 /* one-time password reveal */
 .tpw{display:flex;align-items:center;gap:8px;border:1px solid var(--line2);border-radius:8px;padding:10px 10px 10px 14px;margin:10px 0;background:var(--bg)}
 .tpw code{flex:1;min-width:0;font:500 20px/1.3 var(--mono);letter-spacing:.02em;overflow-wrap:anywhere;user-select:all}
+
+/* live / active / online: one green pulsing dot everywhere (ads Active, players online, Online now) */
+.apill.on{color:var(--ok);background:var(--oksoft);border-color:color-mix(in srgb,var(--ok) 35%,transparent)}
+.apill.on i{background:var(--ok);animation:pulse 2s infinite}
+.badge.on{display:inline-flex;align-items:center;gap:5px}
+.badge.on::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--ok);animation:pulse 2s infinite}
+.stat .k .live{display:inline-block;margin-left:7px;vertical-align:1px}
+@media (prefers-reduced-motion:reduce){.apill.on i,.badge.on::before{animation:none}}
 </style>
 </head>
 <body>
@@ -1141,7 +1149,7 @@ function renderStats(){const el=$('#stats');if(!el)return;const P=[...ST.players
  const games=P.reduce((a,p)=>a+p.games,0),wins=P.reduce((a,p)=>a+p.wins,0);const onl=onlineUnique();
  const ld=!ST.playersAt;const v=x=>ld?'<span class="spin" style="width:18px;height:18px"></span>':fmt(x);
  el.innerHTML=`<div class="stats">
-  <div class="stat hero"><div class="k">Online now</div><div class="v">${ST.presAt?fmt(onl):'…'}</div><div class="s">${ST.presAt?'checked in, last 2 min':'loading'}</div></div>
+  <div class="stat hero"><div class="k">Online now<span class="live"></span></div><div class="v">${ST.presAt?fmt(onl):'…'}</div><div class="s">${ST.presAt?'checked in, last 2 min':'loading'}</div></div>
   <div class="stat"><div class="k">Players</div><div class="v">${v(P.length)}</div><div class="s">on the leaderboard</div></div>
   <div class="stat"><div class="k">New today</div><div class="v">${v(today)}</div><div class="s">${byC?'by created date':'by last update'}</div></div>
   <div class="stat"><div class="k">New this week</div><div class="v">${v(week)}</div><div class="s">last 7 days</div></div>
