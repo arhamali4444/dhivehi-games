@@ -243,11 +243,27 @@ h1.word span{display:inline-block;background:linear-gradient(180deg,#155E43,#0B2
 .nav .on{color:var(--emerald)}.nav .on:before{content:"";position:absolute;top:-2px;width:22px;height:3px;border-radius:99px;background:var(--emerald)}
 .nav svg{width:22px;height:22px}
 
-/* sheets (avatar builder, ranks) */
-.sheet{position:fixed;inset:0;z-index:80;display:flex;align-items:flex-end;justify-content:center;background:rgba(10,20,16,.45);opacity:0;pointer-events:none;transition:opacity .25s;touch-action:none}
-.sheet.open{opacity:1;pointer-events:auto}
-.sheet .panel{width:100%;max-width:560px;max-height:92%;max-height:min(92%,calc(100% - 12px - env(safe-area-inset-top,0px)));overflow:auto;overscroll-behavior:contain;touch-action:pan-y pinch-zoom;background:#F7F1E6;border-radius:26px 26px 0 0;padding:14px 16px calc(20px + env(safe-area-inset-bottom,0px));transform:translateY(40px);transition:transform .45s var(--out);overflow-x:clip}
-.sheet.open .panel{transform:none}
+/* sheets (avatar builder, ranks, about): one shared motion. Opening: the backdrop fades in (250 ms) while the panel
+   slides up from below the screen on a gentle spring ease (420 ms), its content fading in just after. Closing is
+   quicker (220 ms) and reversed. Transform and opacity only; reduced motion: a plain fade. The avatar builder's own
+   drag-to-close moves the panel with inline styles, which win over these while it drags. */
+.sheet{position:fixed;inset:0;z-index:80;display:flex;align-items:flex-end;justify-content:center;pointer-events:none;visibility:hidden;transition:visibility 0s linear .22s;touch-action:none}
+.sheet.open{pointer-events:auto;visibility:visible;transition:none}
+.sheet:before{content:"";position:absolute;inset:0;background:rgba(10,20,16,.45);opacity:0;transition:opacity .22s ease}
+.sheet.open:before{opacity:1;transition:opacity .25s ease}
+.sheet .panel{position:relative;width:100%;max-width:560px;max-height:92%;max-height:min(92%,calc(100% - 12px - env(safe-area-inset-top,0px)));overflow:auto;overscroll-behavior:contain;touch-action:pan-y pinch-zoom;background:#F7F1E6;border-radius:26px 26px 0 0;padding:14px 16px calc(20px + env(safe-area-inset-bottom,0px));transform:translateY(100%);transition:transform .22s cubic-bezier(.4,0,1,1);overflow-x:clip}
+.sheet.open .panel{transform:none;transition:transform .42s cubic-bezier(.2,.9,.25,1)}
+.sheet .panel>*{opacity:0;transition:opacity .12s ease}
+.sheet.open .panel>*{opacity:1;transition:opacity .3s ease .09s}
+/* the builder and the leaderboard fill in after the sheet is up: the panel keeps its full height from the first frame */
+#avSheet .panel,#rkSheet .panel{min-height:min(92%,calc(100% - 12px - env(safe-area-inset-top,0px)))}
+/* reduced motion: a simple fade (these beat the page-wide "no transitions" rule further down) */
+@media (prefers-reduced-motion:reduce){
+ .sheet{transition:visibility 0s linear .2s!important}.sheet.open{transition:none!important}
+ .sheet:before,.sheet.open:before{transition:opacity .2s ease!important}
+ .sheet .panel,.sheet.open .panel{transform:none;opacity:0;transition:opacity .2s ease!important}
+ .sheet.open .panel{opacity:1}
+ .sheet .panel>*,.sheet.open .panel>*{opacity:1}}
 #builder{--dga-sticky-top:-14px}
 .sheet .grab{width:44px;height:5px;border-radius:99px;background:#D9CBB0;margin:0 auto 10px}
 .sheet h2{margin:0 0 10px;font:900 24px/1.1 Fraunces,Georgia,serif}
@@ -883,33 +899,23 @@ paintMe();window.addEventListener('dg-char-change',paintMe);
 
 /* ---------- cover flow ---------- */
 const flow=$('#flow'),glow=$('#glow'),dots=$('#dots'),bank=$('#fcbank'),floorEl=flow.querySelector('.floor'),ALL=[...flow.querySelectorAll('.fc')];
-let cards=[],M=1,P=0,dotEls=[],cur=0,drag=null,lastTouch=0,tx=null;
-/* game categories, in a straight line (no loop): swiping past the last game of a set flows into the first game of the
-   next set, swiping before the first goes to the previous set's last game. Cards and Kids are the ends: a soft bounce.
-   The edge games of the neighbouring sets peek in, dimmed, with the set's name on the button.
-   ?cat=card|board|arcade|trivia|kids, else the last choice. */
+let cards=[],M=1,dotEls=[],cur=0,drag=null,lastTouch=0,tx=null;
+/* game categories: swiping stays inside the chosen set (a soft rubber-band bounce at its first and last game); the set
+   changes only from the tab bar (tap or press-and-slide). ?cat=card|board|arcade|trivia|kids, else the last choice. */
 const catBtns=[...document.querySelectorAll('#cats button')],thumb=$('#cats .thumb'),catsEl=$('#cats');
 const CATS=catBtns.map(b=>b.dataset.cat);
 function pickCat(){const q=/[?&]cat=([a-z]+)\b/.exec(location.search);if(q&&CATS.includes(q[1]))return q[1];const s=ls.get('dg-home-cat');return CATS.includes(s)?s:'card';}
 let cat=pickCat();
 const setOf=c=>ALL.filter(x=>x.dataset.cat===c);
-const nb=(c,d)=>CATS[CATS.indexOf(c)+d]||null;
-const label=c=>{const b=catBtns.find(x=>x.dataset.cat===c);return b?b.textContent.trim():c;};
 /* links are not draggable (a mouse drag would start a native link drag and cancel the swipe) */
 ALL.forEach(x=>x.setAttribute('draggable','false'));
 flow.addEventListener('dragstart',e=>e.preventDefault());
 /* the thumb sits under the selected tab and grows with it (same scale, no layout change) */
 function moveThumb(){const b=catBtns.find(x=>x.dataset.cat===cat);if(b&&thumb){thumb.style.width=b.offsetWidth+'px';thumb.style.transform='translateX('+b.offsetLeft+'px) scale(1.08)';}}
 function markTabs(c){catBtns.forEach(b=>{const on=b.dataset.cat===c;b.setAttribute('aria-selected',on?'true':'false');b.tabIndex=on?0:-1;});}
-function peekOf(x,c){const d=x.cloneNode(true);d.classList.add('dup','peek');d.removeAttribute('id');d.querySelectorAll('[id]').forEach(e=>e.removeAttribute('id'));
- d.dataset.peekCat=c;d.setAttribute('aria-hidden','true');d.tabIndex=-1;
- const pl=d.querySelector('.pl');if(pl)pl.innerHTML=esc(label(c))+' <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="'+(CATS.indexOf(c)>CATS.indexOf(cat)?'M9 6l6 6-6 6':'M15 6l-6 6 6 6')+'"/></svg>';
- return d;}
 function useSet(c){
- flow.querySelectorAll('.fc.dup').forEach(x=>x.remove());
  const set=setOf(c);ALL.forEach(x=>{if(x.dataset.cat!==c&&x.parentNode!==bank)bank.appendChild(x);});M=Math.max(1,set.length);
- const pc=nb(c,-1),nc=nb(c,1),left=pc?setOf(pc).slice(-2).map(x=>peekOf(x,pc)):[],right=nc?setOf(nc).slice(0,2).map(x=>peekOf(x,nc)):[];
- P=left.length;cards=left.concat(set,right);
+ cards=set;
  cards.forEach(x=>{x.classList.remove('front','wet');flow.insertBefore(x,floorEl);});
  dots.innerHTML=set.length>1?set.map(()=>'<i></i>').join(''):'';dots.hidden=set.length<2;dotEls=[...dots.children];
  markTabs(c);moveThumb();}
@@ -917,13 +923,13 @@ if(thumb)thumb.style.transition='none';
 useSet(cat);
 requestAnimationFrame(()=>requestAnimationFrame(()=>{if(thumb)thumb.style.transition='';}));
 function place(f){
- cards.forEach((c,i)=>{const o=(i-P)-f,s=Math.sign(o),a=Math.min(Math.abs(o),3.4),pk=c.classList.contains('peek');   /* far cards wait just off stage, hidden */
+ cards.forEach((c,i)=>{const o=i-f,s=Math.sign(o),a=Math.min(Math.abs(o),3.4);   /* far cards wait just off stage, hidden */
   const x=s*(a<=1?96*a:96+(a-1)*50),ry=-s*(a<=1?48*a:48+(a-1)*8),z=a<=1?60-120*a:-60*a,sc=a<=1?1-.14*a:.86-(a-1)*.08;
   c.style.transform=`translateX(${x.toFixed(1)}px) translateZ(${z.toFixed(1)}px) rotateY(${ry.toFixed(1)}deg) scale(${sc.toFixed(3)})`;
   c.style.opacity=a<=2?1:Math.max(0,3-a).toFixed(2);c.style.zIndex=String(100-Math.round(a*10));
-  c.style.setProperty('--dim',Math.min(.9,(a<=1?.28*a:.28+(a-1)*.18)+(pk?.2:0)).toFixed(2));
-  const front=a<.5&&!pk;c.classList.toggle('front',front);c.tabIndex=front?0:-1;c.setAttribute('aria-hidden',pk||a>=2.5?'true':'false');});
- const n=cards[Math.max(0,Math.min(cards.length-1,Math.round(f)+P))];if(n)glow.style.backgroundColor=n.dataset.c;
+  c.style.setProperty('--dim',Math.min(.9,(a<=1?.28*a:.28+(a-1)*.18)).toFixed(2));
+  const front=a<.5;c.classList.toggle('front',front);c.tabIndex=front?0:-1;c.setAttribute('aria-hidden',a>=2.5?'true':'false');});
+ const n=cards[Math.max(0,Math.min(cards.length-1,Math.round(f)))];if(n)glow.style.backgroundColor=n.dataset.c;
  const k=Math.max(0,Math.min(M-1,Math.round(f)));dotEls.forEach((d,i)=>d.classList.toggle('on',i===k));}
 function go(n){cur=Math.max(0,Math.min(M-1,n));place(cur);}
 place(cur);
@@ -935,7 +941,7 @@ function showSet(c,land){useSet(c);flow.classList.add('snap');cur=Math.max(0,Mat
  requestAnimationFrame(()=>requestAnimationFrame(()=>flow.classList.remove('snap')));}
 function stopTx(apply){if(!tx)return;const t=tx;tx=null;clearTimeout(t.timer);t.anims.forEach(a=>{try{a.cancel();}catch(_){}});if(apply&&t.phase==='out')showSet(t.cat,t.land);}
 function enter(c,land,dir){showSet(c,land);if(!flow.animate)return;const anims=[];
- cards.forEach((el,i)=>{const a=Math.abs(i-P-cur);if(a>2.6)return;const op=el.style.opacity===''?1:+el.style.opacity;
+ cards.forEach((el,i)=>{const a=Math.abs(i-cur);if(a>2.6)return;const op=el.style.opacity===''?1:+el.style.opacity;
   anims.push(el.animate(MOVE?[{opacity:0,translate:(dir*64)+'px 0',scale:'.9'},{opacity:op,translate:'0px 0',scale:'1'}]:[{opacity:0},{opacity:op}],
    {duration:MOVE?260:200,delay:MOVE?Math.round(a)*40:0,easing:'cubic-bezier(.2,.8,.2,1)',fill:'backwards'}));});
  const t={phase:'in',anims,cat:c,land:cur};t.timer=setTimeout(()=>{if(tx===t)stopTx(false);},MOVE?400:240);tx=t;}
@@ -979,9 +985,10 @@ catsEl.addEventListener('pointerup',e=>csEnd(e,false));catsEl.addEventListener('
 catsEl.addEventListener('lostpointercapture',e=>{if(e.target===catsEl&&cs&&cs.moved&&e.pointerId===cs.id)csEnd(e,false);});
 catsEl.addEventListener('click',e=>{if(Date.now()-csAt<400){e.preventDefault();e.stopPropagation();}},true);
 addEventListener('resize',moveThumb);if(document.fonts&&document.fonts.ready)document.fonts.ready.then(moveThumb);
-/* the carousel: touch, pen and mouse (pointer events); past an end with no neighbouring set it stretches (rubber band) */
+/* the carousel: touch, pen and mouse (pointer events); past the first or last game of the set it stretches (rubber band)
+   and springs back on release */
 const rb=x=>.7*x/(1+x);
-function bounded(f){const lo=nb(cat,-1)?-1:0,hi=nb(cat,1)?M:M-1;return f<lo?lo-rb(lo-f):f>hi?hi+rb(f-hi):f;}
+function bounded(f){const hi=M-1;return f<0?-rb(-f):f>hi?hi+rb(f-hi):f;}
 flow.addEventListener('pointerdown',e=>{if(e.button>0)return;if(tx)stopTx(true);lastTouch=Date.now();const t=performance.now();
  drag={x:e.clientX,start:cur,moved:false,id:e.pointerId,t:e.target,vx:e.clientX,vt:t,px:e.clientX,pt:t};});
 flow.addEventListener('pointermove',e=>{if(!drag||e.pointerId!==drag.id)return;const dx=e.clientX-drag.x;
@@ -992,21 +999,19 @@ function endDrag(e,cancel){if(!drag||(e&&e.pointerId!==drag.id))return;const d=d
  if(d.moved){const dx=e.clientX-d.x,f=d.start-dx/112,dt=performance.now()-d.pt,v=dt>0&&dt<120?(e.clientX-d.px)/dt:0;
   let t=Math.round(f);if(t===d.start&&Math.abs(v)>.35&&Math.abs(dx)>14)t=d.start+(v<0?1:-1);   /* a quick flick moves one game */
   if(cancel)t=d.start;
-  if(t>M-1){const n=nb(cat,1);if(n){setCat(n,1,0);return;}}
-  if(t<0){const p=nb(cat,-1);if(p){setCat(p,-1,setOf(p).length-1);return;}}
   go(t);return;}
  if(cancel)return;const card=d.t.closest&&d.t.closest('.fc');if(!card)return;
- if(card.classList.contains('peek')){const pc=card.dataset.peekCat;setCat(pc,CATS.indexOf(pc)>CATS.indexOf(cat)?1:-1,Math.max(0,setOf(pc).findIndex(x=>x.dataset.name===card.dataset.name)));return;}
- if(!card.classList.contains('front')){go(cards.indexOf(card)-P);return;}
+ if(!card.classList.contains('front')){go(cards.indexOf(card));return;}
  if(card.dataset.href)location.href=card.dataset.href;else toast(card.dataset.name+' is coming soon. Stay tuned!');}
 flow.addEventListener('pointerup',e=>endDrag(e,false));flow.addEventListener('pointercancel',e=>endDrag(e,true));
 flow.addEventListener('click',e=>{if(e.target.closest('.fc'))e.preventDefault();});
-function step(d){lastTouch=Date.now();if(tx)stopTx(true);const t=cur+d;
- if(t>M-1){const n=nb(cat,1);if(n)setCat(n,1,0);return;}
- if(t<0){const p=nb(cat,-1);if(p)setCat(p,-1,setOf(p).length-1);return;}
+/* arrow keys stay inside the set: at its first or last game a small nudge and spring back */
+let nudgeT=0;
+function step(d){lastTouch=Date.now();if(tx)stopTx(true);const t=cur+d;clearTimeout(nudgeT);
+ if(t<0||t>M-1){place(cur+d*.18);nudgeT=setTimeout(()=>{if(!drag)place(cur);},130);return;}
  go(t);}
 flow.addEventListener('keydown',e=>{if(e.key==='ArrowRight'){step(1);e.preventDefault();}else if(e.key==='ArrowLeft'){step(-1);e.preventDefault();}
- else if(e.key==='Enter'){const c=cards[P+cur];if(!c)return;if(c.dataset.href)location.href=c.dataset.href;else toast(c.dataset.name+' is coming soon. Stay tuned!');}});
+ else if(e.key==='Enter'){const c=cards[cur];if(!c)return;if(c.dataset.href)location.href=c.dataset.href;else toast(c.dataset.name+' is coming soon. Stay tuned!');}});
 /* idle autoplay stays inside the chosen set (back to its first game after the last); it never changes the set */
 if(!reduce)setInterval(()=>{if(document.hidden||document.body.classList.contains('intro')||drag||tx||M<2||Date.now()-lastTouch<7000)return;go(cur+1>M-1?0:cur+1);},3200);
 
@@ -1046,22 +1051,35 @@ box.addEventListener('click',e=>{if(ad&&ad.moved)e.preventDefault();},true);
    faded out, so no inline style it put on the sheet (drag offset, full height, padding, hidden grab bar) outlives it */
 let lockY=null;
 function openSheet(id){const s=$(id);if(!document.querySelector('.sheet.open'))lockY=window.scrollY||0;s.classList.add('open');document.body.style.overflow='hidden';}
-function closeSheet(id){const s=$(id);if(!s.classList.contains('open'))return;s.classList.remove('open');if(document.querySelector('.sheet.open'))return;
+function closeSheet(id){const s=$(id);if(!s.classList.contains('open'))return;
+ /* a finished builder drag leaves its own spring transition on the panel: the shared close motion takes over again */
+ const p=s.querySelector('.panel');if(p&&!p.classList.contains('dga-dragging'))p.style.transition='';
+ s.classList.remove('open');if(document.querySelector('.sheet.open'))return;
  document.body.style.overflow='';if(lockY!=null&&Math.abs((window.scrollY||0)-lockY)>1)window.scrollTo(0,lockY);lockY=null;
  if(id==='#avSheet')setTimeout(dropBuilder,600);}
 function dropBuilder(){if(!bld||$('#avSheet').classList.contains('open'))return;try{bld.destroy();}catch(e){}bld=null;}
 document.querySelectorAll('.sheet').forEach(s=>s.addEventListener('click',e=>{if(e.target===s||e.target.closest('[data-close]'))closeSheet('#'+s.id);}));
 document.addEventListener('keydown',e=>{if(e.key==='Escape')document.querySelectorAll('.sheet.open').forEach(s=>closeSheet('#'+s.id));});
-let bld=null;
+let bld=null,bldTok=0;
+/* the sheet opens first (an empty, full-height shell that starts sliding at once); the builder is rendered after that
+   first frame has been painted, so its work never holds up the start of the motion */
 function openBuilder(){if(!window.DGAvatar){location.href='digu/?open=profile';return;}
- let inv=null;try{inv=JSON.parse(ls.get('dd-inv')||'null');}catch(e){}
  const host=$('#builder');if(bld){try{bld.destroy();}catch(e){}bld=null;}host.innerHTML='';
+ const tok=++bldTok;openSheet('#avSheet');
+ requestAnimationFrame(()=>setTimeout(()=>{if(tok===bldTok&&$('#avSheet').classList.contains('open'))fillBuilder(host);},0));}
+function fillBuilder(host){
+ let inv=null;try{inv=JSON.parse(ls.get('dd-inv')||'null');}catch(e){}
  bld=DGAvatar.openBuilder(host,{boliIcon:'<img src="'+document.querySelector('.boli img').src+'" alt="" style="width:18px;height:18px;object-fit:contain;vertical-align:middle">',cfg:DGAvatar.load()||DGAvatar.random(myId),owned:true,boli:inv?inv.shells|0:0,boliManaged:true,
   onBoli:()=>{location.href='digu/?open=store';},
   onBuy:()=>{toast('Unlock special items in the Store.');return false;},
   onSave:cfg=>{DGAvatar.save(cfg);paintMe();closeSheet('#avSheet');toast('Character saved');},
-  onClose:()=>closeSheet('#avSheet')});
- openSheet('#avSheet');}
+  onClose:()=>closeSheet('#avSheet')});}
+/* the builder's code (loaded on demand by avatar.js) is fetched quietly once the page is up and idle, so the first open
+   shows the builder itself rather than a loading spinner that is then swapped out */
+{const pre=()=>{const s=document.querySelector('script[src*="/shared/avatar.js"]');if(!s)return;const l=document.createElement('link');
+  l.rel='prefetch';l.as='script';l.href=s.src.replace(/avatar\.js(?=[?#]|$)/,'avatar-builder.js');document.head.appendChild(l);};
+ const later=()=>setTimeout(()=>window.requestIdleCallback?requestIdleCallback(pre,{timeout:4000}):pre(),1500);
+ if(document.documentElement.classList.contains('boot'))addEventListener('dg-revealed',later,{once:true});else later();}
 $('#me').addEventListener('click',openBuilder);$('#navAvatar').addEventListener('click',openBuilder);
 $('#navRanks').addEventListener('click',()=>{openSheet('#rkSheet');window.__loadRanks&&window.__loadRanks();});
 window.__toast=toast;window.__esc=esc;
