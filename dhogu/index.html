@@ -543,6 +543,19 @@ html.eb .bubble.dh::after{border-top-color:#A5372B}
 :is(.eb-fb,.panel) .otable.busy .oi{background:transparent;color:#7A5E38;box-shadow:inset 0 0 0 1.5px rgba(122,94,56,.55)}
 @media (max-height:700px){.ebt .need b{font-size:18px}.ebt .felt{gap:6px;padding:10px}.ebt .arena{min-height:300px}
  .ebt .felt>.need{position:absolute!important;left:18px;top:50%;translate:0 -50%;z-index:2}.ebt .opps .opp{width:56px}.ebt .opps.n1 .opp,.ebt .opps.n2 .opp,.ebt .opps.n3 .opp{width:62px}.ebt .opp .nm{font-size:9px}}
+/* phone landscape: the desk on the left, you (bar, hand, DHOGU! and Play) in a column on the right, so nothing sits below the fold */
+@media (orientation:landscape) and (max-height:500px){
+ main.table.ebt{display:grid;grid-template-columns:minmax(0,1fr) clamp(250px,38%,340px);grid-template-rows:auto minmax(0,1fr);max-width:none;height:100vh;height:100dvh;min-height:0}
+ main.table.ebt>*{max-width:none;margin:0}
+ .ebt .tbar{grid-column:1/-1;grid-row:1;padding-top:6px}
+ .ebt .arena{grid-column:1;grid-row:2;min-height:0;margin-top:4px}
+ .ebt .me{grid-column:2;grid-row:2;align-self:end;border-radius:22px 0 0 0;padding:6px 10px calc(8px + env(safe-area-inset-bottom,0px))}
+ .ebt .hand{padding-top:12px;min-height:0}
+ .ebt .acts{margin-top:4px}
+ .ebt .acts .btn,.ebt .dhbtn{min-height:50px}
+ /* the round result sheet scrolls on a 390 px-high screen: its main button stays pinned at the sheet's bottom edge, as in Joker and Juice */
+ #ov[data-kind="round"] .sheet>.btn.coral{position:sticky;bottom:0;z-index:2}
+}
 @media (max-width:359px){html.eb .top{gap:6px}html.eb .me-pill{gap:6px;padding-right:9px}html.eb .boli{padding:0 10px 0 8px;gap:4px}.eb-fb{margin:0 6px 10px;padding:4px 10px 14px}}
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
 /* smooth mode (slower phones, or switched on by itself when frames keep dropping): hold the ambient lamp flicker, motes,
@@ -764,8 +777,17 @@ const botFace=i=>{const b=BOTS[i];return DGA&&DGA.presets&&DGA.presets[b[2]]?{ch
 let cfg={opp:Math.min(5,Math.max(2,+(ls.get('dh-opp')||3))),mode:ls.get('dh-mode')==='lives'?'lives':'classic',rounds:[3,5,10].includes(+ls.get('dh-rounds'))?+ls.get('dh-rounds'):5,level:['easy','normal','sharp'].includes(ls.get('dh-level'))?ls.get('dh-level'):'normal'};
 let G=null,role=null,screen='home',timers=[],tab=ls.get('dh-tab')==='online'?'online':'cpu';const app=$('#app');
 const TURN_MS=15000;
-const later=(fn,ms)=>{const t=setTimeout(fn,ms);timers.push(t);return t;};
-const clearAll=()=>{timers.forEach(clearTimeout);timers=[];};
+/* game timers. Vs the computer they pause while the page is hidden (app switch, lock, a call) and pick up where they
+   left off when you come back; your own turn clock starts again from 15 s, the same as Bondi and Dhihaeh.
+   Online tables (host or joiner) keep running as before. */
+let paused=false;
+const later=(fn,ms)=>{const o={at:Date.now()+ms,left:ms,t:0,turn:0};o.run=()=>{o.t=0;timers=timers.filter(x=>x!==o);fn();};
+ if(!paused)o.t=setTimeout(o.run,ms);timers.push(o);return o;};
+const clearAll=()=>{timers.forEach(o=>clearTimeout(o.t));timers=[];};
+function pauseSolo(){if(paused||isOn()||!G)return;paused=true;const now=Date.now();timers.forEach(o=>{if(o.t){clearTimeout(o.t);o.t=0;o.left=Math.max(0,o.at-now);}});}
+function resumeSolo(){if(!paused)return;paused=false;const now=Date.now();
+ if(G&&G.turnEnd&&G.phase==='play'){G.turnEnd=now+TURN_MS;update();}
+ timers.forEach(o=>{if(o.t)return;if(o.turn)o.left=TURN_MS;o.at=now+o.left;o.t=setTimeout(o.run,o.left);});}
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 const isOn=()=>role==='host'||role==='join';
 const meIdx=()=>G&&G.players?G.players.findIndex(p=>p.me):-1;
@@ -792,7 +814,7 @@ const DL='fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="rou
 const DI={bolt:'<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M13.2 2 4.5 13.6h6.6L10 22l8.9-11.9h-6.7z"/></svg>',friends:`<svg viewBox="0 0 24 24" ${DL}><circle cx="9" cy="8.2" r="3.3"/><path d="M2.8 20c.4-3.4 3-5.8 6.2-5.8s5.8 2.4 6.2 5.8"/><circle cx="17.2" cy="9.2" r="2.6"/><path d="M16 14.3c2.9.1 4.9 2.3 5.2 5.2"/></svg>`,bot:`<svg viewBox="0 0 24 24" ${DL}><rect x="4.5" y="8" width="15" height="11.5" rx="3.5"/><path d="M12 4.2V8"/><circle cx="12" cy="3.6" r=".9" fill="currentColor"/><circle cx="9.3" cy="13.6" r="1.2" fill="currentColor" stroke="none"/><circle cx="14.7" cy="13.6" r="1.2" fill="currentColor" stroke="none"/></svg>`,book:`<svg viewBox="0 0 24 24" ${DL}><path d="M12 6.6C10 5.1 7.2 4.6 4 5v13.4c3.2-.4 6 .1 8 1.6 2-1.5 4.8-2 8-1.6V5c-3.2-.4-6 .1-8 1.6z"/><path d="M12 6.6V20"/></svg>`,chev:`<svg class="chev" viewBox="0 0 24 24" ${DL} stroke-width="2.4"><path d="M9 5.5l6.5 6.5L9 18.5"/></svg>`,spade:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.2c-2.6 3-8.3 6.9-8.3 11.4 0 2.6 2 4.5 4.4 4.5 1.3 0 2.4-.5 3.1-1.3-.2 1.9-.9 3.4-2.4 5h6.4c-1.5-1.6-2.2-3.1-2.4-5 .7.8 1.8 1.3 3.1 1.3 2.4 0 4.4-1.9 4.4-4.5 0-4.5-5.7-8.4-8.3-11.4z"/></svg>'};
 /* the whole game lives in the detective world (html.eb); the home screen alone wears Dhogu's purple (html.d1on). Leaving home stops the sponsor box */
 function setHomeMode(on){document.documentElement.classList.toggle('d1on',!!on);if(!on&&spCtl){try{spCtl.destroy();}catch(e){}spCtl=null;}}
-document.addEventListener('visibilitychange',()=>document.documentElement.classList.toggle('eb-hid',document.hidden));
+document.addEventListener('visibilitychange',()=>{document.documentElement.classList.toggle('eb-hid',document.hidden);if(document.hidden)pauseSolo();else resumeSolo();});
 /* smooth mode, as in the other games: slower phones (4 cores or fewer), or switched on by itself when this phone keeps
    dropping frames (many janky frames within 20 s; one-off heavy screen changes count little) for the rest of the visit; a manual Smooth setting (dd-smooth) always wins */
 var autoLite=false;try{autoLite=sessionStorage.getItem('dg-lite')==='1';}catch(e){}
@@ -902,10 +924,10 @@ function nextIdx(i){const n=G.players.length;for(let k=1;k<=n;k++){const j=(i+k)
 function emit(e){if(role==='join')return;fxLocal(e);if(role==='host'&&net&&net.fxq)net.fxq.push(e);}
 function startTurn(){if(!G||G.phase!=='play')return;const p=G.players[G.turn];G.turnEnd=p.bot?0:Date.now()+TURN_MS;update();sync();
  if(p.bot){later(()=>botPlay(p),1100+Math.random()*900);return;}
- const turn=G.turn,seq=G.seq;later(()=>{if(!G||G.phase!=='play'||G.turn!==turn||G.seq!==seq||p.bot)return;const m=p.hand.find(c=>c.r===G.rank)||p.hand[0];
+ const turn=G.turn,seq=G.seq;const tt=later(()=>{if(!G||G.phase!=='play'||G.turn!==turn||G.seq!==seq||p.bot)return;const m=p.hand.find(c=>c.r===G.rank)||p.hand[0];
   if(!m)return;const afk=afkCount(p);
   if(!afk){const msg='Time’s up, we played one card for you.';if(p.me)toast(msg);else emit({t:'toast',to:p.id,m:msg});}
-  doPlay(p,[m],true);if(afk)afkSeat(p);},TURN_MS);}
+  doPlay(p,[m],true);if(afk)afkSeat(p);},TURN_MS);tt.turn=1;}
 /* AFK (online only, counted by the host): 2 timed-out turns in a row and an AI Rookie takes the seat until the round ends,
    says goodbye and leaves. Any real move (a play or a Dhogu call) resets the count. The player's score is frozen from
    that moment and they can't rejoin this match. If the host is the one away, the table passes to the next player. */
@@ -1133,7 +1155,9 @@ function fxLocal(e){if(!G||!e)return;const P=i=>G.players[i];
  switch(e.t){
  case 'deal':SFX.shuffle();break;
  case 'play':{const p=P(e.p);if(!p)break;SFX.swish();if(screen==='table')flyToPile(p,e.n);setTimeout(SFX.tap,380);break;}
- case 'call':{const p=P(e.p);SFX.knock();buzz(20);bubble(p,'Dhogu!','dh');const f=$('#felt');if(f){f.classList.remove('shake');void f.offsetWidth;f.classList.add('shake');}break;}
+ case 'call':{const p=P(e.p);SFX.knock();buzz(20);bubble(p,'Dhogu!','dh');
+  /* a call cuts into your turn: say so, so the Play button ("Checking…") doesn't look dead. Your picked cards stay picked */
+  {const cur=P(G.turn);if(p&&!p.me&&cur&&cur.me&&!cur.bot&&screen==='table')toast(`Hold on, ${p.name} called Dhogu!${G.sel&&G.sel.size?' Your picked cards stay picked.':''}`,2600);}const f=$('#felt');if(f){f.classList.remove('shake');void f.offsetWidth;f.classList.add('shake');}break;}
  case 'flip':SFX.flip();break;
  case 'stamp':SFX.stamp();setTimeout(e.lie?SFX.lie:SFX.truth,170);buzz(e.lie?[30,40,30]:15);mood(P(e.p),e.lie?'shock':'smug');mood(P(e.c),e.lie?'smug':'shock');break;
  case 'ko':{const p=P(e.p);if(p)toast(p.me?'You are out of this round!':p.name+' is out of this round!');break;}

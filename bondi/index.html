@@ -332,6 +332,8 @@ html[data-ranga="1"] .schip.H[aria-pressed="true"] svg,html[data-ranga="1"] .sch
 @keyframes fade{from{opacity:0}}
 .ovc{background:linear-gradient(180deg,#18191c,#101113);color:var(--ink);border-radius:26px;padding:22px 18px 18px;width:100%;max-width:440px;max-height:100%;max-height:min(92dvh,100%);overflow:auto;-webkit-overflow-scrolling:touch;text-align:center;box-shadow:0 30px 70px -20px rgba(0,0,0,.95),inset 0 0 0 1px rgba(232,236,242,.14);animation:rise .7s var(--spring) .4s both}
 #rov .ovc{animation-delay:.05s}
+/* the round / match result card scrolls on short screens (iPad landscape, phone landscape): its main button stays pinned at the card's bottom edge, as in Joker and Juice */
+#ov .ovc>.btn.primary{position:sticky;bottom:0;z-index:2}
 @keyframes rise{from{transform:translateY(40px) scale(.94);opacity:0}}
 .ovc>.mini{width:72px;height:72px;margin:0 auto 12px}
 .ovc h2{font:700 28px/1.1 var(--serif)}
@@ -1000,7 +1002,10 @@ box.addEventListener('keydown',e=>{const el=e.target.closest('.card');if(!el)ret
 function multiMode(){if(!canAct()||!S.ranga||!S.trick.length)return false;return !handOf(S,meIdx()).some(c=>P(c).s===S.led);}
 function tapCard(id){if(!canAct()){if(S&&S.status==='playing'&&S.phase==='play'&&meIdx()>=0&&S.turn!==meIdx())toast('Wait for your turn.');return;}
 if(!playable(id)){SFX.tick();const w=whyNot(S,meIdx(),[id]);toast(w||'You can’t play that card now.');buzz(20);return;}
-if(multiMode()){const s=P(id).s;if(sel.length&&P(sel[0]).s!==s)sel=[];if(sel.includes(id))sel=sel.filter(c=>c!==id);else sel.push(id);buzz(4);SFX.tick();renderHand();renderActs();return;}
+if(multiMode()){const s=P(id).s;
+/* throw mode: a second tap on your only card of that suit plays it, the same tap-tap as everywhere else in Bondi */
+if(sel.length===1&&sel[0]===id&&handOf(S,meIdx()).filter(c=>P(c).s===s).length===1){playCards([id]);return;}
+if(sel.length&&P(sel[0]).s!==s)sel=[];if(sel.includes(id))sel=sel.filter(c=>c!==id);else sel.push(id);buzz(4);SFX.tick();renderHand();renderActs();return;}
 if(sel.length===1&&sel[0]===id){playCards([id]);return;}
 sel=[id];buzz(4);SFX.tick();layoutHand();renderHand();renderActs();}
 function playCards(cards){const w=whyNot(S,meIdx(),cards);if(w){toast(w);return;}sel=[];buzz(10);

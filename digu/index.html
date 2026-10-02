@@ -1453,6 +1453,9 @@ N.rev=(S.rev||0)+1;N.by=myId;commit(N);}
 const TURN_MS=15000,BLITZ_MS=5000;const turnMs=()=>S&&S.blitz?BLITZ_MS:TURN_MS;let turnSeen=Date.now(),tmrLast=-1;
 const timedGame=()=>S&&S.status==='playing'&&S.players[S.turn]&&!S.players[S.turn].bot;
 const amAuthority=()=>mode==='solo'||(mode==='p2p'&&isHost)||(mode==='online'&&S&&S.hostId===myId);
+/* vs the computer the game waits while the page is hidden (app switch, lock, a call): the computer stops and your clock
+   doesn't run out, the same as Bondi and Dhihaeh. Online tables keep their own timing. */
+const soloPaused=()=>mode==='solo'&&document.hidden;
 function autoTurn(){const N=clone(S);const pi=N.turn,p=N.players[pi],h=N.hands[p.id];
  if(N.phase==='draw'){if(!drawFor(N)){if(!N.discard.length)return;const c=N.discard.pop();h.push(c);N.took=c;N.from='up';N.phase='discard';mv(N,'take',c);}
   if(cover(h)){win(N,true);N.tmo={k:N.move.seq,n:p.name,me:p.id};const k0=afkCount(N,pi);N.rev=(S.rev||0)+1;N.by=myId;commit(N);if(k0)afkKick(k0);return;}}
@@ -1483,7 +1486,7 @@ setInterval(()=>{const st=document.getElementById('status');
  {const hc=left<=(S.blitz?1500:4000),wc=!hc&&left<=(S.blitz?3000:7000);document.querySelectorAll('.tmr').forEach(t=>{const a=t.parentNode;t.classList.toggle('hot',hc);t.classList.toggle('warn',wc);a.classList.toggle('hot',hc);a.classList.toggle('warn',wc);});}
  if(mine&&sec!==tmrLast&&sec<=hot&&sec>0){SFX.tick();if(sec===hot)buzz(40);}
  tmrLast=sec;
- if(left<-800&&amAuthority())autoTurn();
+ if(left<-800&&amAuthority()&&!soloPaused())autoTurn();
  {const k=S.handNo+':'+S.turn+':'+turnSeen;if(thinkKey!==k&&left<turnMs()*.45&&left>1200){thinkKey=k;reactP(S.players[S.turn].id,'thinking',2200);}}
 },250);
 function commit(N){if(!S||N.turn!==S.turn||N.handNo!==S.handNo||N.status!==S.status||N.phase==='draw'&&S.phase!=='draw')N.turnAt=Date.now();apply(N);if(mode==='solo'){scheduleBot();}if(mode==='p2p'&&isHost){broadcast();scheduleBot();hostFarewell();afkHostCheck();}if(ref){const snap=N;writeQ=writeQ.then(()=>ref.set(snap)).catch(e=>toast(errMsg(e)));}}
@@ -1524,7 +1527,7 @@ return best||h.find(c=>c!==took)||h[0];}
 function wantsDiscard(h,top){const w=h.concat([top]);if(cover(w))return true;const base=handScore(h).net;
 let best=-1e9;h.forEach(c=>{best=Math.max(best,handScore(w.filter(x=>x!==c)).net);});return best>base+4;}
 const botRuns=()=>mode==='solo'||(mode==='p2p'&&isHost);
-function scheduleBot(){clearTimeout(botT);botT=null;if(!botRuns()||!S||S.status!=='playing')return;const p=S.players[S.turn];if(!p||!p.bot)return;const sp=S.blitz?.6:1;
+function scheduleBot(){clearTimeout(botT);botT=null;if(!botRuns()||!S||S.status!=='playing'||soloPaused())return;const p=S.players[S.turn];if(!p||!p.bot)return;const sp=S.blitz?.6:1;
 botT=setTimeout(botThink,(S.phase==='draw'?(reduce?250:850*sp):(reduce?250:950*sp))+(S.move&&S.move.t==='deal'&&!reduce?SHUF_MS+900:0));}
 function botThink(){botT=null;if(!botRuns()||!S||S.status!=='playing')return;const p=S.players[S.turn];if(!p.bot)return;const h=S.hands[p.id];
 if(S.phase==='draw'){const top=S.discard[S.discard.length-1];act(top&&wantsDiscard(h,top)?'drawDiscard':'drawStock',null,S.turn);}
@@ -2373,8 +2376,8 @@ ${r.rows?handRowsHTML(r):''}
 ${revealHTML(r)}
 <div class="muted totlbl">Game total</div>
 ${scoresHTML()}
-${meIdx()>=0?`<button class="btn primary wide" data-a="${over?'again':'next'}">${over?'Play again':'Deal next hand'}</button>`:''}
-<button class="btn ghost wide" style="margin-top:8px" data-a="leave">${mode==='solo'?'Back to home':'Leave table'}</button>${sponsorLineHTML()}</div>`;
+${sponsorLineHTML()}<div class="rfoot">${meIdx()>=0?`<button class="btn primary wide" data-a="${over?'again':'next'}">${over?'Play again':'Deal next hand'}</button>`:''}
+<button class="btn ghost wide" style="margin-top:8px" data-a="leave">${mode==='solo'?'Back to home':'Leave table'}</button></div></div>`;
 o.classList.add('show');
 if(S.result&&S.result.w===meIdx())setTimeout(()=>playEffect(equippedId('effect')),550);
 if(aw&&aw.lvl)setTimeout(()=>toast('New title unlocked: '+aw.lvl,4000),1400);}
@@ -3402,8 +3405,9 @@ $('#sheet').addEventListener('click',e=>{if(e.target.id==='sheet')closeSheet();}
 const unlockAudio=()=>{AU.unlock();};
 ['pointerdown','touchstart','touchend','click','keydown'].forEach(ev=>document.addEventListener(ev,unlockAudio,{capture:true,passive:true}));
 /* stop all sound when the tab is hidden or the phone locks; bring it back on return */
-function onHide(){Music.pause();AU.sleep();}
-function onShow(){if(document.hidden)return;if(Music.on||sfxOn())AU.wake();Music.resume();netWake();if((screen==='home'||screen==='friends')&&!net)warmUp();if(screen==='table')layoutHand();}
+function onHide(){Music.pause();AU.sleep();if(mode==='solo'&&document.hidden){clearTimeout(botT);botT=null;}}
+function onShow(){if(document.hidden)return;if(Music.on||sfxOn())AU.wake();Music.resume();netWake();if((screen==='home'||screen==='friends')&&!net)warmUp();if(screen==='table')layoutHand();
+if(mode==='solo'&&S&&S.status==='playing'){turnSeen=Date.now();tmrLast=-1;scheduleBot();}}
 document.addEventListener('visibilitychange',()=>{if(document.hidden)onHide();else onShow();});
 window.addEventListener('pagehide',onHide);
 /* closing the page while hosting: take the table out of the open-tables list right away */
