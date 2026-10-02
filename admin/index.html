@@ -613,6 +613,16 @@ dialog::backdrop{background:rgba(31,28,25,.45);backdrop-filter:none}
 .badge.on::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--ok);animation:pulse 2s infinite}
 .stat .k .live{display:inline-block;margin-left:7px;vertical-align:1px}
 @media (prefers-reduced-motion:reduce){.apill.on i,.badge.on::before{animation:none}}
+/* Advertisers "Today so far" (live, read every minute, never saved) */
+.atoday .chead h2.tdh{flex:none;display:inline-flex;align-items:center;gap:8px}
+.atoday .chead .small{flex:1;min-width:0}
+.atq{grid-template-columns:repeat(2,minmax(0,1fr))}
+@media (min-width:640px){.atq{grid-template-columns:repeat(4,minmax(0,1fr))}}
+.atq .s{overflow-wrap:anywhere}
+.tmeta{font-size:12px;color:var(--g4);margin-top:14px}
+.thelp{font-size:12px;color:var(--g4);margin:8px 0 0;padding-top:10px;border-top:1px solid var(--g1)}
+.thelp code{font-family:var(--mono);font-size:11.5px}
+.asrow .dt .tdy b{color:var(--ok)}
 </style>
 </head>
 <body>
@@ -947,7 +957,12 @@ const Real={
  async adSums(from,to){await fbInit();const F=FB.F;const s=await F.getDocs(F.query(F.collection(FB.db,'adstats'),F.where(F.documentId(),'>=','sum-'+from),F.where(F.documentId(),'<=','sum-'+to)));
   return s.docs.map(d=>Object.assign({},d.data(),{id:d.id}));},
  async adDay(day){await fbInit();const F=FB.F;const s=await F.getDocs(F.collection(FB.db,'adstats','day-'+day,'dev'));return s.docs.map(d=>Object.assign({},d.data(),{id:d.id}));},
- async putSum(day,data){const F=FB.F;await F.setDoc(F.doc(FB.db,'adstats','sum-'+day),data);}
+ async putSum(day,data){const F=FB.F;await F.setDoc(F.doc(FB.db,'adstats','sum-'+day),data);},
+ /* today's device docs, live ("Today so far"): ONE query, only the docs changed since the last look (t >= since),
+    oldest change first, at most cap docs. Read only; today never gets a sum. */
+ async adToday(day,since,cap){await fbInit();const F=FB.F,c=F.collection(FB.db,'adstats','day-'+day,'dev');
+  const s=await F.getDocs(since?F.query(c,F.where('t','>=',since),F.orderBy('t'),F.limit(cap)):F.query(c,F.orderBy('t'),F.limit(cap)));
+  return s.docs.map(d=>Object.assign({},d.data(),{id:d.id}));}
 };
 
 /* ---------- mock (localhost only) ---------- */
@@ -1019,7 +1034,8 @@ function makeMock(){
   async adSums(from,to){if(LIVE)return Real.adSums(from,to);if(Q.get('rules')==='0')throw{code:'permission-denied'};await new Promise(r=>setTimeout(r,30));
    return [...AS.entries()].filter(([d])=>d>=from&&d<=to).map(([d,x])=>Object.assign(JSON.parse(JSON.stringify(x)),{id:'sum-'+d}));},
   async adDay(day){if(LIVE)return Real.adDay(day);if(Q.get('rules')==='0')throw{code:'permission-denied'};return mockAdDocs(day);},
-  async putSum(day,data){await block();AS.set(day,JSON.parse(JSON.stringify(data)));}
+  async putSum(day,data){await block();AS.set(day,JSON.parse(JSON.stringify(data)));},
+  async adToday(day,since,cap){if(LIVE)return Real.adToday(day,since,cap);if(Q.get('rules')==='0')throw{code:'permission-denied'};return mockAdDocs(day).slice(0,cap);}
  };
  const AS=new Map();
  function mockAdDocs(day){if(Q.get('ads')==='empty'||day<ADS_START)return [];
@@ -1106,9 +1122,9 @@ function setTab(t){tab=t;try{sessionStorage.setItem('dga-tab',t);}catch(e){}
  document.querySelectorAll('.tab').forEach(b=>b.setAttribute('aria-selected',String(b.dataset.t===t)));
  ['overview','stats','tables','players','inbox','ads'].forEach(k=>{const s=$('#s-'+k);if(s)s.hidden=k!==t;});
  if(t==='tables')renderTables();if(t==='stats'){if(!TR.at&&!TR.loading)loadTraffic();else renderTraffic();}
- if(t==='ads'){if(!AD.at&&!AD.loading)loadAds();else renderAds();}
+ if(t==='ads'){if(!AD.at&&!AD.loading)loadAds();else renderAds();loadToday();}
  {const b=document.querySelector('.tab[data-t="'+t+'"]');if(b&&b.scrollIntoView)try{b.scrollIntoView({block:'nearest',inline:'nearest'});}catch(e){}}window.scrollTo({top:0});}
-function renderAll(){renderSetup();renderResetSvc();renderStats();renderOnline();renderTables();renderPlayers();renderInbox();renderTraffic();renderAds();if(tab==='stats'&&!TR.at&&!TR.loading)loadTraffic();if(tab==='ads'&&!AD.at&&!AD.loading)loadAds();}
+function renderAll(){renderSetup();renderResetSvc();renderStats();renderOnline();renderTables();renderPlayers();renderInbox();renderTraffic();renderAds();if(tab==='stats'&&!TR.at&&!TR.loading)loadTraffic();if(tab==='ads'){if(!AD.at&&!AD.loading)loadAds();loadToday();}}
 
 /* ---------- setup card (UID + one-time rules) ---------- */
 function renderSetup(){const el=$('#setup');if(!el)return;const uid=user?user.uid:'';
@@ -1617,6 +1633,43 @@ function adDefaultSp(){const L=adSponsors(),v=s=>adAgg(s.id,AD.per||dayKey(0).sl
  const any=L.slice().sort((a,b)=>v(b)-v(a));return any.length?any[0].id:'';}
 const adHas=()=>[...AD.sums.values()].some(S=>S.n>0);
 
+/* ---- "Today so far": today's device docs, read live while this tab is open and the page is visible ----
+   One query a minute, capped at ADT_CAP docs. After the first look it asks only for the docs that changed
+   since (t >= the newest change seen), so a quiet minute costs about 1 read. Added up with sumDay() (tampered docs
+   left out, the same as a finished day) but NEVER saved: only finished days get a sum, in loadAds(). */
+const ADT_CAP=500,ADT_EVERY=60e3;
+const ADT={day:'',docs:new Map(),since:null,at:0,busy:false,err:'',capped:false,S:null,reads:0};
+async function loadToday(force){if(ADT.busy||!isAdmin||document.hidden)return;if(!force&&ADT.at&&Date.now()-ADT.at<ADT_EVERY)return;
+ const d=dayKey(0);
+ if(ADT.day!==d){const was=ADT.day;Object.assign(ADT,{day:d,docs:new Map(),since:null,S:null,capped:false});
+  /* midnight (Maldives time) passed with the tab open: yesterday is a finished day now, so add it up the usual way */
+  if(was&&AD.at&&!AD.loading){AD.at=0;loadAds();}}
+ if(force){ADT.docs=new Map();ADT.since=null;}
+ ADT.busy=true;
+ try{const got=await DL.adToday(d,ADT.since,ADT_CAP);ADT.reads+=Math.max(1,got.length);
+  if(ADT.day===d){got.forEach(x=>ADT.docs.set(x.id,x));
+   for(const x of got)if(x.t&&typeof x.t.toMillis==='function'&&(!ADT.since||x.t.toMillis()>=ADT.since.toMillis()))ADT.since=x.t;
+   ADT.capped=got.length>=ADT_CAP;ADT.S=sumDay([...ADT.docs.values()]);ADT.err='';}}
+ catch(e){console.warn(e);ADT.err=e&&e.code==='permission-denied'?'The Firestore rules don’t let this account read today’s ad counts yet. Publish the admin rules (Overview → Your account & one-time setup).':'Couldn’t read today’s counts: '+(e.message||e.code||e);}
+ ADT.at=Date.now();ADT.busy=false;paintToday();}
+function adTodayOf(sid){const S=ADT.S;if(!S)return null;const pre=sid+'~';let v=0,t=0,sec=0;
+ for(const x in S.v)if(x.startsWith(pre))v+=S.v[x];for(const x in S.k)if(x.startsWith(pre))t+=S.k[x];for(const g in S.m)sec+=S.m[g];
+ return {v,t,r:(S.rd||{})[sid]||0,sec,n:S.n,md:S.md};}
+function durTxt(s){s=Math.round(s);if(s<60)return s+' s';const m=Math.round(s/60);if(m<60)return m+' min';const h=Math.floor(m/60);return h+' h'+(m%60?' '+(m%60)+' min':'');}
+const hhmm=ms=>new Date(ms).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
+function todayInner(s){const x=s&&s.id?adTodayOf(s.id):null,link=!!(s&&s.url);
+ const head=`<div class="chead"><h2 class="tdh"><span class="live" aria-hidden="true"></span>Today so far</h2><span class="small muted">live, updates every minute</span>${ADT.busy&&!ADT.S?'<span class="spin"></span>':''}</div>`;
+ const help=`<p class="thelp">Not counted: bots, browsers with Do Not Track or Global Privacy Control on, local test copies and <code>?ns</code> test tables. Finished days are added up after midnight Maldives time.</p>`;
+ if(ADT.err)return head+`<div class="note">${IC.warn}<div>${esc(ADT.err)}</div></div>`+help;
+ if(!x)return head+`<div class="anone">Reading today’s counts…</div>`+help;
+ const fig=(l,v,sub)=>`<div><div class="lbl">${l}</div><div class="v">${v}</div><div class="s">${sub}</div></div>`;
+ return head+`<div class="aaud atq">${fig('Views',fmt(x.v),esc(s.title||''))}${fig('Taps',link?fmt(x.t):'–',link?(x.v?pctS(x.t,x.v,1)+' of views':'opened the link'):'this ad has no link')}
+   ${fig('Players reached',fmt(x.r),'devices that saw it')}${fig('Time played',durTxt(x.sec),'whole site, '+fmt(x.md)+' player'+(x.md===1?'':'s'))}</div>
+  <div class="tmeta">${esc(dNice(ADT.day))}, Maldives time · ${fmt(x.n)} device${x.n===1?'':'s'} counted so far · updated ${esc(hhmm(ADT.at))}${ADT.capped?' · more than '+fmt(ADT_CAP)+' devices changed, the rest arrive next minute':''}</div>`+help;}
+const todayRow=id=>{const x=adTodayOf(id);return x?`<b>${fmt(x.v)}</b> today`:ADT.err?'':'… today';};
+function paintToday(){const box=$('#adToday');if(box){const s=adSponsors().find(x=>x.id===AD.sp);box.innerHTML=todayInner(s);}
+ document.querySelectorAll('[data-today]').forEach(el=>{el.innerHTML=todayRow(el.dataset.today);});}
+
 /* ---- drawing ---- */
 function adNum(v,f){return f==='p'?v.toFixed(2)+'%':f==='d'?v.toFixed(1):f==='m'?Math.round(v)+' min':fmt(Math.round(v));}
 const cuN=(v,f)=>`<span data-cu="${v}" data-f="${f||''}">${adNum(v,f)}</span>`;
@@ -1656,10 +1709,10 @@ function renderAds(){const el=$('#ads');if(!el)return;
    <div class="acts"><button class="btn pri" data-a="adpdf" ${hasA?'':'disabled'}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg>Download PDF</button>
     <button class="btn" data-a="adcsv" ${hasA?'':'disabled'}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h10l4 4v12H5z"/><path d="M8 13h8M8 17h5"/></svg>Download CSV</button></div></div>
   <div class="ahead">${adLogo(s)}<div style="min-width:0"><div class="nm">${esc(s.title)} ${adPill(s)}</div><div class="sub">${esc(adDates(s))}${s.url?' · '+esc(String(s.url).replace(/^https?:\/\//,'').replace(/\/$/,'')):''}</div></div></div></div>`;
- const list=sponsorListHTML(L,per);
+ const list=sponsorListHTML(L,per),tcard=`<div class="card atoday" id="adToday">${todayInner(s)}</div>`;
  const foot=`<div class="afoot"><span>Daily totals ${AD.sums.size?'up to '+esc(dNice(dayKey(1))):'start after the first full day'}${AD.built?` · ${AD.built} new day${AD.built===1?'':'s'} added up just now`:''}${AD.unsaved?` · ${AD.unsaved} not saved (read-only)`:''} · about ${fmt(AD.reads)} reads</span><span class="sp"></span><button class="btn sm ghost" data-a="adreload">Check again</button></div>`;
- if(!has){el.innerHTML=`<div class="adv">${ctl}<div class="card aempty"><div class="dot" aria-hidden="true"></div><h3>${ADS_START>=dayKey(0)?'Counting starts today':'Counting has started'}</h3>
-   <p>Ad views, taps and time played are counted from ${esc(dNice(ADS_START))}. The numbers show here the morning after each day ends (Maldives time). Nothing is estimated or made up.</p>
+ if(!has){el.innerHTML=`<div class="adv">${ctl}${tcard}<div class="card aempty"><div class="dot" aria-hidden="true"></div><h3>${ADS_START>=dayKey(0)?'Counting starts today':'Counting has started'}</h3>
+   <p>Ad views, taps and time played are counted from ${esc(dNice(ADS_START))}. Daily totals show here the morning after each day ends (Maldives time); today’s live count is above. Nothing is estimated or made up.</p>
    <ul><li><i></i>Views and players reached, per sponsor</li><li><i></i>Taps and tap rate</li><li><i></i>Placements, games and devices</li><li><i></i>A one-page monthly report for each company</li></ul></div>${list}${foot}</div>`;bindAds();return;}
  const freq=a.reach?a.views/a.reach:0,tr=a.views?a.taps/a.views*100:0,A=adAud(per);
  const kpi=[['Ad views',cuN(a.views),hasA?(delta(a.views,pv&&pv.views,pl)||`${a.n} day${a.n===1?'':'s'} counted`):'none yet'],
@@ -1671,7 +1724,7 @@ function renderAds(){const el=$('#ads');if(!el)return;
  const pls=Object.entries(a.pl).sort((x,y)=>y[1].v-x[1].v),pmax=Math.max(1,...pls.map(p=>p[1].v));
  let gs=Object.entries(a.games).sort((x,y)=>y[1]-x[1]);if(gs.length>8){const rest=gs.slice(7);gs=gs.slice(0,7).concat([['_other',rest.reduce((t,g)=>t+g[1],0),rest.length]]);}
  const gmax=Math.max(1,...gs.map(g=>g[1]));
- el.innerHTML=`<div class="adv">${ctl}
+ el.innerHTML=`<div class="adv">${ctl}${tcard}
   <section class="akpi" aria-label="Headline numbers">${kpi.map(k=>`<div class="t"><div class="lbl">${k[0]}</div><div class="v">${k[1]}</div><div class="s">${k[2]}</div></div>`).join('')}</section>
   <div class="card"><div class="chead"><h2>${yr?'Ad views per month':'Ad views per day'}</h2><span class="small muted">${esc(perTxt)}</span></div><div id="adChart"></div><div class="readout" id="adRead"></div></div>
   <div class="grid2">
@@ -1691,7 +1744,7 @@ function renderAds(){const el=$('#ads');if(!el)return;
   <div class="card"><div class="chead"><h2>Monthly report</h2><span class="small muted">${hasA?'Download PDF saves exactly this page':'nothing to report for this period'}</span></div><div class="rwrap" id="adRwrap"><div id="adRep">${reportHTML(s,per,a,A)}</div></div></div>
   ${list}${foot}</div>`;
  bindAds();drawAdChart();fitReport();countUp(el);}
-function sponsorListHTML(L,per){const row=x=>{const v=adAgg(x.id,per).views;return `<button type="button" class="asrow tap${x.id===AD.sp?' on':''}" data-a="adsp" data-id="${esc(x.id)}">${adLogo(x)}<span class="nm">${esc(x.title)}</span>${adPill(x)}<span class="dt"><span>${esc(adDates(x))}</span><span><b>${v?fmt(v):'–'}</b> views ${per==='year'?'this year':'in '+esc(mShort(per))}</span></span></button>`;};
+function sponsorListHTML(L,per){const row=x=>{const v=adAgg(x.id,per).views;return `<button type="button" class="asrow tap${x.id===AD.sp?' on':''}" data-a="adsp" data-id="${esc(x.id)}">${adLogo(x)}<span class="nm">${esc(x.title)}</span>${adPill(x)}<span class="dt"><span>${esc(adDates(x))}</span><span><b>${v?fmt(v):'–'}</b> views ${per==='year'?'this year':'in '+esc(mShort(per))}</span><span class="tdy" data-today="${esc(x.id)}">${todayRow(x.id)}</span></span></button>`;};
  const paid=L.filter(x=>!adOwn(x)&&!x.gone),own=L.filter(x=>adOwn(x)&&!x.gone),gone=L.filter(x=>x.gone);
  return `<div class="card"><div class="chead"><h2>Sponsors</h2><span class="small muted">from shared/sponsors.js · tap one to open it</span></div>
   <div class="agrp">Sponsors</div>${paid.length?paid.map(row).join(''):'<div class="anone">No paid sponsors yet. Add one in shared/sponsors.js (with an id and from/to dates).</div>'}
@@ -1890,7 +1943,7 @@ document.addEventListener('click',async e=>{const b=e.target.closest('[data-a]')
   case 'tab':setTab(b.dataset.t);break;
   case 'signout':try{await DL.signOut();}catch(x){}break;
   case 'google':authErr='';try{await DL.signInGoogle();}catch(x){const el=$('#lerr');if(el)el.textContent=authMsg(x);}break;
-  case 'refresh':toast('Refreshing…',1200);loadPlayers();loadPresence();if(rulesOK!==false)loadInbox();if(tab==='stats'){TR.at=0;loadTraffic(true);}if(tab==='ads'){AD.at=0;loadAds();}break;
+  case 'refresh':toast('Refreshing…',1200);loadPlayers();loadPresence();if(rulesOK!==false)loadInbox();if(tab==='stats'){TR.at=0;loadTraffic(true);}if(tab==='ads'){AD.at=0;loadAds();loadToday(true);}break;
   case 'copy-uid':copy(user.uid);break;
   case 'copy-rules':copy(RULES.split("['OWNER_UID']").join("['"+(user&&!MOCK?user.uid:'OWNER_UID')+"']"));break;
   case 'probe':rulesOK=null;renderSetup();await probe();if(rulesOK){loadInbox();TR.at=0;TR.err='';AD.at=0;AD.err='';}else renderInbox();toast(rulesOK?'Admin rules are active.':'Not active yet. Publish the rules, wait a minute, try again.',3500);break;
@@ -1913,7 +1966,7 @@ document.addEventListener('click',async e=>{const b=e.target.closest('[data-a]')
   case 'clean-presence':doCleanPresence();break;
   case 'daysel':TR.sel=+b.dataset.i;renderTraffic();break;
   case 'traffic':TR.at=0;loadTraffic(true);break;
-  case 'adreload':AD.at=0;loadAds();break;
+  case 'adreload':AD.at=0;loadAds();loadToday(true);break;
   case 'adsp':AD.sp=b.dataset.id;AD.sel=-1;renderAds();{const h=document.querySelector('.ahead');if(h)h.scrollIntoView({behavior:RM.matches?'auto':'smooth',block:'center'});}break;
   case 'adday':AD.sel=+b.dataset.i;drawAdChart();{const r=$('#adRead');if(r&&!RM.matches){r.classList.remove('flash');void r.offsetWidth;r.classList.add('flash');}}break;
   case 'adpdf':adPrint();break;
@@ -1954,8 +2007,11 @@ async function onUser(u){user=u||null;stopTimers();
  loadPlayers();loadPresence();loadInbox();if(!mq.length&&!startTables.done){startTables.done=true;startTables();}
  timers.push(setInterval(loadPresence,PRES_EVERY));
  timers.push(setInterval(()=>{if(!document.hidden&&tab==='tables')renderTables();},3000));
- timers.push(setInterval(()=>{if(!document.hidden&&Date.now()-ST.playersAt>5*60e3)loadPlayers();},60e3));}
-document.addEventListener('visibilitychange',()=>{if(!document.hidden&&isAdmin){loadPresence();renderTables();}});
+ timers.push(setInterval(()=>{if(!document.hidden&&Date.now()-ST.playersAt>5*60e3)loadPlayers();},60e3));
+ /* Advertisers "Today so far": a free check every 5 s; it reads only when the last read is a minute old,
+    the Advertisers tab is open and the page is visible */
+ timers.push(setInterval(()=>{if(!document.hidden&&tab==='ads')loadToday();},5e3));}
+document.addEventListener('visibilitychange',()=>{if(!document.hidden&&isAdmin){loadPresence();renderTables();if(tab==='ads')loadToday();}});
 let rsT=0,lastW=innerWidth;addEventListener('resize',()=>{clearTimeout(rsT);rsT=setTimeout(()=>{if(innerWidth!==lastW){lastW=innerWidth;if(TR.at)renderTraffic();if(AD.at&&tab==='ads'){drawAdChart();fitReport();}}},200);});
 
 (async()=>{
