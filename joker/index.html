@@ -361,6 +361,19 @@ main.table>*{width:100%;max-width:640px;margin-left:auto;margin-right:auto}
 @keyframes drop{from{transform:translate(-50%,-20px);opacity:0}}
 @keyframes ytin{from{opacity:0;translate:0 10px}}
 @media (max-height:640px){.mebar{min-height:52px}.meav{--av:40px}.status{font-size:12px;padding:7px 13px}}
+/* phone landscape: the table on the left, you (bar + hand) in a column on the right, so the draw stage has room under the seats */
+@media (orientation:landscape) and (max-height:500px){
+ main.table{display:grid;grid-template-columns:minmax(0,1fr) clamp(236px,34%,320px);grid-template-rows:auto minmax(0,1fr)}
+ main.table>*{max-width:none;margin:0}
+ .topbar{grid-column:1/-1;grid-row:1}
+ .arena{grid-column:1;grid-row:2}
+ .me{grid-column:2;grid-row:2;align-self:end}
+ .mebar{flex-wrap:wrap;row-gap:6px;padding:4px 8px 0;gap:8px}
+ .meinfo{flex:1 0 auto}
+ .acts{margin-left:auto}
+ /* the round / game result card scrolls on a 390 px-high screen: its main button stays pinned at the card's bottom edge */
+ #ov .ovc>.btn.primary{position:sticky;bottom:0;z-index:2}
+}
 @media (prefers-reduced-motion:reduce){*,*:before,*:after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}.glow{display:none}}
 /* ================= online (shared/net.js): the night carnival, red velvet and gold ================= */
 :root{--dgn-bg:#1c0d17;--dgn-bg2:#261421;--dgn-fg:#FFF3D6;--dgn-muted:#C9B39E;--dgn-line:rgba(245,214,140,.16);--dgn-soft:rgba(245,214,140,.08);
@@ -932,7 +945,10 @@ const sc=$('#tsc');if(sc){const sx=ow/(2*g[2]),sy=oh/(2*g[3]);const tx=a.offsetL
  const w=$('#tadw');if(w){const adY=oy+oh/2+(TBL.at[1]-g[1])*sy;w.hidden=adY+9*sy>H-40||oh<220;}}
 placeSeats();renderPile(true);renderStage(true);}
 function seatAngle(k){const so=seatOrder(),i=so.indexOf(k),ang=SEAT_ANG[Math.min(4,so.length)]||[];return ang[i]!=null?ang[i]:90;}
+/* phone landscape (matches the CSS block): seats spread in a gentle arc along the top, the draw stage goes under them */
+const LANDQ=window.matchMedia?matchMedia('(orientation:landscape) and (max-height:500px)'):null;const land=()=>!!(LANDQ&&LANDQ.matches);
 function seatXY(k){const t=seatAngle(k)*Math.PI/180,half=seatOrder().length>=3?39:42;
+if(land()){const so=seatOrder(),n=so.length,i=so.indexOf(k),f=n<2?0:n===2?(i?.62:-.62):-1+2*i/(n-1);return{x:AR.cx+(AR.W/2-half-6)*f,y:34+Math.round(18*(1-Math.sin(t)))};}
 return{x:Math.max(half+2,Math.min(AR.W-half-2,AR.cx+AR.ow/2*1.0*Math.cos(t))),y:Math.max(30,AR.cy-AR.oh/2*1.04*Math.sin(t))};}
 function placeSeats(){const oe=$('#opps');if(!oe||!AR)return;
 seatOrder().forEach(k=>{const el=oe.querySelector(`.seat[data-k="${k}"]`);if(!el)return;const q=seatXY(k);
@@ -987,7 +1003,8 @@ if(n)h+=`<span class="pcount" style="transform:translate(${(AR.cx+AR.pw*.55).toF
 box.innerHTML=h;}
 /* the draw stage: your left neighbour's cards fanned face down, rows kept so every card is a 44px+ target */
 function stageGeom(n){const oe=$('#opps');let topY=0;if(oe)oe.querySelectorAll('.seat').forEach(el=>{const q=el.getBoundingClientRect(),a=$('#arena').getBoundingClientRect();topY=Math.max(topY,q.bottom-a.top);});
-const W=Math.min(AR.W-20,460),limB=Math.min(AR.H-10,AR.cy+AR.oh*.5);let cw=Math.round(Math.min(74,Math.max(48,AR.pw*1.12)));let per,rows,rowH,H;
+const L=land();if(L&&oe){topY=0;oe.querySelectorAll('.seat').forEach(el=>{const k=+el.dataset.k;if(seatOrder().includes(k))topY=Math.max(topY,seatXY(k).y-30+el.offsetHeight);});}
+const W=Math.min(AR.W-20,460),limB=L?AR.H-8:Math.min(AR.H-10,AR.cy+AR.oh*.5);let cw=L?64:Math.round(Math.min(74,Math.max(48,AR.pw*1.12)));let per,rows,rowH,H;
 for(;;){per=Math.max(1,Math.min(n,Math.floor((W-cw)/46)+1));rows=Math.ceil(n/per);per=Math.ceil(n/rows);rowH=Math.max(46,Math.round(cw*.62));H=cw*1.4+(rows-1)*rowH;if(topY+30+H<=limB||cw<=44)break;cw-=4;}
 const top=Math.max(topY+30,Math.min(AR.cy-H/2,limB-H));return{cw:cw,per:per,rows:rows,rowH:rowH,W:W,H:H,top:top};}
 function stagePos(i,n,G){const r=Math.floor(i/G.per),j=i%G.per,m=Math.min(G.per,n-r*G.per);const step=m>1?Math.min(Math.max(46,G.cw*.78),(G.W-G.cw)/(m-1)):0,tot=G.cw+(m-1)*step,x=AR.cx-tot/2+j*step;
@@ -995,13 +1012,13 @@ const d=m>1?(j/(m-1)-.5)*2:0;return{x:x,y:G.top+r*G.rowH+d*d*6,r:d*7};}
 function renderStage(force){const box=$('#stage');if(!box||!AR)return;const me=meIdx();const on=S.status==='playing'&&S.turn===me&&me>=0;
 if(!on){if(box._k){box._k='';box.innerHTML='';}return;}
 const n=S.hands[S.from].length,k=S.seq+':'+n+':'+AR.W+':'+AR.H;
-if(box._k!==k||force){const fresh=box._k&&box._k.split(':')[0]===String(S.seq)?'':' in';box._k=k;const G=stageGeom(n);box._G=G;box.style.setProperty('--sw',G.cw+'px');
+if(box._k!==k||force){const fresh=box._k&&box._k.split(':')[0]===String(S.seq)?'':' in';box._k=k;if(fresh)box._in0=reduce?0:performance.now();const G=stageGeom(n);box._G=G;box.style.setProperty('--sw',G.cw+'px');
  let h=`<span class="slbl" id="slbl" style="left:${AR.cx}px;top:${(G.top-8).toFixed(1)}px"></span>`;
  for(let i=0;i<n;i++){const q=stagePos(i,n,G);h+=`<div class="sc${fresh}" data-i="${i}" role="button" tabindex="0" aria-label="Card ${i+1} of ${n} from ${esc(S.players[S.from].name)}" style="transform:translate(${q.x.toFixed(1)}px,${q.y.toFixed(1)}px) rotate(${q.r.toFixed(1)}deg);z-index:${i+1};animation-delay:${(i*.03).toFixed(2)}s">${cardHTML(null)}</div>`;}
  box.innerHTML=h;}
 const lb=$('#slbl');if(lb){const lt=lifted>=0?'Tap it again to <b>take it</b>':`${esc(S.players[S.from].name)}’s hand · tap to lift`;if(lb._t!==lt){lb._t=lt;lb.innerHTML=lt;}}
 box.querySelectorAll('.sc').forEach(el=>{const i=+el.dataset.i,q=stagePos(i,n,box._G);const up=i===lifted;el.classList.toggle('up',up);el.style.transform=`translate(${q.x.toFixed(1)}px,${(q.y-(up?22:0)).toFixed(1)}px) rotate(${(up?0:q.r).toFixed(1)}deg)${up?' scale(1.06)':''}`;el.style.zIndex=up?99:i+1;});}
-function bindStage(){const box=$('#stage');const pick=el=>{if(!el||!S||S.status!=='playing'||S.turn!==meIdx())return;const i=+el.dataset.i;
+function bindStage(){const box=$('#stage');const pick=el=>{if(!el||!S||S.status!=='playing'||S.turn!==meIdx())return;const i=+el.dataset.i;if(box._in0&&performance.now()<box._in0+420+Math.min(i,12)*30)return;/* this card is still sliding in (.5 s, staggered .03 s a card; the last .1 s barely moves): a tap now could be meant for a card it is passing */
  if(lifted===i){buzz(12);sendDraw(i);return;}
  lifted=i;buzz(5);SFX.lift();renderStage();renderStatus();
  /* online: the lift goes through the host, who shows the other player which card you touched, and their face */
@@ -1116,7 +1133,7 @@ if(over){const ch=S.champs,won=ch.includes(me);av=avatarHTML(S.players[ch[0]],ch
  const lw=S.players[ch[0]].losses;sub=`<div class="pts ok">${lw} Joker${lw===1?'':'s'} in ${S.roundNo} round${S.roundNo===1?'':'s'}</div>`;setTimeout(()=>won?SFX.win():SFX.lose(),700);}
 else{av=lp?avatarHTML(lp,L,72):'';head=lp?(L===me?'You’re left with the Joker':esc(lp.name)+' is left with the Joker'):'Round over';
  const mi=r.order.indexOf(me);sub=me<0?'':L===me?`<div class="pts">A Joker mark for you</div>`:`<div class="pts ok">You were safe${mi>=0?', '+ord(mi+1)+' out':''}</div>`;setTimeout(()=>L===me?SFX.lose():SFX.safe(true),700);}
-const orderH=`<div class="order" aria-label="Order out this round">${r.order.map((k2,i)=>`<span>${avatarHTML(S.players[k2],k2,24)}<i>${ord(i+1)}</i>${esc(S.players[k2].name)}</span>`).join('')}${lp?`<span class="lose">${avatarHTML(lp,L,24)}${esc(lp.name)}</span>`:''}</div>`;
+const orderH=(over?`<div class="muted totlbl"><span>Round ${S.roundNo} · order out</span></div>`:'')+`<div class="order" aria-label="Order out this round">${r.order.map((k2,i)=>`<span>${avatarHTML(S.players[k2],k2,24)}<i>${ord(i+1)}</i>${esc(S.players[k2].name)}</span>`).join('')}${lp?`<span class="lose">${avatarHTML(lp,L,24)}${esc(lp.name)}</span>`:''}</div>`;
 o.innerHTML=`<div class="ovc">${av}<h2>${head}</h2>${sub}${aw&&aw.sh>0?`<div class="earn">+${aw.sh} ${HI.shell} Boli${aw.capped?' (daily limit reached)':''}</div>`:aw&&aw.capped?'<div class="earn muted">Daily Boli limit reached</div>':''}
 ${lp?`<div class="jkshow" aria-label="The Joker">${cardHTML(JK)}</div>`:''}${orderH}
 <div class="muted totlbl"><span>${over?'Final Jokers':'Jokers after round '+S.roundNo+' of '+S.rounds}</span><span>${S.need} ends it</span></div>

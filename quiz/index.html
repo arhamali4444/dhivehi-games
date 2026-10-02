@@ -330,6 +330,8 @@ textarea.in{height:auto;min-height:72px;padding:10px 12px;font:500 14px/1.4 Sora
 .bt.danger{background:var(--bad);color:#fff}
 .bt.wide{width:100%}
 .nextb{margin-top:12px;width:100%}
+/* the answer screen can run taller than a short phone or an iPad in landscape (Dhivehi text, fact box, report row): the Next / Standings button sticks to the bottom of the window, so it is always on screen without scrolling */
+.stage>.nextb{position:sticky;bottom:calc(10px + env(safe-area-inset-bottom,0px));z-index:5}
 .waitline{margin:14px 0 0;text-align:center;font-size:13px;font-weight:700;color:var(--muted)}
 .solo-score{display:flex;align-items:center;gap:10px;margin-top:14px;padding-block:8px;padding-inline:8px 12px;border-radius:18px;background:rgba(255,255,255,.55)}
 .solo-score .av{--s:40px}

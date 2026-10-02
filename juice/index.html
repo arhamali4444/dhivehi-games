@@ -333,6 +333,21 @@ main.table>*{width:100%;max-width:640px;margin-left:auto;margin-right:auto}
 @keyframes drop2{from{transform:translate(-50%,-20px);opacity:0}}
 @keyframes ytin{from{opacity:0;translate:0 10px}}
 @media (max-width:430px){.goal .gx{display:none}}@media (max-width:359px){.autob span:last-child{display:none}}
+/* phone landscape: the counter on the left, your stack and piles in a column on the right; the seats line the top so the centre piles sit clear of them */
+@media (orientation:landscape) and (max-height:500px){
+ main.table{display:grid;grid-template-columns:minmax(0,1fr) clamp(196px,27%,250px);grid-template-rows:auto minmax(0,1fr)}
+ main.table>*{max-width:none;margin:0}
+ .topbar{grid-column:1/-1;grid-row:1}
+ .arena{grid-column:1;grid-row:2}
+ .me{grid-column:2;grid-row:2;align-self:end;padding-left:6px;padding-right:6px}
+ .merow{flex-direction:column;align-items:stretch;gap:12px}
+ .meinfo{flex-direction:row;justify-content:center;width:auto}
+ .meinfo b{max-width:none}
+ .mycards{gap:8px}
+ .jlist{bottom:76px}
+ /* the round / game result card scrolls on a 390 px-high screen: its main button stays pinned at the card's bottom edge */
+ #ov .ovc>.btn.primary{position:sticky;bottom:0;z-index:2}
+}
 @media (prefers-reduced-motion:reduce){*,*:before,*:after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
 /* ================= online (shared/net.js): the juice bar, mango and lagoon glass on cream ================= */
 :root{--dgn-bg:#FFF8EE;--dgn-bg2:#FFFFFF;--dgn-fg:#123532;--dgn-muted:#5B7370;--dgn-line:rgba(18,53,50,.14);--dgn-soft:rgba(18,53,50,.06);
@@ -907,10 +922,13 @@ let ow=Math.min(W*.94,520);const oh=Math.max(120,Math.min(H-top-bot,ow*ar));if(o
 const pw=Math.round(Math.max(44,Math.min(60,W*.14,H*.11)));AR={W:W,H:H,ox:ox,oy:oy,ow:ow,oh:oh,pw:pw,cx:ox+ow/2,cy:oy+oh/2};a.style.setProperty('--pw',pw+'px');
 const sc=$('#tsc');if(sc){const sx=ow/(2*g[2]),sy=oh/(2*g[3]);const tx=a.offsetLeft+ox+ow/2-g[0]*sx,ty=a.offsetTop+oy+oh/2-g[1]*sy;sc.style.transform=`translate(${tx.toFixed(1)}px,${ty.toFixed(1)}px) scale(${sx.toFixed(4)},${sy.toFixed(4)})`;
  const w=$('#tadw');if(w){const adY=oy+oh/2+(TBL.at[1]-g[1])*sy;w.hidden=adY+9*sy>H-44||oh<220;}}
-const me=$('.me');if(me){const mw=Math.round(Math.max(50,Math.min(68,(Math.min(innerWidth,640)-78-60)/3.3,innerHeight*.1)));me.style.setProperty('--mw',mw+'px');}
+const me=$('.me');if(me&&land()){const mw=Math.round(Math.max(44,Math.min(64,(me.clientWidth-12-16)/3)));me.style.setProperty('--mw',mw+'px');}else if(me){const mw=Math.round(Math.max(50,Math.min(68,(Math.min(innerWidth,640)-78-60)/3.3,innerHeight*.1)));me.style.setProperty('--mw',mw+'px');}
 placeSeats();renderCentre(true);}
 function seatAngle(k){const so=seatOrder(),i=so.indexOf(k),ang=SEAT_ANG[Math.min(4,so.length)]||[];return ang[i]!=null?ang[i]:90;}
+/* phone landscape (matches the CSS block): seats spread along the top, the centre piles go under them */
+const LANDQ=window.matchMedia?matchMedia('(orientation:landscape) and (max-height:500px)'):null;const land=()=>!!(LANDQ&&LANDQ.matches);
 function seatXY(k){const t=seatAngle(k)*Math.PI/180,half=seatOrder().length>=3?39:42;
+if(land()){const so=seatOrder(),n=so.length,i=so.indexOf(k),f=n<2?0:n===2?(i?.62:-.62):-1+2*i/(n-1);return{x:AR.cx+(AR.W/2-half-6)*f,y:30+Math.round(8*(1-Math.sin(t)))};}
 return{x:Math.max(half+2,Math.min(AR.W-half-2,AR.cx+AR.ow/2*.98*Math.cos(t))),y:Math.max(26,AR.cy-AR.oh/2*1.02*Math.sin(t))};}
 function placeSeats(){const oe=$('#opps');if(!oe||!AR)return;
 seatOrder().forEach(k=>{const el=oe.querySelector(`.seat[data-k="${k}"]`);if(!el)return;const q=seatXY(k);
@@ -945,11 +963,12 @@ function renderHolds(){const oe=$('#opps');if(!oe)return;const me=vIdx();
 oe.querySelectorAll('.seat').forEach(el=>{const k=+el.dataset.k;let h=el.querySelector('.shold');const want=S.status==='playing'&&S.turn===k&&S.hold&&k!==me;
  if(!want){if(h)h.remove();return;}
  if(!h||h._c!==S.hold){if(h)h.remove();el.insertAdjacentHTML('beforeend',`<div class="shold in">${cardHTML(S.hold)}</div>`);h=el.querySelector('.shold');h._c=S.hold;
-  const t=seatAngle(k),dx=t>100?46:t<80?-46-AR.pw:(-AR.pw/2),tr=`translate(${(42+dx).toFixed(0)}px,${(4).toFixed(0)}px)`;h.style.transform=tr;h.style.setProperty('--t0',tr);}});}
+  const t=seatAngle(k),dx=land()||(t>=80&&t<=100)?(-AR.pw/2):t>100?46:-46-AR.pw,tr=`translate(${(42+dx).toFixed(0)}px,${(4).toFixed(0)}px)`;h.style.transform=tr;h.style.setProperty('--t0',tr);}});}
 /* centre piles: in a row when there's room, else two rows */
 function centreGeom(){const n=S.centre.length,slots=Math.min(4,n+(n<4?1:0)),pw=AR.pw,gap=10;
 const side=seatOrder().length>=3?84:0;const avail=AR.W-2*side-16;let cols=slots;if(slots*pw+(slots-1)*gap>avail)cols=Math.ceil(slots/2);const rows=Math.ceil(slots/cols);
-const tw=cols*pw+(cols-1)*gap,th=rows*pw*1.4+(rows-1)*(gap+8);const x0=AR.cx-tw/2,y0=AR.cy-th/2+6;return{slots:slots,cols:cols,rows:rows,x0:x0,y0:y0,pw:pw,gap:gap,th:th};}
+const tw=cols*pw+(cols-1)*gap,th=rows*pw*1.4+(rows-1)*(gap+8);const x0=AR.cx-tw/2;let y0=AR.cy-th/2+6;
+if(land()){let sb=0;const oe=$('#opps');if(oe)oe.querySelectorAll('.seat').forEach(el=>{const k=+el.dataset.k;if(seatOrder().includes(k))sb=Math.max(sb,seatXY(k).y-26+el.offsetHeight);});y0=Math.round(sb+14);}return{slots:slots,cols:cols,rows:rows,x0:x0,y0:y0,pw:pw,gap:gap,th:th};}
 function renderCentre(force){const box=$('#centre');if(!box||!AR||!S)return;if(S.status==='lobby'){box.innerHTML='';box._k='';return;}
 const G=centreGeom(),opt=hintsOn()?myOptions():null;const k=S.centre.map(p=>p[p.length-1]+p.length).join('|')+':'+AR.W+':'+AR.H+':'+S.base;
 if(box._k!==k||force){const prev=box._tops||[];box._k=k;let h=`<span class="baselbl" style="left:${AR.cx}px;top:${(G.y0+G.th+14).toFixed(1)}px">Centre: <b>${rlOfRank(S.base)}s</b> · K→A→2</span>`;
@@ -1133,7 +1152,7 @@ case 'menu':openMenu();break;
 case 'menuRules':sheet(`<div class="grab"></div>${rulesCardHTML(S)}${picsHTML()}<div class="row"><button class="btn primary" data-a="close">Back to the game</button></div>`);break;
 case 'sfx':toggleSfx();break;
 case 'leave':leave();break;
-case 'again':{if(mode==='online'){closeOv();if(NET)NET.again();break;}const ps=S.players.map(p=>Object.assign({},p));const df=S.diff;closeOv();ls.del(SAVE_KEY);S=JU.create({players:ps,juiceMs:JUICE_MS});S.diff=df;mode='solo';draw();act({k:'start'});break;}
+case 'again':{if(mode==='online'){closeOv();if(NET)NET.again();break;}const ps=S.players.map(p=>Object.assign({},p));const df=S.diff,gn=S.gameNo|0;closeOv();ls.del(SAVE_KEY);S=JU.create({players:ps,juiceMs:JUICE_MS});S.diff=df;S.gameNo=gn;mode='solo';draw();act({k:'start'});break;}
 case 'flip':{const me=meIdx();if(!S||S.status!=='playing'||me<0)break;if(S.turn!==me){if(S.phase!=='juice')toast('Wait for your turn.');break;}if(S.phase==='turn'){if(sendAct({k:'flip'}))buzz(6);}else if(S.phase==='place')toast('Place the card you turned up first.');break;}
 case 'mine':tapTarget({t:'own'});break;
 case 'opp':tapTarget({t:'o',p:+b.dataset.p});break;
