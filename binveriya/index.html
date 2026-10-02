@@ -302,6 +302,7 @@ button:disabled{cursor:default}
 .abtns{display:grid;gap:10px}
 .abtns .row{display:grid;grid-template-columns:repeat(auto-fit,minmax(0,1fr));gap:8px}
 .pumping #abtns>.btn{opacity:.55;pointer-events:none;filter:saturate(.6)}
+#abtns>.btn.wait{opacity:.55;pointer-events:none;filter:saturate(.6)}#abtns>.btn.wait::after{content:"…";margin-left:2px;animation:bvwait 1s steps(2) infinite}@keyframes bvwait{50%{opacity:.35}}
 .riskmini{display:flex;align-items:center;gap:8px;font-size:11px;font-weight:800;color:#FFD9CF;padding:0 4px}
 .riskmini i{flex:1;height:6px;border-radius:99px;background:rgba(255,255,255,.18);overflow:hidden}
 .riskmini i:before{content:"";display:block;width:var(--r);height:100%;background:linear-gradient(90deg,#F2C94C,#E86A5E,#C0342B);transition:width .6s var(--out)}
@@ -1852,11 +1853,14 @@ function react(i,expr,ms=1600){if(FAST||!G||!G.players[i]||!window.DGAvatar)retu
  if(DGAvatar.react){try{DGAvatar.react(pf,expr,ms);return;}catch(e){}}
  const ex=(DGAvatar.expressions||[]).includes(expr)?expr:'smug';pf.innerHTML=avHTML(i,34,ex,true);clearTimeout(pf.__t);pf.__t=setTimeout(()=>{pf.innerHTML=avHTML(i,34,null,true);},ms);}
 function flyCash(i,d){const el=$$('#pls .pl')[i];if(!el||FAST)return;const f=document.createElement('span');f.className='fly '+(d>0?'p':'m');f.textContent=(d>0?'+':'−')+Math.abs(d);el.appendChild(f);setTimeout(()=>f.remove(),1500);}
-let ACTKEY='';
+let ACTKEY='',PLAYP=null;/* PLAYP: whose events are animating now (QA M2) */
+function meBusy(){const pe=G&&G.pend;return !!pe&&pe.p===ME&&!AUTO&&document.body.classList.contains('pumping');}
+function meWaiting(){return meBusy()&&PLAYP!=null&&PLAYP!==ME&&!!G.players[PLAYP];}
 function statusText(){const pe=G.pend,p=meP();if(G.over)return 'Game over';
  if(ONLINE&&ME<0){if(!pe)return 'Watching';const w=pe.p!=null&&G.players[pe.p]?G.players[pe.p].name:'';return pe.t==='auction'?`Auction · ${SP[pe.sp].name}`:w?`${w}'s turn`:'Watching';}
  if(p.out)return p.left?'You left this game':WATCH||ONLINE?'You are bankrupt · watching':'You are bankrupt';
  if(!pe)return '…';const who=pe.p!=null?G.players[pe.p]:null,mine=pe.p===ME&&!AUTO;
+ if(mine&&!G.over&&meWaiting())return `${G.players[PLAYP].name} is finishing…`;
  switch(pe.t){case 'turn':return mine?(p.jail?`In Maafushi Prison · try ${p.jt+1} of 3`:'Your turn · roll the dice'):`${who.name}'s turn`+(who.jail?' · in prison':'');
   case 'post':return mine?(pe.again?'Doubles! Roll again':'Build, trade or end your turn'):`${who.name} is thinking…`;
   case 'buy':return mine?`Buy ${SP[pe.sp].name}?`:`${who.name} is looking at ${SP[pe.sp].name}`;
@@ -1868,7 +1872,7 @@ function statusText(){const pe=G.pend,p=meP();if(G.over)return 'Game over';
   case 'draw':return mine?`Draw a ${DECKN[pe.deck]} card`:`${who.name} is drawing a card`;
   case 'card':return mine?'Read your card':`${who.name} drew a ${DECKN[pe.deck]} card`;}return '';}
 function renderActions(){const pe=G.pend,p=meP(),mine=pe&&pe.p===ME&&!AUTO;$('#statusChip').textContent=statusText();
- let key=[G.over?1:0,p.out,WATCH,pe&&pe.t,pe&&pe.p,pe&&pe.again,p.jail,p.cards.length,p.cash>=JAIL_FEE,p.cash>=E.C.GUARD_BRIBE,p.sus,pe&&pe.t==='auction'&&pe.out.includes(ME)].join('|');
+ let key=[G.over?1:0,p.out,WATCH,pe&&pe.t,pe&&pe.p,pe&&pe.again,p.jail,p.cards.length,p.cash>=JAIL_FEE,p.cash>=E.C.GUARD_BRIBE,p.sus,pe&&pe.t==='auction'&&pe.out.includes(ME),meBusy(),meWaiting()].join('|');
  if(key!==ACTKEY){ACTKEY=key;let h='';
   if(G.over)h=`<button class="btn" data-a="results">See results</button><div class="row">${!ONLINE||netHost()?'<button class="btn soft sm" data-a="again">Play again</button>':''}<button class="btn soft sm" data-a="home">${ONLINE?'Leave table':'Home'}</button></div>`;
   else if(ONLINE&&ME<0)h='';
@@ -1883,6 +1887,7 @@ function renderActions(){const pe=G.pend,p=meP(),mine=pe&&pe.p===ME&&!AUTO;$('#s
    else if(mine&&(pe.t==='buy'||pe.t==='rent'||pe.t==='debt'||pe.t==='sandbank'||pe.t==='court'))h=`<button class="btn" data-a="decision">${{buy:'Buy or auction',rent:'Pay rent',debt:'Raise money',sandbank:'Choose at the Sandbank',court:'See the verdict'}[pe.t]}</button>`;
    else if(pe&&pe.t==='auction'&&!pe.out.includes(ME))h=`<button class="btn" data-a="decision">Open auction</button>`;
    h+=`<div class="row"><button class="btn soft sm" data-a="manage">${ICON.island}My islands</button><button class="btn soft sm" data-a="trade">${ICON.handshake}Trade</button></div>`;}
+  if(meBusy())h=h.replace(/<button class="btn( em)?"/,'<button class="btn$1 wait" disabled aria-disabled="true"');/* not ready yet: looks off, shows … */
   $('#abtns').innerHTML=h;
   if(mine&&pe.t==='turn'&&!p.jail){GUIDE.hook('roll');GUIDE.hook('help');}
   else if(mine&&pe.t==='turn'&&p.jail&&p.cash>=E.C.GUARD_BRIBE)GUIDE.hook('bribe');
@@ -2368,13 +2373,13 @@ function showChecks(title,sub,res){if(FAST)return Promise.resolve();return new P
 /* ---------------------------------------------------------------- event playback */
 let PUMPING=false,DIRTY=false,PASSED=false;
 async function pump(force){if(!G)return;if(PUMPING){DIRTY=true;return;}PUMPING=true;let any=false;
- try{for(let guard=0;guard<50;guard++){const evs=E.drain();if(!evs.length)break;any=true;document.body.classList.add('pumping');for(const ev of evs){if(!G)break;try{await play(ev);}catch(err){console.error(err);}}if(!G)break;}}
- finally{PUMPING=false;document.body.classList.remove('pumping');}
+ try{for(let guard=0;guard<50;guard++){const evs=E.drain();if(!evs.length)break;any=true;document.body.classList.add('pumping');if(G.pend&&G.pend.p===ME)renderActions();for(const ev of evs){if(!G)break;try{const q=ev.p!=null?ev.p:ev.from;if(q!=null&&q!==ME&&q!==PLAYP){PLAYP=q;if(G.pend&&G.pend.p===ME)renderActions();}await play(ev);}catch(err){console.error(err);}}if(!G)break;}}
+ finally{PUMPING=false;document.body.classList.remove('pumping');PLAYP=null;}
  if(!G)return;if(any||force||DIRTY){DIRTY=false;G.players.forEach((p,i)=>{VIEW.pos[i]=p.pos;VIEW.cash[i]=p.cash;});render();if(G.over)onOver();}schedule();}
 async function play(ev){const slow=ev.p!=null&&isBot(ev.p)&&!WATCH?1:1;
  switch(ev.t){
   case 'dice':await animDice(ev.d);break;
-  case 'move':{if(BV&&BV.path)BV.path(ev.path);const n=ev.path.length,step=FAST?0:RM.matches?40:(n>12?80:165)*(isBot(ev.p)?Math.max(.6,UI_SPEED()):1);
+  case 'move':{if(BV&&BV.path)BV.path(ev.path);const n=ev.path.length,step=FAST?0:RM.matches?40:(n>12?80:165)*(isBot(ev.p)?Math.max(.6,UI_SPEED())*.8:1);
    if(ev.p===ME&&ev.path.includes(0))PASSED=true;
    for(const pos of ev.path){if(!G)break;VIEW.pos[ev.p]=pos;placeTokens(ev.p);if(n<=12||pos%4===0)SND.hop();follow(ev.p);await sleep(step);}if(n)SND.land();if(BV&&BV.path)DTIMERS.push(setTimeout(()=>BV&&BV.path([]),900));break;}
   case 'jail':react(ev.p,'sad',2200);VIEW.pos[ev.p]=JAIL;placeTokens(ev.p);SND.jail();if(ev.p===ME)toast('Locked up in Maafushi Prison');await sleep(450);break;
@@ -2425,7 +2430,7 @@ function schedule(){if(!G||G.over||SCREEN!=='game')return;const pe=G.pend;syncDe
     position, everything) and plays this turn as a person, with the normal decision clock */
  if(pe.t==='turn'&&netHost()&&G.players[pe.p].cpu){const hk=G.id+':'+G.tn+':'+pe.p;if(HBK!==hk){HBK=hk;if(NET.handBreak(G.players[pe.p].id)>0&&!isBot(pe.p)){pump(true);return;}}}
  if(!['turn','buy','rent','debt','post','draw','card','sandbank','court'].includes(pe.t))return;const key=G.seq+':'+pe.t;if(aiSeq===key)return;aiSeq=key;clearTimeout(aiTimer);
- const base={turn:650,buy:900,rent:1000,debt:700,post:600,draw:700,card:1900,sandbank:1100,court:1000}[pe.t]*UI_SPEED();
+ const base={turn:650,buy:900,rent:1000,debt:700,post:600,draw:700,card:1900,sandbank:1100,court:1000}[pe.t]*UI_SPEED()*.75;
  const run=()=>{if(!G||G.pend!==pe||SCREEN!=='game')return;const s0=G.seq;AI.step(pe.p);
   if(G.pend===pe&&G.seq===s0)E.act(pe.p,FALLBACK(pe));aiSeq=-1;pump(true);};
  if(FAST)macro(run);else aiTimer=setTimeout(run,base);}
@@ -2446,7 +2451,7 @@ function awardBoli(){if(!G||!G.over||AUTO||FAST||G.round<8||ONLINE&&(NET.test||M
  sh=Math.max(0,Math.min(sh,500-(d.dayEarned|0)));d.dayEarned=(d.dayEarned|0)+sh;d.shells=Math.max(0,d.shells|0)+sh;ls.set('dd-inv',JSON.stringify(d));return {sh,capped:sh<want};}
 function boliCount(){try{const d=JSON.parse(ls.get('dd-inv')||'null');return d&&d.v===1?d.shells|0:0;}catch(e){return 0;}}
 let REWARD=null,OVERSHOWN=null;
-function onOver(){if(OVERSHOWN===G.id)return;OVERSHOWN=G.id;if(!ONLINE)ls.del('bv-save');if(netHost())NET.matchOver();REWARD=awardBoli();if(G.over.winner===ME)SND.win();else SND.gavel();setTimeout(openOver,FAST?0:900);}
+function onOver(){if(OVERSHOWN===G.id)return;OVERSHOWN=G.id;clearBanner();if(!ONLINE)ls.del('bv-save');if(netHost())NET.matchOver();REWARD=awardBoli();if(G.over.winner===ME)SND.win();else SND.gavel();setTimeout(openOver,FAST?0:900);}
 function openOver(){if(!G||!G.over)return;const o=G.over,w=o.winner,win=w===ME&&ME>=0;
  openSheet('over',`<div class="grab" aria-hidden="true"></div><div class="win"><div class="crown">${avHTML(w,92,win?'happy':'smug')}</div><h2 id="sheetTitle">${win?'You win!':esc(G.players[w].name)+' wins!'}</h2>
  ${o.reason==='goal'?`<span class="goalwin">Reached ${fmt(G.target)}</span><p>${win?'You were':esc(G.players[w].name)+' was'} the first to reach the ${fmt(G.target)} net worth goal.</p>`:

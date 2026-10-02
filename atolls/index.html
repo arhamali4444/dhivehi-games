@@ -484,6 +484,17 @@ button:disabled{cursor:default}
 @media (max-width:340px){.htop:has(#dgnSlot .dgn-dock:not([hidden])) .turn .dot{display:none}.htop:has(#dgnSlot .dgn-dock:not([hidden])) .turn{padding:4px 8px;font-size:12px}}
 /* short screens (320x568, landscape): the menu's Scoreboard / Trade log / How to play / Resources key go two by two, so Quit to lobby fits without scrolling */
 @media (max-height:640px){.mgrid{grid-template-columns:1fr 1fr}.mgrid>*{grid-column:1/-1}.mgrid>[data-m=score],.mgrid>[data-m=tlog],.mgrid>[data-m=rules],.mgrid>[data-m=legend]{grid-column:auto}}
+/* phone landscape: Atolls is a portrait game, so ask for upright (QA M3); vs computer pauses behind it */
+#rot{position:fixed;inset:0;z-index:400;display:none;background:radial-gradient(120% 90% at 50% 30%,#2aa9b8,#0f6e92 50%,#06304f);color:#fff;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:0 36px}
+@media (orientation:landscape) and (max-height:520px) and (hover:none),(orientation:landscape) and (max-height:520px) and (pointer:coarse){#rot{display:flex}}
+#rot .ph{width:56px;height:94px;border:4px solid #fff;border-radius:15px;position:relative;animation:rotph 3.2s cubic-bezier(.6,0,.3,1) infinite}
+#rot .ph::after{content:"";position:absolute;top:5px;left:50%;width:18px;height:4px;margin-left:-9px;border-radius:2px;background:#fff}
+#rot .ph i{position:absolute;inset:12px 7px;border-radius:5px;background:linear-gradient(180deg,#8fdcf7 30%,#2f7d4a 30% 58%,#f2d58a 58%)}
+@keyframes rotph{0%,20%{transform:rotate(-90deg)}45%,80%{transform:rotate(0)}100%{transform:rotate(-90deg)}}
+#rot h3{font:700 22px/1.15 Unbounded,Inter,system-ui;letter-spacing:-.02em;margin:22px 0 0}
+#rot p{font-size:14px;opacity:.88;margin:8px 0 0;max-width:340px}
+/* setup sheet: Start stays in view at the bottom (QA m3) */
+#sheet .stick{position:sticky;bottom:calc(-18px - var(--sab));z-index:2;margin:14px -16px calc(-18px - var(--sab));padding:10px 16px calc(var(--sab) + 18px);background:linear-gradient(rgba(246,249,250,0),#f6f9fa 12px)}
 </style>
 </head>
 
@@ -539,6 +550,7 @@ button:disabled{cursor:default}
 <div id="dim" hidden></div>
 <div id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle" tabindex="-1" hidden></div>
 <div id="fx" aria-hidden="true"></div>
+<div id="rot" role="alert"><div class="ph"><i></i></div><h3>Turn your phone upright</h3><p>Atolls is played the tall way. The game waits while your phone is sideways.</p></div>
 <script src="../shared/avatar.js?v=10"></script>
 <script src="../shared/sponsors.js?v=8"></script>
 <script src="../shared/net.js?v=6"></script>
@@ -983,13 +995,14 @@ const g=G(),gr=GR(),L=g.players[p].left,h=g.players[p].hand;
   const needs=RES.find(r=>o.get[r]&&h[r]-(o.get[r]|0)<(n[r]|0)&&h[r]<=1);if(needs)return no('need:'+needs);
   const loss=worthOf(o.get,v);
   if(E.pubPts(o.from)>=g.opts.target-2&&worthOf(o.give,v)<loss*2.2)return no('lead');
-  const want=RES.filter(r=>!o.get[r]).sort((a,b)=>v[b]-v[a])[0];
+  const ah=g.players[o.from].hand,want=RES.filter(r=>!o.get[r]&&(ah[r]|0)>0).sort((a,b)=>v[b]-v[a])[0];   /* only counter with what the asker can pay (QA m4) */
   if(E.cnt(o.give)){const gain=worthOf(o.give,v);if(gain>=loss+.15)return {t:'reply',id,ans:'yes'};
    if(gain>=loss-.9){if(want&&!o.give[want]&&v[want]>Math.max(...RES.filter(r=>o.give[r]).map(r=>v[r])))return {t:'reply',id,ans:'counter',give:{[want]:1},get:Object.assign({},o.get)};
-    const top=RES.filter(r=>o.give[r])[0],g2=Object.assign({},o.give);g2[top]++;return {t:'reply',id,ans:'counter',give:g2,get:Object.assign({},o.get)};}
+    const top=RES.filter(r=>o.give[r])[0],g2=Object.assign({},o.give);g2[top]++;if((ah[top]|0)>=g2[top])return {t:'reply',id,ans:'counter',give:g2,get:Object.assign({},o.get)};}
    return no('worth');}
   if(!want)return no('worth');
-  return {t:'reply',id,ans:'counter',give:{[want]:loss>v[want]*1.25?2:1},get:Object.assign({},o.get)};}
+  const q=loss>v[want]*1.25?2:1;if((ah[want]|0)<q)return no('worth');
+  return {t:'reply',id,ans:'counter',give:{[want]:q},get:Object.assign({},o.get)};}
  function choosePirate(p){const g=G(),gr=GR(),spots=E.pirateSpots(p);let lead=-1,lp=-1;g.players.forEach((_,i)=>{if(i===p)return;const x=E.pubPts(i)+E.cnt(g.players[i].hand)*0.05;if(x>lp){lp=x;lead=i;}});
   let best=spots[0],bs=-1e9;for(const h of spots){const H=g.map.hexes[h];let s=0;
    if(H.t==='sea'){for(const e of gr.he[h]){const x=g.eb[e];if(x&&x.k==='s')s+=x.p===p?-3:(x.p===lead?1.2:.5);}}
@@ -1649,7 +1662,7 @@ const TMR={on:false,t0:0,key:'',ms:20000,
  paint(){const b=$('#tmrBar');if(!b)return;if(!this.key){b.style.transform='scaleX(0)';return;}const u=Math.max(0,1-(Date.now()-this.t0)/this.ms);b.style.transform=`scaleX(${u.toFixed(3)})`;},
  arm(key){if(!G||!G.opts.timer||AUTO){this.on=false;this.key='';return;}this.on=true;if(this.key!==key){this.key=key;this.t0=Date.now();}},
  stop(){this.key='';}};
-setInterval(()=>{if(!TMR.on||!TMR.key||SCREEN!=='game'||!G||BUSY)return;TMR.paint();if(Date.now()-TMR.t0>TMR.ms){const k=TMR.key;TMR.key='';timeout(k);}},200);
+setInterval(()=>{if(!TMR.on||!TMR.key||SCREEN!=='game'||!G||BUSY||ROTPZ)return;TMR.paint();if(Date.now()-TMR.t0>TMR.ms){const k=TMR.key;TMR.key='';timeout(k);}},200);
 async function timeout(){if(!G||G.phase==='over'||netGuest())return;closeSheet(true);closeConfirm();SEL=null;drawSpots();renderPrompt();toast('Time is up',true);
  let a=null;if(G.offer&&G.offer.from===ME)a={t:'cancel',id:G.offer.id};else if(G.step==='main'&&G.turn===ME)a={t:'end'};else if(G.step==='sbp'&&E.sbpP()===ME)a={t:'done'};else a=AI.next(ME);
  /* online: a timed-out move counts toward the AFK rule (2 in a row and the computer keeps the seat) */
@@ -1663,13 +1676,18 @@ async function run(p,a){if(!G)return 'no game';
  const evs=E.drain();if(netHost()){hostEvents(evs);NET.sync();}BUSY=true;renderActs();try{await animate(evs);}catch(e){console.error(e);}BUSY=false;if(G!==g)return null;renderAll();kick();return null;}
 function errText(e){return ({closed:'That ask has closed',answered:'You already answered','no asks':'No asks left this turn','too soon':'Wait a moment before asking again','no deal':'That answer is not a deal',same:'Pick different resources to give and get',bad:'That offer does not work',cost:'Not enough resources','none left':'No pieces left',illegal:"You can't build there",'not now':'Not now','one per turn':'One Raajje card per turn','bank short':'The bank has run out of that',empty:'No Raajje cards left'})[e]||e;}
 function kick(ms){clearTimeout(PUMPT);PUMPT=setTimeout(pump,ms==null?40:ms);}
+/* phone sideways (the #rot prompt is up): vs computer the game waits, and its clocks (ask, bot replies, turn timer) shift by the pause (QA M3) */
+const ROT_MQ=matchMedia('(orientation:landscape) and (max-height:520px) and (hover:none),(orientation:landscape) and (max-height:520px) and (pointer:coarse)');let ROTPZ=0;
+function rotCheck(){const on=ROT_MQ.matches&&!ONLINE&&!!G&&SCREEN==='game';if(on&&!ROTPZ)ROTPZ=Date.now();else if(!on&&ROTPZ){const d=Date.now()-ROTPZ;ROTPZ=0;
+ if(G&&G.offer&&G.offer.t0)G.offer.t0+=d;for(const k in BOTDUE.t)BOTDUE.t[k]+=d;if(TMR.key)TMR.t0+=d;kick();}}
+try{ROT_MQ.addEventListener('change',rotCheck);}catch(e){ROT_MQ.addListener&&ROT_MQ.addListener(rotCheck);}setInterval(rotCheck,500);
 /* computer players answer an ask 1 to 4 s after it opens, one at a time, like people answering */
 let BOTDUE={id:0,t:{}};
 function botDue(o,p){if(BOTDUE.id!==o.id){BOTDUE={id:o.id,t:{}};const bots=o.to.filter(isBot),ts=bots.map(()=>1000+Math.random()*3000).sort((a,b)=>a-b);
   for(let k=1;k<ts.length;k++)ts[k]=Math.max(ts[k],ts[k-1]+450);bots.forEach((b,k)=>BOTDUE.t[b]=o.t0+ts[k]*SPEEDF);}
  if(BOTDUE.t[p]==null)BOTDUE.t[p]=Date.now()+(600+Math.random()*900)*SPEEDF;return BOTDUE.t[p];}
 function botDelay(){const s=G.step;if(G.phase==='setup')return 650;if(s==='roll')return 600;if(s==='steal')return 450;if(s==='sbp')return 420;if(s==='discard')return 250;return 720;}
-async function pump(){if(!G||SCREEN!=='game')return;if(BUSY){kick(120);return;}
+async function pump(){if(!G||SCREEN!=='game')return;if(BUSY){kick(120);return;}if(ROTPZ){kick(250);return;}
  if(G.phase==='over'){onOver();return;}const g=G,seq=G.seq;
  /* online guest: the host runs the computer players and the clocks; we only show our own prompts */
  if(netGuest()){renderBanner();humanTurn();return;}
@@ -1680,14 +1698,14 @@ async function pump(){if(!G||SCREEN!=='game')return;if(BUSY){kick(120);return;}
   /* the ask has its own 20 s (the host's clock): whoever has not answered by then says No (expired: never an AFK strike) */
   if(pend.length){renderBanner();if(offerLeft(o)<=0){for(const i of pend){if(G!==g||!G.offer||G.offer.id!==o.id)break;if(G.offer.rep[i]==null)await run(i,{t:'reply',ans:'no',id:o.id,expired:true});}kick();return;}
    kick(Math.max(40,Math.min(300,next-now)));return;}
-  if(isBot(o.from)){await sleep(650);if(G!==g||G.seq!==seq){kick();return;}const err=await run(o.from,AI.next(o.from)||{t:'cancel'});if(err){await run(o.from,{t:'cancel'});kick();}return;}
+  if(isBot(o.from)){await sleep(650);if(G!==g||G.seq!==seq||ROTPZ){kick();return;}const err=await run(o.from,AI.next(o.from)||{t:'cancel'});if(err){await run(o.from,{t:'cancel'});kick();}return;}
   if(SHEET==='trade')renderTradeSheet();return;}
  const who=E.actors();if(!who.length)return;
- if(G.step==='discard'){const b=who.find(isBot);if(b!=null){await sleep(260);if(G!==g||G.seq!==seq){kick();return;}await run(b,AI.next(b));return;}humanTurn();return;}
+ if(G.step==='discard'){const b=who.find(isBot);if(b!=null){await sleep(260);if(G!==g||G.seq!==seq||ROTPZ){kick();return;}await run(b,AI.next(b));return;}humanTurn();return;}
  const p=who[0];
  /* Quick Match: someone waiting takes this computer seat now, at the start of its turn (checked again after the pause) */
  if(isBot(p)&&cpuTurnBreak(p)){humanTurn();return;}
- if(isBot(p)){await sleep(botDelay());if(G!==g||G.seq!==seq||BUSY||!isBot(p)){kick();return;}if(cpuTurnBreak(p)){kick();return;}let a=AI.next(p);
+ if(isBot(p)){await sleep(botDelay());if(G!==g||G.seq!==seq||BUSY||ROTPZ||!isBot(p)){kick();return;}if(cpuTurnBreak(p)){kick();return;}let a=AI.next(p);
   if(!a)a=G.step==='main'?{t:'end'}:G.step==='sbp'?{t:'done'}:null;if(!a){console.warn('AI has no move',G.step);return;}
   const err=await run(p,a);if(err){const fb=G.offer&&G.offer.from===p?{t:'cancel'}:G.step==='main'?{t:'end'}:G.step==='sbp'?{t:'done'}:null;if(fb)await run(p,fb);else console.warn('AI error',err,a);}return;}
  humanTurn();}
@@ -2143,7 +2161,7 @@ function openSetup(){const M=MODES[HMODE];if(!ROSTER)ROSTER=roster();SETUP.n=Mat
  ${tog('friendly','Friendly pirate',M.friendly?'Always on in Duel: no robbing players with 2 points or fewer':'No robbing players with 2 points or fewer',!!M.friendly)}
  ${tog('fairDice','Fair dice','A shuffled deck of all 36 rolls instead of random dice')}
  ${tog('timer','Turn timer','20 seconds per decision, then the game moves for you')}
- <div style="margin-top:14px"><button class="btn" type="button" data-s="start" data-focus>Start game</button></div>`;
+ <div class="stick"><button class="btn" type="button" data-s="start" data-focus>Start game</button></div>`;
  openSheet('setup',html);}
 function setupClick(t){const s=t.dataset.s,v=t.dataset.v;
  if(s==='mode'){if(!MODES[v])return;HMODE=v;ls.set('atolls-mode',HMODE);}
