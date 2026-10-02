@@ -83,12 +83,13 @@ export async function createTaatal3(el, base, { sfx = null, rest = 'teach', ball
   // ---------- size: every pose placed so its foot point sits on the floor point ----------
   let U = 100, fX = 50, fY = 97, cur = '', shadowW = 50;
   const spinR = P['spin-1'] ? P['spin-1'].rel / 2 : 0.4;       // the shell spin turns round the middle of her rolled-up body
+  const SPIN = { 'spin-1': 1, 'spin-2': 1, 'spin-3': 1 };     // roll frames: centred on the floor point (their feet are wherever the roll put them)
   function layout() {
     const bw = el.clientWidth, bh = el.clientHeight; if (!bw || !bh) return;
     U = bh * STAND; fX = bw / 2; fY = bh * FLOOR;
     for (const n in img) {
       const p = P[n], k = U * p.rel / p.h, s = img[n].style;
-      s.width = p.w * k + 'px'; s.height = p.h * k + 'px'; s.left = fX - p.foot[0] * k + 'px'; s.top = fY - p.foot[1] * k + 'px';
+      s.width = p.w * k + 'px'; s.height = p.h * k + 'px'; s.left = fX - (SPIN[n] ? p.w / 2 : p.foot[0]) * k + 'px'; s.top = fY - p.foot[1] * k + 'px';
     }
     root.style.transformOrigin = `${fX}px ${fY}px`;
     shadowSize();
@@ -282,7 +283,7 @@ export async function createTaatal3(el, base, { sfx = null, rest = 'teach', ball
     const ts = (n - swapAt) / 1000; if (swapAt >= 0 && ts < 0.16) { const s = Math.sin(Math.PI * ts / 0.16); sy *= 1 - 0.06 * s; sx *= 1 + 0.04 * s; }
     lift *= M; rot *= M; dx *= M; if (calm) ang = ang ? 6 * Math.sin(t * 6) : 0;
     let tr = `translate(${dx * dir}px,${-lift}px) rotate(${rot}deg) scale(${sx * flip},${sy})`;
-    if (ang) { const cy = -spinR * U; tr += ` translate(0px,${cy}px) rotate(${ang}deg) translate(0px,${-cy}px)`; }   // one pivot for every roll frame
+    if (ang) { const cy = -(SPIN[cur] && P[cur] ? P[cur].rel / 2 : spinR) * U; tr += ` translate(0px,${cy}px) rotate(${ang}deg) translate(0px,${-cy}px)`; }   // each roll frame turns round its own middle (no orbit, no sideways jump on a frame change)
     root.style.transform = tr;
     const h = Math.min(1, lift / (0.35 * U)) * shadowK;
     shadow.style.transform = `translateX(${dx * dir}px) scale(${1 - 0.5 * h})`; shadow.style.opacity = 1 - 0.55 * h;

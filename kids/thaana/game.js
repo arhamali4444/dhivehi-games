@@ -130,7 +130,7 @@ async function startIsland(id) {
   stopFit(); $('#card').innerHTML = ''; $('#answers').innerHTML = ''; bub.textContent = '';   // nothing left over from the last island
   show('play');
   const seed = (Date.now() ^ id.length * 977) >>> 0;
-  const r = run = { isl, turns: buildTurns(isl, ATOLL1, makeRng(TEST ? 1 : seed)), i: 0, mistakes: 0, misses: 0, busy: true, idleMs: 0, lastTick: performance.now(), hummed: false, lockUntil: 0 };
+  const r = run = { isl, turns: buildTurns(isl, ATOLL1, makeRng(TEST ? 1 : seed)), i: 0, mistakes: 0, misses: 0, busy: true, idleMs: 0, lastTick: performance.now(), hummed: false, humMs: 0, lockUntil: 0 };
   renderBar(); startTick();
   await getTaatal();
   await fontReady;                                                  // letters are sized from the real glyph shapes
@@ -217,7 +217,7 @@ function pick(idx, btn) {
   if (idx === t.target) {
     run.busy = true; btn.classList.add('ok'); { const r = run; say('good').then(ms => finishTurn(r, ms)); }
   } else {
-    run.lockUntil = performance.now() + 400; run.misses++; run.mistakes++;
+    run.lockUntil = performance.now() + 400; run.misses++; run.mistakes++; renderBar();   // the stars drop as she falls, not on the next turn
     btn.classList.remove('wobble'); void btn.offsetWidth; btn.classList.add('wobble');
     if (run.misses >= 2) { say('gotthis'); glow(); } else say(run.mistakes % 2 ? 'oops1' : 'oops2');
   }
@@ -276,7 +276,7 @@ function checkTrace() {
   if (locked() || !trace || !trace.ctx || trace.drawn.length < 3) return;
   const ok = traceResult(trace.ink, trace.drawn, trace.tol).ok;
   if (ok || run.misses >= 2) { run.busy = true; const r = run; say('good').then(ms => finishTurn(r, ms)); return; }
-  run.lockUntil = performance.now() + 400; run.misses++; run.mistakes++; run.idleMs = 0;
+  run.lockUntil = performance.now() + 400; run.misses++; run.mistakes++; run.idleMs = 0; renderBar();
   trace.drawn = []; trace.ctx.clearRect(0, 0, trace.canvas.width, trace.canvas.height);
   if (run.misses >= 2) { say('gotthis'); hintTrace(); } else say(run.mistakes % 2 ? 'oops1' : 'oops2');
 }
@@ -288,10 +288,12 @@ function startTick() { if (!ticking) { ticking = true; requestAnimationFrame(tic
 function tick() {
   if (!run) { ticking = false; return; }
   const n = performance.now();
+  // the hum lasts 2.5 s of time the player can see: counted here, so it stops with everything else while the app is hidden
+  if (run.humMs > 0 && !document.hidden) { run.humMs -= n - run.lastTick; if (run.humMs <= 0) { run.humMs = 0; taatal && taatal.state === 'sing' && taatal.sing(false); } }
   if (run && !document.hidden && !run.busy) {
     run.idleMs += n - run.lastTick;
     const a = idleAction(run.idleMs), t = run.turns[run.i];
-    if (a === 'hum' && !run.hummed && t.type !== 'meet') { run.hummed = true; bub.textContent = caption('hum'); audio.play('hum'); taatal && taatal.sing(true); setTimeout(() => taatal && taatal.state === 'sing' && taatal.sing(false), 2500); }
+    if (a === 'hum' && !run.hummed && t.type !== 'meet') { run.hummed = true; bub.textContent = caption('hum'); audio.play('hum'); taatal && taatal.sing(true); run.humMs = 2500; }
     if (a === 'glow') glow();
   }
   run.lastTick = n;

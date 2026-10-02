@@ -550,7 +550,7 @@ d.aw=Array.isArray(d.aw)?d.aw:[];if(d.aw.includes(key))return null;d.aw.push(key
 const today=new Date().toISOString().slice(0,10);if(d.day!==today){d.day=today;d.dayEarned=0;}
 const got=Math.max(0,Math.min(n,DAILY_CAP-(d.dayEarned|0)));d.dayEarned=(d.dayEarned|0)+got;d.shells=(d.shells|0)+got;ls.set('dd-inv',JSON.stringify(d));return{sh:got,capped:got<n};}
 const shells=()=>{const d=invRead();return d?d.shells|0:100;};
-const compact=n=>n>=1e4?Math.round(n/1e3)+'k':String(n);
+/* Boli display: 1,234 below 100,000, then 100K / 1.2M (rounded down) */function fmtBoli(n){n=Math.max(0,Math.floor(Number(n)||0));if(n<1e5)return String(n).replace(/\B(?=(\d{3})+(?!\d))/g,',');if(n<1e6)return Math.floor(n/1e3)+'K';if(n<1e9)return String(Math.floor(n/1e5)/10).replace(/\.0$/,'')+'M';return String(Math.floor(n/1e8)/10).replace(/\.0$/,'')+'B';}const compact=fmtBoli;
 
 /* =====================================================================
    ENGINE (pure: works on a state object; no DOM)
@@ -886,7 +886,7 @@ const pw=Math.round(Math.max(42,Math.min(80,W*.17,oh*.22)));AR={W:W,H:H,ox:ox,oy
 const sc=$('#tsc');if(sc){const sx=ow/(2*g[2]),sy=oh/(2*g[3]);const tx=a.offsetLeft+ox+ow/2-g[0]*sx,ty=a.offsetTop+oy+oh/2-g[1]*sy;sc.style.transform=`translate(${tx.toFixed(1)}px,${ty.toFixed(1)}px) scale(${sx.toFixed(4)},${sy.toFixed(4)})`;
  const w=$('#tadw');if(w){const adY=oy+oh/2+(TBL.at[1]-g[1])*sy;w.hidden=adY-9*sy<slotPos(Math.max(0,meIdx())).y+pw*.7+6||adY+9*sy>H-44||oh<200;}}
 const ap=asidePos(),ae=$('#aside');if(ae)ae.style.transform=`translate(${(ap.x-pw*.36).toFixed(1)}px,${(ap.y-pw*.504).toFixed(1)}px)`;
-const lt=$('#ledtag');if(lt)lt.style.transform=`translate(${(AR.cx-ow*.33).toFixed(1)}px,${(AR.cy+oh*.25).toFixed(1)}px) translate(-50%,-50%)`;
+const lt=$('#ledtag');if(lt){const lp=ledPos();lt.style.transform=`translate(${lp.x.toFixed(1)}px,${lp.y.toFixed(1)}px) translate(-50%,-50%)`;}
 placeSeats();layoutTrick(true);placeStatus();}
 /* phone landscape only: park the status pill just under everything on the table (seats, set-aside pile, played cards); the CSS in the landscape media query reads --sty/--stx */
 function placeStatus(again){const a=$('#arena'),st=$('#status');if(!a||!st||!AR||!S)return;
@@ -905,7 +905,12 @@ const fy=Math.max(.2,Math.min(f,(.53*AR.oh-66-AR.pw*.7)/(AR.oh/2)));return{x:AR.
 function slotPos(k){if(!AR||!S)return{x:0,y:0};const key=S.players.length+':'+meIdx()+':'+AR.ow+':'+AR.oh;
 if(AR._sk!==key){const pts=S.players.map((p,i)=>rawSlot(i));const xs=pts.map(q=>q.x),ys=pts.map(q=>q.y);AR._sh={x:(Math.min(...xs)+Math.max(...xs))/2,y:(Math.min(...ys)+Math.max(...ys))/2};AR._sk=key;}
 const r=rawSlot(k);return{x:AR.cx+r.x-AR._sh.x,y:AR.cy+r.y-AR._sh.y};}
-function asidePos(){return{x:AR.cx+AR.ow*.33,y:AR.cy+AR.oh*.25};}
+/* phone landscape (QA 2026-10-02 #18): the table is a small oval in the middle, so the set-aside pile sits just outside the
+   right-hand seat (and the LED tag outside the left-hand one) instead of on their names and card counts */
+const LAND_MQ=matchMedia('(orientation:landscape) and (max-height:500px)');
+const landSide=()=>LAND_MQ.matches&&AR&&S&&seatOrder().length>=2;
+function asidePos(){if(landSide())return{x:Math.min(AR.W-AR.pw*.5-4,AR.cx+AR.ow*.5+58+AR.pw*.36),y:AR.cy+AR.oh*.25};return{x:AR.cx+AR.ow*.33,y:AR.cy+AR.oh*.25};}
+function ledPos(){if(landSide())return{x:Math.max(64,AR.cx-AR.ow*.5-84),y:AR.cy+AR.oh*.25};return{x:AR.cx-AR.ow*.33,y:AR.cy+AR.oh*.25};}
 function placeSeats(){const oe=$('#opps');if(!oe||!AR)return;const so=seatOrder(),n=so.length,half=n>=3?35:39;
 so.forEach(k=>{const el=oe.querySelector(`.seat[data-k="${k}"]`);if(!el)return;const t=seatAngle(k)*Math.PI/180;
 const x=Math.max(half+2,Math.min(AR.W-half-2,AR.cx+AR.ow/2*1.02*Math.cos(t))),y=Math.max(28,AR.cy-AR.oh/2*1.06*Math.sin(t));

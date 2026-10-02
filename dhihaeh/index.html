@@ -435,6 +435,8 @@ main.table>*{width:100%;max-width:640px;margin-left:auto;margin-right:auto}
 .home .mode.quick b{font:800 21px/1.1 'Sora',system-ui,sans-serif}
 .home .mode.fr{min-height:64px}
 .home .mode.sm{min-height:52px}
+/* 320 px phones (QA 2026-10-02 #15): the vs Computer line fits on one line */
+@media (max-width:340px){.home .mode.row.sm{gap:10px;padding-left:12px;padding-right:10px}.home .mode.row.sm small{font-size:11px;letter-spacing:-.01em}}
 .home .how{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;margin:10px 0 0;min-height:44px;border:0;background:transparent;color:#FFE2C4;font:700 13px/1 'Sora',system-ui,sans-serif;opacity:.84;cursor:pointer;border-radius:12px}
 .home .how svg{width:17px;height:17px;flex:none}
 .home .homebelow{margin-top:16px}
@@ -787,7 +789,7 @@ function award(key,n){if(TEST||n<=0||(mode==='online'&&NET&&NET.test))return nul
  const today=new Date().toISOString().slice(0,10);if(d.day!==today){d.day=today;d.dayEarned=0;}
  const got=Math.max(0,Math.min(n,DAILY_CAP-(d.dayEarned|0)));d.dayEarned=(d.dayEarned|0)+got;d.shells=(d.shells|0)+got;ls.set('dd-inv',JSON.stringify(d));return{sh:got,capped:got<n};}
 const shells=()=>{const d=invRead();return d?d.shells|0:100;};
-const compact=n=>n>=1e4?Math.round(n/1e3)+'k':String(n);
+/* Boli display: 1,234 below 100,000, then 100K / 1.2M (rounded down) */function fmtBoli(n){n=Math.max(0,Math.floor(Number(n)||0));if(n<1e5)return String(n).replace(/\B(?=(\d{3})+(?!\d))/g,',');if(n<1e6)return Math.floor(n/1e3)+'K';if(n<1e9)return String(Math.floor(n/1e5)/10).replace(/\.0$/,'')+'M';return String(Math.floor(n/1e8)/10).replace(/\.0$/,'')+'B';}const compact=fmtBoli;
 
 /* =====================================================================
    HOST LOOP

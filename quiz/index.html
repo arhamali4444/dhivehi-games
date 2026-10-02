@@ -368,12 +368,29 @@ label.f{display:block;font-size:12px;font-weight:700;color:var(--muted);margin:1
  .chip{font-size:11.5px;padding-block:7px;padding-inline:8px 24px}
  .pod .av{--s:50px}.pod .p1 .av{--s:62px}
 }
+/* 320 px phones (QA 2026-10-02 #17): balanced two-line subtitles (no lone "all" / "level") and slightly tighter mode
+   cards, so the lobby fits 320x568 with the sponsor box on screen */
+@media (max-width:340px){.md small,.md.solo .two button small{text-wrap:balance}}
+@media (max-width:340px) and (max-height:600px){.md{padding:9px 14px}.md.qm{padding:11px 14px}.md.solo .two{margin-top:8px}.md.solo .two button{padding:8px 6px}
+ .page.home .lang{margin-top:6px}.page.home .spbox{margin-top:4px!important}}
 @media (max-height:640px){.qc{margin-top:42px}.pls{margin-top:8px;padding-top:12px}.an{min-height:48px}.ans{gap:7px}}
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
+/* phone landscape: the quiz is played the tall way (the answers would sit below the fold), so ask for upright like
+   Atolls; practice and the daily quiz wait behind the prompt (the clock and the computer players stop) */
+#rot{position:fixed;inset:0;z-index:400;display:none;background:radial-gradient(120% 90% at 50% 30%,#FF7F92,#E0405C 50%,#7A1A48);color:#fff;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:0 36px}
+@media (orientation:landscape) and (max-height:520px) and (hover:none),(orientation:landscape) and (max-height:520px) and (pointer:coarse){#rot{display:flex}}
+#rot .ph{width:56px;height:94px;border:4px solid #fff;border-radius:15px;position:relative;animation:rotph 3.2s cubic-bezier(.6,0,.3,1) infinite}
+#rot .ph::after{content:"";position:absolute;top:5px;left:50%;width:18px;height:4px;margin-left:-9px;border-radius:2px;background:#fff}
+#rot .ph i{position:absolute;inset:12px 7px;border-radius:5px;background:#FFE3E9;display:grid;place-items:center;font:800 30px/1 Sora,system-ui,sans-serif;font-style:normal;color:#E0405C}
+#rot .ph i::before{content:"?"}
+@keyframes rotph{0%,20%{transform:rotate(-90deg)}45%,80%{transform:rotate(0)}100%{transform:rotate(-90deg)}}
+#rot h3{font:800 22px/1.15 Sora,system-ui,sans-serif;letter-spacing:-.02em;margin:22px 0 0}
+#rot p{font-size:14px;opacity:.9;margin:8px 0 0;max-width:340px}
 </style>
 <script src="../shared/fit.js?v=1"></script>
 </head>
 <body>
+<div id="rot" role="alert"><div class="ph"><i></i></div><h3>Turn your phone upright</h3><p>The quiz is played the tall way. Practice and the daily quiz wait while your phone is sideways.</p></div>
 <div class="mesh" aria-hidden="true"><i class="m1"></i><i class="m2"></i><i class="m3"></i><i class="m4"></i></div>
 <div id="app"></div>
 <div class="sheet" id="sheet" role="dialog" aria-modal="true"><div class="sheet-b" id="sheetB"></div></div>
@@ -538,7 +555,7 @@ function award(key,n,xp){n=n>0?n|0:0;xp=xp>0?xp|0:0;if(!n&&!xp)return null;let d
  const got=Math.max(0,Math.min(n,DAILY_CAP-(d.dayEarned|0)));d.dayEarned=(d.dayEarned|0)+got;d.shells=(d.shells|0)+got;d.xp=Math.max(0,d.xp|0)+xp;
  ls.set('dd-inv',JSON.stringify(d));return{sh:got,xp,capped:got<n};}
 const shells=()=>{const d=invRead();return d?d.shells|0:100;};
-const compact=n=>n>=1e4?Math.round(n/1e3)+'k':String(n);
+/* Boli display: 1,234 below 100,000, then 100K / 1.2M (rounded down) */function fmtBoli(n){n=Math.max(0,Math.floor(Number(n)||0));if(n<1e5)return String(n).replace(/\B(?=(\d{3})+(?!\d))/g,',');if(n<1e6)return Math.floor(n/1e3)+'K';if(n<1e9)return String(Math.floor(n/1e5)/10).replace(/\.0$/,'')+'M';return String(Math.floor(n/1e8)/10).replace(/\.0$/,'')+'B';}const compact=fmtBoli;
 
 /* ---------- random ---------- */
 function rnd(){const a=new Uint32Array(1);try{crypto.getRandomValues(a);return a[0]/4294967296;}catch(e){return Math.random();}}
@@ -690,7 +707,11 @@ function soloQuit(){clearHost();pausedAt=0;if(mode==='daily'&&S&&S.phase!=='over
 function pauseSolo(){if(S&&(mode==='practice'||mode==='daily')&&S.phase!=='over'&&!pausedAt){pausedAt=Date.now();clearHost();}}
 function resumeSolo(){if(!pausedAt||!S)return;const d=Date.now()-pausedAt;pausedAt=0;S.at+=d;Object.keys(qShown).forEach(k=>{qShown[k]+=d;});if(S.phase==='q')cpuGo();hostSched();render();}
 let repPaused=false;
-document.addEventListener('visibilitychange',()=>{if(document.hidden){AU.sleep();pauseSolo();}else if(!repPaused)resumeSolo();});
+document.addEventListener('visibilitychange',()=>{if(document.hidden){AU.sleep();pauseSolo();}else if(!repPaused&&!rotPaused)resumeSolo();});
+/* phone sideways: the #rot prompt covers the page (same media rule as its CSS), so solo play waits behind it */
+const ROT_MQ=window.matchMedia?matchMedia('(orientation:landscape) and (max-height:520px) and (hover:none),(orientation:landscape) and (max-height:520px) and (pointer:coarse)'):null;let rotPaused=false;
+function rotCheck(){if(!ROT_MQ)return;if(ROT_MQ.matches){if(!pausedAt){pauseSolo();rotPaused=!!pausedAt;}}else if(rotPaused){rotPaused=false;if(!document.hidden&&!repPaused)resumeSolo();}}
+if(ROT_MQ){if(ROT_MQ.addEventListener)ROT_MQ.addEventListener('change',rotCheck);else if(ROT_MQ.addListener)ROT_MQ.addListener(rotCheck);}
 
 /* =====================================================================
    ONLINE (shared/net.js DGNet v5)
@@ -776,9 +797,9 @@ ${langBtns()}
 <p class="dvnote" id="dvnote" hidden></p>
 <section class="modes" aria-label="${T('Play','ކުޅޭ')}">
  <button class="md qm" data-a="quick"><span class="mi">${I.bolt}</span><span class="mt"><b>${T('Quick Match','ކުއިކް މެޗް')}</b><small>${T('2–6 players, the same question for all',`${LR(2)} އިން ${LR(6)} އަށް ކުޅުންތެރިން، އެންމެންނަށް އެއް ސުވާލު`)}</small><span class="live" id="qmLive"><i></i><span>${liveText()}</span></span></span></button>
- <button class="md" data-a="friends"><span class="mi">${I.friends}</span><span class="mt"><b>${T('Play with Friends','ރަޙްމަތްތެރިންނާ އެކު ކުޅޭ')}</b><small>${T('Create a table, or use a code','މޭޒެއް ހަދާ، ނުވަތަ ކޯޑަކުން ވަދޭ')}</small></span>${I.chev}</button>
+ <button class="md" data-a="friends"><span class="mi">${I.friends}</span><span class="mt"><b>${T('Play with Friends','ރަޙްމަތްތެރިންނާ އެކު ކުޅޭ')}</b><small>${T('Create or join a table','މޭޒެއް ހަދާ، ނުވަތަ ކޯޑަކުން ވަދޭ')}</small></span>${I.chev}</button>
  <div class="md solo"><div class="row"><span class="mi">${I.cal}</span><span class="mt"><b>${T('On your own','އެކަނި ކުޅޭ')}</b><small>${T('The daily quiz, or practise against the computer','ދުވަހުގެ ކުއިޒް، ނުވަތަ ކޮމްޕިއުޓަރާ ދެކޮޅަށް ޕްރެކްޓިސް')}</small></span></div>
-  <div class="two"><button data-a="daily" class="${dailyRec()?'done':''}">${T('Daily quiz','ދުވަހުގެ ކުއިޒް')}<small>${dailyLine()}</small></button><button data-a="practice">${T('Practice','ޕްރެކްޓިސް')}<small>${T('vs computer · pick a level','ކޮމްޕިއުޓަރާ ދެކޮޅަށް · ލެވެލް ހޮވާ')}</small></button></div></div>
+  <div class="two"><button data-a="daily" class="${dailyRec()?'done':''}">${T('Daily quiz','ދުވަހުގެ ކުއިޒް')}<small>${dailyLine()}</small></button><button data-a="practice">${T('Practice','ޕްރެކްޓިސް')}<small>${T('vs computer · pick a level','ކޮމްޕިއުޓަރާ ދެކޮޅަށް · ލެވެލް ހޮވާ')}</small></button></div></div>
 </section>
 <div class="topics"><h4>${T('Practice topics','ޕްރެކްޓިސް މައުޟޫޢުތައް')} <span id="tcount">${tCount()}</span></h4><div class="chips">${TOPICS.map(([k])=>`<button class="chip" data-a="topic" data-v="${k}" aria-pressed="${topicsSel.includes(k)}">${I[k]}<span>${esc(tName(k))}</span></button>`).join('')}</div></div>
 <div class="rew">${BOLI_IMG.replace('width="22" height="22"','width="28" height="28"')}<span>${T(`<b>Win Boli.</b> Quick Match: ${BOLI_QUICK.join(' / ')} for the top three. Daily quiz: 1 per right answer, ${BOLI_DAILY_PERFECT} extra for a perfect round. Win Practice on Hard (+${WIN_BONUS[3]}) or Raajje Master (+${WIN_BONUS[4]}). Every game gives XP.`,
@@ -928,7 +949,7 @@ function overHTML(){const aw=overAward(),k0=meIdx(),m=me();
  return `<p class="ttl2">${head}</p><p class="st">${T(`${S.n} questions · ${S.players.length} players${m?' · '+m.right+' right':''}`,`${LR(S.n)} ސުވާލު · ${LR(S.players.length)} ކުޅުންތެރިން${m?` · ${LR(m.right)} ރަނގަޅު`:''}`)}</p>
  <div class="pod">${podium(P[1],1)}${podium(P[0],0)}${podium(P[2],2)}</div>${rest?`<ol class="stand" start="4">${rest}</ol>`:''}${earnHTML(aw)}${btns}`;}
 /* 10 times a second: the timer ring, countdowns, the last-5-seconds tick */
-function tick(){if(screen!=='match'||!S)return;
+function tick(){if(screen!=='match'||!S||pausedAt)return;   /* paused (hidden, sideways): the ring holds still */
  if(S.phase==='q'){const left=qLeft(),r=$('#ring');if(r){const sec=Math.ceil(left/1000);const pr=r.querySelector('.pr');pr.setAttribute('stroke-dashoffset',(RC*(1-left/Q_MS)).toFixed(1));const b=r.querySelector('b');if(b.textContent!==String(sec))b.textContent=sec;r.classList.toggle('low',sec<=5);
    if(sec<=5&&sec>0&&sec!==lastTick&&myPicks[S.qi]==null&&!S.picks[myId]&&meIdx()>=0){lastTick=sec;SFX.tick();}}
   if(!hostOn()&&left<=0&&!S._late){S._late=1;}}
@@ -979,7 +1000,7 @@ async function sendQReport(){const c=repCtx;if(!c)return;repCtx=null;const sel=d
 /* our sheets and toasts follow the UI language (net.js has its own sheets, in English) */
 const dirTo=e=>{if(lang==='dv'){e.setAttribute('dir','rtl');e.setAttribute('lang','dv');}else{e.removeAttribute('dir');e.removeAttribute('lang');}};
 function sheet(h){const b=$('#sheetB');dirTo(b);b.innerHTML=h;$('#sheet').classList.add('open');}
-function closeSheet(){$('#sheet').classList.remove('open');if(repPaused){repPaused=false;if(!document.hidden)resumeSolo();}}
+function closeSheet(){$('#sheet').classList.remove('open');if(repPaused){repPaused=false;if(!document.hidden&&!rotPaused)resumeSolo();}}
 let toastT=0;function toast(t,ms){const e=$('#toast');dirTo(e);e.textContent=t;e.classList.remove('show');void e.offsetWidth;e.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>e.classList.remove('show'),ms||2600);}
 function closeToast(){clearTimeout(toastT);$('#toast').classList.remove('show');}
 function howHTML(){if(lang==='dv')return howDV();return `<div class="rules">

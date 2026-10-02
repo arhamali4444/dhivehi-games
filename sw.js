@@ -1,7 +1,7 @@
 /* Dhivehi Games offline support: always try the network first (so updates show at once),
    fall back to the saved copy when there is no connection. Only PAGES fall back to a saved page;
    images, scripts and other files fall back to their own saved copy or fail normally. */
-const CACHE='dg-v55';
+const CACHE='dg-v56';
 const CORE=['/','/digu/','/dhogu/','/privacy.html','/manifest.webmanifest','/icons/icon-192.png','/icons/icon-512.png'];
 self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(CORE)).then(()=>self.skipWaiting()));});
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim()));});

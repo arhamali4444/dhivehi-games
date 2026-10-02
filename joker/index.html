@@ -647,7 +647,7 @@ d.aw=Array.isArray(d.aw)?d.aw:[];if(d.aw.includes(key))return null;d.aw.push(key
 const today=new Date().toISOString().slice(0,10);if(d.day!==today){d.day=today;d.dayEarned=0;}
 const got=Math.max(0,Math.min(n,DAILY_CAP-(d.dayEarned|0)));d.dayEarned=(d.dayEarned|0)+got;d.shells=(d.shells|0)+got;ls.set('dd-inv',JSON.stringify(d));return{sh:got,capped:got<n};}
 const shells=()=>{const d=invRead();return d?d.shells|0:100;};
-const compact=n=>n>=1e4?Math.round(n/1e3)+'k':String(n);
+/* Boli display: 1,234 below 100,000, then 100K / 1.2M (rounded down) */function fmtBoli(n){n=Math.max(0,Math.floor(Number(n)||0));if(n<1e5)return String(n).replace(/\B(?=(\d{3})+(?!\d))/g,',');if(n<1e6)return Math.floor(n/1e3)+'K';if(n<1e9)return String(Math.floor(n/1e5)/10).replace(/\.0$/,'')+'M';return String(Math.floor(n/1e8)/10).replace(/\.0$/,'')+'B';}const compact=fmtBoli;
 
 /* =====================================================================
    HOST LOOP: act() -> commit() -> render; the computer players and your turn timer run here

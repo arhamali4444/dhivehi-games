@@ -148,6 +148,8 @@ img.boli{display:inline-block;width:18px;height:18px;object-fit:contain;vertical
 .mode.sm .mi{position:static;flex:none;width:34px;height:34px;border-radius:11px}.mode.sm .mi svg{width:18px;height:18px}
 .mode.sm .mt{display:flex;flex-direction:column;min-width:0;gap:1px}
 .mode.sm b{font-size:14.5px}.mode.sm small{font-size:11px}
+/* narrow phones (QA 2026-10-02 #14): icon above the text, as in Joker, so the labels do not wrap word by word */
+@media (max-width:400px){.mode.sm{flex-direction:column;align-items:flex-start;justify-content:center;gap:5px;padding:10px 12px}.mode.sm .mt{gap:0}}
 .btn.danger{background:#fff;color:#C0263F;box-shadow:inset 0 0 0 1.5px rgba(232,48,79,.55)}
 .btn.dangerf{background:linear-gradient(180deg,#FF6A7E,#E8304F);color:#fff;box-shadow:0 3px 0 #A41A33}
 .resume{position:relative;display:flex;align-items:center;gap:10px;width:100%;margin:12px 0 0;padding:10px 10px 10px 14px;border:0;border-radius:18px;background:#fff;box-shadow:0 0 0 1.5px rgba(14,140,138,.35),var(--shadow);font:inherit;font-size:12.5px;color:var(--ink);text-align:left;cursor:pointer;min-height:54px}
@@ -345,6 +347,9 @@ main.table>*{width:100%;max-width:640px;margin-left:auto;margin-right:auto}
  .meinfo b{max-width:none}
  .mycards{gap:8px}
  .jlist{bottom:76px}
+ /* QA 2026-10-02 #19: the hand-count badge (under the avatar) and the open-pile count (over the pile) no longer touch the name */
+ .seat .nm{margin-top:6px}
+ .seat .opile{margin-top:11px}
  /* the round / game result card scrolls on a 390 px-high screen: its main button stays pinned at the card's bottom edge */
  #ov .ovc>.btn.primary{position:sticky;bottom:0;z-index:2}
 }
@@ -616,7 +621,7 @@ d.aw=Array.isArray(d.aw)?d.aw:[];if(d.aw.includes(key))return null;d.aw.push(key
 const today=new Date().toISOString().slice(0,10);if(d.day!==today){d.day=today;d.dayEarned=0;}
 const got=Math.max(0,Math.min(n,DAILY_CAP-(d.dayEarned|0)));d.dayEarned=(d.dayEarned|0)+got;d.shells=(d.shells|0)+got;ls.set('dd-inv',JSON.stringify(d));return{sh:got,capped:got<n};}
 const shells=()=>{const d=invRead();return d?d.shells|0:100;};
-const compact=n=>n>=1e4?Math.round(n/1e3)+'k':String(n);
+/* Boli display: 1,234 below 100,000, then 100K / 1.2M (rounded down) */function fmtBoli(n){n=Math.max(0,Math.floor(Number(n)||0));if(n<1e5)return String(n).replace(/\B(?=(\d{3})+(?!\d))/g,',');if(n<1e6)return Math.floor(n/1e3)+'K';if(n<1e9)return String(Math.floor(n/1e5)/10).replace(/\.0$/,'')+'M';return String(Math.floor(n/1e8)/10).replace(/\.0$/,'')+'B';}const compact=fmtBoli;
 
 /* =====================================================================
    HOST LOOP: act() -> commit() -> render; computer players, the Juice window and your timer run here

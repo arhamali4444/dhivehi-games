@@ -378,7 +378,7 @@ function award(key,n){let d=invRead();if(!d)d={v:1,shells:100,xp:0,owned:{},eq:{
  const today=new Date().toISOString().slice(0,10);if(d.day!==today){d.day=today;d.dayEarned=0;}
  const got=Math.max(0,Math.min(n,DAILY_CAP-(d.dayEarned|0)));d.dayEarned=(d.dayEarned|0)+got;d.shells=(d.shells|0)+got;ls.set('dd-inv',JSON.stringify(d));return{sh:got,capped:got<n};}
 const shells=()=>{const d=invRead();return d?d.shells|0:100;};
-const compact=n=>n>=1e4?Math.round(n/1e3)+'k':String(n);
+/* Boli display: 1,234 below 100,000, then 100K / 1.2M (rounded down) */function fmtBoli(n){n=Math.max(0,Math.floor(Number(n)||0));if(n<1e5)return String(n).replace(/\B(?=(\d{3})+(?!\d))/g,',');if(n<1e6)return Math.floor(n/1e3)+'K';if(n<1e9)return String(Math.floor(n/1e5)/10).replace(/\.0$/,'')+'M';return String(Math.floor(n/1e8)/10).replace(/\.0$/,'')+'B';}const compact=fmtBoli;
 function avSVG(cfg,size,expr){const A=DGA();if(A&&cfg){try{const o={size:size||64};if(expr)o.expression=expr;return A.render(cfg,o);}catch(e){}}return `<svg viewBox="0 0 100 100" width="${size||64}" height="${size||64}"><circle cx="50" cy="50" r="50" fill="#1F7A94"/><circle cx="50" cy="42" r="18" fill="#C68A5E"/><path d="M16 100q34-44 68 0" fill="#FF7254"/></svg>`;}
 /* computer runners use the ready-made looks from the avatar builder (with their names) */
 const BOTN=['Aisha','Ibrahim','Mariyam','Hussain','Shiuna','Zaid','Leena','Nadeem'];

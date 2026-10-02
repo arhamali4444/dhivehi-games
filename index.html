@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en">
 <head>
-<script>document.documentElement.classList.add('boot')</script>
+<script>document.documentElement.classList.add('boot');/* one-screen homepage (html.dg-fit): the app, or a phone-sized window (same rule as shared/fit.js) */(function(d){try{if(window.DG_APP||d.classList.contains('dg-app')||(window.matchMedia&&matchMedia('(max-width: 600px) and (max-height: 1000px)').matches))d.classList.add('dg-fit');}catch(e){}})(document.documentElement)</script>
 <script>/* intro once per session (INTRO_ONCE in build_home.py): html.dg-seen = skip the intro on this load */
 (function(){var d=document.documentElement,K='dg-intro-seen',seen=false;
  try{seen=window.sessionStorage.getItem(K)==='1';}catch(e){seen=false;}
@@ -541,41 +541,62 @@ body.intro .resume,body.intro .foot{animation:handUp 0.55s cubic-bezier(.3,1.2,.
 .nav a:active svg,.nav button:active svg{transform:scale(.86)}
 @media (prefers-reduced-motion:reduce){.nav .nav-ind,.nav svg{transition:none}}
 
-/* ===== the phone app (APP_FIT in build_home.py): the homepage is one screen, nothing scrolls ===== */
-html.dg-app,html.dg-app body{height:100%;overflow:hidden;overscroll-behavior:none}
-html.dg-app main.z{box-sizing:border-box;height:100vh;height:100dvh;display:flex;flex-direction:column;overflow:hidden;
+/* ===== one-screen homepage (APP_FIT in build_home.py): nothing scrolls, the sponsor box is always on screen =====
+   html.dg-fit = the phone app (html.dg-app) or a phone-sized browser window, (max-width:600px) and (max-height:1000px),
+   the same rule shared/fit.js uses for the game lobbies. Set in <head> before the first paint, kept up to date on resize. */
+html.dg-fit,html.dg-fit body{height:100%;overflow:hidden;overscroll-behavior:none}
+html.dg-fit main.z{box-sizing:border-box;height:100vh;height:100dvh;display:flex;flex-direction:column;overflow:hidden;
  padding-top:calc(8px + env(safe-area-inset-top,0px));padding-bottom:calc(90px + env(safe-area-inset-bottom,0px))}
-html.dg-app main.z>*{flex:none}
-html.dg-app .stage{margin-top:auto}
-html.dg-app .adbox{margin-top:auto}
-html.dg-app .foot{display:none}
-html.dg-app .resume{margin:10px 16px 0;padding:7px 8px 7px 10px;border-radius:16px}
-html.dg-app .resume img{width:36px;height:36px;border-radius:11px}
-html.dg-app .resume .go{height:34px}
+html.dg-fit main.z>*{flex:none}
+html.dg-fit .stage{margin-top:auto}
+html.dg-fit .adbox{margin-top:auto}
+html.dg-fit .foot{display:none}
+html.dg-fit .resume{margin:10px 16px 0;padding:7px 8px 7px 10px;border-radius:16px}
+html.dg-fit .resume img{width:36px;height:36px;border-radius:11px}
+html.dg-fit .resume .go{height:34px}
 /* hf1: a short phone: tighter spacing, a slightly smaller sponsor box */
-html.dg-app.hf1 .cats{margin-top:4px}
-html.dg-app.hf1 .flow{height:268px}
-html.dg-app.hf1 .floor{top:232px}
-html.dg-app.hf1 .dots{margin-top:-10px}
-html.dg-app.hf1 .adbox{height:96px}
+html.dg-fit.hf1 .cats{margin-top:4px}
+html.dg-fit.hf1 .flow{height:268px}
+html.dg-fit.hf1 .floor{top:232px}
+html.dg-fit.hf1 .dots{margin-top:-10px}
+html.dg-fit.hf1 .adbox{height:96px}
+/* compact sponsor box: the SPONSORED / NEW label moves to the top-right corner and the Visit / Play button drops a little,
+   so the two never overlap (the box is too short for both on the right-hand side) */
+html.dg-fit.hf1 .ad .lab{top:15px;bottom:auto}
+html.dg-fit.hf1 .ad .go{margin-top:18px}
 /* hf2: a very short phone (SE): smaller game cards */
-html.dg-app.hf2 .flow{height:240px}
-html.dg-app.hf2 .fc{width:140px;height:196px;margin-left:-70px;top:8px;padding:11px}
-html.dg-app.hf2 .fc img{width:70px;height:70px;margin-left:-35px;top:12px;border-radius:19px}
-html.dg-app.hf2 .fc.two img{width:56px;height:56px;margin-left:-28px;top:10px;border-radius:16px}
-html.dg-app.hf2 .fc .pl{height:32px;margin-top:7px}
-html.dg-app.hf2 .floor{top:212px}
-html.dg-app.hf2 .adbox{height:84px}
-/* still too short (never expected): the page scrolls rather than cut anything off */
-html.dg-app.hf-scroll,html.dg-app.hf-scroll body{height:auto;overflow:visible}
-html.dg-app.hf-scroll main.z{height:auto;overflow:visible}
-/* About: the footer's links, behind a small (i) button (app only; the website keeps its footer) */
+html.dg-fit.hf2 .flow{height:240px}
+html.dg-fit.hf2 .fc{width:140px;height:196px;margin-left:-70px;top:8px;padding:11px}
+html.dg-fit.hf2 .fc img{width:70px;height:70px;margin-left:-35px;top:12px;border-radius:19px}
+html.dg-fit.hf2 .fc.two img{width:56px;height:56px;margin-left:-28px;top:10px;border-radius:16px}
+html.dg-fit.hf2 .fc .pl{height:32px;margin-top:7px}
+html.dg-fit.hf2 .floor{top:212px}
+html.dg-fit.hf2 .adbox{height:84px}
+/* hf3: the shortest phones (320x568 with the H13 top bar and the tab bar): smaller cards again, tighter gaps.
+   Everything stays on screen; only sizes change. */
+html.dg-fit.hf3 .cats{margin-top:2px}
+html.dg-fit.hf3 .flow{height:214px}
+html.dg-fit.hf3 .fc{width:128px;height:176px;margin-left:-64px;top:6px;padding:10px}
+html.dg-fit.hf3 .fc img{width:54px;height:54px;margin-left:-27px;top:10px;border-radius:15px}
+html.dg-fit.hf3 .fc.two img,html.dg-fit.hf3 .fc.long img{width:44px;height:44px;margin-left:-22px;top:9px;border-radius:13px}
+html.dg-fit.hf3 .fc.two.long img{width:36px;height:36px;margin-left:-18px;top:8px;border-radius:11px}
+html.dg-fit.hf3 .fc b{font-size:20px}
+html.dg-fit.hf3 .fc .dvn{font-size:11.5px;margin-top:2px}
+html.dg-fit.hf3 .fc small{font-size:10.5px;margin-top:1px}
+html.dg-fit.hf3 .fc .pl{height:30px;margin-top:6px;border-radius:11px}
+html.dg-fit.hf3 .floor{top:188px}
+html.dg-fit.hf3 .adbox{height:80px}
+html.dg-fit.hf3 .ad .lab{top:13px}
+/* still too short (never expected on a phone in portrait): the page scrolls rather than cut anything off */
+html.dg-fit.hf-scroll,html.dg-fit.hf-scroll body{height:auto;overflow:visible}
+html.dg-fit.hf-scroll main.z{height:auto;overflow:visible}
+/* About: the footer's links, behind a small (i) button (one-screen mode only; a scrolling page keeps its footer) */
 .infobtn{position:absolute;left:16px;top:calc(100% + 12px);z-index:5;display:none;place-items:center;width:36px;height:36px;padding:0;border:0;border-radius:50%;cursor:pointer;
  color:#2A1418;background:rgba(255,255,255,.5);box-shadow:inset 0 0 0 1px rgba(255,255,255,.75),0 4px 12px -6px rgba(10,60,70,.45);touch-action:manipulation;transition:transform .2s}
 .infobtn:before{content:"";position:absolute;inset:-5px;border-radius:50%}
 .infobtn:active{transform:scale(.92)}
 .infobtn svg{width:18px;height:18px;display:block}
-html.dg-app .infobtn{display:grid}
+html.dg-fit .infobtn{display:grid}
 #abSheet .panel{text-align:center}
 #abSheet .abl{display:flex;flex-direction:column;align-items:center;gap:10px;margin:6px 0 4px}
 #abSheet .abl a{display:inline-block;padding:10px 6px;color:#C0506A;font-weight:700;text-decoration:none}
@@ -819,29 +840,42 @@ window.DGAudio=window.DGAudio||(function(){
 
  <div class="foot"><a href="privacy.html">Privacy policy</a><div>Made in the Maldives</div></div>
 </main>
-<script>/* the phone app (APP_FIT in build_home.py): fit the homepage to one screen; runs before the intro starts */
-(function(){var d=document.documentElement;if(!d.classList.contains('dg-app'))return;
+<script>/* one-screen homepage (APP_FIT in build_home.py): fit the page to one screen; runs before the intro starts.
+   On in the phone app (html.dg-app / window.DG_APP) and in phone-sized browser windows, (max-width:600px) and
+   (max-height:1000px) like shared/fit.js; growing past that (rotating, resizing) turns it off and the page scrolls as before.
+   Steps, each only when the previous one was not enough: hf1 spacing, logo scale, hf2 cards, logo scale, hf3 cards, logo
+   scale; hf-scroll (the page scrolls) is the last resort and is never expected on a phone in portrait. */
+(function(){var d=document.documentElement;
  var m=document.querySelector('main.z'),n=document.getElementById('nlogo'),e=document.getElementById('emb');if(!m||!n||!e)return;
+ var APP=!!window.DG_APP||d.classList.contains('dg-app');
+ var mq=window.matchMedia?matchMedia('(max-width: 600px) and (max-height: 1000px)'):null;
+ function want(){return APP||(mq?mq.matches:(innerWidth<=600&&innerHeight<=1000));}
  var S=1;window.__dgLogoScale=1;
  function over(){return m.scrollHeight-m.clientHeight;}
  function aim(){/* the intro glide starts with the tile in the middle of the screen; the logo's scale also scales the glide */
   if(!document.body.classList.contains('intro'))return;var y=e.offsetHeight/2;for(var o=e;o;o=o.offsetParent)y+=o.offsetTop;
   n.style.setProperty('--dy',Math.round((innerHeight/2-y)/S)+'px');}
  function logo(s){S=s;window.__dgLogoScale=s;if(s>=.999){n.style.scale='';n.style.marginTop='';n.style.marginBottom='';return;}
-  var h=n.offsetHeight;n.style.scale=String(s);n.style.marginTop='calc(14px - '+(32*(1-s)).toFixed(1)+'px)';n.style.marginBottom=(-(h-32)*(1-s)).toFixed(1)+'px';}
- function fit(){d.classList.remove('hf1','hf2','hf-scroll');logo(1);
-  var o=over();
-  if(o>0){d.classList.add('hf1');o=over();}
-  if(o>0){var h=n.offsetHeight;logo(Math.max(.7,1-(o+2)/h));o=over();}
-  if(o>0){d.classList.add('hf2');o=over();}
-  if(o>0){var h2=n.offsetHeight;logo(Math.max(.56,S*(1-(o+2)/(h2*S))));o=over();}
-  if(o>0)d.classList.add('hf-scroll');
+  var top=d.classList.contains('hf3')?6:14,h=n.offsetHeight;n.style.scale=String(s);n.style.marginTop='calc('+top+'px - '+(32*(1-s)).toFixed(1)+'px)';n.style.marginBottom=(-(h-32)*(1-s)).toFixed(1)+'px';}
+ function shrink(min){var o=over();if(o>0){var h=n.offsetHeight;logo(Math.max(min,S*(1-(o+2)/(h*S))));}}
+ function fit(){var on=want();d.classList.toggle('dg-fit',on);d.classList.remove('hf1','hf2','hf3','hf-scroll');logo(1);
+  if(on){
+   if(over()>0)d.classList.add('hf1');
+   shrink(.7);
+   if(over()>0)d.classList.add('hf2');
+   shrink(.56);
+   if(over()>0){d.classList.add('hf3');logo(S);}
+   shrink(.42);
+   if(over()>0)d.classList.add('hf-scroll');}
   aim();if(window.__dRelayout)try{window.__dRelayout();}catch(x){}}
  fit();
  var rt=0;addEventListener('resize',function(){clearTimeout(rt);rt=setTimeout(fit,120);});
+ if(mq){var mc=function(){fit();};if(mq.addEventListener)mq.addEventListener('change',mc);else if(mq.addListener)mq.addListener(mc);}
  /* the resume row and fonts can change the height after the first fit */
  var rs=document.getElementById('resume');if(rs&&window.MutationObserver)new MutationObserver(fit).observe(rs,{attributes:true,attributeFilter:['hidden']});
- if(document.fonts&&document.fonts.ready)document.fonts.ready.then(function(){if(over()>0||S<1)fit();});
+ if(document.fonts){var ff=function(){if(d.classList.contains('dg-fit')&&(over()>0||S<1))fit();};if(document.fonts.ready)document.fonts.ready.then(ff);
+  /* a web font that arrives later (the Thaana wordmark, the card titles) can change the height again */
+  if(document.fonts.addEventListener)document.fonts.addEventListener('loadingdone',function(){clearTimeout(rt);rt=setTimeout(ff,60);});}
  window.__dgFitHome=fit;
 })();</script>
 
@@ -897,15 +931,25 @@ function paintMe(){
   /* the ring: real progress from the XP rank to the next one (same table as Digu); no data = empty track, top rank = full */
   let p=0;if(inv&&inv.xp!=null){let k=0;L.forEach((x,i)=>{if(xp>=x[2])k=i;});p=k>=L.length-1?100:Math.max(0,Math.min(100,(xp-L[k][2])/(L[k+1][2]-L[k][2])*100));}
   const rg=$('#ring');if(rg)rg.style.setProperty('--p',p.toFixed(1)+'%');}
- if(inv&&inv.shells!=null){const n=inv.shells|0;$('#sh').textContent=n>=1000?(n/1000).toFixed(n>=10000?0:1).replace(/\.0$/,'')+'K':String(n);}
+ {const n=boliCount();$('#sh').textContent=fmtBoli(n);const bl=$('.boli.gb');if(bl)bl.setAttribute('aria-label',n.toLocaleString('en-US')+' Boli, get more');}
 }
+/* the wallet, read the same way as every game (a fresh guest has the 100 Boli welcome gift) */
+function boliCount(){try{const d=JSON.parse(ls.get('dd-inv')||'null');return d&&d.v===1?Math.max(0,d.shells|0):100;}catch(e){return 100;}}
+/* Boli display, same rule on every page: 1,234 below 100,000, then 100K / 1.2M (rounded down) */
+function fmtBoli(n){n=Math.max(0,Math.floor(Number(n)||0));if(n<1e5)return String(n).replace(/\B(?=(\d{3})+(?!\d))/g,',');if(n<1e6)return Math.floor(n/1e3)+'K';if(n<1e9)return String(Math.floor(n/1e5)/10).replace(/\.0$/,'')+'M';return String(Math.floor(n/1e8)/10).replace(/\.0$/,'')+'B';}
 paintMe();window.addEventListener('dg-char-change',paintMe);
 
 /* ---------- cover flow ---------- */
 const flow=$('#flow'),glow=$('#glow'),dots=$('#dots'),bank=$('#fcbank'),floorEl=flow.querySelector('.floor'),ALL=[...flow.querySelectorAll('.fc')];
-let cards=[],M=1,dotEls=[],cur=0,drag=null,lastTouch=0,tx=null;
-/* game categories: swiping stays inside the chosen set (a soft rubber-band bounce at its first and last game); the set
-   changes only from the tab bar (tap or press-and-slide). ?cat=card|board|arcade|trivia|kids, else the last choice. */
+let cards=[],M=1,dotEls=[],cur=0,drag=null,lastTouch=0,tx=null,LOOP=false;
+/* a card's place relative to position f: in a loop, the shortest way round (-M/2 .. M/2), so a card leaving one side
+   comes in on the other while it is off stage and invisible (opacity 0 from 3 places out) */
+const rel=(i,f)=>{const o=i-f;if(!LOOP)return o;return o-M*Math.round(o/M);};
+const wrapI=n=>((Math.round(n)%M)+M)%M;
+/* game categories: swiping stays inside the chosen set; the set changes only from the tab bar (tap or press-and-slide).
+   A set of 6 or more games is an endless loop (after the last game comes the first again, both ways, with the neighbour
+   cards showing on both sides); a smaller set bounces softly at its first and last game, because with so few cards the
+   card coming round would be seen jumping from one side to the other. ?cat=card|board|arcade|trivia|kids, else the last choice. */
 const catBtns=[...document.querySelectorAll('#cats button')],thumb=$('#cats .thumb'),catsEl=$('#cats');
 const CATS=catBtns.map(b=>b.dataset.cat);
 function pickCat(){const q=/[?&]cat=([a-z]+)\b/.exec(location.search);if(q&&CATS.includes(q[1]))return q[1];const s=ls.get('dg-home-cat');return CATS.includes(s)?s:'card';}
@@ -919,7 +963,7 @@ function moveThumb(){const b=catBtns.find(x=>x.dataset.cat===cat);if(b&&thumb){t
 function markTabs(c){catBtns.forEach(b=>{const on=b.dataset.cat===c;b.setAttribute('aria-selected',on?'true':'false');b.tabIndex=on?0:-1;});}
 function useSet(c){
  const set=setOf(c);ALL.forEach(x=>{if(x.dataset.cat!==c&&x.parentNode!==bank)bank.appendChild(x);});M=Math.max(1,set.length);
- cards=set;
+ cards=set;LOOP=M>=6;
  cards.forEach(x=>{x.classList.remove('front','wet');flow.insertBefore(x,floorEl);});
  dots.innerHTML=set.length>1?set.map(()=>'<i></i>').join(''):'';dots.hidden=set.length<2;dotEls=[...dots.children];
  markTabs(c);moveThumb();}
@@ -927,15 +971,15 @@ if(thumb)thumb.style.transition='none';
 useSet(cat);
 requestAnimationFrame(()=>requestAnimationFrame(()=>{if(thumb)thumb.style.transition='';}));
 function place(f){
- cards.forEach((c,i)=>{const o=i-f,s=Math.sign(o),a=Math.min(Math.abs(o),3.4);   /* far cards wait just off stage, hidden */
+ cards.forEach((c,i)=>{const o=rel(i,f),s=Math.sign(o),a=Math.min(Math.abs(o),3.4);   /* far cards wait just off stage, hidden */
   const x=s*(a<=1?96*a:96+(a-1)*50),ry=-s*(a<=1?48*a:48+(a-1)*8),z=a<=1?60-120*a:-60*a,sc=a<=1?1-.14*a:.86-(a-1)*.08;
   c.style.transform=`translateX(${x.toFixed(1)}px) translateZ(${z.toFixed(1)}px) rotateY(${ry.toFixed(1)}deg) scale(${sc.toFixed(3)})`;
   c.style.opacity=a<=2?1:Math.max(0,3-a).toFixed(2);c.style.zIndex=String(100-Math.round(a*10));
   c.style.setProperty('--dim',Math.min(.9,(a<=1?.28*a:.28+(a-1)*.18)).toFixed(2));
   const front=a<.5;c.classList.toggle('front',front);c.tabIndex=front?0:-1;c.setAttribute('aria-hidden',a>=2.5?'true':'false');});
- const n=cards[Math.max(0,Math.min(cards.length-1,Math.round(f)))];if(n)glow.style.backgroundColor=n.dataset.c;
- const k=Math.max(0,Math.min(M-1,Math.round(f)));dotEls.forEach((d,i)=>d.classList.toggle('on',i===k));}
-function go(n){cur=Math.max(0,Math.min(M-1,n));place(cur);}
+ const k=LOOP?wrapI(f):Math.max(0,Math.min(M-1,Math.round(f)));const n=cards[k];if(n)glow.style.backgroundColor=n.dataset.c;
+ dotEls.forEach((d,i)=>d.classList.toggle('on',i===k));}
+function go(n){cur=LOOP?wrapI(n):Math.max(0,Math.min(M-1,n));place(cur);}
 place(cur);
 /* switching sets: the old cards slide out the way of the swipe and fade (140 ms), the new set slides in from the other
    side, front card first, the rest staggered outwards (260 ms + 40 ms a step). Transform and opacity only (Web Animations).
@@ -989,10 +1033,10 @@ catsEl.addEventListener('pointerup',e=>csEnd(e,false));catsEl.addEventListener('
 catsEl.addEventListener('lostpointercapture',e=>{if(e.target===catsEl&&cs&&cs.moved&&e.pointerId===cs.id)csEnd(e,false);});
 catsEl.addEventListener('click',e=>{if(Date.now()-csAt<400){e.preventDefault();e.stopPropagation();}},true);
 addEventListener('resize',moveThumb);if(document.fonts&&document.fonts.ready)document.fonts.ready.then(moveThumb);
-/* the carousel: touch, pen and mouse (pointer events); past the first or last game of the set it stretches (rubber band)
-   and springs back on release */
+/* the carousel: touch, pen and mouse (pointer events); a looping set just keeps turning, a small set stretches past its
+   first or last game (rubber band) and springs back on release */
 const rb=x=>.7*x/(1+x);
-function bounded(f){const hi=M-1;return f<0?-rb(-f):f>hi?hi+rb(f-hi):f;}
+function bounded(f){if(LOOP)return f;const hi=M-1;return f<0?-rb(-f):f>hi?hi+rb(f-hi):f;}
 flow.addEventListener('pointerdown',e=>{if(e.button>0)return;if(tx)stopTx(true);lastTouch=Date.now();const t=performance.now();
  drag={x:e.clientX,start:cur,moved:false,id:e.pointerId,t:e.target,vx:e.clientX,vt:t,px:e.clientX,pt:t};});
 flow.addEventListener('pointermove',e=>{if(!drag||e.pointerId!==drag.id)return;const dx=e.clientX-drag.x;
@@ -1009,15 +1053,16 @@ function endDrag(e,cancel){if(!drag||(e&&e.pointerId!==drag.id))return;const d=d
  if(card.dataset.href)location.href=card.dataset.href;else toast(card.dataset.name+' is coming soon. Stay tuned!');}
 flow.addEventListener('pointerup',e=>endDrag(e,false));flow.addEventListener('pointercancel',e=>endDrag(e,true));
 flow.addEventListener('click',e=>{if(e.target.closest('.fc'))e.preventDefault();});
-/* arrow keys stay inside the set: at its first or last game a small nudge and spring back */
+/* arrow keys stay inside the set: a looping set goes round; a small set nudges and springs back at its first or last game */
 let nudgeT=0;
 function step(d){lastTouch=Date.now();if(tx)stopTx(true);const t=cur+d;clearTimeout(nudgeT);
- if(t<0||t>M-1){place(cur+d*.18);nudgeT=setTimeout(()=>{if(!drag)place(cur);},130);return;}
+ if(!LOOP&&(t<0||t>M-1)){place(cur+d*.18);nudgeT=setTimeout(()=>{if(!drag)place(cur);},130);return;}
  go(t);}
 flow.addEventListener('keydown',e=>{if(e.key==='ArrowRight'){step(1);e.preventDefault();}else if(e.key==='ArrowLeft'){step(-1);e.preventDefault();}
  else if(e.key==='Enter'){const c=cards[cur];if(!c)return;if(c.dataset.href)location.href=c.dataset.href;else toast(c.dataset.name+' is coming soon. Stay tuned!');}});
-/* idle autoplay stays inside the chosen set (back to its first game after the last); it never changes the set */
-if(!reduce)setInterval(()=>{if(document.hidden||document.body.classList.contains('intro')||drag||tx||M<2||Date.now()-lastTouch<7000)return;go(cur+1>M-1?0:cur+1);},3200);
+/* idle autoplay stays inside the chosen set (a loop just turns on; a small set goes back to its first game after the last);
+   it never changes the set */
+if(!reduce)setInterval(()=>{if(document.hidden||document.body.classList.contains('intro')||drag||tx||M<2||Date.now()-lastTouch<7000)return;go(LOOP?cur+1:cur+1>M-1?0:cur+1);},3200);
 
 /* ---------- sponsor box: ripple reveal ---------- */
 const box=$('#adbox'),barsEl=$('#bars'),rip=$('#ripple');let ai=0,az=1,adT=0,adStart=0,adLeft=AD_MS,held=false;
@@ -1098,8 +1143,7 @@ function openBuilder(){if(!window.DGAvatar){location.href='digu/?open=profile';r
  const tok=++bldTok;openSheet('#avSheet');
  requestAnimationFrame(()=>setTimeout(()=>{if(tok===bldTok&&$('#avSheet').classList.contains('open'))fillBuilder(host);},0));}
 function fillBuilder(host){
- let inv=null;try{inv=JSON.parse(ls.get('dd-inv')||'null');}catch(e){}
- bld=DGAvatar.openBuilder(host,{boliIcon:'<img src="'+document.querySelector('.boli img').src+'" alt="" style="width:18px;height:18px;object-fit:contain;vertical-align:middle">',cfg:DGAvatar.load()||DGAvatar.random(myId),owned:true,boli:inv?inv.shells|0:0,boliManaged:true,
+ bld=DGAvatar.openBuilder(host,{boliIcon:'<img src="'+document.querySelector('.boli img').src+'" alt="" style="width:18px;height:18px;object-fit:contain;vertical-align:middle">',cfg:DGAvatar.load()||DGAvatar.random(myId),owned:true,boli:boliCount(),boliManaged:true,
   onBoli:()=>{if(window.DGBgm)DGBgm.handoff();location.href='digu/?open=store';},
   onBuy:()=>{toast('Unlock special items in the Store.');return false;},
   onSave:cfg=>{DGAvatar.save(cfg);paintMe();closeSheet('#avSheet');toast('Character saved');},
