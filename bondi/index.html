@@ -380,6 +380,8 @@ html[data-ranga="1"] .schip.H[aria-pressed="true"] svg,html[data-ranga="1"] .sch
 .toast.show{display:block;animation:drop .5s var(--spring)}
 @keyframes drop{from{transform:translate(-50%,-20px);opacity:0}}
 @media (max-height:640px){.mebar{min-height:52px}.meav{--av:40px}.status{font-size:12px;padding:7px 13px}}
+/* phone landscape: the status pill drops below the table (into the empty middle of the bottom bar) so it never covers seats, cards or the trick */
+@media (orientation:landscape) and (max-height:500px){.arena{z-index:6}.status{bottom:auto;top:var(--sty,100%);max-width:min(50%,300px);padding:3px 12px;line-height:1.3;transform:translateX(calc(-50% + var(--stx,0px)))}}
 @media (prefers-reduced-motion:reduce){*,*:before,*:after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}.caus{display:none}}
 /* online (shared/net.js): noir card room, silver; Ranga keeps its neon pink */
 :root{--dgn-bg:#101114;--dgn-bg2:#17191D;--dgn-fg:#ECEEF2;--dgn-muted:#9BA1AB;--dgn-line:rgba(255,255,255,.11);--dgn-soft:rgba(255,255,255,.07);
@@ -885,7 +887,15 @@ const sc=$('#tsc');if(sc){const sx=ow/(2*g[2]),sy=oh/(2*g[3]);const tx=a.offsetL
  const w=$('#tadw');if(w){const adY=oy+oh/2+(TBL.at[1]-g[1])*sy;w.hidden=adY-9*sy<slotPos(Math.max(0,meIdx())).y+pw*.7+6||adY+9*sy>H-44||oh<200;}}
 const ap=asidePos(),ae=$('#aside');if(ae)ae.style.transform=`translate(${(ap.x-pw*.36).toFixed(1)}px,${(ap.y-pw*.504).toFixed(1)}px)`;
 const lt=$('#ledtag');if(lt)lt.style.transform=`translate(${(AR.cx-ow*.33).toFixed(1)}px,${(AR.cy+oh*.25).toFixed(1)}px) translate(-50%,-50%)`;
-placeSeats();layoutTrick(true);}
+placeSeats();layoutTrick(true);placeStatus();}
+/* phone landscape only: park the status pill just under everything on the table (seats, set-aside pile, played cards); the CSS in the landscape media query reads --sty/--stx */
+function placeStatus(again){const a=$('#arena'),st=$('#status');if(!a||!st||!AR||!S)return;
+ if(!matchMedia('(orientation:landscape) and (max-height:500px)').matches){a.style.removeProperty('--sty');a.style.removeProperty('--stx');return;}
+ const ar=a.getBoundingClientRect();let low=0;const add=(e,pad)=>{if(!e||e.hidden||!e.offsetWidth)return;low=Math.max(low,e.getBoundingClientRect().bottom-ar.top+(pad||0));};
+ a.querySelectorAll('.seat').forEach(e=>add(e));add($('#aside'),14);add($('#ledtag'));
+ const mk=slotPos(Math.max(0,meIdx()));low=Math.max(low,mk.y+AR.pw*.7);
+ a.style.setProperty('--sty',Math.round(low+4)+'px');a.style.setProperty('--stx','0px');
+ if(!again){clearTimeout(st._pt);st._pt=setTimeout(()=>placeStatus(true),700);}}
 function seatAngle(k){if(k===meIdx())return 270;const so=seatOrder(),i=so.indexOf(k),ang=SEAT_ANG[Math.min(4,so.length)]||[];return ang[i]!=null?ang[i]:90;}
 /* each player's trick card sits between the felt centre and their seat; the whole group is then
    shifted so a full trick is centred exactly on the felt, whatever the seat count */
@@ -945,7 +955,7 @@ else if(playing){const cur=S.players[S.turn];
   else t=S.ranga?`No ${suitI(S.led)}: <b>throw</b> one suit`:`No ${suitI(S.led)}: <b>break</b> with any card`;}
  else t=`<b>${esc(cur.name)}</b> ${S.trick.length?'is playing':'is leading'}`;}
 else if(S.status==='handover'||S.status==='over'){const L=S.result&&S.result.loser;t=L>=0?`<b>${esc(S.players[L].name)}</b> is the bondibui`:'Everyone got out together';}
-if(st._t!==t){st.innerHTML=t;st._t=t;}st.classList.toggle('mine',playing&&S.phase==='play'&&S.turn===me);
+if(st._t!==t){st.innerHTML=t;st._t=t;placeStatus();}st.classList.toggle('mine',playing&&S.phase==='play'&&S.turn===me);
 const tb=$('#throwbar');st.hidden=!tb.hidden;}
 /* trick cards sit between the centre and the player who played them */
 function trickPos(e,i,j,n){const sp=slotPos(e.p),pw=AR.pw;const off=(j-(n-1)/2)*pw*.3;const rot=((e.p*37+i*13)%11-5)+(j-(n-1)/2)*7;return{x:sp.x-pw/2+off,y:sp.y-pw*.7+Math.abs(j-(n-1)/2)*3,r:rot};}
