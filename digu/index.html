@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#F3EEF7">
+<meta name="theme-color" content="#2A2420">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -1004,6 +1004,143 @@ main.table.land .seat .cnt{align-self:start}
 main.table.land .seat .hfan{--fw:14px;right:auto;left:calc(var(--fw)*-.9)}
 main.table.land .seat .crown{top:-11px}
 @media (prefers-reduced-motion:reduce){.tscene *{animation:none!important}}
+/* ================= C1 Chalkboard+ on every menu screen, sheet and dialog (owner, 3 Oct 2026) =================
+   The home's dark warm room, chalk-white text, gold primary buttons and dark dashed cards, carried to vs Computer,
+   Friends, Store, Get Boli, Profile, the sheets, toasts and the result / rules cards. Kalam is only for display headings.
+   The card table keeps its own theme: main.table gets the old shell tokens back for its chat and reaction trays. */
+:root{--ink:#F4EBDD;--muted:#C2B19C;--panel:#2A2420;--cream:#2A2420;--line:rgba(255,255,255,.12);--edge:rgba(255,255,255,.16);--accent:#F2C66D;--deep:#F2C66D;--soft:rgba(255,255,255,.07);
+ --room:#2A2420;--card:rgba(0,0,0,.35);--dash:rgba(255,255,255,.18);--wood:#7A5434;--wood2:#4A311D;--chalk:#F4F1E8;--gold-ink:#2A2420;
+ --goldBtn:linear-gradient(180deg,#F2C66D,#D69A3A);--board:radial-gradient(120% 70% at 30% 0%,#3B463F,#232C28 70%) #232C28}
+main.table{--ink:#2A1418;--muted:#7A5F66;--panel:#FFFFFF;--line:rgba(42,20,24,.1);--edge:#EADCE3;--accent:#E0405C;--deep:#9E1B3A;--soft:#F5EEF3}
+html,html[data-bg],html body,html[data-bg] body{background:var(--room)}
+html body:before,html[data-bg] body:before{background:radial-gradient(90% 50% at 50% 0%,rgba(255,232,196,.07),rgba(255,232,196,0) 70%),radial-gradient(80% 50% at 50% 100%,rgba(0,0,0,.25),rgba(0,0,0,0) 70%),var(--room)}
+html main.page{color:var(--ink)}
+.muted{color:var(--muted)}
+/* top bars: back button, profile pill and Boli pill as on the home */
+html main.page :is(.icon-btn,.profbtn,.shellpill){background:rgba(0,0,0,.35);color:var(--ink);box-shadow:inset 0 0 0 1px rgba(255,255,255,.08)}
+html main.page .profbtn .ps{color:#F2C66D}
+.subtop h1{font:700 30px/1.15 Kalam,'Segoe Print',cursive;letter-spacing:.01em;color:var(--chalk);text-shadow:0 0 1px rgba(255,255,255,.6),0 0 8px rgba(255,255,255,.12);padding-top:4px}
+/* display headings in chalk */
+.panel h2,.sheet-b h2,.ovc h2,.rcard h2,.phead h2,.srch h2,.feat h3,.dgf-sheet h2{font-family:Kalam,'Segoe Print',cursive;font-weight:700;letter-spacing:.01em;color:var(--chalk)}
+.panel h2{font-size:21px;line-height:1.2}
+.sheet-b h2{font-size:27px;line-height:1.15}
+.panel h2.shh{font-family:Sora,sans-serif;font-weight:800;font-size:17px}
+/* dark dashed cards */
+.panel{background:var(--card);color:var(--ink);border:1px dashed var(--dash);box-shadow:none;border-radius:20px}
+/* buttons: gold primary, quiet dark secondary */
+.btn{background:var(--soft);color:var(--ink);box-shadow:inset 0 0 0 1px rgba(255,255,255,.14)}
+.btn.soft{background:var(--soft);box-shadow:inset 0 0 0 1px rgba(255,255,255,.14)}
+.btn.ghost{background:transparent;box-shadow:none;border:1px dashed rgba(255,255,255,.28)}
+.btn.primary,.pick .btn[aria-pressed="true"],.btn.gold{background:var(--goldBtn);color:var(--gold-ink);box-shadow:0 3px 0 #8A5E1C,0 10px 20px -10px rgba(0,0,0,.7)}
+.btn.danger,.linkbtn.danger{color:#FF9A8A}
+.btn.danger-solid{background:#B3261E;color:#fff}
+.btn:disabled{opacity:.6}
+.linkbtn{color:var(--muted)}
+/* chips and segmented controls: dark, gold when picked */
+.seg,.stabs{background:rgba(0,0,0,.35);box-shadow:inset 0 0 0 1px rgba(255,255,255,.08)}
+.seg button,.stab{color:var(--muted)}
+.seg button[aria-pressed="true"],.stab[aria-pressed="true"]{background:var(--goldBtn);color:var(--gold-ink);box-shadow:0 2px 0 #8A5E1C}
+.pick .btn{background:rgba(0,0,0,.3);box-shadow:inset 0 0 0 1px rgba(255,255,255,.16)}
+.pick .btn[aria-pressed="true"]{box-shadow:0 3px 0 #8A5E1C}
+/* inputs */
+.in{background:#1A1613;color:var(--ink);border:1px solid rgba(255,255,255,.2)}
+.in::placeholder{color:#A39482;opacity:1}
+.in:focus{border-color:#F2C66D;box-shadow:0 0 0 3px rgba(242,198,109,.32)}
+label.f{color:var(--muted)}
+.code{font-family:Kalam,'Segoe Print',cursive;font-weight:700;color:var(--chalk)}
+.joinrow .in{font-family:Sora,sans-serif}
+.hint,.seghint{color:var(--muted)}
+/* lists, rows, notes */
+.lrow{background:rgba(255,255,255,.04);box-shadow:inset 0 0 0 1px rgba(255,255,255,.1)}
+.otable .ot b,.lname{color:var(--ink)}
+.lrow .ok{color:#7FD8A4}
+.rdy{background:rgba(255,255,255,.08);color:var(--muted)}
+.rdy.ok{background:rgba(127,216,164,.14);color:#8FE0B0}
+.lefttag{color:#FF9A8A}
+.note,.btn.soft,.rlist li,.stat,.bdg,.lookprev,.popt,.rrow,.bad,.lrow .li,.rmini span,.qbots{background:var(--soft)}
+.srv,.page>.srv,.modes .srv{color:var(--muted)}
+.snote,html[data-bg="cream"] .snote,.powered,.powered.inpanel{color:var(--muted)}
+.powered.inpanel .pw.ph,.powered .pw.ph{background:rgba(0,0,0,.3);color:#F2D49B;border-color:rgba(242,212,155,.45)}
+.dgkick{background:rgba(0,0,0,.35);box-shadow:inset 0 0 0 1px rgba(255,255,255,.12)}
+/* sheets: the room colour with a wood rim along the top */
+.sheet{background:rgba(12,9,7,.62)}
+.sheet-b{background:var(--panel);color:var(--ink);border-top:4px solid var(--wood);box-shadow:0 -1px 0 var(--wood2),0 -18px 40px -16px rgba(0,0,0,.7);
+ --dga-bg:#2A2420;--dga-surface:#352D28;--dga-surface-2:#40372F;--dga-ink:#F4EBDD;--dga-muted:#C2B19C;--dga-accent:#F2C66D;--dga-on-accent:#2A2420;--dga-gold:#F2C66D;--dga-line:rgba(255,255,255,.14);--dga-focus:#F2C66D;--dga-font-display:Kalam,'Segoe Print',cursive}
+.grab{background:rgba(255,255,255,.28)}
+.sheet-b.gmenu>.mhead{border-bottom:1px dashed rgba(255,255,255,.14)}
+.tag{background:rgba(255,255,255,.1);color:var(--ink)}
+.toast{background:#1E1A17;color:var(--ink);box-shadow:inset 0 0 0 1px rgba(255,255,255,.16),0 14px 30px -10px rgba(0,0,0,.7)}
+/* result and rules cards: a little chalkboard in a wood frame */
+.ov{background:rgba(12,9,7,.62)}
+.ovc{--muted:#CBD3CC;--line:rgba(255,255,255,.14);--panel:#232C28;background:var(--board);color:var(--chalk);border:6px solid var(--wood);box-shadow:0 0 0 1px var(--wood2),0 30px 60px -20px rgba(0,0,0,.8),inset 0 0 0 1px rgba(255,255,255,.06)}
+.ovc h2{text-shadow:0 0 1px rgba(255,255,255,.6),0 0 8px rgba(255,255,255,.12)}
+.rfoot{margin:0 -18px -18px;background:linear-gradient(rgba(35,44,40,0),#232C28 12px)}
+.pts,.hn small{color:#F6D27E}
+.hp{color:#86E0A9}.hm,.hrow b.neg{color:#FF9C8F}
+.bar{background:rgba(255,255,255,.14)}
+.ovc .btn.ghost{border-color:rgba(255,255,255,.34)}
+.rcard .rbadge,.rcard.blitz .rbadge{background:var(--goldBtn);color:var(--gold-ink);box-shadow:none}
+.rlist li{background:rgba(0,0,0,.22);box-shadow:inset 0 0 0 1px rgba(255,255,255,.08)}
+.rlist li i{background:rgba(255,255,255,.1);color:var(--chalk);box-shadow:none}
+.rlist li.hl{background:rgba(242,198,109,.14);box-shadow:inset 0 0 0 1.5px rgba(242,198,109,.6)}
+.rlist li.hl i{background:#F2C66D;color:var(--gold-ink)}
+.rmini span{background:rgba(255,255,255,.1);color:var(--chalk)}
+.rmini span.hl{background:rgba(242,198,109,.2);color:#F6D27E}
+/* leaderboard */
+.lbbox{background:var(--card);border:1px dashed var(--dash);color:var(--ink)}
+.lbp .lbr{color:#F2C66D}
+.lbp.p1{background:rgba(242,198,109,.16)}
+.lbrow.lbme{background:rgba(242,198,109,.1);box-shadow:inset 0 0 0 1.5px rgba(242,198,109,.5)}
+/* store */
+.feat .buy{background:var(--goldBtn);color:var(--gold-ink);box-shadow:0 3px 0 #8A5E1C}
+.srt{color:var(--muted)}
+.srt span,.item .pr{color:#F2C66D}
+/* the dashed edge is an outline so the tiles keep their old size (the store grid fits the phone exactly as before) */
+.item{background:var(--card);color:var(--ink);box-shadow:none;outline:1px dashed var(--dash);outline-offset:-1px}
+.item.eq{outline:1.5px solid #F2C66D;outline-offset:-1.5px;box-shadow:0 0 18px -6px rgba(242,198,109,.6)}
+.item .own{background:#F2C66D;color:var(--gold-ink)}
+.item .own.o2{background:rgba(255,255,255,.12);color:var(--ink)}
+.item .lock,.item .ct{color:var(--muted)}
+.item .pv .avt{box-shadow:0 0 0 2px rgba(255,255,255,.85),0 6px 12px -6px rgba(0,0,0,.6)}
+.iteminfo{color:var(--muted)}
+.iteminfo span[style*="#2D86C9"]{color:#7EC3FF!important}.iteminfo span[style*="#7F5AF0"]{color:#B9A2FF!important}
+.bigprev{box-shadow:inset 0 0 0 1px rgba(255,255,255,.08)}
+.tsw[aria-pressed="true"] .tthumb{box-shadow:0 0 0 2.5px var(--panel),0 0 0 4.5px #F2C66D}
+/* Boli packs */
+.bpack{background:var(--card);color:var(--ink);box-shadow:none;border:1px dashed var(--dash)}
+.bpack .bq small{color:#F6D27E}
+.bpack .bq i{background:#F2C66D;color:var(--gold-ink)}
+.bpack .bp,.bad .bi{background:var(--goldBtn);color:var(--gold-ink)}
+.bad .bx{color:#F2C66D}
+/* packs that can't be bought yet: an outlined price instead of a faded one, so the text keeps its contrast */
+.bpack[aria-disabled="true"] .bp{opacity:1;background:rgba(242,198,109,.12);color:#F6D27E;box-shadow:inset 0 0 0 1px rgba(242,198,109,.45)}
+.bad[aria-disabled="true"] .bi{opacity:.7}
+/* locked badges: grey icon, readable label */
+.bdg.off{opacity:1;color:var(--muted)}
+.bdg.off i{opacity:.4;filter:grayscale(1)}
+/* profile */
+.badge-t{background:var(--goldBtn);color:var(--gold-ink)}
+.xpbar{background:rgba(255,255,255,.12)}
+.stat b{font-family:Kalam,'Segoe Print',cursive;font-weight:700;color:var(--chalk)}
+.hist b{color:var(--ink)}
+.hrowb{color:var(--ink);border-top-color:rgba(255,255,255,.1)}
+.hrowb:first-child{border-top:0}
+.eqrow{border-bottom-color:rgba(255,255,255,.1)}
+.popt.sel{background:rgba(242,198,109,.14);box-shadow:inset 0 0 0 2px #F2C66D}
+.copt.sel{box-shadow:0 0 0 3px var(--panel),0 0 0 5px var(--sw)}
+.abtn{border-color:rgba(255,255,255,.4)}
+.ordiv:before,.ordiv:after{background:rgba(255,255,255,.16)}
+.rrow input{accent-color:#F2C66D}
+/* Quick Match search screen */
+.ringw .trk{stroke:rgba(255,255,255,.12)}
+.ringw .arc{stroke:#F2C66D}
+.ringw .me{box-shadow:0 0 0 4px #F4EBDD,0 10px 24px -10px rgba(0,0,0,.6)}
+.ringw .secs{background:#1E1A17;color:#F2C66D;box-shadow:inset 0 0 0 1px rgba(255,255,255,.16)}
+.st .mini{box-shadow:0 0 0 2.5px #F4EBDD,0 6px 14px -6px rgba(0,0,0,.6)}
+.st .emp{border-color:rgba(255,255,255,.28);background:rgba(0,0,0,.25);color:var(--muted)}
+.st span.o,.qfill,.qhint,.qbots small{color:var(--muted)}
+/* sponsor line inside cards and sheets */
+a.hsp,.hsp{color:var(--ink)}
 </style>
 
 <script src="../shared/fit.js?v=1"></script>
@@ -2533,7 +2670,7 @@ function applyCosmetics(){const h=document.documentElement;h.dataset.deck='d-cla
    applyCosmetics();if(screen==='table'){applyTable();const f=document.querySelector('.scenefx');if(f)f.remove();}}});
  try{po.observe({type:'long-animation-frame'});}catch(e){}})();
 function setBg(v){const h=document.documentElement;if(v)h.dataset.bg=v;else delete h.dataset.bg;}
-function offTable(){delete document.documentElement.dataset.tbl;setBg('');setTC('#F3EEF7');const fxl=document.getElementById('fx');if(fxl)fxl.className='fx';if(screen!=='lobby')closeRules();if(spCtl){spCtl.destroy();spCtl=null;}}
+function offTable(){delete document.documentElement.dataset.tbl;setBg('');setTC('#2A2420');const fxl=document.getElementById('fx');if(fxl)fxl.className='fx';if(screen!=='lobby')closeRules();if(spCtl){spCtl.destroy();spCtl=null;}}
 function playEffect(id,box){const it=BYID[id];const a=it&&it.asset;if(!a||!a.fx||isSmooth()||reduce||document.hidden)return;
 let L=box;if(!L){L=document.getElementById('fxl');if(!L){L=document.createElement('div');L.id='fxl';L.className='fxl';document.body.appendChild(L);}}
 const R=L.getBoundingClientRect();const W=R.width,H=R.height,cx=W/2,cy=box?H/2:H*.4;
