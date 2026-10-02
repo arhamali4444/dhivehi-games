@@ -1020,6 +1020,7 @@ main.table.land .seat .crown{top:-11px}
 <script src="../shared/cosmetics.js?v=2"></script>
 <script src="../shared/sponsors.js?v=8"></script>
 <script src="../shared/table.js?v=1"></script>
+<script src="../shared/bgm.js?v=1"></script>
 <script>
 (function(){
 const DG_IN_APP=!!(window.DG_APP||location.protocol==='capacitor:'||!!(window.Capacitor&&window.Capacitor.isNativePlatform&&window.Capacitor.isNativePlatform()));   /* a local host name means a developer test machine, but NEVER inside the phone app (https://localhost, capacitor://localhost): the app is production */
@@ -3592,6 +3593,14 @@ initFirebase();
   if(m.classList.contains('table')){shown='table';return;}
   if(screen===shown)return;shown=screen;window.scrollTo(0,0);if(reduce)return;
   m.classList.add('enter');clearTimeout(m._et);m._et=setTimeout(()=>m.classList.remove('enter'),1400);}).observe(app,{childList:true});
+})();
+/* ---------- the homepage's background music (shared/bgm.js): Store, Boli and Profile / Sign in opened from the homepage
+   carry it on from where the homepage was; any other screen (a game, the lobby) ends it for this visit. Going back home
+   hands the position back. Digu's own table music and sounds are separate and unchanged. ---------- */
+(function(){if(!window.DGBgm)return;const MENU=['profile','store','boli'];
+ DGBgm.init({menu:true});
+ if(!fromHub||!MENU.includes(screen)){DGBgm.stop();return;}
+ const mo=new MutationObserver(()=>{if(!MENU.includes(screen)){DGBgm.stop();mo.disconnect();}});mo.observe(app,{childList:true});
 })();
 
 /* ---------- pressed feel for every button and card (menus + in-game buttons) ---------- */

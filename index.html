@@ -266,6 +266,9 @@ h1.word span{display:inline-block;background:linear-gradient(180deg,#155E43,#0B2
  .sheet .panel>*,.sheet.open .panel>*{opacity:1}}
 #builder{--dga-sticky-top:-14px}
 .sheet .grab{width:44px;height:5px;border-radius:99px;background:#D9CBB0;margin:0 auto 10px}
+/* drag down to close (see sheetDrag): the grab bar and the title take the drag; a bigger touch area round the bar */
+.sheet .grab,.sheet .panel>h2{touch-action:none;-webkit-user-select:none;user-select:none;cursor:grab}
+.sheet .grab{position:relative}.sheet .grab:before{content:"";position:absolute;inset:-14px -60px -10px}
 .sheet h2{margin:0 0 10px;font:900 24px/1.1 Fraunces,Georgia,serif}
 .rk{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:16px;background:#fff;box-shadow:inset 0 0 0 1px var(--line);margin-top:8px}
 .rk i{font-style:normal;width:28px;text-align:center;font-weight:800;color:var(--gold)}
@@ -1059,6 +1062,32 @@ function closeSheet(id){const s=$(id);if(!s.classList.contains('open'))return;
  if(id==='#avSheet')setTimeout(dropBuilder,600);}
 function dropBuilder(){if(!bld||$('#avSheet').classList.contains('open'))return;try{bld.destroy();}catch(e){}bld=null;}
 document.querySelectorAll('.sheet').forEach(s=>s.addEventListener('click',e=>{if(e.target===s||e.target.closest('[data-close]'))closeSheet('#'+s.id);}));
+/* drag down to close, on every sheet, with the avatar builder's feel (the builder brings its own, same numbers): the panel
+   follows the finger (upwards only a little), closes past a third of its height or on a quick downward flick, else
+   springs back. It starts from the grab bar or the title, or anywhere on the panel once its content is scrolled to the
+   top and the finger moves down. Transform only. */
+function sheetDrag(s){const p=s.querySelector('.panel');if(!p)return;let d=null,tc=null;
+ const set=(y,tr)=>{p.style.transition=reduce?'none':(tr||'none');p.style.transform=y?'translate3d(0,'+y.toFixed(1)+'px,0)':'';};
+ const begin=(y,t,id)=>{d={y0:y,dy:0,v:0,ly:y,lt:t,id:id,h:p.getBoundingClientRect().height};p.classList.add('dragging');};
+ const move=(y,t)=>{if(!d)return;let e=y-d.y0;if(e<0)e*=.35;const dt=Math.max(1,t-d.lt);d.v=.7*d.v+.3*(y-d.ly)/dt;d.ly=y;d.lt=t;d.dy=e;set(e);};
+ const end=cancel=>{if(!d)return;const g=d;d=null;p.classList.remove('dragging');
+  if(!cancel&&(g.dy>.35*g.h||(g.v>.55&&g.dy>24))){set(g.h+40,'transform .22s cubic-bezier(.4,0,1,1)');
+   setTimeout(()=>{closeSheet('#'+s.id);setTimeout(()=>{if(!s.classList.contains('open')){p.style.transform='';p.style.transition='';}},300);},reduce?0:220);return;}
+  set(0,'transform .38s cubic-bezier(.2,1.25,.35,1)');setTimeout(()=>{if(!d)p.style.transition='';},400);};
+ const handle=t=>t.closest&&t.closest('.grab,.panel>h2')&&!t.closest('button,a');
+ p.addEventListener('pointerdown',e=>{if(e.button>0||!handle(e.target))return;if(e.pointerType==='mouse')e.preventDefault();
+  begin(e.clientY,e.timeStamp,e.pointerId);try{e.target.setPointerCapture(e.pointerId);}catch(_){}});
+ p.addEventListener('pointermove',e=>{if(d&&d.id===e.pointerId)move(e.clientY,e.timeStamp);});
+ p.addEventListener('pointerup',e=>{if(d&&d.id===e.pointerId)end(false);});
+ p.addEventListener('pointercancel',e=>{if(d&&d.id===e.pointerId)end(true);});
+ /* the rest of the panel: a downward drag with the content at its top (touch) */
+ p.addEventListener('touchstart',e=>{tc=e.touches.length!==1||handle(e.target)?null:{y:e.touches[0].clientY,top:p.scrollTop<=0,on:false};},{passive:true});
+ p.addEventListener('touchmove',e=>{if(!tc)return;const y=e.touches[0].clientY;
+  if(!tc.on){if(!tc.top||y-tc.y<-4){tc=null;return;}if(y-tc.y<=6)return;tc.on=true;begin(y,e.timeStamp,'touch');}
+  e.preventDefault();move(y,e.timeStamp);},{passive:false});
+ p.addEventListener('touchend',()=>{if(tc&&tc.on)end(false);tc=null;});
+ p.addEventListener('touchcancel',()=>{if(tc&&tc.on)end(true);tc=null;});}
+document.querySelectorAll('.sheet').forEach(s=>{if(s.id!=='avSheet')sheetDrag(s);});
 document.addEventListener('keydown',e=>{if(e.key==='Escape')document.querySelectorAll('.sheet.open').forEach(s=>closeSheet('#'+s.id));});
 let bld=null,bldTok=0;
 /* the sheet opens first (an empty, full-height shell that starts sliding at once); the builder is rendered after that
@@ -1070,7 +1099,7 @@ function openBuilder(){if(!window.DGAvatar){location.href='digu/?open=profile';r
 function fillBuilder(host){
  let inv=null;try{inv=JSON.parse(ls.get('dd-inv')||'null');}catch(e){}
  bld=DGAvatar.openBuilder(host,{boliIcon:'<img src="'+document.querySelector('.boli img').src+'" alt="" style="width:18px;height:18px;object-fit:contain;vertical-align:middle">',cfg:DGAvatar.load()||DGAvatar.random(myId),owned:true,boli:inv?inv.shells|0:0,boliManaged:true,
-  onBoli:()=>{location.href='digu/?open=store';},
+  onBoli:()=>{if(window.DGBgm)DGBgm.handoff();location.href='digu/?open=store';},
   onBuy:()=>{toast('Unlock special items in the Store.');return false;},
   onSave:cfg=>{DGAvatar.save(cfg);paintMe();closeSheet('#avSheet');toast('Character saved');},
   onClose:()=>closeSheet('#avSheet')});}
@@ -1158,157 +1187,14 @@ try{
  new MutationObserver(function(){if(!document.body.classList.contains('intro'))window.dispatchEvent(new Event('dg-revealed'));})
   .observe(document.body,{attributes:true,attributeFilter:['class']});
 })();</script>
-<script>/* homepage music: M1 "Lagoon Pads" (original, generated live), on by default after the first tap */
-(function(){try{
-/* DGAudio: one shared AudioContext for the page, unlocked on the first gesture (same as in the intro sound script) */
-window.DGAudio=window.DGAudio||(function(){
- var A={ctx:null,bus:null,ready:[],done:false,
-  muted:function(){try{var v=localStorage.getItem('dd-sfx');return v==='0'||v==='off';}catch(e){return false;}},
-  setMuted:function(m){try{localStorage.setItem('dd-sfx',m?'0':'1');}catch(e){}if(A.ctx){if(m){if(A.ctx.suspend)A.ctx.suspend();}else if(A.ctx.resume)A.ctx.resume();}},
-  get:function(){if(A.ctx)return A.ctx;var AC=window.AudioContext||window.webkitAudioContext;if(!AC)return null;
-   A.ctx=new AC();A.bus=A.ctx.createGain();A.bus.connect(A.ctx.destination);return A.ctx;},
-  unlock:function(){var c=A.get();if(!c)return null;try{if(c.resume)c.resume();var b=c.createBuffer(1,1,22050),s=c.createBufferSource();s.buffer=b;s.connect(c.destination);s.start(0);}catch(e){}return c;},
-  onGesture:function(f){if(A.done)f();else A.ready.push(f);}};
- function gesture(){if(A.muted())return;var c=A.ctx;if(c&&c.state==='running'&&A.done)return;A.unlock();
-  if(!A.done){A.done=true;A.ready.splice(0).forEach(function(f){try{f();}catch(e){}});}}
- ['pointerdown','touchstart','keydown'].forEach(function(n){addEventListener(n,gesture,{capture:true,passive:true});});
- return A;})();
-/* DGMusic: the homepage music, M1 "Lagoon Pads" (owner's choice, Oct 2026; samples: design-mockups/home-music).
-   Original, generated live with Web Audio (no files, no noise): warm pads + soft bass + kalimba on the F major
-   pentatonic, 64 BPM, a 60 s pass that repeats without a seam and varies a little each time.
-   About -32 LUFS, peaks about -21 dBFS (measured by offline render). make(ctx, dest, 'M1') ->
-   {on, ctx, start(sec), fadeIn(sec), fadeOut(sec), sch(until), pos(), cycle} */
-window.DGMusic=window.DGMusic||(function(){
-function mtof(m){return 440*Math.pow(2,(m-69)/12);}
-function rng(s){return function(){s|=0;s=s+0x6D2B79F5|0;var t=Math.imul(s^s>>>15,1|s);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
-function pick(r,a){return a[Math.floor(r()*a.length)];}
-var P={};
-/* M1 Lagoon Pads: F major, 8 chords x 8 beats @64 = 60 s */
-P.M1={bpm:64,beats:64,level:.179,padCut:1100,padLevel:.18,bright:1.7,det:7,att:3,rel:3.5,bass:.22,pluckLevel:.32,pluckCut:3200,wet:.6,rt:1.6,
- chords:[[41,[53,57,60,64]],[38,[53,57,60,64]],[46,[50,53,57,62]],[36,[55,57,60,65]],
-         [45,[53,57,60,67]],[43,[53,58,62,69]],[46,[53,57,60,62]],[36,[55,60,62,65]]],
- mel:[[[0,69],[1,72],[2,74],[3.5,72],[5,69]],
-      [[0,74],[1.5,72],[3,69],[6,65]],
-      [[0,74],[1,77],[2,74],[3,72],[4.5,69]],
-      [[0,72],[2,67],[4,69],[7,72]],
-      [[0,81],[1,79],[2,77],[4,72],[6,74]],
-      [[0,74],[1.5,77],[3,74],[5,69]],
-      [[0,72],[1,74],[2,77],[4,74],[5.5,72]],
-      [[0,67],[2,72],[4,74]]],
- compose:function(c,r){var E=[],me=this;
-  this.chords.forEach(function(ch,i){E.push({k:'pad',b:i*8,d:8,n:ch[1],bass:ch[0]});
-   me.mel[i].forEach(function(n,j){
-    if(c%3===2&&j>0&&r()<.3)return;                               /* every third pass breathes: fewer notes */
-    var v=(j===0?.9:.65)+r()*.15;E.push({k:'pl',b:i*8+n[0],m:n[1],v:v,pan:pick(r,[-1,0,1])});
-    if(c%2===1&&r()<.28)E.push({k:'pl',b:i*8+n[0]+1.5,m:n[1]+12,v:v*.35,pan:pick(r,[-1,1])}); /* soft echo an octave up */
-   });});
-  return E;}};
-
-function make(ctx,dest,name){
- var p=P[name||'M1'],sr=ctx.sampleRate,i,beat=60/p.bpm,cycLen=p.beats*beat,R=Math.random;
- /* sum -> air lowpass -> master (fade x level) -> dest (no compressor: the levels are fixed by design) */
- var sum=ctx.createGain(),air=ctx.createBiquadFilter();air.type='lowpass';air.frequency.value=6500;air.Q.value=.5;
- var master=ctx.createGain();master.gain.value=0;sum.connect(air);air.connect(master);master.connect(dest);
- /* room: one smooth, dark MONO tail (no hiss), 15 ms pre-delay; the right side hears it 9 ms later */
- var L=Math.round(sr*p.rt),ir=ctx.createBuffer(1,L,sr),rr=rng(11),pre=Math.round(sr*.015);
- (function(){var o=ir.getChannelData(0),lp=0,lp2=0;for(i=pre;i<L;i++){var u=i/L;lp+=(rr()*2-1-lp)*(.42-.34*u);lp2+=(lp-lp2)*.5;o[i]=lp2*Math.pow(1-u,2.4)*Math.min(1,(i-pre)/(sr*.03));}})();
- var send=ctx.createGain();send.channelCount=1;send.channelCountMode='explicit';send.channelInterpretation='speakers';
- var conv=ctx.createConvolver();conv.buffer=ir;var ret=ctx.createGain();ret.gain.value=p.wet;
- var mg=ctx.createChannelMerger(2),dl=ctx.createDelay(.05);dl.delayTime.value=.009;
- send.connect(conv);conv.connect(ret);ret.connect(mg,0,0);ret.connect(dl);dl.connect(mg,0,1);mg.connect(sum);
- function panner(x){if(!ctx.createStereoPanner)return ctx.createGain();var n=ctx.createStereoPanner();n.pan.value=x;return n;}
- /* pads: chord tones spread left/right, gently detuned against each other -> slowly breathing lowpass */
- var padF=ctx.createBiquadFilter();padF.type='lowpass';padF.frequency.value=p.padCut;padF.Q.value=.6;
- var lfo=ctx.createOscillator();lfo.frequency.value=.037;var lfoG=ctx.createGain();lfoG.gain.value=p.padCut*.3;lfo.connect(lfoG);lfoG.connect(padF.frequency);
- try{padF.frequency.automationRate='k-rate';}catch(e){}   /* per-block filter updates: much cheaper on phones */
- var padG=ctx.createGain();padG.gain.value=p.padLevel;var padL=panner(-.45),padR=panner(.45);
- padL.connect(padF);padR.connect(padF);padF.connect(padG);padG.connect(sum);var padS=ctx.createGain();padS.gain.value=.55;padG.connect(padS);padS.connect(send);
- var bassG=ctx.createGain();bassG.gain.value=p.bass;bassG.connect(sum);
- var N=10,re=new Float32Array(N+1),im=new Float32Array(N+1);for(i=1;i<=N;i++)im[i]=1/Math.pow(i,p.bright);
- var W=ctx.createPeriodicWave(re,im),BW=ctx.createPeriodicWave(new Float32Array(3),new Float32Array([0,1,.28]));
- /* kalimba: three pan positions -> lowpass -> level, with plenty of room */
- var plF=ctx.createBiquadFilter();plF.type='lowpass';plF.frequency.value=p.pluckCut;plF.Q.value=.5;
- var plG=ctx.createGain();plG.gain.value=p.pluckLevel;plF.connect(plG);plG.connect(sum);
- var plS=ctx.createGain();plS.gain.value=.7;plG.connect(plS);plS.connect(send);
- var pans=[panner(-.35),panner(0),panner(.35)];pans.forEach(function(n){n.connect(plF);});
- lfo.start();
- function env(g,t,a,peak,hold,rel){g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(peak,t+a);g.gain.setValueAtTime(peak,t+hold);g.gain.linearRampToValueAtTime(0,t+hold+rel);}
- function osc(t,end,wave,f,det,peak,hold,out){var o=ctx.createOscillator(),g=ctx.createGain();o.setPeriodicWave(wave);o.frequency.value=f;o.detune.value=det;
-  env(g,t,p.att,peak,hold,p.rel);o.connect(g);g.connect(out);o.start(t);o.stop(end);}
- function pad(t,d,notes,bass){var hold=Math.max(p.att,d*beat),end=t+hold+p.rel+.05,a=.62/notes.length,top=notes.length-1;
-  notes.forEach(function(m,k){var s=k%2?1:-1;osc(t,end,W,mtof(m),s*p.det+R()*2-1,a,hold,s>0?padR:padL);
-   if(k===top)osc(t,end,W,mtof(m),-s*p.det,a*.8,hold,s>0?padL:padR);});
-  if(bass&&p.bass)osc(t,end,BW,mtof(bass),0,.5,hold,bassG);}
- /* every kalimba note is rendered ONCE into a small buffer at the context's own rate, then just played back */
- var BUF={},PARTS=[[1,1,1.0],[2,.1,.3],[5.93,.05,.07]];
- function pluckBuf(m){if(BUF[m])return BUF[m];var f=mtof(m),len=Math.round(sr*2.6),b=ctx.createBuffer(1,len,sr),d=b.getChannelData(0),at=Math.round(sr*.012),ft=Math.round(sr*.3);
-  PARTS.forEach(function(q){var fq=f*q[0];if(fq>9000)return;var w=2*Math.PI*fq/sr,dk=Math.exp(-1/(sr*q[2])),e=q[1];for(i=0;i<len;i++){d[i]+=e*Math.sin(w*i);e*=dk;}});
-  for(i=0;i<at;i++)d[i]*=i/at;for(i=len-ft;i<len;i++)d[i]*=(len-i)/ft;return BUF[m]=b;}
- function pluck(t,m,v,pan){var src=ctx.createBufferSource(),g=ctx.createGain();src.buffer=pluckBuf(m);g.gain.value=v;src.connect(g);g.connect(pans[pan+1]);src.start(t);}
- function play(e){if(e.k==='pad')pad(e.t,e.d,e.n,e.bass);else pluck(e.t+(R()-.5)*.03,e.m,e.v,e.pan);}
- /* scheduler: compose a whole pass at a time, play what falls inside the look-ahead window.
-    A suspended context's clock stops, so nothing piles up while the page is away. */
- var T0=null,gen=0,q=[];
- function sch(until){if(T0===null)T0=ctx.currentTime+.15;
-  while(T0+gen*cycLen<until){var ev=p.compose(gen,rng(1009+gen*7919)),base=T0+gen*cycLen;
-   ev.forEach(function(e){e.t=base+e.b*beat;q.push(e);});gen++;q.sort(function(a,b){return a.t-b.t;});}
-  while(q.length&&q[0].t<until)play(q.shift());}
- function fade(to,sec){var n=ctx.currentTime;master.gain.cancelScheduledValues(n);master.gain.setValueAtTime(master.gain.value,n);master.gain.linearRampToValueAtTime(to,n+sec);}
- var tm=0,api={on:false,ctx:ctx,sch:sch,level:p.level,cycle:cycLen,master:master,
-  pos:function(){return T0===null?0:((ctx.currentTime-T0)%cycLen+cycLen)%cycLen;},
-  start:function(sec){api.on=true;sch(ctx.currentTime+2);clearInterval(tm);tm=setInterval(function(){if(api.on)sch(ctx.currentTime+2);},500);fade(p.level,sec==null?3:sec);},
-  fadeIn:function(sec){fade(p.level,sec||1.5);},
-  fadeOut:function(sec){fade(0,sec||.3);},
-  /* old ambience hooks (no longer used): keep them harmless */
-  bloop:function(){},sink:function(){},slosh:function(){},plink:function(){},tick:function(){}};
- return api;}
-return {make:make,presets:P};
-})();
-
-/* ---- the homepage music (M1 "Lagoon Pads"): ON by default, it needs one tap or key press first (browsers allow
-   audio only after a gesture). A tap during the intro unlocks it but the music waits for the end of the intro
-   (dg-revealed; the intro's own card-shuffle sound is separate), then fades in over 3 s.
-   Hard stop: leaving the page (tab hidden, app switched, page hidden or frozen) fades it out fast and SUSPENDS the
-   AudioContext; it comes back only when the page is visible again and sound is on.
-   The sound button mutes it (site-wide 'dd-sfx': '0' / 'off' = muted, missing = on). ---- */
-var sound=null,btn=document.getElementById('oceanSnd'),waiting=false,hT=0;
-function introOn(){return document.body.classList.contains('intro');}
-function away(){return document.hidden||document.visibilityState==='hidden';}
-window.__dMakeSound=function(c,dest){return DGMusic.make(c,dest||c.destination,'M1');};   /* for level checks (offline rendering) */
-function startSound(){var c=DGAudio.get();if(!c||DGAudio.muted())return;
- if(!sound){sound=DGMusic.make(c,DGAudio.bus||c.destination,'M1');window.__d3snd=sound;}
- sound.on=true;if(away())return;
- if(introOn()){waiting=true;return;}              /* never over the intro: dg-revealed starts it */
- waiting=false;clearTimeout(hT);if(c.resume)c.resume();sound.start(3);}
-addEventListener('dg-revealed',function(){if(waiting&&sound&&sound.on&&!DGAudio.muted())startSound();});
-/* leaving: quick fade, then suspend (at once when the page is being hidden or frozen: timers may never run again) */
-function hush(now){var c=DGAudio.ctx;if(!c)return;if(sound)sound.fadeOut(now?.06:.25);clearTimeout(hT);
- if(now){try{c.suspend();}catch(e){}}else hT=setTimeout(function(){if(away()&&c.state!=='closed')try{c.suspend();}catch(e){}},300);}
-/* back: resume and fade in, only if the sound is on (and not during the intro) */
-function back(){var c=DGAudio.ctx;if(!c||away()||!sound||!sound.on||DGAudio.muted())return;clearTimeout(hT);
- if(c.resume)c.resume();if(introOn())waiting=true;else sound.fadeIn(1.5);}
-document.addEventListener('visibilitychange',function(){if(away())hush(false);else back();});
-addEventListener('pagehide',function(){hush(true);});
-document.addEventListener('freeze',function(){hush(true);});
-addEventListener('blur',function(){if(away())hush(false);});
-addEventListener('pageshow',function(e){if(e.persisted)back();});
-document.addEventListener('resume',function(){back();});
-/* safety net: if a hidden page is still running (a missed event), stop it */
-setInterval(function(){var c=DGAudio.ctx;if(c&&away()&&c.state==='running')hush(true);},1000);
-function paintBtn(){if(!btn)return;var on=!DGAudio.muted();btn.setAttribute('aria-pressed',on?'true':'false');btn.classList.toggle('on',on);
- btn.setAttribute('aria-label',on?'Sound on. Tap to mute':'Sound off. Tap to turn on');btn.title=on?'Mute':'Sound on';}
-paintBtn();
-/* on by default: the first gesture anywhere starts the music (unless muted) */
-DGAudio.onGesture(function(){if(!DGAudio.muted())startSound();});
-/* native app wrapper: autoplay allowed */
-if((window.Capacitor||/DhivehiGamesApp/.test(navigator.userAgent))&&!DGAudio.muted())startSound();
-/* the button is a mute toggle */
-if(btn)btn.addEventListener('click',function(){
- var mute=!DGAudio.muted();DGAudio.setMuted(mute);
- if(mute){if(sound){sound.on=false;sound.fadeOut(.15);}waiting=false;}else{DGAudio.unlock();startSound();}
- paintBtn();
-});
-}catch(e){}})();</script>
+<script src="/shared/bgm.js?v=1"></script>
+<script>/* homepage music: M1 "Lagoon Pads" (shared/bgm.js), on by default after the first tap. Store, Boli and Sign in
+   open Digu's menu screens, which carry the music on from here (the position is handed over just before leaving) */
+(function(){if(!window.DGBgm)return;
+ DGBgm.init({btn:document.getElementById('oceanSnd'),intro:function(){return document.body.classList.contains('intro');},revealEvent:'dg-revealed',autostart:true});
+ document.addEventListener('click',function(e){var a=e.target.closest&&e.target.closest('a[href]');
+  if(a&&/^digu\/\?open=(store|boli|account)\b/.test(a.getAttribute('href')))DGBgm.handoff();},true);
+})();</script>
 <div id="skipper" aria-hidden="true"></div>
 <script>/* tap (or press a key) to skip the intro */
 (function(){var b=document.body,s=document.getElementById('skipper');
