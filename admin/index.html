@@ -2303,7 +2303,7 @@ async function cBulkRun(changes,skips,verb){if(!changes.length)return;
  if(done.length){try{await rebuildManifest();CT.manErr='';}catch(e){manOk=false;CT.manErr=errMsg(e);}}
  const failed=changes.filter(p=>!done.includes(p.id));
  CT.bulk=null;
- if(failed.length)CT.sel=new Set(failed.map(p=>p.id));   /* keep only the ones that still need doing selected, ready for Try again */
+ CT.sel=failed.length?new Set(failed.map(p=>p.id)):new Set();   /* success: clear the selection so the bulk bar closes; failures stay selected for Try again */
  const sk=skips.filter(([n])=>n>0).map(([n,why])=>`${n} skipped (${why})`);
  let msg=`${done.length} updated`+(sk.length?', '+sk.join(', '):'');
  if(failed.length)msg=`${done.length} updated, ${failed.length} NOT saved: ${errMsg(err)}. They are still selected: try again.`+(sk.length?' '+sk.join(', ')+'.':'');
