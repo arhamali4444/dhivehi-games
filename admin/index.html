@@ -9,10 +9,10 @@
 <link rel="icon" href="/icons/favicon.svg" type="image/svg+xml">
 <link rel="icon" href="/icons/favicon-32.png" type="image/png" sizes="32x32">
 <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" sizes="180x180">
-<meta name="theme-color" content="#2A1418">
+<meta name="theme-color" content="#FAF7F2">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Sora:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 :root{
  --bg:#FBF5F2;--bg2:#F6ECE7;--card:#FFFFFF;--ink:#2A1418;--ink2:#4A3236;--muted:#806A6D;--line:#EFE1DB;--line2:#E5D2CB;
@@ -438,6 +438,172 @@ dialog::backdrop{background:rgba(20,8,10,.55);backdrop-filter:blur(2px)}
  html.print-report #printRoot{display:block}
  html.print-report #printRoot .rp{width:210mm;height:297mm;transform:none!important}
 }
+
+/* ===== Admin theme v3: architectural minimal, warm beige, colour = meaning (green good · orange warning · red bad) ===== */
+:root{
+ --bg:#FAF7F2;--bg2:#F1ECE3;--card:#FFFFFF;--ink:#1F1C19;--ink2:#46403A;--muted:#857B70;--line:#ECE5DA;--line2:#DDD3C4;
+ --coral:#1F1C19;--rose:#1F1C19;--deep:#1F1C19;--coralsoft:#EAE3D8;
+ --ok:#2D7048;--oksoft:#E3EDE4;--warn:#B25C0C;--warnsoft:#F7E7D2;--bad:#AE2A20;--badsoft:#F5E0DB;
+ --shadow:none;--r:2px;
+ --hd:"IBM Plex Sans",system-ui,sans-serif;--tx:"IBM Plex Sans",system-ui,sans-serif;--mono:"IBM Plex Mono",ui-monospace,monospace;
+ --c-new:#2D7048;--c-ret:#CBBFAD;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+ --bg:#161412;--bg2:#1D1A17;--card:#1B1816;--ink:#EEE7DC;--ink2:#D1C7B9;--muted:#9C9184;--line:#2F2A25;--line2:#3D3630;
+ --coral:#EEE7DC;--rose:#EEE7DC;--deep:#EEE7DC;--coralsoft:#25211D;
+ --ok:#6BB98A;--oksoft:#15241A;--warn:#E09A4C;--warnsoft:#2E210F;--bad:#EC7568;--badsoft:#341816;
+ --c-new:#6BB98A;--c-ret:#554B42}}
+body{background:var(--bg);font-family:var(--tx)}
+/* modern: gentle 8px corners, sentence case, no shouty capitals */
+.card,.stats,.btn,.ibtn,.pill,.gchips,.tab .dot,input,select{border-radius:8px!important}
+.brand img{border-radius:8px}
+/* header */
+.top{background:var(--bg)!important;color:var(--ink);border-bottom:1px solid var(--line)}
+.top .wrap{height:64px}
+.brand b{font:600 18px/1 var(--hd);letter-spacing:-.01em}
+.brand small{opacity:1;color:var(--muted);letter-spacing:0;font-size:12px;font-weight:500;text-transform:none}
+.ibtn{height:34px;border:1px solid var(--line2);background:var(--card);color:var(--ink);font-weight:500;letter-spacing:0;text-transform:none;font-size:13px}
+.ibtn:hover{border-color:var(--ink)}
+/* tabs: text + rule */
+.tabs{top:calc(64px + env(safe-area-inset-top));background:var(--bg);backdrop-filter:none;-webkit-backdrop-filter:none;border-bottom:1px solid var(--line)}
+.tabs .wrap{padding-top:0;padding-bottom:0}
+.tab{height:46px;border-radius:0;color:var(--muted);font-weight:500;font-size:14px;letter-spacing:0;text-transform:none}
+.tab[aria-selected="true"]{background:transparent;box-shadow:inset 0 -2px 0 var(--ink);color:var(--ink)}
+.tab .dot{background:var(--bg2);color:var(--ink2);border:0;font:600 11px/18px var(--tx);height:18px;padding:0 6px}
+.tab[data-t="inbox"] .dot{color:#fff;background:var(--bad);border-color:var(--bad)}
+.tab[data-t="players"] .dot{color:#fff;background:var(--warn);border-color:var(--warn)}
+/* layout: hairline panels */
+main{padding-top:24px}
+.sec{gap:16px}
+.card{border:1px solid var(--line);background:var(--card);box-shadow:none;padding:22px 24px}
+.card h2{font:600 17px/1.25 var(--hd);letter-spacing:-.01em;text-transform:none}
+.chead{border-bottom:1px solid var(--line);padding-bottom:12px;margin-bottom:14px}
+/* KPI strip: one ruled grid instead of floating cards */
+.stats{gap:0;border:1px solid var(--line);background:var(--card)}
+.stat{border:0;border-right:1px solid var(--line);border-bottom:1px solid var(--line);background:transparent;padding:16px 18px;margin:0 -1px -1px 0;border-radius:0}
+.stat .k{font:500 12.5px/1.2 var(--tx);letter-spacing:0;text-transform:none;color:var(--muted)}
+.stat .v{font:600 30px/1.1 var(--hd);font-variant-numeric:tabular-nums;letter-spacing:-.02em;margin-top:6px}
+.stat .s{font-size:11px}
+.stat.hero{background:transparent;color:var(--ink);box-shadow:inset 3px 0 0 var(--ok)}
+.stat.hero .k{color:var(--ok)}.stat.hero .v{color:var(--ok)}.stat.hero .s{color:var(--muted)}
+/* buttons: rectangular, quiet */
+.btn{height:34px;border:1px solid var(--line2);background:var(--card);font-weight:500;font-size:13px;letter-spacing:0;text-decoration:none;color:var(--ink)}
+.btn:hover{border-color:var(--ink)}
+.btn.pri{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.btn.pri:hover{filter:none;background:var(--ink2)}
+.btn.ghost{border-color:transparent;text-decoration:underline;text-decoration-color:var(--line2);text-underline-offset:3px}
+.btn[data-a="handled"]{background:var(--ok);border-color:var(--ok);color:#fff}
+.btn[data-a="del"],.btn[data-a="delmsg"]{color:var(--bad)!important;border-color:color-mix(in srgb,var(--bad) 45%,transparent);background:transparent;text-decoration:none}
+.btn[data-a="del"]:hover,.btn[data-a="delmsg"]:hover{background:var(--badsoft)}
+.btn.danger{background:var(--bad);border-color:var(--bad);color:#fff}
+.btn.danger:disabled{background:var(--bg2);border-color:var(--line2);color:var(--muted);opacity:1}
+.btn.sm{height:30px;border-radius:8px}
+/* status tags: square marker + label, no bubbles */
+.pill{height:auto;padding:3px 8px;background:var(--bg2);border:1px solid transparent;color:var(--ink2);font:500 12px/1.3 var(--tx);letter-spacing:0;text-transform:none}
+.pill.co{background:transparent;color:var(--ink2);border-color:var(--line2)}
+.pill.ok{color:var(--ok);border-color:color-mix(in srgb,var(--ok) 40%,transparent);background:var(--oksoft)}
+.pill.warn{color:var(--warn);border-color:color-mix(in srgb,var(--warn) 40%,transparent);background:var(--warnsoft)}
+.pill.bad{color:var(--bad);border-color:color-mix(in srgb,var(--bad) 40%,transparent);background:var(--badsoft)}
+.pill.ok:before,.pill.warn:before,.pill.bad:before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor;flex:none}
+/* chips: ruled segments */
+.gchips{gap:0;border:1px solid var(--line);overflow:hidden}
+.gchip{height:34px;border:0;border-right:1px solid var(--line);border-radius:0;background:transparent;font-weight:500;padding:0 12px}
+.gchip b{font-family:var(--mono);font-weight:500}
+button.gchip[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+/* lists & tables */
+.row{padding:12px 0}
+table.plain th,.heat th{font:500 12px/1.2 var(--tx);letter-spacing:0;text-transform:none}
+.mono{font-family:var(--mono)}
+a{color:var(--ink);text-decoration-color:var(--line2);text-underline-offset:3px}
+/* advertiser tab + printable report */
+.adv{--a:#1F1C19;--a2:#46403A;--asoft:#EAE3D8;--g0:#F3EEE6;--g1:#EAE3D8;--g2:#CFC4B3;--g3:#B0A493;--g4:#857B70;--gi:#1F1C19}
+.rp{--ra:#1F1C19;--a:#1F1C19}
+/* the rest of the page follows the same rules: 8px corners at most, hairlines, no soft blobs */
+.dgroup,.msg,.tcard,.note,.uidbox,.readout,.akpi .t,.anone,.rwrap,.gbtn,.inp,.search,select.sel,.toast{border-radius:8px}
+.seg{border-radius:8px;background:var(--bg2);padding:2px}
+.seg button{border-radius:6px;font-weight:500}
+.seg button[aria-pressed="true"]{box-shadow:0 0 0 1px var(--line2)}
+.dlist li{border-radius:6px}
+.arow,.asrow{border-radius:6px}
+.av{border-radius:8px}
+.phead{font:500 12px/1.2 var(--tx)!important;letter-spacing:0!important;text-transform:none!important}
+.stat .k,.badge,.agrp,.adv .lbl{letter-spacing:0;text-transform:none}
+.badge{font:500 11px/18px var(--tx);border-radius:4px;border:1px solid transparent}
+.badge.test{background:var(--warnsoft);color:var(--warn)}
+.badge.merged{background:var(--bg2);color:var(--muted);border-color:var(--line2)}
+.note{border-color:color-mix(in srgb,var(--warn) 30%,transparent)}
+.note.info{background:var(--bg);border-color:var(--line)}
+.note.ok{background:var(--oksoft);border-color:color-mix(in srgb,var(--ok) 30%,transparent)}
+.note.ok svg{color:var(--ok)}
+.note.bad{background:var(--badsoft);border-color:color-mix(in srgb,var(--bad) 30%,transparent)}
+.note.bad svg{color:var(--bad)}
+dialog{border-radius:8px;border:1px solid var(--line2);box-shadow:0 12px 40px rgba(31,28,25,.18)}
+dialog::backdrop{background:rgba(31,28,25,.45);backdrop-filter:none}
+.dlg header h2{font:600 18px/1.25 var(--hd)}
+.ctab th{font:500 12px/1.2 var(--tx);letter-spacing:0;text-transform:none}
+.toast{background:var(--ink);color:var(--bg);font-weight:500}
+.lcard h1,.denied .big{font-weight:600}
+.mockbar{background:var(--warnsoft);color:var(--warn);font-weight:500;border-bottom:1px solid color-mix(in srgb,var(--warn) 30%,transparent)}
+.field label{font-weight:500}
+@media (max-width:479px){.card{padding:18px 16px}}
+
+/* sign-in method label */
+.sim{display:inline-flex;align-items:center;gap:5px;font:500 12px/1.3 var(--tx);color:var(--ink2);white-space:nowrap}
+.sim i{width:6px;height:6px;border-radius:1px;background:var(--line2);flex:none}
+.sim.g i{background:var(--ok)}.sim.e i{background:var(--ink2)}.sim.u i{background:var(--warn)}
+.sim.unk{color:var(--muted)}
+.prow .sg{display:none}
+@media (min-width:760px){.phead,.prow{grid-template-columns:minmax(0,2fr) minmax(86px,.75fr) repeat(5,minmax(48px,.45fr)) minmax(70px,.65fr)}
+ .phead span.sg,.prow .st.sg{text-align:left;display:block}.prow .m-only{display:none}}
+.tip{font-size:12.5px;color:var(--ink2);background:var(--warnsoft);border-left:2px solid var(--warn);padding:8px 10px;border-radius:0 6px 6px 0;flex:1 1 100%}
+
+/* merge two players */
+.mpick{display:grid;gap:12px;grid-template-columns:minmax(0,1fr)}
+@media (min-width:760px){.mpick{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}}
+.mslot{border:1px solid var(--line);border-radius:8px;padding:12px;min-width:0;background:var(--bg)}
+.mslot .lab{font:500 12px/1.2 var(--tx);color:var(--muted);margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.mslot .lab b{font-family:var(--mono);color:var(--ink);font-weight:500}
+.mslot .search{width:100%;background-color:var(--card)}
+.mres{display:grid;margin-top:6px;border:1px solid var(--line);border-radius:8px;background:var(--card);overflow:hidden}
+.mres button{all:unset;cursor:pointer;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 10px;padding:8px 10px;border-top:1px solid var(--line);min-width:0}
+.mres button:first-child{border-top:0}
+.mres button:hover,.mres button:focus-visible{background:var(--bg)}
+.mres .n{font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mres .d{grid-column:1/-1;font-size:12px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mres .w{font:500 12px var(--mono);color:var(--ink2)}
+.mchosen{display:flex;align-items:center;gap:10px;min-width:0}
+.mchosen .main{flex:1;min-width:0}
+.mchosen .nm{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mkeep{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:16px 0 10px}
+.mkeep .lbl2{font-weight:500;font-size:13px}
+.mtab-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.mtab{width:100%;border-collapse:collapse;font-size:13px;table-layout:fixed;min-width:300px}
+.mtab th,.mtab td{padding:8px 6px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;overflow-wrap:anywhere;font-variant-numeric:tabular-nums}
+.mtab thead th{font:500 12px/1.3 var(--tx);color:var(--muted);border-bottom:1px solid var(--line2)}
+.mtab thead th b{display:block;color:var(--ink);font-weight:600;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mtab td:first-child,.mtab th:first-child{color:var(--muted);width:92px;padding-left:0}
+.mtab .keep{background:color-mix(in srgb,var(--ok) 6%,transparent)}
+.mtab .res{font-weight:600;border-left:1px solid var(--line2)}
+.mtab .res.chg{color:var(--ok)}
+.mtab .num{font-family:var(--mono);font-size:12.5px}
+.mtab .mt{display:block;font:500 11.5px/1.3 var(--tx);margin:2px 0 1px}.mtab .mt:before{content:"";display:inline-block;width:6px;height:6px;border-radius:50%;background:currentColor;margin-right:5px;vertical-align:1px}
+.mtab .mt.ok{color:var(--ok)}.mtab .mt.bad{color:var(--bad)}
+@media (max-width:479px){.mtab{font-size:12px}.mtab td:first-child,.mtab th:first-child{width:72px}.mtab th,.mtab td{padding:7px 4px}}
+.mchg{margin:14px 0 0;padding:0;list-style:none;display:grid;gap:0;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.mchg li{padding:10px 12px;border-top:1px solid var(--line);font-size:13px;display:grid;gap:4px}
+.mchg li:first-child{border-top:0}
+.mchg li.keep{border-left:3px solid var(--ok)}
+.mchg li.gone{border-left:3px solid var(--bad)}
+.mchg .ttl{font-weight:600}
+.mchg .kv2{display:flex;flex-wrap:wrap;gap:4px 14px;font:12.5px var(--mono);color:var(--ink2)}
+.mchg .kv2 s{color:var(--muted)}
+.mconfirm{display:grid;gap:8px;margin-top:14px;padding-top:14px;border-top:1px solid var(--line)}
+.mconfirm label{font-size:13px}
+.mconfirm .row2{display:flex;gap:8px;flex-wrap:wrap}
+.mconfirm .inp{flex:1 1 200px;min-width:0;height:40px;font-size:14px}
+/* one-time password reveal */
+.tpw{display:flex;align-items:center;gap:8px;border:1px solid var(--line2);border-radius:8px;padding:10px 10px 10px 14px;margin:10px 0;background:var(--bg)}
+.tpw code{flex:1;min-width:0;font:500 20px/1.3 var(--mono);letter-spacing:.02em;overflow-wrap:anywhere;user-select:all}
 </style>
 </head>
 <body>
@@ -475,9 +641,13 @@ dialog::backdrop{background:rgba(20,8,10,.55);backdrop-filter:blur(2px)}
    Localhost-only test switches: ?mock=1 (fake data, fake sign-in, writes stay in memory),
    ?mock=1&live=1 (fake sign-in, REAL read-only presence/players/tables, all writes disabled),
    &as=guest (show "Not authorised"), &rules=0 (pretend the admin rules are not published), &auto=1 (auto sign-in),
-   &ads=empty (Advertisers tab on its first day: nothing counted yet).
+   &ads=empty (Advertisers tab on its first day: nothing counted yet), &worker=http://localhost:PORT (a local fake reset service).
    ===================================================================================== */
 'use strict';
+
+/* The password-reset service (a Cloudflare Worker, see extras/cloudflare/SETUP-reset-password.md).
+   Paste its address here once it is set up, e.g. 'https://dg-admin.yourname.workers.dev'. Empty = not set up yet. */
+const ADMIN_WORKER_URL='https://dg-admin.rasewgaming.workers.dev';
 
 /* The owner's account (same as ADMIN_UID in digu/index.html). Add more UIDs here AND in the rules. */
 const ADMIN_UIDS=['mLOkxzQ7J0YC8z0auCKdv3HprJj2'];
@@ -492,6 +662,9 @@ const LIVE=MOCK&&Q.get('live')==='1';
 const MOCK_ADMIN='mockOwnerUid00000000000000a1';
 const ONLINE_MS=120000,STALE_MS=45000,PRES_EVERY=15000;
 const USER_DOMAIN='@users.dhivehidigu.invalid';
+/* localhost testing only: ?worker=http://localhost:PORT points the reset service at a local fake, ?worker=none = not set up */
+/* (mock mode never talks to the real service: without &worker= it behaves as "not set up") */
+const WORKER_URL=String(LOCAL&&Q.has('worker')?(Q.get('worker')==='none'?'':Q.get('worker')):MOCK?'':ADMIN_WORKER_URL||'').replace(/\/+$/,'');
 
 /* the 11 games on the home page (colours from the home cards) */
 const GAMES={digu:{n:'Digu',c:'#2E8C69'},dhogu:{n:'Dhogu',c:'#6A4FD8'},bondi:{n:'Bondi',c:'#6B6B6B'},ranga:{n:'Ranga Bondi',c:'#9B2F3E'},
@@ -515,11 +688,15 @@ service cloud.firestore {
 
     match /players/{uid} {
       allow read: if true;
-      // ranked = registered: no guests, and the name must be the writer's own reserved username (any capitalisation)
+      // ranked = registered: no guests, and the name must be the writer's own reserved username (any capitalisation).
+      // After an admin merge: the kept entry also holds createdAt / mergedFrom (/ inventory), which the player's game
+      // must leave exactly as they are; the merged-away entry holds mergedInto + disabled, so its owner can't write it any more.
       allow create, update: if request.auth != null
         && request.auth.uid == uid
         && request.auth.token.firebase.sign_in_provider != 'anonymous'
-        && request.resource.data.keys().hasOnly(['name','xp','shells','games','wins','hands','gins','big','online','best','updatedAt'])
+        && request.resource.data.keys().hasOnly(['name','xp','shells','games','wins','hands','gins','big','online','best','updatedAt','createdAt','mergedFrom','inventory'])
+        && ((resource == null && !request.resource.data.keys().hasAny(['createdAt','mergedFrom','inventory']))
+          || (resource != null && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['name','xp','shells','games','wins','hands','gins','big','online','best','updatedAt'])))
         && request.resource.data.name is string
         && request.resource.data.name.size() <= 20
         && exists(/databases/$(db)/documents/usernames/$(request.resource.data.name.lower()))
@@ -531,9 +708,10 @@ service cloud.firestore {
         && request.resource.data.shells <= 1000000
         && (resource == null || request.resource.data.wins >= resource.data.wins);
       allow delete: if request.auth != null && request.auth.uid == uid;
-      // admin: rename and merge (same fields only), and delete
+      // admin: rename, merge and delete. A merge writes the totals to the kept entry (plus createdAt, mergedFrom, inventory)
+      // and marks the other entry mergedInto + disabled (+ mergedAt) instead of deleting it.
       allow update: if isAdmin()
-        && request.resource.data.keys().hasOnly(['name','xp','shells','games','wins','hands','gins','big','online','best','updatedAt'])
+        && request.resource.data.keys().hasOnly(['name','xp','shells','games','wins','hands','gins','big','online','best','updatedAt','createdAt','mergedFrom','inventory','mergedInto','disabled','mergedAt'])
         && request.resource.data.name is string
         && request.resource.data.name.size() > 0
         && request.resource.data.name.size() <= 20;
@@ -680,12 +858,13 @@ const IC={
 };
 
 /* ---------------- confirm dialog ---------------- */
-function ask({title,html,ok='Confirm',danger=false,input=null}){return new Promise(res=>{
+/* single = only one button (no Cancel); wipe = clear the dialog's contents once it closes (e.g. a password shown once) */
+function ask({title,html,ok='Confirm',danger=false,input=null,single=false,wipe=false}){return new Promise(res=>{
  const d=$('#dlg');$('#dlgT').textContent=title;$('#dlgB').innerHTML=html+(input?`<div class="field" style="margin-top:12px"><label for="dlgIn">${esc(input.label)}</label><input class="inp" id="dlgIn" maxlength="${input.max||60}" value="${esc(input.value||'')}" autocomplete="off"></div>`:'');
- const okb=$('#dlgOk');okb.textContent=ok;okb.className='btn '+(danger?'danger':'pri');
- const done=()=>{d.removeEventListener('close',done);const v=d.returnValue==='yes';res(input?(v?($('#dlgIn')||{}).value:null):v);};
+ const okb=$('#dlgOk');okb.textContent=ok;okb.className='btn '+(danger?'danger':'pri');$('#dlgNo').hidden=!!single;
+ const done=()=>{d.removeEventListener('close',done);const v=d.returnValue==='yes';res(input?(v?($('#dlgIn')||{}).value:null):v);if(wipe)$('#dlgB').innerHTML='';};
  d.returnValue='';d.addEventListener('close',done);d.showModal();
- if(input)setTimeout(()=>{const i=$('#dlgIn');i&&i.focus();i&&i.select();},30);else setTimeout(()=>$('#dlgNo').focus(),30);});}
+ if(input)setTimeout(()=>{const i=$('#dlgIn');i&&i.focus();i&&i.select();},30);else setTimeout(()=>(single?okb:$('#dlgNo')).focus(),30);});}
 
 /* =====================================================================================
    DATA LAYER. Real = Firebase (auth + Firestore). Mock = in-memory (localhost ?mock=1 only).
@@ -702,8 +881,13 @@ const tsMs=v=>v&&typeof v.toMillis==='function'?v.toMillis():typeof v==='number'
 function rv(v){if(!v)return null;if('integerValue' in v)return +v.integerValue;if('doubleValue' in v)return +v.doubleValue;if('stringValue' in v)return v.stringValue;
  if('booleanValue' in v)return v.booleanValue;if('nullValue' in v)return null;if('timestampValue' in v)return Date.parse(v.timestampValue);
  if('arrayValue' in v)return (v.arrayValue.values||[]).map(rv);if('mapValue' in v){const o={};Object.entries(v.mapValue.fields||{}).forEach(([k,x])=>o[k]=rv(x));return o;}return null;}
-function normPlayer(id,d,created,updTime){d=d||{};return{id,name:typeof d.name==='string'?d.name:'',xp:num(d.xp),shells:num(d.shells),games:num(d.games),wins:num(d.wins),hands:num(d.hands),
- gins:num(d.gins),big:num(d.big),online:num(d.online),best:d.best==null?null:num(d.best),updatedAt:num(d.updatedAt)||updTime||0,created:created||0};}
+function normPlayer(id,d,created,updTime){d=d||{};const cA=num(d.createdAt);
+ /* the doc's own creation time, or the earlier date carried over by a merge (createdAt), whichever is earlier */
+ const cr=[created||0,cA].filter(v=>v>0);
+ return{id,name:typeof d.name==='string'?d.name:'',xp:num(d.xp),shells:num(d.shells),games:num(d.games),wins:num(d.wins),hands:num(d.hands),
+ gins:num(d.gins),big:num(d.big),online:num(d.online),best:d.best==null?null:num(d.best),updatedAt:num(d.updatedAt)||updTime||0,created:cr.length?Math.min(...cr):0,
+ createdAt:cA,mergedInto:typeof d.mergedInto==='string'?d.mergedInto:'',disabled:d.disabled===true,mergedAt:num(d.mergedAt),
+ mergedFrom:Array.isArray(d.mergedFrom)?d.mergedFrom.filter(x=>typeof x==='string'):[],inventory:d.inventory==null?null:d.inventory};}
 
 const Real={
  name:'live',
@@ -739,6 +923,10 @@ const Real={
  async delInbox(coll,id,noteId){const F=FB.F,b=F.writeBatch(FB.db);b.delete(F.doc(FB.db,coll,id));if(noteId)b.delete(F.doc(FB.db,'adminNotes',noteId));await b.commit();},
  /* merge = one atomic batch: update the kept doc, delete the others */
  async merge(targetId,data,delIds,keep){const F=FB.F,b=F.writeBatch(FB.db);b.update(F.doc(FB.db,'players',targetId),data);delIds.forEach(id=>keep?b.update(F.doc(FB.db,'players',id),ZERO()):b.delete(F.doc(FB.db,'players',id)));await b.commit();},
+ /* merge two players = one atomic batch: totals into the kept doc, the other doc marked mergedInto + disabled (never deleted) */
+ async mergePair(keepId,keepData,otherId,otherData){const F=FB.F,b=F.writeBatch(FB.db);b.update(F.doc(FB.db,'players',keepId),keepData);b.update(F.doc(FB.db,'players',otherId),otherData);await b.commit();},
+ /* the signed-in admin's Firebase ID token, for the reset service */
+ async idToken(){const u=FB.auth.currentUser;if(!u)throw new Error('Not signed in.');return u.getIdToken();},
  async rename(id,name){const F=FB.F;await F.updateDoc(F.doc(FB.db,'players',id),{name});},
  async delPlayer(id){const F=FB.F;await F.deleteDoc(F.doc(FB.db,'players',id));},
  async delPresence(list){const F=FB.F;for(let i=0;i<list.length;i+=400){const b=F.writeBatch(FB.db);list.slice(i,i+400).forEach(x=>b.delete(F.doc(FB.db,'presence',x.g,'users',x.uid)));await b.commit();}},
@@ -802,6 +990,8 @@ function makeMock(){
   async delNote(id){await block();N.delete(id);},
   async delInbox(coll,id,noteId){await block();const a=coll==='reports'?R:S;const i=a.findIndex(x=>x.id===id);if(i>=0)a.splice(i,1);if(noteId)N.delete(noteId);},
   async merge(targetId,data,delIds,keep){await block();const t=P.find(p=>p.id===targetId);Object.assign(t,data);delIds.forEach(id=>{const i=P.findIndex(p=>p.id===id);if(i>=0){if(keep)Object.assign(P[i],ZERO());else P.splice(i,1);}});},
+  async mergePair(keepId,keepData,otherId,otherData){await block();const k=P.find(p=>p.id===keepId),o=P.find(p=>p.id===otherId);if(k)Object.assign(k,keepData);if(o)Object.assign(o,otherData);},
+  async idToken(){return 'mock-id-token';},
   async rename(id,name){await block();const p=P.find(x=>x.id===id);if(p)p.name=name;},
   async delPlayer(id){await block();const i=P.findIndex(p=>p.id===id);if(i>=0)P.splice(i,1);},
   async delPresence(){await block();},
@@ -850,7 +1040,11 @@ let tab=(()=>{try{return sessionStorage.getItem('dga-tab')||'overview';}catch(e)
 const ST={players:new Map(),playersAt:0,playersErr:'',loadingPlayers:false,
  presence:[],presAt:0,presErr:'',names:new Map(),
  reports:null,support:null,notes:new Map(),inboxErr:'',inboxKind:'reports',inboxFilter:'open',
- q:'',sort:'wins',shown:60,openRow:'',dupSel:{},xpMode:'max',tFilter:'all'};
+ q:'',sort:'wins',shown:60,openRow:'',dupSel:{},xpMode:'max',tFilter:'all',
+ /* sign-in details per UID, from the reset service (only it can read Firebase Auth); empty until that is set up */
+ auth:new Map(),authAt:0,authErr:'',authBusy:false,
+ /* merge two players */
+ mg:{a:'',b:'',keep:'a',qa:'',qb:'',typed:''}};
 const TB=new Map();const brokerUp=[false,false];let mq=[];
 if(MOCK)window.__dga={TB,ST,get AD(){return AD;},get DL(){return DL;},get sumDay(){return sumDay;},get adAgg(){return adAgg;},get adAud(){return adAud;}};   /* localhost test hook only */
 
@@ -889,10 +1083,10 @@ function viewDenied(){chrome(false);$('#outBtn').hidden=false;
 
 function viewPanel(){chrome(true);
  setView(`<main><div class="wrap">
-  <section class="sec" id="s-overview" ${tab!=='overview'?'hidden':''}><div id="setup"></div><div id="stats"></div><div id="online"></div></section>
+  <section class="sec" id="s-overview" ${tab!=='overview'?'hidden':''}><div id="setup"></div><div id="resetsvc"></div><div id="stats"></div><div id="online"></div></section>
   <section class="sec" id="s-stats" ${tab!=='stats'?'hidden':''}><div id="traffic"></div></section>
   <section class="sec" id="s-tables" ${tab!=='tables'?'hidden':''}><div id="tables"></div></section>
-  <section class="sec" id="s-players" ${tab!=='players'?'hidden':''}><div id="pnote"></div><div class="grid2"><div id="dups"></div><div id="tests"></div></div><div id="plist"></div></section>
+  <section class="sec" id="s-players" ${tab!=='players'?'hidden':''}><div id="pnote"></div><div id="merge2"></div><div class="grid2"><div id="dups"></div><div id="tests"></div></div><div id="plist"></div></section>
   <section class="sec" id="s-inbox" ${tab!=='inbox'?'hidden':''}><div id="inbox"></div></section>
   <section class="sec" id="s-ads" ${tab!=='ads'?'hidden':''}><div id="ads"></div></section>
  </div></main>`);
@@ -905,7 +1099,7 @@ function setTab(t){tab=t;try{sessionStorage.setItem('dga-tab',t);}catch(e){}
  if(t==='tables')renderTables();if(t==='stats'){if(!TR.at&&!TR.loading)loadTraffic();else renderTraffic();}
  if(t==='ads'){if(!AD.at&&!AD.loading)loadAds();else renderAds();}
  {const b=document.querySelector('.tab[data-t="'+t+'"]');if(b&&b.scrollIntoView)try{b.scrollIntoView({block:'nearest',inline:'nearest'});}catch(e){}}window.scrollTo({top:0});}
-function renderAll(){renderSetup();renderStats();renderOnline();renderTables();renderPlayers();renderInbox();renderTraffic();renderAds();if(tab==='stats'&&!TR.at&&!TR.loading)loadTraffic();if(tab==='ads'&&!AD.at&&!AD.loading)loadAds();}
+function renderAll(){renderSetup();renderResetSvc();renderStats();renderOnline();renderTables();renderPlayers();renderInbox();renderTraffic();renderAds();if(tab==='stats'&&!TR.at&&!TR.loading)loadTraffic();if(tab==='ads'&&!AD.at&&!AD.loading)loadAds();}
 
 /* ---------- setup card (UID + one-time rules) ---------- */
 function renderSetup(){const el=$('#setup');if(!el)return;const uid=user?user.uid:'';
@@ -925,8 +1119,22 @@ function renderSetup(){const el=$('#setup');if(!el)return;const uid=user?user.ui
   <div class="dfoot"><button class="btn sm" data-a="copy-rules">${IC.copy}Copy rules</button><button class="btn sm ghost" data-a="probe">Check again</button></div>
  </details>`;}
 
+/* ---------- password-reset service (Cloudflare Worker) ---------- */
+function renderResetSvc(){const el=$('#resetsvc');if(!el)return;
+ const st=!WORKER_URL?'<span class="pill warn">Not set up</span>':ST.authErr?'<span class="pill bad">Not answering</span>':ST.authAt?'<span class="pill ok">Connected</span>':'<span class="pill">Set up</span>';
+ el.innerHTML=`<details class="card setup" id="resetSetup" ${ST.openReset?'open':''}><summary><h2>Password reset service</h2>${st}<span class="muted">${IC.chev}</span></summary>
+  <p class="small" style="margin:12px 0 4px">Players who sign in with a <b>username</b> have no real email, so “forgot password” emails can’t reach them. This small service lets you give them a <b>temporary password</b> instead. It also shows each player’s sign-in method (Gmail, email or username).</p>
+  ${WORKER_URL?`<div class="uidbox"><code>${esc(WORKER_URL)}</code></div>${ST.authErr?`<p class="small" style="color:var(--bad);margin:0">${esc(ST.authErr)}</p>`:''}`:`
+  <ol class="steps">
+   <li>Follow <code>extras/cloudflare/SETUP-reset-password.md</code> (about 15 minutes, no coding). It sets up a free Cloudflare Worker called <b>dg-admin</b>.</li>
+   <li>The last step gives you an address ending in <code>.workers.dev</code>. Send that address to the developer.</li>
+   <li>The developer puts it in this page (<code>ADMIN_WORKER_URL</code>) and publishes. Then “Reset password” and the sign-in column switch on.</li>
+  </ol>
+  <p class="small muted" style="margin:10px 0 0">The service stores no passwords (the temporary one is shown to you once) and only answers to your admin account.</p>`}
+ </details>`;}
+
 /* ---------- stats ---------- */
-function renderStats(){const el=$('#stats');if(!el)return;const P=[...ST.players.values()];const now=Date.now();
+function renderStats(){const el=$('#stats');if(!el)return;const P=[...ST.players.values()].filter(p=>!isMerged(p));const now=Date.now();
  const t0=new Date();t0.setHours(0,0,0,0);const byC=playersSrc==='rest';const cOf=p=>byC?p.created:p.updatedAt;
  const today=P.filter(p=>cOf(p)>=t0.getTime()).length,week=P.filter(p=>cOf(p)>=now-7*864e5).length,act=P.filter(p=>p.updatedAt>=now-864e5).length;
  const games=P.reduce((a,p)=>a+p.games,0),wins=P.reduce((a,p)=>a+p.wins,0);const onl=onlineUnique();
@@ -985,9 +1193,18 @@ function renderTables(){const el=$('#tables');if(!el)return;const all=freshTable
 
 /* ---------- players ---------- */
 const TEST_NAMES=/^(bob|cara|newbee|hosty|dee|alice|test|tester|test\d+|asdf\w*|qwe\w*|foo|bar|abc|aaa+|xxx+|x+)$/i;
-function testFlag(p){if(p.games>1)return '';if(!TEST_NAMES.test(String(p.name).trim()))return '';
+const isMerged=p=>!!(p&&(p.disabled||p.mergedInto));
+/* sign-in method (Gmail / email / username): only the reset service can read it from Firebase Auth */
+const SIM={google:['g','Gmail'],email:['e','Email'],username:['u','Username'],apple:['e','Apple'],none:['unk','No sign-in'],other:['unk','Other']};
+function simLabel(uid){const a=ST.auth.get(uid);
+ if(!a)return WORKER_URL?`<span class="sim unk"><i></i>${ST.authAt||ST.authErr?'unknown':'…'}</span>`:'<span class="sim unk" title="Needs the password reset service (Overview)"><i></i>—</span>';
+ const m=SIM[a.method]||SIM.other;return `<span class="sim ${m[0]}"><i></i>${m[1]}</span>`;}
+const USERNAME_TIP='Username-only account: no email to recover it. Suggest they link Gmail in the game (Account → Linked accounts → Google) so their progress isn’t lost if they forget the password.';
+function resetBtn(id){return WORKER_URL?`<button class="btn sm" data-a="reset" data-id="${esc(id)}">Reset password…</button>`
+ :`<a class="btn sm" href="#resetSetup" data-a="reset-setup" title="Set up the password reset service first">Set up the reset service first</a>`;}
+function testFlag(p){if(p.games>1||isMerged(p))return '';if(!TEST_NAMES.test(String(p.name).trim()))return '';
  const c=p.created||p.updatedAt;if(!c||Date.now()-c>14*864e5)return '';return 'test';}
-function dupGroups(){const m=new Map();ST.players.forEach(p=>{const k=normKey(p.name);if(!k)return;if(!m.has(k))m.set(k,[]);m.get(k).push(p);});
+function dupGroups(){const m=new Map();ST.players.forEach(p=>{const k=normKey(p.name);if(!k||isMerged(p))return;if(!m.has(k))m.set(k,[]);m.get(k).push(p);});
  return [...m.entries()].filter(([,a])=>a.length>1).map(([k,a])=>({k,a:a.sort((x,y)=>y.updatedAt-x.updatedAt)})).sort((x,y)=>y.a.length-x.a.length||x.k.localeCompare(y.k));}
 function dupSel(g){let s=ST.dupSel[g.k];const ids=g.a.map(p=>p.id);
  if(!s||!ids.includes(s.target)){s={target:g.a[0].id,excl:new Set()};ST.dupSel[g.k]=s;}return s;}
@@ -997,7 +1214,7 @@ function mergePlan(g){const s=dupSel(g);const T=g.a.find(p=>p.id===s.target);con
  const after={name:T.name,xp:ST.xpMode==='sum'?sum('xp'):max('xp'),shells:max('shells'),games:sum('games'),wins:sum('wins'),hands:sum('hands'),gins:sum('gins'),big:sum('big'),online:sum('online'),
   best:bests.length?Math.max(...bests):null,updatedAt:Math.max(...all.map(p=>num(p.updatedAt)))};
  return{T,src,after};}
-function renderPlayers(){renderPNote();renderDups();renderTests();renderPList();
+function renderPlayers(){renderPNote();renderMerge2();renderDups();renderTests();renderPList();
  const d=dupGroups().length,t=[...ST.players.values()].filter(testFlag).length,dot=$('#pDot');if(dot){dot.hidden=!(d+t);dot.textContent=d+t;}}
 function renderPNote(){const el=$('#pnote');if(!el)return;
  el.innerHTML=`<div class="note">${IC.warn}<div><b>Merging only fixes the leaderboard.</b> A guest who plays again on an old device can reappear as a new entry, and a registered player’s game rewrites their own name the next time they play.
@@ -1015,11 +1232,139 @@ function renderDups(){const el=$('#dups');if(!el)return;const G=dupGroups();
    <div class="dfoot"><span class="small muted">Default keep: the most recently updated.</span><span class="sp"></span><button class="btn pri sm" data-a="merge" data-k="${esc(g.k)}">Preview merge…</button></div></div></details>`;}).join(''):'<div class="empty">No duplicate names. Nice and tidy.</div>'}
  </div>`;}
 function renderTests(){const el=$('#tests');if(!el)return;const T=[...ST.players.values()].filter(testFlag).sort((a,b)=>(b.created||b.updatedAt)-(a.created||a.updatedAt));
- el.innerHTML=`<div class="card"><div class="chead"><h2>Possible test accounts</h2><span class="pill ${T.length?'bad':'ok'}">${T.length}</span></div>
+ el.innerHTML=`<div class="card"><div class="chead"><h2>Possible test accounts</h2><span class="pill ${T.length?'warn':'ok'}">${T.length}</span></div>
   <p class="small muted" style="margin:-4px 0 8px">Test-style names (Bob, Cara, Newbee, Hosty, Dee…) made in the last 14 days with 0–1 games. For review only; nothing is deleted automatically.</p>
   <div class="list">${T.length?T.map(p=>`<div class="row"><div class="av" style="background:${hue(p.name)}">${initial(p.name)}</div><div class="main"><div class="nm"><span class="ell">${esc(p.name)}</span></div>
    <div class="sub">${p.games} game${p.games===1?'':'s'} · ${p.created?'made '+ago(p.created)+' ago':'updated '+ago(p.updatedAt)+' ago'} · <span class="mono">${esc(shortId(p.id))}</span></div></div>
    <button class="btn sm" data-a="del" data-id="${esc(p.id)}">Delete…</button></div>`).join(''):'<div class="empty">None flagged.</div>'}</div></div>`;}
+/* ---------- merge two players (typo or duplicate accounts) ----------
+   Totals are added together (wins, XP, Boli and the other counters), the inventory is the union of both, the earlier
+   created date is kept, best = the higher one. The kept doc gets the totals; the other doc is reset to 0 and marked
+   mergedInto + disabled (never deleted). Firebase sign-in accounts can't be merged from a browser: player data only. */
+const SHELL_CAP=1000000;   /* the players rule caps shells at 1,000,000 */
+const isOwnerId=id=>ADMIN_UIDS.includes(id)||id===MOCK_ADMIN;
+function invList(v){if(v==null)return null;if(Array.isArray(v))return v.map(String);if(typeof v==='object')return Object.keys(v).filter(k=>v[k]);return null;}
+function invUnion(a,b){if(a==null&&b==null)return null;
+ if((a==null||Array.isArray(a))&&(b==null||Array.isArray(b)))return [...new Set([...(a||[]),...(b||[])].map(String))];
+ const o={};const add=x=>{if(Array.isArray(x))x.forEach(k=>{o[k]=o[k]||true;});else if(x&&typeof x==='object')Object.entries(x).forEach(([k,v])=>{o[k]=typeof v==='number'&&typeof o[k]==='number'?Math.max(o[k],v):(o[k]||v);});};
+ add(a);add(b);return o;}
+function invText(v){const l=invList(v);if(l==null)return '<span class="muted">not saved online</span>';return l.length?fmt(l.length)+' item'+(l.length===1?'':'s'):'<span class="muted">empty</span>';}
+function mergePlan2(){const M=ST.mg,A=ST.players.get(M.a),B=ST.players.get(M.b);if(!A||!B||A.id===B.id)return null;
+ const K=M.keep==='b'?B:A,O=K===A?B:A;
+ const s=k=>num(K[k])+num(O[k]),bests=[K.best,O.best].filter(v=>v!=null),cr=[K.created,O.created].filter(v=>v>0),shells=s('shells');
+ const keepData={name:K.name,xp:s('xp'),shells:Math.min(SHELL_CAP,shells),games:s('games'),wins:s('wins'),hands:s('hands'),gins:s('gins'),big:s('big'),online:s('online'),
+  best:bests.length?Math.max(...bests):null,updatedAt:Math.max(num(K.updatedAt),num(O.updatedAt)),
+  mergedFrom:[...new Set([...(K.mergedFrom||[]),O.id,...(O.mergedFrom||[])])]};
+ if(cr.length)keepData.createdAt=Math.min(...cr);
+ const inv=invUnion(K.inventory,O.inventory);if(inv!=null)keepData.inventory=inv;
+ const otherData={xp:0,shells:0,games:0,wins:0,hands:0,gins:0,big:0,online:0,best:null,mergedInto:K.id,disabled:true,mergedAt:Date.now()};
+ if(!cleanName(O.name))otherData.name='merged';   /* the rules need a name on every player doc */
+ return{A,B,K,O,keepData,otherData,capped:shells>SHELL_CAP};}
+function simText(uid){const a=ST.auth.get(uid);return a?(SIM[a.method]||SIM.other)[1]+' · ':'';}
+function mgMatches(s){const M=ST.mg,q=normKey(M['q'+s]);if(!q)return [];const other=M[s==='a'?'b':'a'];
+ const hit=p=>{if(isMerged(p)||p.id===other)return false;const au=ST.auth.get(p.id)||{};
+  return normKey(p.name).includes(q)||p.id.toLowerCase().startsWith(q)||normKey(au.email).includes(q)||normKey(au.username).includes(q);};
+ const ex=p=>normKey(p.name)===q?1:0;
+ return [...ST.players.values()].filter(hit).sort((x,y)=>ex(y)-ex(x)||y.updatedAt-x.updatedAt).slice(0,6);}
+function mgResults(s){if(!normKey(ST.mg['q'+s]))return '';const L=mgMatches(s);
+ if(!L.length)return '<div class="small muted" style="padding:8px 2px 0">No matching player.</div>';
+ return `<div class="mres">${L.map(p=>`<button type="button" data-a="mg-pick" data-s="${s}" data-id="${esc(p.id)}"><span class="n">${esc(p.name||'(no name)')}</span><span class="w">${fmt(p.wins)} wins</span>
+  <span class="d">${esc(simText(p.id))}<span class="mono">${esc(shortId(p.id))}</span> · seen ${ago(p.updatedAt)} ago${p.created?' · made '+ago(p.created)+' ago':''}</span></button>`).join('')}</div>`;}
+function mgSlot(s){const M=ST.mg,p=M[s]&&ST.players.get(M[s]),lab=s.toUpperCase();
+ if(p)return `<div class="mslot"><div class="lab">Account <b>${lab}</b></div><div class="mchosen"><div class="av" style="background:${hue(p.name)}">${initial(p.name)}</div>
+  <div class="main"><div class="nm">${esc(p.name||'(no name)')}</div><div class="small muted ell">${simLabel(p.id)} · <span class="mono">${esc(shortId(p.id))}</span> · ${fmt(p.wins)} wins</div></div>
+  <button type="button" class="btn sm" data-a="mg-clear" data-s="${s}">Change</button></div></div>`;
+ return `<div class="mslot"><label class="lab" for="mgq-${s}">Account <b>${lab}</b></label><input class="search" id="mgq-${s}" data-s="${s}" type="search" placeholder="Search name, email or UID" value="${esc(M['q'+s])}" autocomplete="off" spellcheck="false"><div id="mgr-${s}">${mgResults(s)}</div></div>`;}
+function renderMerge2(){const el=$('#merge2');if(!el)return;const M=ST.mg,P=mergePlan2();
+ let body='';
+ if(P){const {A,B,K,O,keepData:KD,otherData:OD,capped}=P,kA=K===A;
+  const au=p=>ST.auth.get(p.id)||null;
+  const who=p=>{const a=au(p);if(!a)return `<span class="muted small">${WORKER_URL?'unknown':'needs the reset service'}</span>`;
+   return (a.username?`<span class="mono">${esc(a.username)}</span>`:'')+(a.email?`<div class="small">${esc(a.email)}</div>`:'')+(!a.username&&!a.email?'<span class="muted">—</span>':'');};
+  const seen=p=>Math.max(num(p.updatedAt),num((au(p)||{}).lastLogin));
+  const cA=kA?'keep':'',cB=kA?'':'keep';
+  const row=(l,a,b,r,chg,nm)=>`<tr><td>${l}</td><td class="${cA}${nm?' num':''}">${a}</td><td class="${cB}${nm?' num':''}">${b}</td><td class="res${chg?' chg':''}${nm?' num':''}">${r}</td></tr>`;
+  const nrow=(f,l)=>row(l,fmt(A[f]),fmt(B[f]),fmt(KD[f])+(f==='shells'&&capped?' <span class="pill warn">capped</span>':''),KD[f]!==K[f],1);
+  const kCreated=KD.createdAt||K.created;
+  const tag=p=>p===K?'<span class="mt ok">keep</span>':'<span class="mt bad">merged away</span>';
+  const tbl=`<div class="mtab-wrap"><table class="mtab"><thead><tr><th></th><th class="${cA}">A ${tag(A)}<b>${esc(A.name||'(no name)')}</b></th><th class="${cB}">B ${tag(B)}<b>${esc(B.name||'(no name)')}</b></th><th class="res">Result<b>${esc(K.name||'(no name)')}</b></th></tr></thead><tbody>
+   ${row('Name',esc(A.name||'—'),esc(B.name||'—'),esc(K.name||'—'),false)}
+   ${row('Username / email',who(A),who(B),who(K),false)}
+   ${row('Sign in',simLabel(A.id),simLabel(B.id),simLabel(K.id),false)}
+   ${nrow('wins','Wins')}${nrow('xp','XP')}${nrow('shells','Boli (shells)')}
+   ${row('Inventory',invText(A.inventory),invText(B.inventory),invText(KD.inventory),invList(KD.inventory)!=null&&(invList(KD.inventory)||[]).length!==(invList(K.inventory)||[]).length)}
+   ${row('Created',esc(when(A.created)),esc(when(B.created)),esc(when(kCreated)),!!(KD.createdAt&&KD.createdAt!==K.created))}
+   ${row('Last seen',esc(ago(seen(A)))+(seen(A)?' ago':''),esc(ago(seen(B)))+(seen(B)?' ago':''),esc(ago(Math.max(seen(A),seen(B))))+(seen(A)||seen(B)?' ago':''),false)}
+  </tbody></table></div>`;
+  const F=[['wins','Wins'],['xp','XP'],['shells','Boli'],['games','Games'],['hands','Hands'],['gins','Gins'],['big','Big wins'],['online','Online games'],['best','Best']];
+  const v=x=>x==null?'—':fmt(x);
+  const kch=F.filter(([f])=>KD[f]!==K[f]).map(([f,l])=>`<span>${l} <s>${v(K[f])}</s> → ${v(KD[f])}</span>`);
+  if(KD.createdAt&&KD.createdAt!==K.created)kch.push(`<span>created <s>${esc(when(K.created))}</s> → ${esc(when(KD.createdAt))}</span>`);
+  if(KD.inventory!=null)kch.push(`<span>inventory → ${invText(KD.inventory)}</span>`);
+  kch.push(`<span>mergedFrom + ${esc(shortId(O.id))}</span>`);
+  const och=F.filter(([f])=>OD[f]!==O[f]&&!(f==='best'&&O.best==null)).map(([f,l])=>`<span>${l} <s>${v(O[f])}</s> → ${v(OD[f])}</span>`);
+  och.push(`<span>mergedInto → ${esc(shortId(K.id))}</span>`,'<span>disabled → yes</span>');if(OD.name)och.push(`<span>name → ${esc(OD.name)}</span>`);
+  const block=isOwnerId(O.id)?'The owner account can’t be merged away. Keep it instead.':!cleanName(K.name)?'The kept player has no name. Rename it first, or keep the other one.':'';
+  const ready=!block&&M.typed.trim()===K.name.trim();
+  body=`<div class="mkeep"><span class="lbl2">Keep</span><div class="seg" role="group" aria-label="Which account to keep">
+    <button type="button" data-a="mg-keep" data-v="a" aria-pressed="${kA}">A · ${esc(A.name||'(no name)')}</button><button type="button" data-a="mg-keep" data-v="b" aria-pressed="${!kA}">B · ${esc(B.name||'(no name)')}</button></div></div>
+   ${tbl}
+   <p class="small muted" style="margin:10px 0 0">Wins, XP, Boli and the other counters are added together, the inventory is combined, the earlier created date is kept.</p>
+   <ul class="mchg" aria-label="What will change">
+    <li class="keep"><span class="ttl">${esc(K.name||'(no name)')} <span class="mono muted small">${esc(K.id)}</span></span><span class="kv2">${kch.join('')}</span></li>
+    <li class="gone"><span class="ttl">${esc(O.name||'(no name)')} <span class="mono muted small">${esc(O.id)}</span></span><span class="kv2">${och.join('')}</span>
+     <span>The other account can no longer play; its data now lives in <b>${esc(K.name||'(no name)')}</b>.</span></li>
+   </ul>
+   ${capped?`<div class="note" style="margin-top:12px">${IC.warn}<div>Boli add up to ${fmt(num(K.shells)+num(O.shells))}, above the 1,000,000 limit. The kept player gets 1,000,000.</div></div>`:''}
+   <div class="note info" style="margin-top:12px">${IC.info}<div><b>Player data only.</b> Firebase sign-in accounts can’t be merged from the browser, so ${esc(O.name||'the other account')}’s sign-in still exists, but it no longer saves to the leaderboard. Nothing is deleted.</div></div>
+   ${block?`<div class="note bad" style="margin-top:12px">${IC.warn}<div>${esc(block)}</div></div>`:`<div class="mconfirm"><label for="mgType">To confirm, type the kept player’s name: <b class="mono">${esc(K.name.trim())}</b></label>
+    <div class="row2"><input class="inp" id="mgType" autocomplete="off" autocapitalize="off" spellcheck="false" value="${esc(M.typed)}" placeholder="${esc(K.name.trim())}">
+     <button type="button" class="btn danger" data-a="mg-go" ${ready?'':'disabled'}>Merge into ${esc(K.name.trim())}</button><button type="button" class="btn ghost" data-a="mg-reset">Cancel</button></div>
+    <p class="small muted" style="margin:0">Needs the latest admin rules (Overview → setup → Copy rules → publish). This can’t be undone from here.</p></div>`}`;}
+ el.innerHTML=`<div class="card" id="mergeCard"><div class="chead"><h2>Merge two players</h2><span class="small muted">typo or duplicate accounts</span></div>
+  <p class="small muted" style="margin:-4px 0 12px">Pick the two accounts. You’ll see both side by side, and exactly what will change, before anything is saved.</p>
+  <div class="mpick">${mgSlot('a')}${mgSlot('b')}</div>${body}</div>`;}
+async function doMerge2(){if(needRules())return;const P=mergePlan2();if(!P)return;const {K,O,keepData,otherData}=P;
+ if(isOwnerId(O.id)){toast('The owner account can’t be merged away.');return;}
+ if(!cleanName(K.name)){toast('Give the kept player a name first (Rename).');return;}
+ if(ST.mg.typed.trim()!==K.name.trim()){toast('Type the kept player’s name to confirm.');return;}
+ const b=$('[data-a="mg-go"]');if(b){b.disabled=true;b.innerHTML='<span class="spin"></span>';}
+ try{await DL.mergePair(K.id,keepData,O.id,otherData);
+  const k=ST.players.get(K.id),o=ST.players.get(O.id);
+  if(k)Object.assign(k,keepData,{created:keepData.createdAt||k.created});if(o)Object.assign(o,otherData);
+  ST.mg={a:'',b:'',keep:'a',qa:'',qb:'',typed:''};
+  toast(`Merged. ${O.name||'The other account'} can no longer play; its data now lives in ${K.name}.`,5000);renderPlayers();renderStats();}
+ catch(e){console.warn(e);toast('Merge failed: '+(e&&e.code==='permission-denied'?'Firebase refused. Publish the latest admin rules (Overview → setup), then try again.':errMsg(e)),6000);renderMerge2();}}
+
+/* ---------- reset service calls (Cloudflare Worker, verified with the admin's own Firebase ID token) ---------- */
+async function workerCall(path,body){if(!WORKER_URL)throw new Error('The reset service isn’t set up yet.');
+ const tok=await DL.idToken();let r;
+ try{r=await fetch(WORKER_URL+path,{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+tok},body:JSON.stringify(body),cache:'no-store'});}
+ catch(e){throw new Error('Couldn’t reach the reset service. Check its address and the connection.');}
+ let j=null;try{j=await r.json();}catch(e){}
+ if(!r.ok||!j||j.ok!==true)throw new Error((j&&j.error&&j.error.message)||('The reset service answered '+r.status+'.'));
+ return j;}
+async function loadAuth(){if(!WORKER_URL||ST.authBusy||!ST.players.size)return;ST.authBusy=true;
+ try{const ids=[...ST.players.keys()];for(let i=0;i<ids.length;i+=100){const j=await workerCall('/accounts',{uids:ids.slice(i,i+100)});Object.entries(j.users||{}).forEach(([u,x])=>ST.auth.set(u,x));}
+  ST.authAt=Date.now();ST.authErr='';}
+ catch(e){console.warn('sign-in lookup failed:',e&&e.message);ST.authErr='Couldn’t read sign-in methods: '+((e&&e.message)||e);}
+ finally{ST.authBusy=false;}renderResetSvc();renderRows();renderMerge2();}
+function gotoResetSetup(){ST.openReset=true;setTab('overview');renderResetSvc();const d=$('#resetSetup');if(d){d.open=true;try{d.scrollIntoView({block:'start'});}catch(e){}}}
+async function doReset(id){const p=ST.players.get(id);if(!p)return;if(!WORKER_URL){gotoResetSetup();return;}
+ const au=ST.auth.get(id);
+ const ok=await ask({title:'Reset password?',html:`<ul class="dlist"><li>${pLine(p)}</li></ul><p style="margin:10px 0 0">This makes a new temporary password for this account. Their old password stops working straight away.</p>
+  ${au&&au.method==='google'?'<p class="small muted" style="margin:8px 0 0">They sign in with Gmail, so they may not need this. A password only matters for username or email sign-in.</p>':''}`,ok:'Make temporary password'});
+ if(!ok)return;
+ toast('Making a temporary password…',8000);
+ let j;try{j=await workerCall('/reset-password',{uid:id});}catch(e){toast('Reset failed: '+((e&&e.message)||e),6000);return;}
+ const pw=String(j.tempPassword||'');if(!pw){toast('Reset failed: no password came back.',5000);return;}
+ toast('Done',900);
+ const login=au&&au.username?au.username:au&&au.email?au.email:normKey(p.name);
+ await ask({title:'Temporary password',single:true,wipe:true,ok:'Done',html:`<p style="margin:0">For <b>${esc(p.name||'this player')}</b>. Shown <b>once</b>: copy it now and send it to the player privately.</p>
+  <div class="tpw"><code id="tpwv">${esc(pw)}</code><button type="button" class="btn sm" data-a="copy-tpw">${IC.copy}Copy</button></div>
+  <p style="margin:0">They sign in with <b>${esc(login)}</b> and this password. <b>Tell the player to change it</b> as soon as they can.</p>
+  ${au&&au.method==='google'?'':`<p class="small muted" style="margin:10px 0 0">The games don’t have a change-password screen yet, so the safest next step is linking Gmail: in the game, Account → Linked accounts → Google. Then their progress isn’t lost if they forget the password.</p>`}`});}
+
 function sortedPlayers(){const q=normKey(ST.q);let a=[...ST.players.values()];
  if(q)a=a.filter(p=>normKey(p.name).includes(q)||p.id.toLowerCase().startsWith(q));
  const k=ST.sort;const f={wins:p=>p.wins,xp:p=>p.xp,games:p=>p.games,updated:p=>p.updatedAt,created:p=>p.created||0};
@@ -1028,7 +1373,7 @@ function renderPList(){const el=$('#plist');if(!el)return;
  if(!el.querySelector('#pq')){el.innerHTML=`<div class="card"><div class="chead"><h2>All players</h2><span class="small muted" id="pcount"></span></div>
   <div class="toolbar"><input class="search" id="pq" type="search" placeholder="Search name or UID" value="${esc(ST.q)}" autocomplete="off">
    <select class="sel" id="psort" aria-label="Sort by">${[['wins','Most wins'],['xp','Most XP'],['games','Most games'],['updated','Recently updated'],['created','Newest'],['name','Name A–Z']].map(([v,l])=>`<option value="${v}" ${ST.sort===v?'selected':''}>${l}</option>`).join('')}</select></div>
-  <div class="phead"><span>Player</span><span>Wins</span><span>Games</span><span>XP</span><span>Best</span><span>Online</span><span>Updated</span></div><div id="prows"></div></div>`;
+  <div class="phead"><span>Player</span><span class="sg" title="${WORKER_URL?'From Firebase sign-in':'Needs the password reset service (Overview)'}">Sign in method</span><span>Wins</span><span>Games</span><span>XP</span><span>Best</span><span>Online</span><span>Updated</span></div><div id="prows"></div></div>`;
   $('#pq').addEventListener('input',e=>{ST.q=e.target.value;ST.shown=60;renderRows();});
   $('#psort').addEventListener('change',e=>{ST.sort=e.target.value;ST.shown=60;renderRows();});}
  renderRows();}
@@ -1036,14 +1381,18 @@ function renderRows(){const box=$('#prows');if(!box)return;const a=sortedPlayers
  $('#pcount').textContent=ST.playersAt?`${fmt(a.length)}${ST.q?' of '+fmt(ST.players.size):''} · loaded ${ago(ST.playersAt)} ago`:'';
  if(!ST.playersAt){box.innerHTML=`<div class="empty">${ST.playersErr?esc(ST.playersErr):'<span class="spin"></span>'}</div>`;return;}
  box.innerHTML=(a.length?a.slice(0,ST.shown).map((p,i)=>{const open=ST.openRow===p.id;
-  const badges=(ADMIN_UIDS.includes(p.id)||p.id===MOCK_ADMIN?'<span class="badge adm">owner</span>':'')+(onl.has(p.id)?'<span class="badge on">online</span>':'')+(dupK.has(normKey(p.name))?'<span class="badge dup">dup</span>':'')+(testFlag(p)?'<span class="badge test">test?</span>':'');
+  const mg=isMerged(p),au=ST.auth.get(p.id);
+  const badges=(ADMIN_UIDS.includes(p.id)||p.id===MOCK_ADMIN?'<span class="badge adm">owner</span>':'')+(mg?'<span class="badge merged">merged</span>':'')+(onl.has(p.id)?'<span class="badge on">online</span>':'')+(dupK.has(normKey(p.name))&&!mg?'<span class="badge dup">dup</span>':'')+(testFlag(p)?'<span class="badge test">test?</span>':'');
+  const into=mg&&p.mergedInto?ST.players.get(p.mergedInto):null;
   return `<div class="prow ${open?'open':''}"><button class="pbtn" data-a="row" data-id="${esc(p.id)}" aria-expanded="${open}"><div class="nm" style="font-weight:600;display:flex;gap:6px;align-items:center;min-width:0">
     <span class="muted small" style="min-width:22px">${i+1}</span><span class="ell">${p.name?esc(p.name):'<i class="muted">(no name)</i>'}</span>${badges}</div>
-    <div class="small muted m-only ell">G ${fmt(p.games)} · XP ${fmt(p.xp)} · upd ${ago(p.updatedAt)} ago</div></button>
+    <div class="small muted m-only ell">${simLabel(p.id)} · G ${fmt(p.games)} · XP ${fmt(p.xp)} · upd ${ago(p.updatedAt)} ago</div></button>
    <div class="rt"><b>${fmt(p.wins)}</b> wins</div>
-   <span class="st"><b>${fmt(p.wins)}</b></span><span class="st">${fmt(p.games)}</span><span class="st">${fmt(p.xp)}</span><span class="st">${p.best==null?'—':fmt(p.best)}</span><span class="st">${fmt(p.online)}</span><span class="st muted small">${ago(p.updatedAt)}</span>
-   ${open?`<div class="acts"><span class="mono muted" style="align-self:center;overflow-wrap:anywhere;flex:1 1 100%">${esc(p.id)} · hands ${fmt(p.hands)} · gins ${fmt(p.gins)} · big ${fmt(p.big)} · shells ${fmt(p.shells)}${p.created?' · made '+esc(when(p.created)):''}</span>
-    <button class="btn sm" data-a="copy" data-v="${esc(p.id)}">${IC.copy}UID</button><button class="btn sm" data-a="rename" data-id="${esc(p.id)}">Rename…</button><button class="btn sm" data-a="del" data-id="${esc(p.id)}" style="color:var(--bad)">Delete…</button></div>`:''}</div>`;}).join('')
+   <span class="st sg">${simLabel(p.id)}</span><span class="st"><b>${fmt(p.wins)}</b></span><span class="st">${fmt(p.games)}</span><span class="st">${fmt(p.xp)}</span><span class="st">${p.best==null?'—':fmt(p.best)}</span><span class="st">${fmt(p.online)}</span><span class="st muted small">${ago(p.updatedAt)}</span>
+   ${open?`<div class="acts"><span class="mono muted" style="align-self:center;overflow-wrap:anywhere;flex:1 1 100%">${esc(p.id)} · hands ${fmt(p.hands)} · gins ${fmt(p.gins)} · big ${fmt(p.big)} · shells ${fmt(p.shells)}${p.created?' · made '+esc(when(p.created)):''}${au&&au.email?' · '+esc(au.email):''}</span>
+    ${mg?`<div class="note info" style="flex:1 1 100%">${IC.info}<div>Merged${p.mergedAt?' '+esc(when(p.mergedAt)):''}. This account can no longer play; its data now lives in <b>${esc(into?into.name:shortId(p.mergedInto))}</b>.</div></div>`:''}
+    ${!mg&&au&&au.method==='username'?`<div class="tip">${USERNAME_TIP}</div>`:''}
+    <button class="btn sm" data-a="copy" data-v="${esc(p.id)}">${IC.copy}UID</button>${mg?'':`<button class="btn sm" data-a="rename" data-id="${esc(p.id)}">Rename…</button><button class="btn sm" data-a="mg-start" data-id="${esc(p.id)}">Merge with…</button>${resetBtn(p.id)}`}<button class="btn sm" data-a="del" data-id="${esc(p.id)}" style="color:var(--bad)">Delete…</button></div>`:''}</div>`;}).join('')
   :'<div class="empty">No players match.</div>')+(a.length>ST.shown?`<div class="more"><button class="btn" data-a="more">Show more (${fmt(a.length-ST.shown)} left)</button></div>`:'');}
 
 /* ---------- inbox ---------- */
@@ -1057,7 +1406,7 @@ function renderInbox(){const el=$('#inbox');if(!el)return;const k=ST.inboxKind,i
  else{const list=items.slice().sort((a,b)=>b.time-a.time).filter(x=>{const h=!!(ST.notes.get(noteId(k,x.id))||{}).handled;return ST.inboxFilter==='all'||(ST.inboxFilter==='open'?!h:h);});
   body=list.length?list.map(x=>{const n=ST.notes.get(noteId(k,x.id))||{};const h=!!n.handled;
    const qz=k==='reports'&&(x.kind==='quiz'||/^Quiz:/.test(x.reason||''));
-   const head=qz?`<span class="pill co">Quiz</span><b class="mono" style="font-size:15px">${esc(x.qid||x.targetId||'?')}</b><span class="pill bad">${esc(String(x.reason||'Report').replace(/^Quiz:\s*/,''))}</span>`
+   const head=qz?`<span class="pill co">Quiz</span><b class="mono" style="font-size:15px">${esc(x.qid||x.targetId||'?')}</b><span class="pill warn">${esc(String(x.reason||'Report').replace(/^Quiz:\s*/,''))}</span>`
     :k==='reports'?`<span class="pill bad">${esc(x.reason||'Report')}</span><b class="ell">about ${esc(x.targetName||'?')}</b>`:`<span class="pill co">Support</span><b class="ell">from ${esc(x.byName||'Player')}</b>`;
    const LV=['','Easy','Medium','Hard','Raajje Master'];
    const meta=qz?`<div class="kv"><span>question <b class="mono">${esc(x.qid||x.targetId||'—')}</b></span><span>level <b>${esc(LV[x.level|0]||'—')}</b></span><span>language <b>${x.lang==='dv'?'Dhivehi':'English'}</b></span><span>picked <b>${esc(x.picked||'—')}</b></span><span>mode <b>${esc(String(x.mode||'').replace(/^quiz:/,''))}</b></span><span>by <b>${esc(x.byName||'?')}</b></span><span>reporter UID <b class="mono">${esc(shortId(x.uid))}</b></span></div>`
@@ -1407,7 +1756,7 @@ function adCSV(){const s=adSponsors().find(x=>x.id===AD.sp);if(!s)return;const p
 async function loadPlayers(){if(ST.loadingPlayers)return;ST.loadingPlayers=true;
  try{const a=await DL.players();ST.players=new Map(a.map(p=>[p.id,p]));ST.playersAt=Date.now();ST.playersErr='';}
  catch(e){console.warn(e);ST.playersErr='Couldn’t load players: '+(e.message||e.code||e);}
- finally{ST.loadingPlayers=false;}renderStats();renderPlayers();renderOnline();}
+ finally{ST.loadingPlayers=false;}renderStats();renderPlayers();renderOnline();loadAuth();}
 let presBusy=false;
 async function loadPresence(){if(presBusy||document.hidden)return;presBusy=true;
  try{ST.presence=await DL.presence();ST.presAt=Date.now();ST.presErr='';
@@ -1560,8 +1909,24 @@ document.addEventListener('click',async e=>{const b=e.target.closest('[data-a]')
   case 'adday':AD.sel=+b.dataset.i;drawAdChart();{const r=$('#adRead');if(r&&!RM.matches){r.classList.remove('flash');void r.offsetWidth;r.classList.add('flash');}}break;
   case 'adpdf':adPrint();break;
   case 'adcsv':adCSV();break;
+  /* merge two players */
+  case 'mg-start':ST.mg={a:b.dataset.id,b:'',keep:'a',qa:'',qb:'',typed:''};renderMerge2();
+   {const c=$('#mergeCard');if(c)try{c.scrollIntoView({block:'start',behavior:RM.matches?'auto':'smooth'});}catch(x){}const i=$('#mgq-b');if(i)setTimeout(()=>i.focus({preventScroll:true}),50);}break;
+  case 'mg-pick':{const s=b.dataset.s;ST.mg[s]=b.dataset.id;ST.mg['q'+s]='';ST.mg.typed='';renderMerge2();const o=s==='a'?'b':'a';const i=$('#mgq-'+o);if(i)i.focus({preventScroll:true});break;}
+  case 'mg-clear':{const s=b.dataset.s;ST.mg[s]='';ST.mg.typed='';renderMerge2();const i=$('#mgq-'+s);if(i)i.focus({preventScroll:true});break;}
+  case 'mg-keep':ST.mg.keep=b.dataset.v==='b'?'b':'a';ST.mg.typed='';renderMerge2();break;
+  case 'mg-reset':ST.mg={a:'',b:'',keep:'a',qa:'',qb:'',typed:''};renderMerge2();break;
+  case 'mg-go':doMerge2();break;
+  /* password reset */
+  case 'reset':doReset(b.dataset.id);break;
+  case 'reset-setup':e.preventDefault();gotoResetSetup();break;
+  case 'copy-tpw':{const c=$('#tpwv');if(c)copy(c.textContent);break;}
  }});
-document.addEventListener('toggle',e=>{const d=e.target;if(d.classList&&d.classList.contains('dgroup')){if(d.open)ST.dupOpen=d.dataset.k;else if(ST.dupOpen===d.dataset.k)ST.dupOpen='';}},true);
+/* typing in the merge search boxes and the type-to-confirm box updates only what changes (keeps the keyboard open) */
+document.addEventListener('input',e=>{const t=e.target;if(!t||!t.id)return;
+ if(t.id==='mgq-a'||t.id==='mgq-b'){const s=t.dataset.s;ST.mg['q'+s]=t.value;const r=$('#mgr-'+s);if(r)r.innerHTML=mgResults(s);}
+ else if(t.id==='mgType'){ST.mg.typed=t.value;const P=mergePlan2(),g=$('[data-a="mg-go"]');if(g&&P)g.disabled=t.value.trim()!==P.K.name.trim();}});
+document.addEventListener('toggle',e=>{const d=e.target;if(d&&d.id==='resetSetup')ST.openReset=d.open;if(d.classList&&d.classList.contains('dgroup')){if(d.open)ST.dupOpen=d.dataset.k;else if(ST.dupOpen===d.dataset.k)ST.dupOpen='';}},true);
 
 /* =====================================================================================
    BOOT
