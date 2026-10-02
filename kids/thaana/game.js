@@ -60,7 +60,7 @@ function pauseHidden() {
   taatal && taatal.pause(h || screen !== 'play'); taatal2 && taatal2.pause(h || screen !== 'done'); taatal0 && taatal0.pause(h || screen !== 'map');
 }
 
-// ---------- the map: she waits by the island to play next, waves, plays with her ball, and runs to the next island ----------
+// ---------- the map: she waits by the island to play next, waves, plays with her ball, and strolls (her beach walk) to the next island ----------
 let travelling = 0, mapAt = null;             // travelling: the current run's token (0 = not running)
 const hereId = () => { const open = islands.filter(i => progress.isUnlocked(i.id, islands)); return (open.find(i => !progress.best(i.id)) || open[open.length - 1]).id; };
 function mapSpot(id) {   // her floor point (sea px): on the sand at one side of the island, the side where she hides less of its letter
@@ -69,7 +69,7 @@ function mapSpot(id) {   // her floor point (sea px): on the sand at one side of
   const sr = sea.getBoundingClientRect(), r = b.getBoundingClientRect(), bd = b.querySelector('b').getBoundingClientRect(), w = m.offsetWidth, h = m.offsetHeight;
   const cx = (r.left + r.right) / 2 - sr.left, cy = (r.top + r.bottom) / 2 - sr.top, out = cx < sr.width / 2 ? -1 : 1;
   const at = s => Math.max(w * 0.5, Math.min(sr.width - w * 0.5, cx + s * (0.5 * r.width + 0.14 * w)));
-  const hides = x => Math.max(0, Math.min(x + 0.6 * w, bd.right - sr.left) - Math.max(x - 0.36 * w, bd.left - sr.left));   // her hello pose reaches further right (the wave)
+  const hides = x => Math.max(0, Math.min(x + 0.6 * w, bd.right - sr.left) - Math.max(x - 0.36 * w, bd.left - sr.left));   // her wave pose reaches further right
   const x = hides(at(out)) <= hides(at(-out)) ? at(out) : at(-out), y = Math.max(h, Math.min(sr.height - 4, cy + 0.32 * r.height));
   return { x, y, tr: `translate(${x - w / 2}px,${y - 0.97 * h}px)` };
 }
@@ -94,7 +94,7 @@ function travel(fromId, toId) {
   setTimeout(arrive, 2600);
 }
 renderMap();
-makeTaatal('#tt0', 'hello', { map: true, ballEvery: 20000 }).then(t => { taatal0 = t; if (t) { placeMapTaatal(mapAt || hereId()); t.wave(1600); } pauseHidden(); });
+makeTaatal('#tt0', 'happy', { map: true, ballEvery: 20000 }).then(t => { taatal0 = t; if (t) { placeMapTaatal(mapAt || hereId()); t.wave(1600); } pauseHidden(); });
 
 
 // ---------- playing an island ----------
@@ -103,7 +103,7 @@ const bub = $('#bub');
 
 // Taatal acts the line out as soon as it is said (not when the audio promise settles); with a real recording
 // her talking is then stretched to the clip's length. "Here we gooo!" is a hello wave; a prompt is teaching (the
-// only pose with her stick); a right answer is a cheer; a miss is a flop and getting up; "You got this!" is up again.
+// only pose with her stick); a right answer is one of her cheers; a miss is a fall and getting up; "You got this!" is up again.
 function act(key, ms) {
   if (!taatal) return;
   if (key === 'good') taatal.cheer();
@@ -306,4 +306,5 @@ document.addEventListener('visibilitychange', () => {
 if (TEST) window.__tf = {
   turn: () => run && run.turns[run.i], turnIndex: () => (run ? run.i : -1), mistakes: () => (run ? run.mistakes : -1), islandId: () => run && run.isl.id,
   autoTrace: () => { trace.drawn = trace.ink.map(p => ({ x: p.x + 2, y: p.y + 2 })); }, ticking: () => ticking, get sfxLog() { return window.__sfxLog; },
+  idle: ms => { if (run) run.idleMs = ms; },                       // jump the idle clock (the hum comes from the game's own tick)
 };
