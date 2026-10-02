@@ -52,7 +52,7 @@ a{color:var(--deep)}
 .ibtn:hover{background:rgba(255,255,255,.12)}
 .ibtn svg{width:16px;height:16px}
 .tabs{position:sticky;top:calc(58px + env(safe-area-inset-top));z-index:19;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
-.tabs .wrap{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:2px;padding-top:8px;padding-bottom:8px}
+.tabs .wrap{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:2px;padding-top:8px;padding-bottom:8px}
 .tab{position:relative;height:38px;border:0;border-radius:10px;background:transparent;color:var(--muted);font-weight:600;font-size:12.5px;display:flex;align-items:center;justify-content:center;gap:4px;padding:0 2px;min-width:0}
 .tab .dot{position:absolute;top:-3px;right:-2px}
 @media (min-width:420px){.tab .dot{position:static}}
@@ -623,6 +623,52 @@ dialog::backdrop{background:rgba(31,28,25,.45);backdrop-filter:none}
 .thelp{font-size:12px;color:var(--g4);margin:8px 0 0;padding-top:10px;border-top:1px solid var(--g1)}
 .thelp code{font-family:var(--mono);font-size:11.5px}
 .asrow .dt .tdy b{color:var(--ok)}
+
+/* ===== Content tab (Guess the Celebrity): hairline rows, colour = meaning, green pulse = live ===== */
+.cstats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.cstats>div{padding:12px 14px;border-right:1px solid var(--line);min-width:0}.cstats>div:last-child{border-right:0}
+.cstats .k{display:flex;align-items:center;gap:7px;font-size:12.5px;color:var(--muted)}
+.cstats b{display:block;font:600 26px/1.15 var(--hd);font-variant-numeric:tabular-nums;margin-top:4px}
+.clist{display:grid;border-top:1px solid var(--line)}
+.crow{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 12px;align-items:center;padding:10px 2px;border-bottom:1px solid var(--line);min-width:0}
+.crow.open{background:var(--bg);border-radius:8px 8px 0 0;padding-left:8px;padding-right:8px;border-bottom-color:transparent}
+.crow.busy{opacity:.6;pointer-events:none}
+.crow .cmain{all:unset;display:flex;align-items:center;gap:12px;min-width:0;cursor:pointer}
+.crow .cmain:focus-visible{outline:2px solid var(--ink);border-radius:6px}
+.crow .cn{min-width:0}.crow .cn b{display:block;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.crow .cn small{display:block;font-size:12px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cdv{font:400 15px/1 'Noto Sans Thaana',var(--tx);color:var(--ink2);margin-left:4px}
+.crow .cst{grid-column:1;grid-row:2;padding-left:58px}
+.crow .clive{grid-column:2;grid-row:1/3}
+@media (min-width:760px){.crow{grid-template-columns:minmax(0,1fr) 190px 200px}.crow .cst{grid-column:2;grid-row:1;padding-left:0}.crow .clive{grid-column:3;grid-row:1}}
+.cth{width:var(--sz);height:var(--sz);border-radius:6px;flex:none;background:var(--bg2) no-repeat;background-size:cover;border:1px solid var(--line)}
+.cth.empty{background:repeating-linear-gradient(45deg,var(--bg2) 0 6px,var(--bg) 6px 12px)}
+.clive{display:inline-flex;align-items:center;gap:8px;border:0;background:transparent;padding:6px 0;font-size:12.5px;font-weight:500;color:var(--muted);justify-self:end;text-align:left}
+.clive .sw{position:relative;width:38px;height:22px;border-radius:11px;background:var(--line2);flex:none;transition:background .2s}
+.clive .sw i{position:absolute;left:3px;top:3px;width:16px;height:16px;border-radius:50%;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.25);transition:transform .2s cubic-bezier(.2,.8,.2,1)}
+.clive.on{color:var(--ok)}.clive.on .sw{background:var(--ok)}.clive.on .sw i{transform:translateX(16px)}
+.clive .lt{display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+@media (max-width:759px){.clive .ll{display:none}.clive{gap:6px}}
+.clive:focus-visible{outline:2px solid var(--ink);outline-offset:2px;border-radius:6px}
+.cedit{background:var(--bg);border-radius:0 0 8px 8px;padding:6px 10px 14px;border-bottom:1px solid var(--line);display:grid;gap:10px}
+.cedit .field{margin:0}.cedit .field>span{font-size:12px;font-weight:500;color:var(--ink2)}
+.cedit textarea.inp{height:auto;padding:10px 12px;font-size:14px;resize:vertical}
+.cedit .inp,.cedit select.sel{background:var(--card);width:100%}
+.cgrid{display:grid;gap:10px;grid-template-columns:minmax(0,1fr)}
+@media (min-width:640px){.cgrid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (min-width:980px){.cgrid{grid-template-columns:repeat(4,minmax(0,1fr))}}
+.csub{font:600 13px/1.3 var(--tx);margin:6px 0 0}
+.cphotos{display:grid;gap:10px;grid-template-columns:minmax(0,1fr)}
+@media (min-width:760px){.cphotos{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.cph{border:1px solid var(--line);border-radius:8px;background:var(--card);padding:10px;display:grid;gap:8px;grid-template-columns:120px minmax(0,1fr);align-items:start}
+.cphimg{position:relative;cursor:crosshair;border-radius:6px;overflow:hidden;background:var(--bg2)}
+.cphimg img{display:block;width:100%;height:auto}
+.cest{position:absolute;left:0;right:0;bottom:0;background:rgba(178,92,12,.92);color:#fff;font-size:10.5px;font-weight:500;padding:3px 5px;line-height:1.25}
+.cphctl{display:grid;gap:8px;align-content:start}.cphctl label{display:grid;gap:4px;color:var(--ink2)}
+.chints{grid-column:1/-1;display:flex;gap:6px;flex-wrap:wrap}
+.chint{display:grid;justify-items:center;gap:2px;min-width:54px}
+.chint span{display:block;background-color:var(--bg2);background-repeat:no-repeat;border:2px solid #efece6;border-radius:2px;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+.chint i{font:500 10.5px var(--mono);font-style:normal;color:var(--muted)}
 </style>
 </head>
 <body>
@@ -639,6 +685,7 @@ dialog::backdrop{background:rgba(31,28,25,.45);backdrop-filter:none}
  <button class="tab" role="tab" data-a="tab" data-t="tables" aria-selected="false">Tables <span class="dot" id="tDot" hidden></span></button>
  <button class="tab" role="tab" data-a="tab" data-t="players" aria-selected="false">Players <span class="dot" id="pDot" hidden></span></button>
  <button class="tab" role="tab" data-a="tab" data-t="inbox" aria-selected="false">Inbox <span class="dot" id="iDot" hidden></span></button>
+ <button class="tab" role="tab" data-a="tab" data-t="content" aria-selected="false">Content</button>
  <button class="tab" role="tab" data-a="tab" data-t="ads" aria-selected="false"><span class="lg">Advertisers</span><span class="sh">Ads</span></button>
 </div></nav>
 
@@ -652,6 +699,7 @@ dialog::backdrop{background:rgba(31,28,25,.45);backdrop-filter:none}
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script src="/shared/sponsors.js?v=8"></script>
+<script src="/celebrity/content.js?v=1"></script>
 <script type="module">
 /* =====================================================================================
    Dhivehi Games · private admin panel (not linked from anywhere, noindex).
@@ -777,6 +825,19 @@ service cloud.firestore {
         && request.resource.data.msg is string && request.resource.data.msg.size() <= 600;
       allow read, delete: if isAdmin();
       allow update: if false;
+    }
+
+    // Guess the Celebrity (admin Content tab). trivia_celebs/{personId} = people, photos and permission records:
+    // admin only, never public. trivia/celebrity = the ONE public doc the game reads: the live list ("data", a JSON
+    // string), rebuilt by the admin page after every change, holding only people switched Live. Nobody else can write.
+    match /trivia_celebs/{id} {
+      allow read, write: if isAdmin();
+    }
+    match /trivia/{doc} {
+      allow read: if doc == 'celebrity';
+      allow write: if isAdmin() && doc == 'celebrity'
+        && request.resource.data.keys().hasOnly(['data','n','at'])
+        && request.resource.data.data is string && request.resource.data.data.size() < 900000;
     }
 
     // admin-only notes, e.g. which reports and support messages are handled
@@ -1113,6 +1174,7 @@ function viewPanel(){chrome(true);
   <section class="sec" id="s-tables" ${tab!=='tables'?'hidden':''}><div id="tables"></div></section>
   <section class="sec" id="s-players" ${tab!=='players'?'hidden':''}><div id="pnote"></div><div id="merge2"></div><div class="grid2"><div id="dups"></div><div id="tests"></div></div><div id="plist"></div></section>
   <section class="sec" id="s-inbox" ${tab!=='inbox'?'hidden':''}><div id="inbox"></div></section>
+  <section class="sec" id="s-content" ${tab!=='content'?'hidden':''}><div id="content"></div></section>
   <section class="sec" id="s-ads" ${tab!=='ads'?'hidden':''}><div id="ads"></div></section>
  </div></main>`);
  document.querySelectorAll('.tab').forEach(b=>b.setAttribute('aria-selected',String(b.dataset.t===tab)));
@@ -1120,11 +1182,12 @@ function viewPanel(){chrome(true);
  renderAll();}
 function setTab(t){tab=t;try{sessionStorage.setItem('dga-tab',t);}catch(e){}
  document.querySelectorAll('.tab').forEach(b=>b.setAttribute('aria-selected',String(b.dataset.t===t)));
- ['overview','stats','tables','players','inbox','ads'].forEach(k=>{const s=$('#s-'+k);if(s)s.hidden=k!==t;});
+ ['overview','stats','tables','players','inbox','content','ads'].forEach(k=>{const s=$('#s-'+k);if(s)s.hidden=k!==t;});
  if(t==='tables')renderTables();if(t==='stats'){if(!TR.at&&!TR.loading)loadTraffic();else renderTraffic();}
  if(t==='ads'){if(!AD.at&&!AD.loading)loadAds();else renderAds();loadToday();}
+ if(t==='content'){if(!CT.at&&!CT.loading)loadContent();else renderContent();}
  {const b=document.querySelector('.tab[data-t="'+t+'"]');if(b&&b.scrollIntoView)try{b.scrollIntoView({block:'nearest',inline:'nearest'});}catch(e){}}window.scrollTo({top:0});}
-function renderAll(){renderSetup();renderResetSvc();renderStats();renderOnline();renderTables();renderPlayers();renderInbox();renderTraffic();renderAds();if(tab==='stats'&&!TR.at&&!TR.loading)loadTraffic();if(tab==='ads'){if(!AD.at&&!AD.loading)loadAds();loadToday();}}
+function renderAll(){renderSetup();renderResetSvc();renderStats();renderOnline();renderTables();renderPlayers();renderInbox();renderTraffic();renderAds();renderContent();if(tab==='content'&&!CT.at&&!CT.loading)loadContent();if(tab==='stats'&&!TR.at&&!TR.loading)loadTraffic();if(tab==='ads'){if(!AD.at&&!AD.loading)loadAds();loadToday();}}
 
 /* ---------- setup card (UID + one-time rules) ---------- */
 function renderSetup(){const el=$('#setup');if(!el)return;const uid=user?user.uid:'';
@@ -1943,7 +2006,7 @@ document.addEventListener('click',async e=>{const b=e.target.closest('[data-a]')
   case 'tab':setTab(b.dataset.t);break;
   case 'signout':try{await DL.signOut();}catch(x){}break;
   case 'google':authErr='';try{await DL.signInGoogle();}catch(x){const el=$('#lerr');if(el)el.textContent=authMsg(x);}break;
-  case 'refresh':toast('Refreshing…',1200);loadPlayers();loadPresence();if(rulesOK!==false)loadInbox();if(tab==='stats'){TR.at=0;loadTraffic(true);}if(tab==='ads'){AD.at=0;loadAds();loadToday(true);}break;
+  case 'refresh':toast('Refreshing…',1200);if(tab==='content')loadContent();loadPlayers();loadPresence();if(rulesOK!==false)loadInbox();if(tab==='stats'){TR.at=0;loadTraffic(true);}if(tab==='ads'){AD.at=0;loadAds();loadToday(true);}break;
   case 'copy-uid':copy(user.uid);break;
   case 'copy-rules':copy(RULES.split("['OWNER_UID']").join("['"+(user&&!MOCK?user.uid:'OWNER_UID')+"']"));break;
   case 'probe':rulesOK=null;renderSetup();await probe();if(rulesOK){loadInbox();TR.at=0;TR.err='';AD.at=0;AD.err='';}else renderInbox();toast(rulesOK?'Admin rules are active.':'Not active yet. Publish the rules, wait a minute, try again.',3500);break;
@@ -1989,6 +2052,258 @@ document.addEventListener('input',e=>{const t=e.target;if(!t||!t.id)return;
  if(t.id==='mgq-a'||t.id==='mgq-b'){const s=t.dataset.s;ST.mg['q'+s]=t.value;const r=$('#mgr-'+s);if(r)r.innerHTML=mgResults(s);}
  else if(t.id==='mgType'){ST.mg.typed=t.value;const P=mergePlan2(),g=$('[data-a="mg-go"]');if(g&&P)g.disabled=t.value.trim()!==P.K.name.trim();}});
 document.addEventListener('toggle',e=>{const d=e.target;if(d&&d.id==='resetSetup')ST.openReset=d.open;if(d.classList&&d.classList.contains('dgroup')){if(d.open)ST.dupOpen=d.dataset.k;else if(ST.dupOpen===d.dataset.k)ST.dupOpen='';}},true);
+
+/* =====================================================================================
+   CONTENT: Guess the Celebrity (and later Guess the Song). Photos are never on this site: they go to the media store
+   (Cloudflare R2 behind the dg-admin Worker; or, on localhost with ?media=http://localhost:PORT, the local dev folder
+   served by extras/celebrity/dev_media_server.py; or memory in ?mock=1). People + permission records live in the
+   admin-only Firestore collection trivia_celebs/{personId}. After EVERY change the public live list trivia/celebrity
+   (one small doc the game reads) is rebuilt from the people switched Live (celebrity/content.js buildManifest).
+   ===================================================================================== */
+const CC=window.DGCelebContent;
+const MEDIA_DEV=LOCAL&&/^http:\/\/(localhost|127\.0\.0\.1)(:\d{1,5})?$/.test(Q.get('media')||'')?Q.get('media'):'';
+const MEDIA_BASE=MEDIA_DEV||(MOCK?'':(ADMIN_WORKER_URL||'').replace(/\/+$/,''));
+const CELEB_STATUS=CC?CC.STATUSES:['To check','Asked','Approved','Refused','Official or public source'];
+const CELEB_HOW=['','Email','WhatsApp','Letter','Official photo','Their own post','In person','Other'];
+const CELEB_CATS=['Actor','Actress','Athlete','Businessman','Coach','Designer','Influencer','Musician','Politician','Presenter','Public Figure'];
+const DIFFS=[['Easy','Easy'],['Medium','Medium'],['Hard','Hard']];
+const HINT_KEYS=['hair','ear','chin','nose','mouth','eye'];
+/* ---------- the media store (same paths on R2 and the dev folder) ---------- */
+const memMedia=new Map();
+const Media={
+ name:MEDIA_DEV?'Local dev folder ('+MEDIA_DEV+')':MOCK?'Memory (mock mode)':'Cloudflare R2 (bucket dg-media, via dg-admin)',
+ url(key){if(!key)return '';if(MOCK&&!MEDIA_DEV)return memMedia.get(key)||'';return MEDIA_BASE+'/media/'+String(key).split('/').map(encodeURIComponent).join('/');},
+ async hdr(){const h={};try{h.Authorization='Bearer '+await DL.idToken();}catch(e){}return h;},
+ async put(key,blob){if(MOCK&&!MEDIA_DEV){memMedia.set(key,URL.createObjectURL(blob));return;}
+  if(!MEDIA_BASE)throw new Error('The photo store is not set up yet.');
+  const r=await fetch(MEDIA_BASE+'/media/'+key,{method:'PUT',headers:Object.assign({'Content-Type':'image/webp'},await Media.hdr()),body:blob});
+  if(!r.ok){const j=await r.json().catch(()=>null);throw new Error((j&&j.error&&j.error.message)||('Upload failed ('+r.status+')'));}},
+ async del(key){if(!key)return;if(MOCK&&!MEDIA_DEV){memMedia.delete(key);return;}
+  const r=await fetch(MEDIA_BASE+'/media/'+key,{method:'DELETE',headers:await Media.hdr()});
+  if(!r.ok&&r.status!==404){const j=await r.json().catch(()=>null);throw new Error((j&&j.error&&j.error.message)||('Delete failed ('+r.status+')'));}},
+ /* private files (permission proofs): fetched with the admin token, shown from memory, never a public address */
+ async open(key){if(MOCK&&!MEDIA_DEV)return memMedia.get(key)||'';
+  const r=await fetch(MEDIA_BASE+'/admin-media/'+key,{headers:await Media.hdr()});if(!r.ok)throw new Error('Couldn’t open the file ('+r.status+')');return URL.createObjectURL(await r.blob());},
+ /* dev folder only: the game on localhost reads its live list from here */
+ async putManifest(m){if(!MEDIA_DEV)return;await fetch(MEDIA_DEV+'/manifest.json',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(m)});}
+};
+/* ---------- Firestore (Real) / memory (mock) ---------- */
+const CDL={
+ async list(){if(MOCK&&!LIVE)return [...CM.values()].map(x=>JSON.parse(JSON.stringify(x)));await fbInit();const F=FB.F;const s=await F.getDocs(F.collection(FB.db,'trivia_celebs'));return s.docs.map(d=>Object.assign({},d.data(),{id:d.id}));},
+ async put(p){const d=celebDoc(p);if(MOCK&&!LIVE){await new Promise(r=>setTimeout(r,60));CM.set(p.id,Object.assign({id:p.id},d));return;}
+  if(LIVE)throw new Error('Test mode: writes are disabled.');const F=FB.F;await F.setDoc(F.doc(FB.db,'trivia_celebs',p.id),d);},
+ async del(id){if(MOCK&&!LIVE){CM.delete(id);return;}if(LIVE)throw new Error('Test mode: writes are disabled.');const F=FB.F;await F.deleteDoc(F.doc(FB.db,'trivia_celebs',id));},
+ async manifest(m){const data={data:JSON.stringify(m),n:m.people.length,at:Date.now()};if(MOCK&&!LIVE){CM_MAN.v=data;return;}
+  if(LIVE)throw new Error('Test mode: writes are disabled.');const F=FB.F;await F.setDoc(F.doc(FB.db,'trivia','celebrity'),data);}
+};
+const CM=new Map(),CM_MAN={v:null};
+if(LOCAL)window.__dgaContent={CM,CM_MAN,memMedia};
+function celebDoc(p){return{name:String(p.name||'').trim().slice(0,40),nameDv:String(p.nameDv||'').trim().slice(0,40),gender:p.gender==='F'?'F':'M',category:String(p.category||'').trim().slice(0,30),
+ live:p.live===true,perm:{status:CELEB_STATUS.includes(p.perm&&p.perm.status)?p.perm.status:'To check',how:String((p.perm&&p.perm.how)||'').slice(0,40),date:String((p.perm&&p.perm.date)||'').slice(0,10),
+  notes:String((p.perm&&p.perm.notes)||'').slice(0,600),proof:String((p.perm&&p.perm.proof)||'')},
+ photos:(p.photos||[]).map(f=>({id:String(f.id),key:String(f.key),difficulty:['Easy','Medium','Hard'].includes(f.difficulty)?f.difficulty:'Medium',w:f.w|0,h:f.h|0,boxes:f.boxes||{},est:!!f.est})),updatedAt:Date.now()};}
+/* ---------- state ---------- */
+const CT={people:new Map(),at:0,loading:false,err:'',rules:null,sub:'celebs',q:'',st:'all',cat:'all',live:'all',open:'',busy:'',imp:null,edit:{},man:null};
+const isLiveP=p=>p.live===true;
+async function loadContent(){if(CT.loading)return;CT.loading=true;CT.err='';renderContent();
+ try{const L=await CDL.list();CT.people=new Map(L.map(p=>[p.id,p]));CT.at=Date.now();CT.rules=true;}
+ catch(e){CT.err=errMsg(e);if(e&&e.code==='permission-denied')CT.rules=false;}
+ CT.loading=false;renderContent();}
+/* rebuild the game's live list from the people switched Live; called after every change */
+async function rebuildManifest(){const m=CC.buildManifest([...CT.people.values()]);await CDL.manifest(m);await Media.putManifest(m).catch(()=>{});CT.man={n:m.people.length,at:m.at};return m;}
+async function savePerson(p,msg){CT.busy=p.id;renderContent();
+ try{await CDL.put(p);CT.people.set(p.id,JSON.parse(JSON.stringify(Object.assign({id:p.id},celebDoc(p)))));await rebuildManifest();if(msg)toast(msg);return true;}
+ catch(e){toast('Couldn’t save: '+errMsg(e),5000);if(e&&e.code==='permission-denied')CT.rules=false;return false;}
+ finally{CT.busy='';renderContent();}}
+const slugC=s=>String(s||'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'').slice(0,40)||'person';
+const rand6=()=>Math.random().toString(36).slice(2,8).padEnd(6,'0');
+/* boxes for a new photo: proportional estimates around a face centre (cx, cy) and face height fh (all 0..1 of the photo)
+   (the prepared photos have real landmark boxes; new ones are placed by tapping the face in the editor) */
+function estBoxes(cx,cy,fh,w,h){const ar=w/h,fw=fh*.78/ar,top=cy-fh*.5,B={
+ hair:[cx-fw*.36,top-fh*.3,cx+fw*.36,top+fh*.07],ear:[cx+fw*.44,cy-fh*.12,cx+fw*.66,cy+fh*.14],chin:[cx-fw*.22,cy+fh*.3,cx+fw*.22,cy+fh*.5],
+ nose:[cx-fw*.13,cy-fh*.06,cx+fw*.13,cy+fh*.16],mouth:[cx-fw*.22,cy+fh*.17,cx+fw*.22,cy+fh*.3],eye:[cx-fw*.38,cy-fh*.25,cx-fw*.04,cy-fh*.02]};
+ if(B.ear[2]>1)B.ear=[cx-fw*.66,cy-fh*.12,cx-fw*.44,cy+fh*.14];
+ Object.keys(B).forEach(k=>{B[k]=B[k].map((v,i)=>Math.round(Math.max(0,Math.min(1,v))*1e4)/1e4);});return B;}
+/* a picked image file -> WebP, longest side <= max px, <= 300 KB (quality steps down until it fits) */
+async function toWebp(file,max){const url=URL.createObjectURL(file);try{
+  const img=await new Promise((res,rej)=>{const i=new Image();i.onload=()=>res(i);i.onerror=()=>rej(new Error('That file is not an image.'));i.src=url;});
+  let s=Math.min(1,max/Math.max(img.naturalWidth,img.naturalHeight));
+  for(let tries=0;tries<8;tries++){const w=Math.max(1,Math.round(img.naturalWidth*s)),h=Math.max(1,Math.round(img.naturalHeight*s));
+   const c=document.createElement('canvas');c.width=w;c.height=h;c.getContext('2d').drawImage(img,0,0,w,h);
+   for(const q of [.82,.74,.66,.58]){const b=await new Promise(r=>c.toBlob(r,'image/webp',q));
+    if(!b||b.type!=='image/webp')throw new Error('This browser can’t make WebP images. Use Chrome or Edge for uploads.');
+    if(b.size<=300*1024)return {blob:b,w,h};}
+   s*=.8;}
+  throw new Error('Couldn’t make the image small enough.');}finally{URL.revokeObjectURL(url);}}
+function pickFiles(opts){return new Promise(res=>{const i=document.createElement('input');i.type='file';if(opts.accept)i.accept=opts.accept;if(opts.multiple)i.multiple=true;if(opts.dir){i.webkitdirectory=true;i.setAttribute('webkitdirectory','');}
+ i.style.display='none';document.body.appendChild(i);i.addEventListener('change',()=>{const f=[...(i.files||[])];i.remove();res(f);},{once:true});i.click();});}
+/* ---------- actions ---------- */
+async function cAddPerson(){if(needCRules())return;const name=await ask({title:'Add a person',html:'<p class="small muted" style="margin:0">They start as <b>To check</b> and <b>Hidden from the game</b>. Add a photo next.</p>',ok:'Add',input:{label:'Name (as players should answer)',max:40}});
+ const nm=cleanName(name||'').slice(0,40);if(!nm)return;
+ if([...CT.people.values()].some(p=>normKey(p.name)===normKey(nm))){toast('There is already someone called '+nm+'.',4000);return;}
+ let id=slugC(nm),k=2;while(CT.people.has(id))id=slugC(nm)+'-'+(k++);
+ const p={id,name:nm,nameDv:'',gender:'M',category:'',live:false,perm:{status:'To check',how:'',date:'',notes:'',proof:''},photos:[]};
+ if(await savePerson(p,'Added '+nm+'. Hidden from the game until you switch it Live.')){CT.open=id;renderContent();}}
+async function cToggleLive(id){if(needCRules())return;const p=CT.people.get(id);if(!p)return;const on=!isLiveP(p);
+ if(on){if(!p.photos||!p.photos.length){toast('Add a photo first.',3500);return;}
+  const st=p.perm&&p.perm.status||'To check';
+  if(st==='Refused'){toast(p.name+' refused: they can’t go live.',4500);return;}
+  if(st!=='Approved'&&st!=='Official or public source'){const go=await ask({title:'Put '+p.name+' live?',html:`<p style="margin:0">Their permission status is <b>${esc(st)}</b>. Live means every player can see their photos in the game within about a minute.</p>`,ok:'Live in the game'});if(!go)return;}}
+ const q=JSON.parse(JSON.stringify(p));q.live=on;await savePerson(q,on?p.name+' is live in the game.':p.name+' is hidden from the game.');}
+function cForm(id){const f=document.querySelector(`.cedit[data-id="${CSS.escape(id)}"]`);if(!f)return null;const v=n=>{const e=f.querySelector(`[name="${n}"]`);return e?e.value:'';};
+ return{name:v('name'),nameDv:v('nameDv'),gender:v('gender'),category:v('category'),status:v('status'),how:v('how'),date:v('date'),notes:v('notes')};}
+async function cSave(id){if(needCRules())return;const p=CT.people.get(id),F=cForm(id);if(!p||!F)return;const nm=cleanName(F.name).slice(0,40);if(!nm){toast('The name can’t be empty.');return;}
+ if([...CT.people.values()].some(x=>x.id!==id&&normKey(x.name)===normKey(nm))){toast('Another person already has that name.',4000);return;}
+ const q=JSON.parse(JSON.stringify(p));Object.assign(q,{name:nm,nameDv:F.nameDv,gender:F.gender,category:F.category});q.perm=Object.assign({},q.perm,{status:F.status,how:F.how,date:F.date,notes:F.notes});
+ if(q.perm.status==='Refused'&&q.live){q.live=false;toast('Refused: '+nm+' is now hidden from the game.',4500);}
+ await savePerson(q,'Saved.');}
+async function cDiff(id,ph,d){const p=CT.people.get(id);if(!p)return;const q=JSON.parse(JSON.stringify(p));const f=q.photos.find(x=>x.id===ph);if(!f)return;f.difficulty=d;await savePerson(q,'Difficulty: '+d+'.');}
+async function cAddPhoto(id){if(needCRules())return;const p=CT.people.get(id);if(!p)return;const [file]=await pickFiles({accept:'image/*'});if(!file)return;
+ CT.busy=id;renderContent();
+ try{const {blob,w,h}=await toWebp(file,600);let n=(p.photos||[]).length+1;while((p.photos||[]).some(f=>f.id===p.id+'-'+n))n++;
+  const phid=p.id+'-'+n,key='celeb/'+phid+'-'+rand6()+'.webp';await Media.put(key,blob);
+  const q=JSON.parse(JSON.stringify(p));q.photos=(q.photos||[]).concat({id:phid,key,difficulty:'Medium',w,h,boxes:estBoxes(.5,.4,.42,w,h),est:true});
+  CT.busy='';await savePerson(q,'Photo added. Tap the face on it so the hints land in the right place.');CT.edit[phid]=1;renderContent();}
+ catch(e){CT.busy='';renderContent();toast('Couldn’t add the photo: '+(e.message||e),5000);}}
+async function cDelPhoto(id,ph){if(needCRules())return;const p=CT.people.get(id);if(!p)return;const f=(p.photos||[]).find(x=>x.id===ph);if(!f)return;
+ const ok=await ask({title:'Delete this photo?',html:`<p style="margin:0">It is removed from the game and deleted from the photo store. This can’t be undone.</p>`,ok:'Delete photo',danger:true});if(!ok)return;
+ try{await Media.del(f.key);}catch(e){toast('Couldn’t delete the file: '+(e.message||e),5000);return;}
+ const q=JSON.parse(JSON.stringify(p));q.photos=q.photos.filter(x=>x.id!==ph);if(!q.photos.length&&q.live){q.live=false;}
+ await savePerson(q,q.live||!p.live?'Photo deleted.':'Photo deleted. No photos left, so '+p.name+' is hidden from the game.');}
+async function cDelPerson(id){if(needCRules())return;const p=CT.people.get(id);if(!p)return;
+ const ok=await ask({title:'Delete '+p.name+'?',html:`<p style="margin:0">Their ${(p.photos||[]).length} photo(s)${p.perm&&p.perm.proof?' and permission proof':''} are deleted from the photo store, and they leave the game at once. This can’t be undone.</p>`,ok:'Delete person',danger:true});if(!ok)return;
+ CT.busy=id;renderContent();
+ try{for(const f of (p.photos||[]))await Media.del(f.key);if(p.perm&&p.perm.proof)await Media.del(p.perm.proof);
+  await CDL.del(id);CT.people.delete(id);if(CT.open===id)CT.open='';await rebuildManifest();toast(p.name+' deleted.');}
+ catch(e){toast('Couldn’t delete: '+errMsg(e),5000);}finally{CT.busy='';renderContent();}}
+async function cProof(id){if(needCRules())return;const p=CT.people.get(id);if(!p)return;const [file]=await pickFiles({accept:'image/*'});if(!file)return;
+ CT.busy=id;renderContent();
+ try{const {blob}=await toWebp(file,1400);const key='private/proof/'+p.id+'-'+rand6()+'.webp';await Media.put(key,blob);
+  const old=p.perm&&p.perm.proof;const q=JSON.parse(JSON.stringify(p));q.perm=Object.assign({},q.perm,{proof:key});CT.busy='';
+  if(await savePerson(q,'Proof saved (private: only this admin page can open it).')&&old)Media.del(old).catch(()=>{});}
+ catch(e){CT.busy='';renderContent();toast('Couldn’t save the proof: '+(e.message||e),5000);}}
+async function cProofView(id){const p=CT.people.get(id);const k=p&&p.perm&&p.perm.proof;if(!k)return;
+ try{const u=await Media.open(k);await ask({title:'Permission proof · '+p.name,html:`<img src="${esc(u)}" alt="Permission proof" style="display:block;max-width:100%;border-radius:6px;border:1px solid var(--line)">`,ok:'Close',single:true,wipe:true});}
+ catch(e){toast(e.message||String(e),5000);}}
+async function cProofDel(id){const p=CT.people.get(id);const k=p&&p.perm&&p.perm.proof;if(!k)return;
+ if(!await ask({title:'Remove the proof?',html:'<p style="margin:0">The screenshot is deleted from the private store.</p>',ok:'Remove',danger:true}))return;
+ try{await Media.del(k);}catch(e){toast(e.message||String(e),5000);return;}const q=JSON.parse(JSON.stringify(p));q.perm.proof='';await savePerson(q,'Proof removed.');}
+/* tap the face on a photo: the six hint boxes are placed around that point; the size slider sets the face size */
+async function cFace(id,ph,cx,cy){const p=CT.people.get(id);if(!p)return;const q=JSON.parse(JSON.stringify(p));const f=q.photos.find(x=>x.id===ph);if(!f)return;
+ const sz=+((document.querySelector(`input[data-face="${CSS.escape(ph)}"]`)||{}).value||42)/100;f.boxes=estBoxes(cx,cy,sz,f.w||600,f.h||600);f.est=true;await savePerson(q,'Hints placed. Check the hint preview.');}
+/* one-time import of the prepared photos + seed list (extras/celebrity/media-out, picked from the computer) */
+async function cImport(){if(needCRules())return;
+ const files=await pickFiles({dir:true,multiple:true});if(!files.length)return;
+ const seedF=files.find(f=>/(^|\/)seed\.json$/.test(f.webkitRelativePath||f.name));
+ if(!seedF){toast('Pick the media-out folder (it has seed.json and the celeb photos).',5000);return;}
+ let seed;try{seed=JSON.parse(await seedF.text());}catch(e){toast('seed.json could not be read.',4000);return;}
+ const byPath=new Map(files.map(f=>[(f.webkitRelativePath||f.name).replace(/\\/g,'/'),f]));
+ const findFile=key=>{for(const [k,f] of byPath)if(k===key||k.endsWith('/'+key))return f;const base=key.split('/').pop();for(const [k,f] of byPath)if(k.split('/').pop()===base)return f;return null;};
+ const P=(seed.people||[]).filter(p=>p&&p.id&&p.name);const todo=P.filter(p=>!CT.people.has(p.id));
+ if(!todo.length){toast('Everyone in the seed list is already here.',4000);return;}
+ const go=await ask({title:'Import the seed list?',html:`<p style="margin:0">${todo.length} people and ${todo.reduce((s,p)=>s+(p.photos||[]).length,0)} photos will be uploaded to <b>${esc(Media.name)}</b>.</p><p class="small muted">Everyone starts as <b>To check</b> and <b>Hidden from the game</b>. People already here are skipped.</p>`,ok:'Import'});if(!go)return;
+ CT.imp={n:0,of:todo.length,err:0};renderContent();
+ for(const s of todo){try{const photos=[];
+   for(const f of (s.photos||[])){const file=findFile(f.key);if(!file||!CC.KEY_RE.test(f.key)){CT.imp.err++;continue;}
+    await Media.put(f.key,new Blob([await file.arrayBuffer()],{type:'image/webp'}));photos.push({id:f.id,key:f.key,difficulty:f.difficulty,w:f.w,h:f.h,boxes:f.boxes});}
+   const p={id:s.id,name:s.name,nameDv:s.nameDv||'',gender:s.gender,category:s.category,live:false,perm:Object.assign({status:'To check',how:'',date:'',notes:'',proof:''},s.perm||{},{status:'To check'}),photos};
+   await CDL.put(p);CT.people.set(p.id,Object.assign({id:p.id},celebDoc(p)));}
+  catch(e){CT.imp.err++;console.warn('import',s.id,e);if(e&&e.code==='permission-denied'){CT.rules=false;break;}}
+  CT.imp.n++;renderImp();}
+ try{await rebuildManifest();}catch(e){}
+ const er=CT.imp.err;CT.imp=null;renderContent();toast(er?`Imported, with ${er} problem(s): check the list.`:'Imported. Everyone is To check and Hidden from the game.',5000);}
+function needCRules(){if(CT.rules===false){toast('Publish the updated Firestore rules first (Content → the note at the top).',5000);return true;}if(MOCK&&LIVE){toast('Test mode: writes are disabled.');return true;}return false;}
+/* ---------- view ---------- */
+const stPill=s=>s==='Approved'||s==='Official or public source'?`<span class="pill ok">${esc(s)}</span>`:s==='Refused'?`<span class="pill bad">${esc(s)}</span>`:s==='Asked'?`<span class="pill warn">${esc(s)}</span>`:`<span class="pill">${esc(s||'To check')}</span>`;
+function cThumb(f,sz){if(!f)return `<span class="cth empty" style="--sz:${sz}px"></span>`;const u=Media.url(f.key);
+ const b=f.boxes||{},hb=b.hair,cb=b.chin;let st='';
+ if(hb&&cb&&f.w&&f.h){const y0=hb[1],y1=cb[3],fh=Math.max(.05,(y1-y0))*f.h*1.2,s=Math.max(sz/f.w,sz/f.h,sz/fh),cx=((b.nose||hb)[0]+(b.nose||hb)[2])/2*f.w,cy=(y0+y1)/2*f.h;
+  const ox=Math.min(0,Math.max(sz-f.w*s,sz/2-cx*s)),oy=Math.min(0,Math.max(sz-f.h*s,sz/2-cy*s));st=`background-size:${(f.w*s).toFixed(1)}px ${(f.h*s).toFixed(1)}px;background-position:${ox.toFixed(1)}px ${oy.toFixed(1)}px`;}
+ return `<span class="cth" style="--sz:${sz}px;background-image:url('${esc(u)}');${st}"></span>`;}
+function hintStrip(f){const u=Media.url(f.key),b=f.boxes||{};return `<div class="chints" aria-label="Hint preview">${HINT_KEYS.map((k,i)=>{const x=b[k];if(!x)return '';const bw=(x[2]-x[0])*f.w,bh=(x[3]-x[1])*f.h,s=Math.min(54/Math.max(1,bw),40/Math.max(1,bh),3);
+ return `<span class="chint"><span style="width:${(bw*s).toFixed(0)}px;height:${(bh*s).toFixed(0)}px;background-image:url('${esc(u)}');background-size:${(f.w*s).toFixed(1)}px ${(f.h*s).toFixed(1)}px;background-position:${(-x[0]*f.w*s).toFixed(1)}px ${(-x[1]*f.h*s).toFixed(1)}px"></span><i>Hint ${i+1}</i></span>`;}).join('')}</div>`;}
+function cFiltered(){const q=normKey(CT.q);return [...CT.people.values()].filter(p=>(!q||normKey(p.name).includes(q)||normKey(p.nameDv).includes(q)||normKey(p.category).includes(q))
+ &&(CT.st==='all'||((p.perm&&p.perm.status)||'To check')===CT.st)&&(CT.cat==='all'||p.category===CT.cat)&&(CT.live==='all'||(CT.live==='live')===isLiveP(p)))
+ .sort((a,b)=>(isLiveP(b)-isLiveP(a))||a.name.localeCompare(b.name));}
+function cRow(p){const open=CT.open===p.id,busy=CT.busy===p.id,live=isLiveP(p),st=(p.perm&&p.perm.status)||'To check',ph=p.photos||[];
+ const head=`<div class="crow${open?' open':''}${busy?' busy':''}" data-id="${esc(p.id)}">
+  <button class="cmain" data-a="c-open" data-id="${esc(p.id)}" aria-expanded="${open}">${cThumb(ph[0],46)}<span class="cn"><b>${esc(p.name)}${p.nameDv?` <span lang="dv" dir="rtl" class="cdv">${esc(p.nameDv)}</span>`:''}</b><small>${esc(p.category||'No category')} · ${p.gender==='F'?'Female':'Male'} · ${ph.length} photo${ph.length===1?'':'s'}${ph.some(f=>f.difficulty==='Hard')?' · incl. Hard':''}</small></span></button>
+  <span class="cst">${stPill(st)}</span>
+  <button class="clive${live?' on':''}" data-a="c-live" data-id="${esc(p.id)}" role="switch" aria-checked="${live}" aria-label="${live?'Live in the game':'Hidden from the game'}: ${esc(p.name)}"><span class="sw"><i></i></span><span class="lt">${live?'<span class="live"></span><span>Live<span class="ll"> in the game</span></span>':'<span>Hidden<span class="ll"> from the game</span></span>'}</span></button>
+ </div>`;
+ if(!open)return head;
+ const sel=(n,opts,v)=>`<select class="sel" name="${n}">${opts.map(o=>{const [val,lab]=Array.isArray(o)?o:[o,o||'—'];return `<option value="${esc(val)}"${val===v?' selected':''}>${esc(lab)}</option>`;}).join('')}</select>`;
+ const pm=p.perm||{};
+ const photos=ph.map(f=>`<div class="cph" data-ph="${esc(f.id)}">
+   <div class="cphimg" data-a="c-face" data-id="${esc(p.id)}" data-ph="${esc(f.id)}" title="Tap the middle of the face to place the hints"><img src="${esc(Media.url(f.key))}" alt="${esc(p.name)} photo" loading="lazy">${f.est?'<span class="cest">Hints estimated: tap the face</span>':''}</div>
+   <div class="cphctl"><label class="small">Difficulty ${sel('diff-'+f.id,DIFFS,f.difficulty)}</label>
+   ${CT.edit[f.id]||f.est?`<label class="small">Face size <input type="range" min="15" max="90" value="42" data-face="${esc(f.id)}"></label>`:''}
+   <button class="btn sm" data-a="c-delphoto" data-id="${esc(p.id)}" data-ph="${esc(f.id)}">Delete photo</button></div>
+   ${hintStrip(f)}</div>`).join('');
+ return head+`<div class="cedit" data-id="${esc(p.id)}">
+  <div class="cgrid">
+   <label class="field"><span>Name (the answer players see)</span><input class="inp" name="name" maxlength="40" value="${esc(p.name)}"></label>
+   <label class="field"><span>Thaana name (optional)</span><input class="inp" name="nameDv" maxlength="40" dir="rtl" lang="dv" value="${esc(p.nameDv||'')}"></label>
+   <label class="field"><span>Category</span><input class="inp" name="category" maxlength="30" list="ccats" value="${esc(p.category||'')}"></label>
+   <label class="field"><span>Gender (for fair answer choices)</span>${sel('gender',[['M','Male'],['F','Female']],p.gender)}</label>
+  </div>
+  <h3 class="csub">Permission</h3>
+  <div class="cgrid">
+   <label class="field"><span>Status</span>${sel('status',CELEB_STATUS,st)}</label>
+   <label class="field"><span>How approved</span>${sel('how',CELEB_HOW,pm.how||'')}</label>
+   <label class="field"><span>Date</span><input class="inp" type="date" name="date" value="${esc(pm.date||'')}"></label>
+   <div class="field"><span>Proof screenshot (private)</span><div class="dfoot" style="margin:0">${pm.proof?`<button class="btn sm" data-a="c-proofview" data-id="${esc(p.id)}">View proof</button><button class="btn sm" data-a="c-proofdel" data-id="${esc(p.id)}">Remove</button>`:`<button class="btn sm" data-a="c-proof" data-id="${esc(p.id)}">Upload proof</button>`}</div></div>
+  </div>
+  <label class="field"><span>Notes</span><textarea class="inp" name="notes" rows="2" maxlength="600">${esc(pm.notes||'')}</textarea></label>
+  <h3 class="csub">Photos <span class="muted small">· one person can have several photos; the answer is always their name</span></h3>
+  <div class="cphotos">${photos||'<div class="anone">No photos yet. Add one to be able to switch this person Live.</div>'}</div>
+  <div class="dfoot"><button class="btn" data-a="c-addphoto" data-id="${esc(p.id)}">Add photo</button><span class="sp"></span><button class="btn" data-a="c-delperson" data-id="${esc(p.id)}">Delete person</button><button class="btn pri" data-a="c-save" data-id="${esc(p.id)}">Save</button></div>
+ </div>`;}
+function renderImp(){const el=$('#cimp');if(!el||!CT.imp)return;el.innerHTML=`<div class="note info"><span class="spin"></span><div>Importing… <b>${CT.imp.n}</b> of ${CT.imp.of} people${CT.imp.err?` · ${CT.imp.err} problem(s)`:''}</div></div>`;}
+function renderContent(){const el=$('#content');if(!el)return;
+ const subs=`<div class="seg" role="tablist" aria-label="Content"><button data-a="c-sub" data-v="celebs" aria-pressed="${CT.sub==='celebs'}">Celebrities</button><button data-a="c-sub" data-v="songs" aria-pressed="${CT.sub==='songs'}">Songs</button></div>`;
+ if(CT.sub==='songs'){el.innerHTML=`<div class="card"><div class="chead"><h2>Content</h2>${subs}</div><div class="aempty"><div class="dot"></div><h3>Songs – coming soon</h3><p>Guess the Song (<span lang="dv" dir="rtl">މި ލަވައަކީ ކޮބާ؟</span>) will use the same system: short clips stored outside the site, a permission record per artist, and a Live switch.</p></div></div>`;return;}
+ const all=[...CT.people.values()],nl=all.filter(isLiveP).length,cats=[...new Set(all.map(p=>p.category).filter(Boolean))].sort();
+ const rulesNote=CT.rules===false?`<div class="note bad">${IC.warn}<div><b>Publish the updated Firestore rules.</b> The Content tab needs two new rules (the people list stays admin-only; the game reads only the live list). Overview → <b>Your account &amp; one-time setup</b> → <b>Copy rules</b>, paste them in Firebase Console → Firestore Database → Rules → <b>Publish</b>, then reload.</div></div>`:'';
+ const list=cFiltered();
+ el.innerHTML=`<div class="card"><div class="chead"><h2>Content</h2>${subs}</div>
+ ${rulesNote}
+ <div class="cstats"><div><span class="k"><span class="live"></span>Live in the game</span><b>${nl}</b></div><div><span class="k">Hidden from the game</span><b>${all.length-nl}</b></div><div><span class="k">Photos</span><b>${all.reduce((s,p)=>s+(p.photos||[]).length,0)}</b></div></div>
+ <p class="small muted" style="margin:10px 0 0">Only people switched <b>Live</b> are in the game; changes reach every player within about a minute (web and app). Photos are stored in ${esc(Media.name)}, never in the website.${CT.man?` Live list rebuilt ${ago(CT.man.at)} ago (${CT.man.n} people).`:''}</p>
+ <div id="cimp"></div>
+ </div>
+ <div class="card"><div class="chead"><h2>Celebrities</h2><button class="btn sm" data-a="c-import">Import seed list</button><button class="btn sm pri" data-a="c-add">Add person</button></div>
+ <div class="toolbar"><input class="search" id="cq" type="search" placeholder="Search name or category" value="${esc(CT.q)}" aria-label="Search">
+  <select class="sel" id="cfst" aria-label="Permission status"><option value="all">Every status</option>${CELEB_STATUS.map(s=>`<option${CT.st===s?' selected':''}>${esc(s)}</option>`).join('')}</select>
+  <select class="sel" id="cfcat" aria-label="Category"><option value="all">Every category</option>${cats.map(s=>`<option${CT.cat===s?' selected':''}>${esc(s)}</option>`).join('')}</select>
+  <select class="sel" id="cflive" aria-label="Live or hidden"><option value="all">Live and hidden</option><option value="live"${CT.live==='live'?' selected':''}>Live in the game</option><option value="hidden"${CT.live==='hidden'?' selected':''}>Hidden from the game</option></select></div>
+ <datalist id="ccats">${CELEB_CATS.map(c=>`<option value="${esc(c)}">`).join('')}</datalist>
+ <div class="clist">${CT.loading&&!CT.at?'<div class="empty"><span class="spin"></span></div>':CT.err&&!CT.at?`<div class="empty">${esc(CT.err)} <button class="btn sm" data-a="c-reload">Try again</button></div>`
+  :!all.length?`<div class="anone">No celebrities yet. Use <b>Import seed list</b> once (pick the folder <code>extras/celebrity/media-out</code>), or <b>Add person</b>.</div>`
+  :list.length?list.map(cRow).join(''):'<div class="empty">Nobody matches.</div>'}</div>
+ <p class="small muted" style="margin:12px 0 0">${list.length} of ${all.length} shown.</p></div>`;
+ renderImp();}
+document.addEventListener('input',e=>{const t=e.target;if(!t)return;if(t.id==='cq'){CT.q=t.value;const l=$('.clist');if(l){const L=cFiltered();l.innerHTML=L.length?L.map(cRow).join(''):'<div class="empty">Nobody matches.</div>';}}});
+document.addEventListener('change',e=>{const t=e.target;if(!t)return;
+ if(t.id==='cfst'){CT.st=t.value;renderContent();}else if(t.id==='cfcat'){CT.cat=t.value;renderContent();}else if(t.id==='cflive'){CT.live=t.value;renderContent();}
+ else if(t.name&&t.name.startsWith('diff-')){const ed=t.closest('.cedit');if(ed)cDiff(ed.dataset.id,t.name.slice(5),t.value);}});
+document.addEventListener('click',e=>{const b=e.target.closest('[data-a]');if(!b||!b.dataset.a.startsWith('c-'))return;const id=b.dataset.id;
+ switch(b.dataset.a){
+  case 'c-sub':CT.sub=b.dataset.v;renderContent();break;
+  case 'c-open':CT.open=CT.open===id?'':id;renderContent();break;
+  case 'c-live':cToggleLive(id);break;
+  case 'c-add':cAddPerson();break;
+  case 'c-import':cImport();break;
+  case 'c-reload':loadContent();break;
+  case 'c-save':cSave(id);break;
+  case 'c-addphoto':cAddPhoto(id);break;
+  case 'c-delphoto':cDelPhoto(id,b.dataset.ph);break;
+  case 'c-delperson':cDelPerson(id);break;
+  case 'c-proof':cProof(id);break;
+  case 'c-proofview':cProofView(id);break;
+  case 'c-proofdel':cProofDel(id);break;
+  case 'c-face':{const img=b.querySelector('img');if(!img)break;const r=img.getBoundingClientRect();cFace(id,b.dataset.ph,Math.max(0,Math.min(1,(e.clientX-r.left)/r.width)),Math.max(0,Math.min(1,(e.clientY-r.top)/r.height)));break;}}});
+if(LOCAL)Object.assign(window.__dgaContent,{CT,rebuildManifest,estBoxes,Media});
 
 /* =====================================================================================
    BOOT
