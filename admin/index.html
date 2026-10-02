@@ -638,9 +638,52 @@ dialog::backdrop{background:rgba(31,28,25,.45);backdrop-filter:none}
 .crow .cn{min-width:0}.crow .cn b{display:block;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .crow .cn small{display:block;font-size:12px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .cdv{font:400 15px/1 'Noto Sans Thaana',var(--tx);color:var(--ink2);margin-left:4px}
-.crow .cst{grid-column:1;grid-row:2;padding-left:58px}
-.crow .clive{grid-column:2;grid-row:1/3}
-@media (min-width:760px){.crow{grid-template-columns:minmax(0,1fr) 190px 200px}.crow .cst{grid-column:2;grid-row:1;padding-left:0}.crow .clive{grid-column:3;grid-row:1}}
+.cgame{display:flex;align-items:baseline;gap:4px 10px;flex-wrap:wrap;margin-top:10px;padding:10px 14px;border:1px solid var(--line);border-radius:8px;background:var(--bg)}
+.cgame .k{display:inline-flex;align-items:center;gap:7px;font-size:12.5px;color:var(--muted)}.cgame b{font:600 18px/1.2 var(--hd);font-variant-numeric:tabular-nums}
+.cgame small{font-size:12px;color:var(--muted);margin-left:auto}
+.crow{grid-template-columns:44px minmax(0,1fr) auto;gap:6px 10px;padding-left:0}
+.crow .ccheck{grid-column:1;grid-row:1/3}
+.crow .cmain{grid-column:2;grid-row:1}
+.crow .cst{grid-column:2;grid-row:2;padding-left:58px}
+.crow .clive{grid-column:3;grid-row:1/3}
+@media (min-width:760px){.crow{grid-template-columns:44px minmax(0,1fr) 190px 200px}.crow .ccheck{grid-row:1}.crow .cst{grid-column:3;grid-row:1;padding-left:0}.crow .clive{grid-column:4;grid-row:1}}
+.crow.sel{background:color-mix(in srgb,var(--coral) 7%,transparent)}
+.crow.open.sel{background:color-mix(in srgb,var(--coral) 7%,var(--bg))}
+/* bulk selection: 44 px tap targets, custom box over a real checkbox */
+.ccheck{position:relative;width:44px;height:44px;display:grid;place-items:center;cursor:pointer;flex:none}
+.ccheck input{position:absolute;inset:0;width:100%;height:100%;margin:0;opacity:0;cursor:pointer}
+.cbx{width:20px;height:20px;border-radius:6px;border:1.5px solid var(--line2);background:var(--card);display:grid;place-items:center;transition:background .15s,border-color .15s}
+.cbx:after{content:"";width:10px;height:5px;border:solid #fff;border-width:0 0 2.2px 2.2px;transform:translateY(-1px) rotate(-45deg);opacity:0}
+.ccheck input:checked+.cbx{background:var(--coral);border-color:var(--coral)}.ccheck input:checked+.cbx:after{opacity:1}
+.ccheck input:indeterminate+.cbx{background:var(--coral);border-color:var(--coral)}
+.ccheck input:indeterminate+.cbx:after{opacity:1;width:10px;height:0;border-width:0 0 2.2px 0;transform:none}
+.ccheck input:focus-visible+.cbx{outline:2px solid var(--ink);outline-offset:2px}
+.crow.busy .ccheck,.clist.bbusy{pointer-events:none}.clist.bbusy{opacity:.7}
+.cselh{display:flex;align-items:center;gap:4px 10px;flex-wrap:wrap;border-top:1px solid var(--line);min-height:44px}
+.cselh .call{display:inline-flex;align-items:center;font-size:13px;font-weight:600;color:var(--ink2);cursor:pointer;padding-right:6px}
+.cselh .cnum{margin-left:auto;font-size:12.5px;color:var(--muted);font-variant-numeric:tabular-nums}.cselh .cnum b{color:var(--ink)}
+.cbulk:empty{display:none}
+.cbulk{position:sticky;bottom:calc(12px + env(safe-area-inset-bottom));z-index:15;margin:12px 0 0;display:flex;align-items:center;gap:8px 10px;flex-wrap:wrap;
+ background:var(--ink);color:var(--bg);border-radius:8px;padding:10px 10px 10px 16px;box-shadow:0 12px 32px rgba(31,28,25,.28)}
+.cbulk .bn{font-size:13px;white-space:nowrap}.cbulk .bn b{font:600 18px/1 var(--hd);font-variant-numeric:tabular-nums;margin-right:3px}
+.cbulk .bn small{display:block;font-size:11px;opacity:.7;margin-top:2px}
+.cbulk .acts{display:flex;gap:6px;margin-left:auto;flex-wrap:wrap}
+.cbulk .btn{background:transparent;color:inherit;border-radius:6px;border-color:color-mix(in srgb,currentColor 28%,transparent);height:36px}
+.cbulk .btn:hover{background:color-mix(in srgb,currentColor 10%,transparent)}
+.cbulk .btn.pri{background:var(--bg);border-color:var(--bg);color:var(--ink)}.cbulk .btn.pri:hover{background:var(--bg2);border-color:var(--bg2)}
+.cbulk .bx{all:unset;width:36px;height:36px;display:grid;place-items:center;border-radius:10px;cursor:pointer;font-size:18px;line-height:1;opacity:.75}
+.cbulk .bx:hover{opacity:1;background:color-mix(in srgb,currentColor 10%,transparent)}.cbulk .bx:focus-visible{outline:2px solid currentColor}
+.cbulk .bprog{flex:1 1 100%;height:4px;border-radius:2px;background:color-mix(in srgb,currentColor 18%,transparent);overflow:hidden}
+.cbulk .bprog i{display:block;height:100%;background:var(--coral);transition:width .2s}
+@media (max-width:559px){.cbulk{padding:10px 10px 10px 14px}.cbulk .acts{margin-left:0;flex:1 1 100%}.cbulk .acts .btn{flex:1 1 0;padding:0 8px}}
+.bform{display:grid;gap:10px;margin-top:10px}.bform .field{margin:0}.bform .field>span{font-size:12px;font-weight:600;color:var(--ink2)}
+.bform .inp,.bform select.sel{width:100%;height:44px}
+.bopts{display:grid;gap:6px;margin-top:10px}
+.bopt{display:flex;align-items:center;gap:10px;min-height:44px;padding:4px 12px;border:1px solid var(--line2);border-radius:6px;cursor:pointer;font-size:13px}
+.bopt input{width:18px;height:18px;accent-color:var(--coral);flex:none;margin:0}
+.bopt:has(input:checked){border-color:var(--coral);background:var(--coralsoft)}
+.bopt small{display:block;color:var(--muted);font-size:12px}
+.blist{margin:8px 0 0;padding-left:18px;font-size:13px}.blist li{margin:2px 0}
 .cth{width:var(--sz);height:var(--sz);border-radius:6px;flex:none;background:var(--bg2) no-repeat;background-size:cover;border:1px solid var(--line)}
 .cth.empty{background:repeating-linear-gradient(45deg,var(--bg2) 0 6px,var(--bg) 6px 12px)}
 .clive{display:inline-flex;align-items:center;gap:8px;border:0;background:transparent;padding:6px 0;font-size:12.5px;font-weight:500;color:var(--muted);justify-self:end;text-align:left}
@@ -2092,9 +2135,21 @@ const CDL={
  async list(){if(MOCK&&!LIVE)return [...CM.values()].map(x=>JSON.parse(JSON.stringify(x)));await fbInit();const F=FB.F;const s=await F.getDocs(F.collection(FB.db,'trivia_celebs'));return s.docs.map(d=>Object.assign({},d.data(),{id:d.id}));},
  async put(p){const d=celebDoc(p);if(MOCK&&!LIVE){await new Promise(r=>setTimeout(r,60));CM.set(p.id,Object.assign({id:p.id},d));return;}
   if(LIVE)throw new Error('Test mode: writes are disabled.');const F=FB.F;await F.setDoc(F.doc(FB.db,'trivia_celebs',p.id),d);},
+ /* bulk: Firestore batched writes, at most CT.chunk (400) docs per batch. onChunk(doneIds) after each committed batch;
+    a failed batch stops the run and throws with .done = the ids that were committed before it */
+ async putMany(list,onChunk){const done=[];const size=Math.max(1,Math.min(400,CT.chunk|0||400));
+  try{for(let i=0;i<list.length;i+=size){const part=list.slice(i,i+size);
+    if(MOCK&&!LIVE){await new Promise(r=>setTimeout(r,80));part.forEach(p=>CM.set(p.id,Object.assign({id:p.id},celebDoc(p))));}
+    else{if(LIVE)throw new Error('Test mode: writes are disabled.');const F=FB.F,b=F.writeBatch(FB.db);part.forEach(p=>b.set(F.doc(FB.db,'trivia_celebs',p.id),celebDoc(p)));await b.commit();}
+    part.forEach(p=>done.push(p.id));if(onChunk)onChunk(part);}}
+  catch(e){e.done=done;throw e;}
+  return done;},
  async del(id){if(MOCK&&!LIVE){CM.delete(id);return;}if(LIVE)throw new Error('Test mode: writes are disabled.');const F=FB.F;await F.deleteDoc(F.doc(FB.db,'trivia_celebs',id));},
  async manifest(m){const data={data:JSON.stringify(m),n:m.people.length,at:Date.now()};if(MOCK&&!LIVE){CM_MAN.v=data;return;}
-  if(LIVE)throw new Error('Test mode: writes are disabled.');const F=FB.F;await F.setDoc(F.doc(FB.db,'trivia','celebrity'),data);}
+  if(LIVE)throw new Error('Test mode: writes are disabled.');const F=FB.F;await F.setDoc(F.doc(FB.db,'trivia','celebrity'),data);},
+ /* what the game reads right now: the public live list doc, read back from the server */
+ async readManifest(){let v=null;if(MOCK&&!LIVE)v=CM_MAN.v;else{await fbInit();const F=FB.F;const d=await F.getDoc(F.doc(FB.db,'trivia','celebrity'));v=d.exists()?d.data():null;}
+  if(!v)return {n:0,at:0,none:true};let ppl=[];try{ppl=(JSON.parse(v.data||'{}').people)||[];}catch(e){}return {n:ppl.length,at:+v.at||0,ids:ppl.map(x=>x.id)};}
 };
 const CM=new Map(),CM_MAN={v:null};
 if(LOCAL)window.__dgaContent={CM,CM_MAN,memMedia};
@@ -2103,17 +2158,29 @@ function celebDoc(p){return{name:String(p.name||'').trim().slice(0,40),nameDv:St
   notes:String((p.perm&&p.perm.notes)||'').slice(0,600),proof:String((p.perm&&p.perm.proof)||'')},
  photos:(p.photos||[]).map(f=>({id:String(f.id),key:String(f.key),difficulty:['Easy','Medium','Hard'].includes(f.difficulty)?f.difficulty:'Medium',w:f.w|0,h:f.h|0,boxes:f.boxes||{},est:!!f.est})),updatedAt:Date.now()};}
 /* ---------- state ---------- */
-const CT={people:new Map(),at:0,loading:false,err:'',rules:null,sub:'celebs',q:'',st:'all',cat:'all',live:'all',open:'',busy:'',imp:null,edit:{},man:null};
+const CT={people:new Map(),at:0,loading:false,err:'',rules:null,sub:'celebs',q:'',st:'all',cat:'all',live:'all',open:'',busy:'',imp:null,edit:{},man:null,
+ sel:new Set(),bulk:null,chunk:400,manErr:'',ferr:null,game:null,dropped:[]};
+const GAME_MIN_LIVE=4;   /* the game needs at least this many live people to start */
 const isLiveP=p=>p.live===true;
 async function loadContent(){if(CT.loading)return;CT.loading=true;CT.err='';renderContent();
- try{const L=await CDL.list();CT.people=new Map(L.map(p=>[p.id,p]));CT.at=Date.now();CT.rules=true;}
+ try{const L=await CDL.list();CT.people=new Map(L.map(p=>[p.id,p]));CT.at=Date.now();CT.rules=true;await readGame();}
  catch(e){CT.err=errMsg(e);if(e&&e.code==='permission-denied')CT.rules=false;}
  CT.loading=false;renderContent();}
-/* rebuild the game's live list from the people switched Live; called after every change */
-async function rebuildManifest(){const m=CC.buildManifest([...CT.people.values()]);await CDL.manifest(m);await Media.putManifest(m).catch(()=>{});CT.man={n:m.people.length,at:m.at};return m;}
+/* rebuild the game's live list from the people switched Live; called after every change (once per bulk action).
+   It ALWAYS re-reads the people from the server first: building it from this tab's memory let any tab or phone that
+   had the admin open from before (e.g. before the import or before the Live switches) overwrite the list with its own
+   old view, emptying the game. Then it reads the public doc back, so "In the game now" is what players really get. */
+async function rebuildManifest(){const L=await CDL.list();CT.people=new Map(L.map(p=>[p.id,p]));CT.at=Date.now();
+ const m=CC.buildManifest(L);await CDL.manifest(m);await Media.putManifest(m).catch(()=>{});CT.man={n:m.people.length,at:m.at};
+ const inM=new Set(m.people.map(x=>x.id));
+ CT.dropped=L.filter(p=>isLiveP(p)&&!inM.has(p.id)).map(p=>({name:p.name,why:!(p.photos||[]).length?'no photo':'no photo with a valid file name and all six hint boxes'}));
+ await readGame();return m;}
+async function readGame(){try{CT.game=await CDL.readManifest();}catch(e){CT.game={err:errMsg(e)};}}
 async function savePerson(p,msg){CT.busy=p.id;renderContent();
- try{await CDL.put(p);CT.people.set(p.id,JSON.parse(JSON.stringify(Object.assign({id:p.id},celebDoc(p)))));await rebuildManifest();if(msg)toast(msg);return true;}
- catch(e){toast('Couldn’t save: '+errMsg(e),5000);if(e&&e.code==='permission-denied')CT.rules=false;return false;}
+ try{await CDL.put(p);CT.people.set(p.id,JSON.parse(JSON.stringify(Object.assign({id:p.id},celebDoc(p)))));if(CT.ferr&&CT.ferr.id===p.id)CT.ferr=null;
+  try{await rebuildManifest();CT.manErr='';}catch(e){CT.manErr=errMsg(e);toast('Saved, but the game’s live list couldn’t be rebuilt: '+CT.manErr,6000);return true;}
+  if(msg)toast(msg);return true;}
+ catch(e){const m=errMsg(e);CT.ferr={id:p.id,msg:m};toast('Couldn’t save: '+m,5000);if(e&&e.code==='permission-denied')CT.rules=false;return false;}
  finally{CT.busy='';renderContent();}}
 const slugC=s=>String(s||'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'').slice(0,40)||'person';
 const rand6=()=>Math.random().toString(36).slice(2,8).padEnd(6,'0');
@@ -2155,8 +2222,13 @@ function cForm(id){const f=document.querySelector(`.cedit[data-id="${CSS.escape(
 async function cSave(id){if(needCRules())return;const p=CT.people.get(id),F=cForm(id);if(!p||!F)return;const nm=cleanName(F.name).slice(0,40);if(!nm){toast('The name can’t be empty.');return;}
  if([...CT.people.values()].some(x=>x.id!==id&&normKey(x.name)===normKey(nm))){toast('Another person already has that name.',4000);return;}
  const q=JSON.parse(JSON.stringify(p));Object.assign(q,{name:nm,nameDv:F.nameDv,gender:F.gender,category:F.category});q.perm=Object.assign({},q.perm,{status:F.status,how:F.how,date:F.date,notes:F.notes});
- if(q.perm.status==='Refused'&&q.live){q.live=false;toast('Refused: '+nm+' is now hidden from the game.',4500);}
- await savePerson(q,'Saved.');}
+ const refusedOff=q.perm.status==='Refused'&&q.live;if(refusedOff)q.live=false;
+ /* a good save closes the edit sheet and keeps the row where it was on screen; a failed save keeps it open with the error */
+ const top=rowTop(id);
+ if(await savePerson(q,refusedOff?'Saved. Refused: '+nm+' is now hidden from the game.':'Saved')){if(CT.open===id)CT.open='';CT.ferr=null;renderContent();keepRowAt(id,top);}
+ else{const f=document.querySelector(`.cedit[data-id="${CSS.escape(id)}"]`);if(f)Object.entries(F).forEach(([k,v])=>{const e=f.querySelector(`[name="${k}"]`);if(e)e.value=v;});}}
+const rowTop=id=>{const r=document.querySelector(`.crow[data-id="${CSS.escape(id)}"]`);return r?r.getBoundingClientRect().top:null;};
+function keepRowAt(id,top){if(top==null)return;const t=rowTop(id);if(t!=null)window.scrollBy(0,t-top);}
 async function cDiff(id,ph,d){const p=CT.people.get(id);if(!p)return;const q=JSON.parse(JSON.stringify(p));const f=q.photos.find(x=>x.id===ph);if(!f)return;f.difficulty=d;await savePerson(q,'Difficulty: '+d+'.');}
 async function cAddPhoto(id){if(needCRules())return;const p=CT.people.get(id);if(!p)return;const [file]=await pickFiles({accept:'image/*'});if(!file)return;
  CT.busy=id;renderContent();
@@ -2199,6 +2271,7 @@ async function cImport(){if(needCRules())return;
  let seed;try{seed=JSON.parse(await seedF.text());}catch(e){toast('seed.json could not be read.',4000);return;}
  const byPath=new Map(files.map(f=>[(f.webkitRelativePath||f.name).replace(/\\/g,'/'),f]));
  const findFile=key=>{for(const [k,f] of byPath)if(k===key||k.endsWith('/'+key))return f;const base=key.split('/').pop();for(const [k,f] of byPath)if(k.split('/').pop()===base)return f;return null;};
+ try{const L=await CDL.list();CT.people=new Map(L.map(p=>[p.id,p]));}catch(e){toast('Couldn’t read the people list: '+errMsg(e),5000);return;}
  const P=(seed.people||[]).filter(p=>p&&p.id&&p.name);const todo=P.filter(p=>!CT.people.has(p.id));
  if(!todo.length){toast('Everyone in the seed list is already here.',4000);return;}
  const go=await ask({title:'Import the seed list?',html:`<p style="margin:0">${todo.length} people and ${todo.reduce((s,p)=>s+(p.photos||[]).length,0)} photos will be uploaded to <b>${esc(Media.name)}</b>.</p><p class="small muted">Everyone starts as <b>To check</b> and <b>Hidden from the game</b>. People already here are skipped.</p>`,ok:'Import'});if(!go)return;
@@ -2212,6 +2285,85 @@ async function cImport(){if(needCRules())return;
   CT.imp.n++;renderImp();}
  try{await rebuildManifest();}catch(e){}
  const er=CT.imp.err;CT.imp=null;renderContent();toast(er?`Imported, with ${er} problem(s): check the list.`:'Imported. Everyone is To check and Hidden from the game.',5000);}
+/* ---------- bulk actions: select rows, then Set status / Go Live / Hide for all of them at once.
+   The person docs go in Firestore batches (<= 400 per batch); the public live list is rebuilt ONCE at the end. ---------- */
+const stOf=p=>(p.perm&&p.perm.status)||'To check';
+const okSt=s=>s==='Approved'||s==='Official or public source';
+const plural=(n,one,many)=>n+' '+(n===1?one:(many||one+'s'));
+const pplN=n=>plural(n,'person','people');
+function cSelected(){return [...CT.sel].map(id=>CT.people.get(id)).filter(Boolean);}
+function cPruneSel(){for(const id of [...CT.sel])if(!CT.people.has(id))CT.sel.delete(id);}
+/* run the writes: changes = the new person objects. skips = [[n,'why'],...] for the result message */
+async function cBulkRun(changes,skips,verb){if(!changes.length)return;
+ CT.bulk={n:0,of:changes.length,verb};renderContent();
+ let done=[],err=null;
+ try{done=await CDL.putMany(changes,part=>{part.forEach(p=>CT.people.set(p.id,JSON.parse(JSON.stringify(Object.assign({id:p.id},celebDoc(p))))));CT.bulk.n+=part.length;renderBulk();});}
+ catch(e){err=e;done=e.done||[];if(e&&e.code==='permission-denied')CT.rules=false;}
+ let manOk=true;
+ if(done.length){try{await rebuildManifest();CT.manErr='';}catch(e){manOk=false;CT.manErr=errMsg(e);}}
+ const failed=changes.filter(p=>!done.includes(p.id));
+ CT.bulk=null;
+ if(failed.length)CT.sel=new Set(failed.map(p=>p.id));   /* keep only the ones that still need doing selected, ready for Try again */
+ const sk=skips.filter(([n])=>n>0).map(([n,why])=>`${n} skipped (${why})`);
+ let msg=`${done.length} updated`+(sk.length?', '+sk.join(', '):'');
+ if(failed.length)msg=`${done.length} updated, ${failed.length} NOT saved: ${errMsg(err)}. They are still selected: try again.`+(sk.length?' '+sk.join(', ')+'.':'');
+ if(!manOk)msg+=` The game’s live list couldn’t be rebuilt (${CT.manErr}): use Rebuild live list.`;
+ renderContent();toast(msg,failed.length||!manOk?9000:5000);}
+async function cBulkStatus(){if(needCRules()||CT.bulk)return;const L=cSelected();if(!L.length)return;
+ const n=L.length,nLiveNow=L.filter(isLiveP).length;
+ const pr=ask({title:`Set ${pplN(n)} to Approved?`,ok:'Set status',html:`<p style="margin:0">The status, and “how approved” and the date if you fill them in, are applied to all ${pplN(n)} selected.</p>
+  <div class="bform"><label class="field"><span>Status</span><select class="sel" id="bSt">${CELEB_STATUS.map(s=>`<option${s==='Approved'?' selected':''}>${esc(s)}</option>`).join('')}</select></label>
+  <div class="cgrid" style="grid-template-columns:repeat(auto-fit,minmax(150px,1fr))"><label class="field"><span>How approved (optional)</span><select class="sel" id="bHow">${CELEB_HOW.map(h=>`<option value="${esc(h)}">${h?esc(h):'Leave as it is'}</option>`).join('')}</select></label>
+  <label class="field"><span>Date (optional)</span><input class="inp" type="date" id="bDate"></label></div></div>
+  <p class="small muted" id="bNote" style="margin:10px 0 0">Nobody goes Live or Hidden by this: use Go Live or Hide for that.</p>`});
+ const T=$('#dlgT'),S=$('#bSt'),N=$('#bNote');
+ const upd=()=>{T.textContent=`Set ${pplN(n)} to ${S.value}?`;N.innerHTML=S.value==='Refused'&&nLiveNow?`<b>${nLiveNow} of them ${nLiveNow===1?'is':'are'} Live now</b> and will be hidden from the game (Refused people can’t be Live).`:'Nobody goes Live or Hidden by this: use Go Live or Hide for that.';};
+ S.addEventListener('change',upd);upd();
+ const st0=S.value;if(!await pr)return;
+ const st=S.value||st0,how=$('#bHow').value,date=$('#bDate').value;
+ const ch=L.map(p=>{const q=JSON.parse(JSON.stringify(p));q.perm=Object.assign({},q.perm,{status:st},how?{how}:{},date?{date}:{});if(st==='Refused')q.live=false;return q;});
+ await cBulkRun(ch,[],'status');}
+async function cBulkLive(){if(needCRules()||CT.bulk)return;const L=cSelected();if(!L.length)return;
+ const already=L.filter(isLiveP),todo=L.filter(p=>!isLiveP(p));
+ const refused=todo.filter(p=>stOf(p)==='Refused'),rest=todo.filter(p=>stOf(p)!=='Refused');
+ const nophoto=rest.filter(p=>!(p.photos||[]).length),can=rest.filter(p=>(p.photos||[]).length);
+ const ok=can.filter(p=>okSt(stOf(p))),pend=can.filter(p=>!okSt(stOf(p)));
+ const cnt=s=>pend.filter(p=>stOf(p)===s).length;
+ const skipLines=[refused.length?`<li><b>${refused.length} Refused</b>: skipped. Refused people can never be made Live.</li>`:'',
+  nophoto.length?`<li><b>${nophoto.length}</b> ${nophoto.length===1?'has':'have'} no photo: skipped.</li>`:'',
+  already.length?`<li><b>${already.length}</b> already Live.</li>`:''].join('');
+ if(!can.length){toast(refused.length&&!nophoto.length?`Nobody to make Live: ${refused.length} Refused (they can never be Live)${already.length?', '+already.length+' already Live':''}.`
+   :`Nobody to make Live${refused.length?': '+refused.length+' Refused':''}${nophoto.length?(refused.length?', ':': ')+nophoto.length+' with no photo':''}${already.length?', '+already.length+' already Live':''}.`,6000);return;}
+ const pr=ask({title:'',ok:'Make Live',html:`<p style="margin:0">Live means every player can see their photos in the game within about a minute.</p>
+  ${pend.length?`<div class="note" style="margin-top:10px">${IC.warn}<div><b>${pend.length} of the selected ${pend.length===1?'isn’t':'aren’t'} approved yet:</b> ${[['To check',cnt('To check')],['Asked',cnt('Asked')]].filter(x=>x[1]).map(x=>x[1]+' '+x[0]).join(', ')}.</div></div>
+  <div class="bopts" role="radiogroup" aria-label="Who goes Live">
+   <label class="bopt"><input type="radio" name="bmode" value="ok" checked><span><b>Only make the approved ones Live</b><small>${pplN(ok.length)}: Approved or Official / public source</small></span></label>
+   <label class="bopt"><input type="radio" name="bmode" value="all"><span><b>Make all selected Live anyway</b><small>${pplN(ok.length+pend.length)}, including To check and Asked</small></span></label></div>`:''}
+  ${skipLines?`<ul class="blist">${skipLines}</ul>`:''}`});
+ const T=$('#dlgT'),B=$('#dlgOk'),mode=()=>{const r=document.querySelector('#dlgB input[name=bmode]:checked');return r?r.value:'ok';};
+ const upd=()=>{const k=mode()==='all'?ok.length+pend.length:ok.length;T.textContent=`Make ${pplN(k)} Live in the game?`;B.disabled=!k;};
+ const DB=$('#dlgB');DB.addEventListener('change',upd);upd();
+ const go=await pr;const m=mode();DB.removeEventListener('change',upd);B.disabled=false;if(!go)return;
+ const list=m==='all'?ok.concat(pend):ok;
+ const ch=list.map(p=>{const q=JSON.parse(JSON.stringify(p));q.live=true;return q;});
+ await cBulkRun(ch,[[refused.length,'Refused'],[nophoto.length,'no photo'],[m==='all'?0:pend.length,'not approved yet'],[already.length,'already Live']],'live');}
+async function cBulkHide(){if(needCRules()||CT.bulk)return;const L=cSelected();if(!L.length)return;
+ const live=L.filter(isLiveP);
+ if(!live.length){toast(`None of the ${pplN(L.length)} selected ${L.length===1?'is':'are'} Live: nothing to hide.`,4000);return;}
+ const go=await ask({title:`Hide ${pplN(live.length)} from the game?`,ok:'Hide from the game',html:`<p style="margin:0">They leave the game within about a minute. Their photos and permission records stay here.</p>${L.length>live.length?`<ul class="blist"><li><b>${L.length-live.length}</b> of the selected ${L.length-live.length===1?'is':'are'} already hidden.</li></ul>`:''}`});
+ if(!go)return;
+ await cBulkRun(live.map(p=>{const q=JSON.parse(JSON.stringify(p));q.live=false;return q;}),[[L.length-live.length,'already hidden']],'hide');}
+async function cRebuild(){if(needCRules())return;try{await rebuildManifest();CT.manErr='';toast('Live list rebuilt.');}catch(e){CT.manErr=errMsg(e);toast('Couldn’t rebuild the live list: '+CT.manErr,6000);}renderContent();}
+function cSelHead(){const el=$('#csel');if(!el)return;const shown=cFiltered(),ns=shown.filter(p=>CT.sel.has(p.id)).length,n=CT.sel.size,hid=n-ns;
+ el.innerHTML=`<label class="call"><span class="ccheck"><input type="checkbox" id="cselall"${shown.length&&ns===shown.length?' checked':''}${shown.length?'':' disabled'} aria-label="Select all shown"><span class="cbx"></span></span>Select all shown (${shown.length})</label>
+  ${n?`<button class="btn sm" data-a="c-selclear">Clear</button>`:''}<span class="cnum" aria-live="polite"><b>${n}</b> selected${hid>0?` · ${hid} not in this view`:''}</span>`;
+ const a=$('#cselall');if(a)a.indeterminate=ns>0&&ns<shown.length;}
+function renderBulk(){const el=$('#cbulk');if(!el)return;const n=CT.sel.size;
+ if(CT.bulk){const b=CT.bulk;el.innerHTML=`<span class="spin"></span><span class="bn">Saving… <b>${b.n}</b> of ${b.of}</span><div class="bprog" role="progressbar" aria-valuemin="0" aria-valuemax="${b.of}" aria-valuenow="${b.n}"><i style="width:${(b.of?b.n/b.of*100:0).toFixed(1)}%"></i></div>`;return;}
+ if(!n){el.innerHTML='';return;}
+ el.innerHTML=`<span class="bn"><b>${n}</b> selected</span><button class="bx" data-a="c-selclear" aria-label="Clear the selection">×</button>
+  <div class="acts"><button class="btn" data-a="c-bstatus">Set status…</button><button class="btn pri" data-a="c-blive">Go Live</button><button class="btn" data-a="c-bhide">Hide</button></div>`;}
+function cSelRefresh(){cSelHead();renderBulk();document.querySelectorAll('.crow').forEach(r=>{const on=CT.sel.has(r.dataset.id);r.classList.toggle('sel',on);const c=r.querySelector('input[data-csel]');if(c)c.checked=on;});}
 function needCRules(){if(CT.rules===false){toast('Publish the updated Firestore rules first (Content → the note at the top).',5000);return true;}if(MOCK&&LIVE){toast('Test mode: writes are disabled.');return true;}return false;}
 /* ---------- view ---------- */
 const stPill=s=>s==='Approved'||s==='Official or public source'?`<span class="pill ok">${esc(s)}</span>`:s==='Refused'?`<span class="pill bad">${esc(s)}</span>`:s==='Asked'?`<span class="pill warn">${esc(s)}</span>`:`<span class="pill">${esc(s||'To check')}</span>`;
@@ -2226,7 +2378,9 @@ function cFiltered(){const q=normKey(CT.q);return [...CT.people.values()].filter
  &&(CT.st==='all'||((p.perm&&p.perm.status)||'To check')===CT.st)&&(CT.cat==='all'||p.category===CT.cat)&&(CT.live==='all'||(CT.live==='live')===isLiveP(p)))
  .sort((a,b)=>(isLiveP(b)-isLiveP(a))||a.name.localeCompare(b.name));}
 function cRow(p){const open=CT.open===p.id,busy=CT.busy===p.id,live=isLiveP(p),st=(p.perm&&p.perm.status)||'To check',ph=p.photos||[];
- const head=`<div class="crow${open?' open':''}${busy?' busy':''}" data-id="${esc(p.id)}">
+ const sl=CT.sel.has(p.id);
+ const head=`<div class="crow${open?' open':''}${busy?' busy':''}${sl?' sel':''}" data-id="${esc(p.id)}">
+  <label class="ccheck" title="Select"><input type="checkbox" data-csel="${esc(p.id)}"${sl?' checked':''} aria-label="Select ${esc(p.name)}"><span class="cbx"></span></label>
   <button class="cmain" data-a="c-open" data-id="${esc(p.id)}" aria-expanded="${open}">${cThumb(ph[0],46)}<span class="cn"><b>${esc(p.name)}${p.nameDv?` <span lang="dv" dir="rtl" class="cdv">${esc(p.nameDv)}</span>`:''}</b><small>${esc(p.category||'No category')} · ${p.gender==='F'?'Female':'Male'} · ${ph.length} photo${ph.length===1?'':'s'}${ph.some(f=>f.difficulty==='Hard')?' · incl. Hard':''}</small></span></button>
   <span class="cst">${stPill(st)}</span>
   <button class="clive${live?' on':''}" data-a="c-live" data-id="${esc(p.id)}" role="switch" aria-checked="${live}" aria-label="${live?'Live in the game':'Hidden from the game'}: ${esc(p.name)}"><span class="sw"><i></i></span><span class="lt">${live?'<span class="live"></span><span>Live<span class="ll"> in the game</span></span>':'<span>Hidden<span class="ll"> from the game</span></span>'}</span></button>
@@ -2257,6 +2411,7 @@ function cRow(p){const open=CT.open===p.id,busy=CT.busy===p.id,live=isLiveP(p),s
   <label class="field"><span>Notes</span><textarea class="inp" name="notes" rows="2" maxlength="600">${esc(pm.notes||'')}</textarea></label>
   <h3 class="csub">Photos <span class="muted small">· one person can have several photos; the answer is always their name</span></h3>
   <div class="cphotos">${photos||'<div class="anone">No photos yet. Add one to be able to switch this person Live.</div>'}</div>
+  ${CT.ferr&&CT.ferr.id===p.id?`<div class="note bad" role="alert">${IC.warn}<div><b>Not saved.</b> ${esc(CT.ferr.msg)} Your changes are still here: try Save again.</div></div>`:''}
   <div class="dfoot"><button class="btn" data-a="c-addphoto" data-id="${esc(p.id)}">Add photo</button><span class="sp"></span><button class="btn" data-a="c-delperson" data-id="${esc(p.id)}">Delete person</button><button class="btn pri" data-a="c-save" data-id="${esc(p.id)}">Save</button></div>
  </div>`;}
 function renderImp(){const el=$('#cimp');if(!el||!CT.imp)return;el.innerHTML=`<div class="note info"><span class="spin"></span><div>Importing… <b>${CT.imp.n}</b> of ${CT.imp.of} people${CT.imp.err?` · ${CT.imp.err} problem(s)`:''}</div></div>`;}
@@ -2265,11 +2420,18 @@ function renderContent(){const el=$('#content');if(!el)return;
  if(CT.sub==='songs'){el.innerHTML=`<div class="card"><div class="chead"><h2>Content</h2>${subs}</div><div class="aempty"><div class="dot"></div><h3>Songs – coming soon</h3><p>Guess the Song (<span lang="dv" dir="rtl">މި ލަވައަކީ ކޮބާ؟</span>) will use the same system: short clips stored outside the site, a permission record per artist, and a Live switch.</p></div></div>`;return;}
  const all=[...CT.people.values()],nl=all.filter(isLiveP).length,cats=[...new Set(all.map(p=>p.category).filter(Boolean))].sort();
  const rulesNote=CT.rules===false?`<div class="note bad">${IC.warn}<div><b>Publish the updated Firestore rules.</b> The Content tab needs two new rules (the people list stays admin-only; the game reads only the live list). Overview → <b>Your account &amp; one-time setup</b> → <b>Copy rules</b>, paste them in Firebase Console → Firestore Database → Rules → <b>Publish</b>, then reload.</div></div>`:'';
- const list=cFiltered();
+ cPruneSel();const list=cFiltered(),man=CT.man?CT.man.n:null;
+ const G=CT.game,gameN=G&&!G.err?G.n:null;
+ const gameBox=`<div class="cgame"><span class="k">${gameN?'<span class="live"></span>':''}In the game now</span><b>${G&&G.err?'?':gameN===null?'…':pplN(gameN)}</b><small>${G&&G.err?esc(G.err):G&&G.none?'No live list published yet':G&&G.at?'Live list published '+ago(G.at)+' ago':''}</small></div>`;
+ const dropNote=CT.dropped&&CT.dropped.length?`<div class="note bad" style="margin-top:10px">${IC.warn}<div><b>${pplN(CT.dropped.length)} switched Live ${CT.dropped.length===1?'is':'are'} not in the game:</b> ${CT.dropped.slice(0,8).map(d=>esc(d.name)+' ('+esc(d.why)+')').join(', ')}${CT.dropped.length>8?'…':''}.</div></div>`:'';
+ const liveN=gameN!==null?gameN:man;
+ const lowNote=all.length&&liveN!==null&&liveN<GAME_MIN_LIVE?`<div class="note info" style="margin-top:10px">${IC.warn}<div>The game needs at least ${GAME_MIN_LIVE} Live people to start. In the game now: <b>${liveN}</b>.</div></div>`:'';
+ const manNote=CT.manErr?`<div class="note bad" style="margin-top:10px">${IC.warn}<div><b>The game’s live list wasn’t rebuilt.</b> ${esc(CT.manErr)} <button class="btn sm" data-a="c-rebuild">Rebuild live list</button></div></div>`:'';
  el.innerHTML=`<div class="card"><div class="chead"><h2>Content</h2>${subs}</div>
  ${rulesNote}
  <div class="cstats"><div><span class="k"><span class="live"></span>Live in the game</span><b>${nl}</b></div><div><span class="k">Hidden from the game</span><b>${all.length-nl}</b></div><div><span class="k">Photos</span><b>${all.reduce((s,p)=>s+(p.photos||[]).length,0)}</b></div></div>
  <p class="small muted" style="margin:10px 0 0">Only people switched <b>Live</b> are in the game; changes reach every player within about a minute (web and app). Photos are stored in ${esc(Media.name)}, never in the website.${CT.man?` Live list rebuilt ${ago(CT.man.at)} ago (${CT.man.n} people).`:''}</p>
+ ${gameBox}${manNote}${dropNote}${lowNote}
  <div id="cimp"></div>
  </div>
  <div class="card"><div class="chead"><h2>Celebrities</h2><button class="btn sm" data-a="c-import">Import seed list</button><button class="btn sm pri" data-a="c-add">Add person</button></div>
@@ -2278,19 +2440,28 @@ function renderContent(){const el=$('#content');if(!el)return;
   <select class="sel" id="cfcat" aria-label="Category"><option value="all">Every category</option>${cats.map(s=>`<option${CT.cat===s?' selected':''}>${esc(s)}</option>`).join('')}</select>
   <select class="sel" id="cflive" aria-label="Live or hidden"><option value="all">Live and hidden</option><option value="live"${CT.live==='live'?' selected':''}>Live in the game</option><option value="hidden"${CT.live==='hidden'?' selected':''}>Hidden from the game</option></select></div>
  <datalist id="ccats">${CELEB_CATS.map(c=>`<option value="${esc(c)}">`).join('')}</datalist>
- <div class="clist">${CT.loading&&!CT.at?'<div class="empty"><span class="spin"></span></div>':CT.err&&!CT.at?`<div class="empty">${esc(CT.err)} <button class="btn sm" data-a="c-reload">Try again</button></div>`
+ ${all.length?'<div class="cselh" id="csel"></div>':''}
+ <div class="clist${CT.bulk?' bbusy':''}">${CT.loading&&!CT.at?'<div class="empty"><span class="spin"></span></div>':CT.err&&!CT.at?`<div class="empty">${esc(CT.err)} <button class="btn sm" data-a="c-reload">Try again</button></div>`
   :!all.length?`<div class="anone">No celebrities yet. Use <b>Import seed list</b> once (pick the folder <code>extras/celebrity/media-out</code>), or <b>Add person</b>.</div>`
   :list.length?list.map(cRow).join(''):'<div class="empty">Nobody matches.</div>'}</div>
+ <div class="cbulk" id="cbulk" role="region" aria-label="Bulk actions"></div>
  <p class="small muted" style="margin:12px 0 0">${list.length} of ${all.length} shown.</p></div>`;
- renderImp();}
-document.addEventListener('input',e=>{const t=e.target;if(!t)return;if(t.id==='cq'){CT.q=t.value;const l=$('.clist');if(l){const L=cFiltered();l.innerHTML=L.length?L.map(cRow).join(''):'<div class="empty">Nobody matches.</div>';}}});
+ renderImp();cSelHead();renderBulk();}
+document.addEventListener('input',e=>{const t=e.target;if(!t)return;if(t.id==='cq'){CT.q=t.value;const l=$('.clist');if(l){const L=cFiltered();l.innerHTML=L.length?L.map(cRow).join(''):'<div class="empty">Nobody matches.</div>';cSelHead();}}});
 document.addEventListener('change',e=>{const t=e.target;if(!t)return;
+ if(t.dataset&&t.dataset.csel){if(CT.bulk){t.checked=CT.sel.has(t.dataset.csel);return;}if(t.checked)CT.sel.add(t.dataset.csel);else CT.sel.delete(t.dataset.csel);cSelRefresh();return;}
+ if(t.id==='cselall'){if(CT.bulk){cSelRefresh();return;}const L=cFiltered();if(t.checked)L.forEach(p=>CT.sel.add(p.id));else L.forEach(p=>CT.sel.delete(p.id));cSelRefresh();return;}
  if(t.id==='cfst'){CT.st=t.value;renderContent();}else if(t.id==='cfcat'){CT.cat=t.value;renderContent();}else if(t.id==='cflive'){CT.live=t.value;renderContent();}
  else if(t.name&&t.name.startsWith('diff-')){const ed=t.closest('.cedit');if(ed)cDiff(ed.dataset.id,t.name.slice(5),t.value);}});
 document.addEventListener('click',e=>{const b=e.target.closest('[data-a]');if(!b||!b.dataset.a.startsWith('c-'))return;const id=b.dataset.id;
  switch(b.dataset.a){
   case 'c-sub':CT.sub=b.dataset.v;renderContent();break;
-  case 'c-open':CT.open=CT.open===id?'':id;renderContent();break;
+  case 'c-open':CT.open=CT.open===id?'':id;CT.ferr=null;renderContent();break;
+  case 'c-selclear':if(!CT.bulk){CT.sel.clear();cSelRefresh();}break;
+  case 'c-bstatus':cBulkStatus();break;
+  case 'c-blive':cBulkLive();break;
+  case 'c-bhide':cBulkHide();break;
+  case 'c-rebuild':cRebuild();break;
   case 'c-live':cToggleLive(id);break;
   case 'c-add':cAddPerson();break;
   case 'c-import':cImport();break;
