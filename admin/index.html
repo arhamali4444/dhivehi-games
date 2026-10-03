@@ -2606,7 +2606,8 @@ async function sProofDel(id){const s=SG.songs.get(id);const k=s&&s.perm&&s.perm.
  try{await Media.del(k);}catch(e){toast(e.message||String(e),5000);return;}const q=JSON.parse(JSON.stringify(s));q.perm.proof='';await saveSong(q,'Proof removed.');}
 /* ---------- clips: pick a file, choose the start on the waveform, preview, cut 5.0 s, encode, upload ---------- */
 let sAC=null,sPrev=null;
-const sCtx=()=>{if(!sAC){const AC=window.AudioContext||window.webkitAudioContext;sAC=new AC();}if(sAC.state!=='running')sAC.resume().catch(()=>{});return sAC;};
+/* 'playback' like the game: on an iPhone with the ringer switch on silent, Web Audio is otherwise muted */
+const sCtx=()=>{try{const a=navigator.audioSession;if(a&&a.type!=='playback')a.type='playback';}catch(e){}if(!sAC){const AC=window.AudioContext||window.webkitAudioContext;sAC=new AC();}if(sAC.state!=='running')sAC.resume().catch(()=>{});return sAC;};
 function sStopPrev(){if(sPrev){try{sPrev.src.stop();}catch(e){}sPrev=null;}document.querySelectorAll('[data-a="sg-prev"],[data-a="sg-play"],[data-a="sg-rplay"]').forEach(b=>b.classList.remove('on'));}
 const mmss=t=>{t=Math.max(0,t);const m=Math.floor(t/60),s=t-m*60;return m+':'+(s<10?'0':'')+s.toFixed(1);};
 async function sPickClip(id,kind){if(needSRules())return;const s=SG.songs.get(id);if(!s)return;kind=kind==='reveal'?'reveal':'hint';
@@ -2644,8 +2645,11 @@ function sPreview(){const T=SG.trim;if(!T)return;if(sPrev){sStopPrev();return;}c
  document.querySelectorAll('[data-a="sg-prev"]').forEach(b=>b.classList.add('on'));}
 /* the saved clip: plays the compressed copy if there is one this browser plays, else the WAV */
 async function sPlay(id,kind){const s=SG.songs.get(id),cl=s&&(kind==='reveal'?s.reveal:s.clip);if(!cl)return;if(sPrev){sStopPrev();return;}
- try{const c=sCtx(),k=cl.keyC&&new Audio().canPlayType(cl.typeC)?cl.keyC:cl.key;const r=await fetch(Media.url(k));if(!r.ok)throw new Error('HTTP '+r.status);
-  const b=await new Promise((res,rej)=>{r.arrayBuffer().then(ab=>{const p=c.decodeAudioData(ab,res,rej);if(p&&p.then)p.then(res,rej);},rej);});
+ try{const c=sCtx();
+  const load=async k=>{const r=await fetch(Media.url(k),{cache:'no-store'});if(!r.ok)throw new Error('HTTP '+r.status);const ab=await r.arrayBuffer();
+   return new Promise((res,rej)=>{try{const p=c.decodeAudioData(ab,res,rej);if(p&&p.then)p.then(res,rej);}catch(e){rej(e);}});};
+  /* the compressed copy when the browser says it plays it; if decoding it fails (some browsers say "maybe" and then can't), the WAV */
+  const b=cl.keyC&&/maybe|probably/.test(new Audio().canPlayType(cl.typeC||''))?await load(cl.keyC).catch(()=>load(cl.key)):await load(cl.key);
   const src=c.createBufferSource();src.buffer=b;src.connect(c.destination);src.start();sPrev={src};src.onended=()=>{if(sPrev&&sPrev.src===src)sStopPrev();};
   document.querySelectorAll(`[data-a="${kind==='reveal'?'sg-rplay':'sg-play'}"][data-id="${CSS.escape(id)}"]`).forEach(x=>x.classList.add('on'));}
  catch(e){toast('Couldn’t play the clip: '+(e.message||e),5000);}}
