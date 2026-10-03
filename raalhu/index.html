@@ -182,6 +182,7 @@ html.watching .watch{display:flex}
 .rl .nm{flex:1;min-width:0;line-height:1.2}.rl .nm b{display:block;font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.rl .nm small{display:block;font-size:11px;opacity:.75;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .rl .t{font-variant-numeric:tabular-nums;font-size:13px;font-weight:700;opacity:.85;flex:none}
 .rl li.win .n{color:#FFD27A}
+.rnote{margin-top:8px;font-size:12.5px;line-height:1.35;opacity:.9}
 .rboli{margin-top:10px;font-size:13px;font-weight:700;display:flex;align-items:center;gap:6px}.rboli img{width:20px;height:20px}
 /* ---------- sheets, how to play, toast ---------- */
 .sheet{position:absolute;inset:0;z-index:60;display:none;align-items:flex-end;justify-content:center;background:rgba(2,24,40,.55);padding:12px;padding-bottom:var(--sb)}
@@ -315,7 +316,7 @@ html.watching .watch{display:flex}
 
 <section class="scr" id="results" aria-label="Results">
  <div class="card"><div class="rk" id="rKick">RESULTS</div><h3 id="rTitle">Finished!</h3>
-  <ol class="rl" id="rList"></ol><div class="rboli" id="rBoli"></div>
+  <ol class="rl" id="rList"></ol><p class="rnote" id="rNote" hidden></p><div class="rboli" id="rBoli"></div>
   <div class="row2" id="rBtns"></div></div>
 </section>
 
@@ -333,7 +334,7 @@ html.watching .watch{display:flex}
 <script src="../shared/avatar.js?v=12"></script>
 <script src="../shared/sponsors.js?v=8"></script>
 <script src="../shared/net.js?v=8"></script>
-<script src="engine.js?v=3"></script>
+<script src="engine.js?v=4"></script>
 <script src="art/atlas.js?v=3"></script>
 <script src="render.js?v=4"></script>
 <script>
@@ -591,7 +592,9 @@ function onEvents(race,list){const me=G.me;
    case 'shield':if(mine||near)SFX.shield();if(mine)toast('Shell shield up',900);break;
    case 'block':if(mine||near)SFX.block();if(mine)toast(e.why==='bolt'?'Your shell took the lightning!':e.why==='bat'?'Your shell stopped the bat!':e.why==='nut'?'Your shell bounced the coconut off!':'Your shell blocked it!',1100);else if(me&&e.by===me.id)toast(r.name+'’s shell blocked you',1100);break;
    case 'crate':if(mine){SFX.crate();toast('+'+e.n+' '+(e.k==='throw'?'coconut':e.k==='bump'?'bump':'shell')+(e.n>1?'s':'')+(e.dbl?' · double for catching up':''),1100);}break;
-   case 'finish':if(mine){SFX.beep(true);const f=$('#fin');f.textContent=ord(r.place)+'!';f.className='';void f.offsetWidth;f.className='on';G.endAt=performance.now()+1900;}break;}}}
+   case 'finish':if(mine){const o=race.places();G.finSaw={place:r.place,ahead:o.slice(0,o.indexOf(r)).map(x=>x.id)};   /* what I saw as I crossed (online results explain a change) */
+     if(LOCAL)window.__rrFin={place:r.place,wall:Date.now(),rt:+race.t.toFixed(3),finT:+r.finT.toFixed(3),seen:o.map(x=>[x.id,x.fin?+x.finT.toFixed(3):null,+(x.rz!=null?x.rz:x.z).toFixed(2)])};}
+    if(mine){SFX.beep(true);const f=$('#fin');f.textContent=ord(r.place)+'!';f.className='';void f.offsetWidth;f.className='on';G.endAt=performance.now()+1900;}break;}}}
 
 /* =====================================================================
    LOOP
@@ -632,7 +635,15 @@ function showResults(){if(!G)return;G.done=true;const race=G.race;AU.ambient(fal
  $('#rTitle').textContent=!G.me?`${rows[0].r.name} wins!`:pl===1?'You won the beach!':`You finished ${ord(pl)}`;
  const pts=G.mode==='online'?((G.host?TP.pts:G.pts)||{}):null;
  $('#rList').innerHTML=rows.map((o,i)=>{const r=o.r,tag=(r===G.me?'You':r.bot?'Computer':r.afk?'Computer took over':'')+(pts?(r===G.me||r.bot||r.afk?' · ':'')+'table '+(pts[r.pid]||0)+' pts':'');
-  return `<li class="${r===G.me?'mine ':''}${i===0?'win':''}"><span class="n">${i+1}</span><span class="av">${avSVG(r.cfg,48,i===0?'laugh':null)}</span><span class="nm"><b>${esc(r.name)}</b><small>${esc(tag)}${tag?' · ':''}${r.hits} hit${r.hits===1?'':'s'}${r.dunks?' · '+r.dunks+' splash'+(r.dunks>1?'es':''):''}</small></span><span class="t">${o.fin?'':'~'}${o.t.toFixed(1)} s</span></li>`;}).join('');
+  return `<li class="${r===G.me?'mine ':''}${i===0?'win':''}"><span class="n">${i+1}</span><span class="av">${avSVG(r.cfg,48,i===0?'laugh':null)}</span><span class="nm"><b>${esc(r.name)}</b><small>${esc(tag)}${tag?' · ':''}${r.hits} hit${r.hits===1?'':'s'}${r.dunks?' · '+r.dunks+' splash'+(r.dunks>1?'es':''):''}</small></span><span class="t">${o.fin?'':'~'}${o.t.toFixed(G.mode==='online'&&o.fin?2:1)} s</span></li>`;}).join('');
+ /* online: if the final order differs from what I saw as I crossed the line, say why, with the finish times */
+ let note='';const fs=G.mode==='online'&&G.me&&G.finSaw,mine=meRow>=0?rows[meRow]:null;
+ if(fs&&mine&&mine.fin&&fs.place!==pl){const ahead=new Set(fs.ahead),L=[];
+  rows.forEach((o,i)=>{if(o.r===G.me||!o.fin)return;const d=Math.abs(mine.t-o.t).toFixed(2);
+   if(i<meRow&&!ahead.has(o.r.id))L.push(`${esc(o.r.name)} crossed the line ${d} s before you`);
+   else if(i>meRow&&ahead.has(o.r.id))L.push(`${esc(o.r.name)} crossed the line ${d} s after you`);});
+  if(L.length)note=`Photo finish: ${L.slice(0,2).join(' · ')}. Places go by each runner’s own finish time.`;}
+ const nEl=$('#rNote');nEl.innerHTML=note;nEl.hidden=!note;
  let bl='';if(G.me&&!(G.mode==='online'&&(NET&&NET.test||G.meAfk))){const pts=pl===1?10+n*5:Math.max(2,(n-pl+1)*3);const a=award('rr2-'+G.mid,pts);if(a)bl=`<img src="../bondi/boli.webp" alt="">+${a.sh} Boli${a.capped?' (daily limit reached)':''}`;}
  $('#rBoli').innerHTML=bl;
  const host=G.mode==='online'&&NET&&NET.isHost();
@@ -662,7 +673,7 @@ function htBody(i){
  if(i===1)return `<div class="ht-pic"><div class="og" id="ogGrid"></div></div><h3>What’s on the way</h3><ul><li><b>Sunny beach:</b> the obstacles below. <b>The storm:</b> rain, and lightning. <b>The forest at night:</b> bats, and eyes watching from the dark (they’re harmless). <b>Sunrise:</b> out of the trees, back on the beach with its obstacles, to the finish on the sand.</li><li><b>Lightning:</b> a glowing, crackling mark appears on the ground in a lane, and a second later the bolt strikes there. <b>Change lane</b> before it hits. Jumping doesn’t help.</li><li><b>Falling coconuts</b> (in the forest): a shadow grows on the path in one lane, with a rustle and a creak above. <b>Change lane</b> before it drops. Get bonked and you stumble.</li><li><b>Bats</b> swoop down a lane at head height (you’ll see a small bat far ahead and hear a squeak). <b>Change lane or slide</b> under them. <b>Slide</b> under the low branches too.</li><li><b>Jump</b> crabs, coconuts, sun loungers and the gaps in the jetty.</li><li><b>Falling palms:</b> a palm beside the track starts to tip, then crashes down across all three lanes. <b>Jump</b> the trunk.</li><li><b>Slide</b> under the fishing nets.</li><li><b>Change lane</b> around the beached dhonis: they are too tall to jump.</li><li>Hit something and you stumble for a moment. Fall through a jetty gap and you splash into the sea, then climb back after about 1.5 seconds. Nobody is ever knocked out.</li></ul>`;
  if(i===2)return `<div class="ht-pic"><div class="ab3" id="abGrid"></div></div><h3>Throw, bump, shield</h3><ul><li>Everyone starts with <b>1 coconut</b> and <b>1 bump</b>. You can carry up to 3 of each.</li><li><b>Coconut throw</b> rolls down your lane and hits the first runner ahead in it. They can jump it or change lane.</li><li><b>Bump</b> shoulder-charges a runner right beside you and knocks them a lane over. Next to the water, it throws them into the sea. With nobody beside you, it’s a quick dash.</li><li><b>Shell shield</b> (from purple crates) blocks the next coconut, bump or crash within 5 seconds. It doesn’t help over a jetty gap.</li></ul>`;
  if(i===3)return `<div class="ht-pic"><div class="og" id="crGrid" style="grid-template-columns:repeat(3,1fr)"></div></div><h3>Crates and catching up</h3><ul><li>Run through a crate to pick it up: <b>red</b> = coconut, <b>blue</b> = bump, <b>purple</b> = shell shield. Everyone can take every crate once.</li><li>Runners behind the leader run up to <b>10% faster</b>, so nobody falls far behind.</li><li>The <b>last two runners get double</b> from every crate.</li><li>Boli: the winner gets the most, everyone gets something (500 a day at most).</li></ul>`;
- return `<div class="ht-pic" style="display:grid;place-items:center;min-height:120px"><div style="font:800 15px Sora;color:#17202B;text-align:center">2 to 6 runners · computer fills empty places</div></div><h3>Racing online</h3><ul><li><b>Quick Match</b> puts you in a race with whoever is looking. If nobody comes within about 12 seconds, you can start with computer runners (it also starts by itself). People who arrive before the start take a computer’s place; people who arrive during a race watch, then take a computer’s place for the next race. <b>Play with Friends</b> makes a table with a code to share.</li><li>Voice chat, also at Quick Match: tap the mic button (top right in the race, or in the waiting room). Your mic starts off; you can mute or report anyone. Quick chat works everywhere.</li><li>Your own runner moves on your phone with no delay. Other runners are shown a split second behind, smoothly.</li><li>The host’s phone decides every coconut hit and bump, and the finish order.</li><li>If you leave, lose connection or stop playing for about 15 seconds, the computer runs for you until the end. If the host leaves, the next player takes over.</li><li>Others can watch a public race without running.</li></ul>`;}
+ return `<div class="ht-pic" style="display:grid;place-items:center;min-height:120px"><div style="font:800 15px Sora;color:#17202B;text-align:center">2 to 6 runners · computer fills empty places</div></div><h3>Racing online</h3><ul><li><b>Quick Match</b> puts you in a race with whoever is looking. If nobody comes within about 12 seconds, you can start with computer runners (it also starts by itself). People who arrive before the start take a computer’s place; people who arrive during a race watch, then take a computer’s place for the next race. <b>Play with Friends</b> makes a table with a code to share.</li><li>Voice chat, also at Quick Match: tap the mic button (top right in the race, or in the waiting room). Your mic starts off; you can mute or report anyone. Quick chat works everywhere.</li><li>Your own runner moves on your phone with no delay. Every phone keeps the same race clock, so the race starts at the same moment for everyone, and other runners are shown where they are right now (worked out from their last update), smoothly.</li><li>The host’s phone decides every coconut hit and bump. The finish order goes by the race time each runner crossed the line; the results show those times.</li><li>If you leave, lose connection or stop playing for about 15 seconds, the computer runs for you until the end. If the host leaves, the next player takes over.</li><li>Others can watch a public race without running.</li></ul>`;}
 function openHowto(i){htI=clamp(i|0,0,HT.length-1);$('#howto').classList.add('open');renderHT();}
 function renderHT(){$('#htTabs').innerHTML=HT.map((h,j)=>`<button data-a="htTab" data-v="${j}" aria-pressed="${j===htI}">${h[0]}</button>`).join('');$('#htTitle').textContent=HT[htI][1];
  $('#htB').innerHTML=htBody(htI);$('#htB').scrollTop=0;$('#htNext').textContent=htI===HT.length-1?'Done':'Next';
@@ -724,8 +735,9 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden){AU.sleep()
    ONLINE (shared/net.js). Every phone builds the same track from the host's seed.
    Your own runner moves on your phone with no delay and reports ~10x a second;
    the host sends everyone the runners ~10x a second (tell) and a full view ~2.5x a second (sync,
-   also for spectators). Rivals are drawn ~0.15 s behind with interpolation.
-   The host decides every coconut hit, bump and the finish order.
+   also for spectators). Every phone runs the host's race clock (CLK below); rivals are drawn where they are now,
+   carried forward from their newest update (predict). The host decides every coconut hit and bump; the finish order
+   goes by the race time each runner crossed the line.
    ===================================================================== */
 let NET=null;
 /* Quick Match uses shared/net.js v5 computer seats (cpu:true, quickSize 4): a 12 s search, then "Start with computer
@@ -738,10 +750,24 @@ function cpuSeat(i,taken){const t=new Set((taken||[]).map(x=>String(x).toLowerCa
 function playingNow(){if(!NET)return 0;try{if(typeof NET.playingNow==='function')return NET.playingNow()|0;const L=NET.lists();return[...L.open,...L.live].reduce((s,t)=>s+(t.n|0),0);}catch(e){return 0;}}
 function qmSub(){const n=playingNow(),el=$('#qmSub');const h=n>0?`<i></i>${n} playing now`:'Race runners from anywhere';if(el._h!==h){el._h=h;el.innerHTML=h;}}
 setInterval(()=>{if(document.documentElement.dataset.scr==='home'&&!document.hidden)qmSub();},3000);
-const TICK_MS=100,REP_MS=100,SYNC_MS=400,DELAY=150,SPEC_DELAY=450,IDLE_S=15,STALE_MS=2500;
-const now2=()=>NET&&NET.isOnline()?NET.hostNow():Date.now();
+const TICK_MS=100,REP_MS=100,SYNC_MS=400,IDLE_S=15,STALE_MS=2500,VMAX=22;
+/* The race clock is the host's clock. A client estimates the host's clock itself (NTP style) from the host's ticks:
+   each tick carries the host's send time (h) and echoes the send time of my newest report plus how long the host held
+   it (a), so  round trip = now - a  and  offset = ((h - a) + (h - now)) / 2. The sample with the shortest round trip
+   of the last ~4 s wins (its error is at most half of that round trip). Until there is one, net.js's estimate is used
+   (it ignores the trip time, so it runs late by the one-way delay: that made phones start the race at different moments).
+   After the GO the offset slews (80 ms per second at most), so the race clock never jumps. */
+const CLK={s:[],off:null,use:null,host:''};
+function clkReset(){CLK.s=[];CLK.off=null;CLK.use=null;CLK.host='';}
+function clkSample(h,a,recv){const rtt=recv-a;if(!(h>0&&a>0&&rtt>=0&&rtt<6000))return;const hid=(NET&&NET.meta()||{}).hostId||'';if(hid!==CLK.host){clkReset();CLK.host=hid;}
+ CLK.s.push([rtt,((h-a)+(h-recv))/2]);if(CLK.s.length>40)CLK.s.shift();let b=CLK.s[0];for(const x of CLK.s)if(x[0]<b[0])b=x;CLK.off=b[1];}
+function clkStep(dt,t){if(CLK.off==null)return;if(CLK.use==null||t<-.3||Math.abs(CLK.off-CLK.use)>400)CLK.use=CLK.off;else{const m=dt*80;CLK.use+=clamp(CLK.off-CLK.use,-m,m);}}
+const now2=()=>!NET||!NET.isOnline()||NET.isHost()?Date.now():CLK.use!=null?Date.now()+CLK.use:NET.hostNow();
+/* p[10] = the race time (ms) the numbers are from (for another phone's runner: when that phone measured it), p[11] = vy */
 function pack(r){let f=0;if(r.slide>0)f|=1;if(r.stum>0)f|=2;if(r.fall>0)f|=4;if(r.water)f|=8;if(r.fin)f|=16;if(r.sh>0)f|=32;if(r.dash>0)f|=64;if(r.face>0&&r.faceK==='hit')f|=128;if(r.face>0&&r.faceK==='win')f|=256;if(r.inv>0)f|=512;if(r.fallX>0)f|=1024;if(r.ctl==='ai'&&!r.bot)f|=2048;if(r.zap>0)f|=4096;
- return[r.id,Math.round(r.z*100),Math.round(r.x*100),Math.round(r.y*100),Math.round((r.speed||0)*10),f,r.lane,r.fin?Math.round(r.finT*100):0,r.hits,r.dunks];}
+ const s=r.ctl==='net'&&r.rep&&G&&G.host?r.rep:null,rt=s?s.rt:G?G.race.t:0;
+ if(s)return[r.id,Math.round(s.z*100),Math.round(s.x*100),Math.round(s.y*100),Math.round(s.sp*10),(s.f&~16)|(r.fin?16:0),s.l,r.fin?Math.round(r.finT*100):0,r.hits,r.dunks,Math.round(rt*1000),Math.round((s.vy||0)*10)];
+ return[r.id,Math.round(r.z*100),Math.round(r.x*100),Math.round(r.y*100),Math.round((r.speed||0)*10),f,r.lane,r.fin?Math.round(r.finT*100):0,r.hits,r.dunks,Math.round(rt*1000),Math.round((r.vy||0)*10)];}
 function lookOfSeat(l){const A=DGA();try{if(A&&l&&l.ch)return A.normalize(l.ch);}catch(e){}return null;}
 /* host: start a match */
 /* table points across races at one table: 10, 8, 6, 4, 3, 2. A person who takes a computer runner's
@@ -778,9 +804,15 @@ function ev2(e){/* host: queue an event for everyone */G.seq++;e.s=G.seq;G.evq.p
 function netAction(pid,a){if(!G||!G.host||!a||typeof a!=='object'||a.m!==G.mid)return;const r=G.race.runners.find(x=>x.pid===pid);if(!r)return;
  if(a.t==='s'){if(r.ctl==='ai'&&r.tmpAI){r.ctl='net';r.tmpAI=0;}if(r.ctl!=='net')return;const t=Date.now();r.lastRep=t;
   if((a.in|0)!==r.lastInp){r.lastInp=a.in|0;r.lastIn=t;}
-  const s={t,z:+a.z||0,x:+a.x||0,y:+a.y||0,sp:+a.sp||0,f:a.f|0,l:a.l|0,ft:+a.ft||0};r.buf.push(s);if(r.buf.length>30)r.buf.shift();r.rep=s;r.echo=a.ts;r.echoAt=t;
+  /* rt: the race time on that phone when it measured this (its clock is synced to mine); an old app without it: about now */
+  const hrt=(t-G.t0)/1000,rt=isFinite(+a.rt)&&a.rt!==undefined?clamp(+a.rt,hrt-2,hrt+.3):hrt-.15;
+  if(r.rep&&r.rep.rt>=rt)return;   /* an older report that came the long way round (another broker): skip it */
+  const s={t,rt,z:+a.z||0,x:+a.x||0,y:+a.y||0,vy:+a.vy||0,sp:+a.sp||0,f:a.f|0,l:a.l|0,ft:+a.ft||0};r.buf.push(s);if(r.buf.length>30)r.buf.shift();r.rep=s;r.echo=a.ts;r.echoAt=t;
   r.ch={throw:clamp(a.c&&a.c[0]|0,0,3),bump:clamp(a.c&&a.c[1]|0,0,3),shield:clamp(a.c&&a.c[2]|0,0,3)};r.hits=a.h|0;r.dunks=a.d|0;
-  if((s.f&16)&&!r.fin){r.fin=true;r.finT=clamp(s.ft/100,1,999);r.face=2.2;r.faceK='win';ev2({t:'finish',r:r.id,ft:Math.round(r.finT*100)});NET.sync();}
+  /* the finish: ranked by the race time that phone crossed the line (not when its message got here), checked against
+     its last report before the line: nobody can be faster than VMAX m/s from there, or finish in the future */
+  if((s.f&16)&&!r.fin){const L=r.lastRun,lo=L?L.rt+Math.max(0,G.race.len-L.z)/VMAX:1;r.fin=true;r.finT=clamp(s.ft/100,Math.max(1,lo),Math.max(lo,hrt+.3));r.face=2.2;r.faceK='win';ev2({t:'finish',r:r.id,ft:Math.round(r.finT*100)});NET.sync();}
+  else if(!(s.f&16))r.lastRun=s;
   return;}
  if(r.ctl!=='net')return;
  if(a.t==='throw'){const q={id:++G.race.pid,z:(+a.z||r.z)+.7,x:+a.x||0,y:1.05,vy:2.2,v:Math.max(r.speed||8,8)+21,o:r.id,life:1.7,sp:0,real:true};G.race.proj.push(q);ev2({t:'throw',r:r.id,z:Math.round(q.z*100),x:Math.round(q.x*100)});SFX.throw();}
@@ -804,11 +836,11 @@ function netState(v,meta,info){if(!v||v.k!=='rr'||!Array.isArray(v.P))return;
  if(v.over&&!G.over){G.over=v.over;if(!G.done)setTimeout(()=>{if(G&&G.over&&!G.done)showResults();},G.me&&G.me.fin?300:900);}
  document.documentElement.classList.toggle('watching',!G.me);if(!G.me)$('#watchTx').textContent=(info&&info.waiting?'You race in the next match · ':'Watching · ')+v.P.length+' runners';}
 /* client: the host's quick tick */
-function netTell(o){if(!o||o.k!=='t'||!G||G.host||o.m!==G.mid)return;G.lastTickAt=Date.now();G.t0=o.t0;
+function netTell(o){if(!o||o.k!=='t'||!G||G.host||o.m!==G.mid)return;G.lastTickAt=Date.now();G.t0=o.t0;if(o.a)clkSample(o.h,o.a,Date.now());
  o.s.forEach(p=>{const r=G.race.runners[p[0]];if(r&&r!==G.me)ingest(r,p,o.h);});applyEvents(o.e||[]);
  if(G.me){const p=o.s[G.me.id];if(p&&(p[5]&2048))adopt(p);}
  if(o.a){const rtt=Date.now()-o.a;if(rtt>=0&&rtt<10000)G.rtt=G.rtt?G.rtt*.8+rtt*.2:rtt;}}
-function ingest(r,p,h){const s={t:h,z:p[1]/100,x:p[2]/100,y:p[3]/100,sp:p[4]/10,f:p[5],l:p[6],ft:p[7]};const b=r.buf||(r.buf=[]);if(b.length&&b[b.length-1].t>=h)return;b.push(s);if(b.length>30)b.shift();
+function ingest(r,p,h){const rt=p[10]!=null?p[10]/1000:(h-G.t0)/1000;const s={t:h,rt,z:p[1]/100,x:p[2]/100,y:p[3]/100,vy:(p[11]||0)/10,sp:p[4]/10,f:p[5],l:p[6],ft:p[7]};const b=r.buf||(r.buf=[]);if(b.length&&b[b.length-1].rt>=rt)return;b.push(s);if(b.length>30)b.shift();
  r.lane=s.l;r.hits=p[8]|0;r.dunks=p[9]|0;if((s.f&16)&&!r.fin){r.fin=true;r.finT=s.ft/100;}}
 /* the host drove my runner while my tab was away: carry on from there */
 function adopt(p){const me=G.me;if(!me||me._adoptAt&&Date.now()-me._adoptAt<1500)return;me._adoptAt=Date.now();me.z=p[1]/100;me.x=p[2]/100;me.lane=p[6];me.speed=p[4]/10;me.fall=0;me.water=0;toast('Welcome back! Keep running',1400);}
@@ -820,19 +852,23 @@ function applyEvents(list){const race=G.race;for(const e of list){if(e.s<=G.last
  else if(e.t==='splash'){if(!mine)race.fx.push({t:'splash',x:e.x/100,z:e.z/100,life:.9});}
  else if(e.t==='shield'&&!mine){SFX.shield();}
  else if(e.t==='finish'&&!mine){const pl=race.runners.filter(q=>q.fin).length;if(pl===1)toast(r.name+' finished first!',1200);}}}
-/* rivals: interpolate ~0.15 s behind (spectators ~0.45 s) */
-function interp(r,rt){const b=r.buf;if(!b||!b.length)return;let a=b[0],c=null;
- for(let i=b.length-1;i>=0;i--){if(b[i].t<=rt){a=b[i];c=b[i+1]||null;break;}}
- let z,x,y;if(c&&c.t>a.t){const k=clamp((rt-a.t)/(c.t-a.t),0,1);z=lerp(a.z,c.z,k);x=lerp(a.x,c.x,k);y=lerp(a.y,c.y,k);}
- else{const ex=clamp((rt-a.t)/1000,0,.35);z=a.z+((a.f&4)?0:a.sp*ex);x=a.x;y=a.y;}
- const f=(c&&rt-a.t>(c.t-a.t)*.5)?c.f:a.f;
- r.rz=z;r.rx=x;r.ry=Math.max(0,y);r.slide=f&1?.3:0;r.stum=f&2?.3:0;r.fall=f&4?1:0;r.water=f&8?1:0;r.sh=f&32?1:0;r.dash=f&64?.2:0;r.inv=f&512?.2:0;r.fallX=f&1024?1:-1;r.speed=a.sp;r.zap=f&4096?.6:0;
+/* rivals: drawn where they are NOW in race time, not where their last update was. Every update carries the race time
+   it was measured at (on that runner's own phone, whose clock is synced), so the newest one is carried forward:
+   z by its speed, x towards its lane, y along its jump. (Drawing the last update, or interpolating ~0.15 s behind it,
+   showed rivals 10-18 m behind where they really were with 250-400 ms of network delay: a runner who was ahead
+   looked behind.) A rival relayed through the host can be 1-2 s old on a slow line, so it is carried up to 2.5 s. The drawn position then follows that target smoothly: never backwards, corrections over ~0.2 s. */
+function predict(r,rt,dt){const b=r.buf;if(!b||!b.length)return;const s=b[b.length-1],tau=clamp(rt-s.rt,0,2.5),lx=E.laneX(s.l),f=s.f;
+ const z=s.z+((f&4)?0:s.sp*tau),x=lx+(s.x-lx)*Math.exp(-15*tau);let y=0;if(s.y>0||s.vy>0)y=Math.max(0,s.y+s.vy*tau-12*tau*tau);
+ if(r.rz==null||!(dt>0)||Math.abs(z-r.rz)>8){r.rz=z;r.rx=x;r.ry=y;}
+ else{const pz=r.rz+((f&4)?0:s.sp*dt);r.rz=Math.max(r.rz,pz+(z-pz)*(1-Math.exp(-dt*5)));const k=1-Math.exp(-dt*20);r.rx+=(x-r.rx)*k;r.ry=Math.max(0,r.ry+(y-r.ry)*k);}
+ r.slide=f&1?.3:0;r.stum=f&2?.3:0;r.fall=f&4?1:0;r.water=f&8?1:0;r.sh=f&32?1:0;r.dash=f&64?.2:0;r.inv=f&512?.2:0;r.fallX=f&1024?1:-1;r.speed=s.sp;r.zap=f&4096?.6:0;
+ /* seen past the line before its finish message came: count it as finished (estimated time) for the places here */
+ r.eft=!r.fin&&z>=G.race.len&&s.sp>0?s.rt+Math.max(0,G.race.len-s.z)/s.sp:null;
  if(f&128&&!(r._pf&128)){r.face=1.1;r.faceK='hit';}if(f&256&&!(r._pf&256)){r.face=2.2;r.faceK='win';}r._pf=f;}
 function followCam(){if(!G)return null;const rs=G.race.runners;let best=G.cam;const lead=rs.slice().sort((a,b)=>a.place-b.place)[0];if(!best||best.place>2)best=lead;G.cam=best;best.got=best.got||{};return best;}
-function stepOnline(dt,now){const race=G.race,hostNow=now2(),tt=(hostNow-G.t0)/1000;race.t=tt-dt;
- const delay=G.spec?SPEC_DELAY:DELAY;
- race.runners.forEach(r=>{if(r.ctl==='net'){interp(r,hostNow-delay);
-   if(G.host){/* hit tests use the newest report, moved on by its speed */const s=r.rep;if(s){const ex=clamp((Date.now()-s.t)/1000,0,.5);r.z=s.z+((s.f&4)?0:s.sp*ex);r.x=s.x;r.y=s.y;}else r.z=r.rz;}
+function stepOnline(dt,now){const race=G.race;if(!G.host)clkStep(dt,race.t);const hostNow=now2(),tt=(hostNow-G.t0)/1000;race.t=tt-dt;
+ race.runners.forEach(r=>{if(r.ctl==='net'){predict(r,tt,dt);
+   if(G.host){/* hit tests use the newest report, moved on by its speed to now (race time) */const s=r.rep;if(s){const ex=clamp(tt-s.rt,0,1.2);r.z=s.z+((s.f&4)?0:s.sp*ex);r.x=s.x;r.y=s.y;}else r.z=r.rz;}
    else{r.z=r.rz;r.x=r.rx;r.y=r.ry;}}
   else{r.rz=null;r.rx=null;r.ry=null;}});
  /* localhost test switch: ?auto=1 lets the computer steer my runner (it still reports like a person) */
@@ -848,8 +884,8 @@ function stepOnline(dt,now){const race=G.race,hostNow=now2(),tt=(hostNow-G.t0)/1
    else if(e.t==='splash'&&r.ctl!=='net')ev2({t:'splash',r:r.id,x:Math.round(e.x*100),z:Math.round(e.z*100)});
    else if(e.t==='finish'&&r.ctl!=='net')ev2({t:'finish',r:r.id,ft:Math.round(r.finT*100)});}
   hostDuties(now);}
- else{/* my report to the host */if(G.me&&now-G.lastRep>REP_MS&&race.t>-3.5){G.lastRep=now;const me=G.me,p=pack(me);
-   NET.send({t:'s',m:G.mid,z:+me.z.toFixed(2),x:+me.x.toFixed(2),y:+me.y.toFixed(2),sp:+(me.speed||0).toFixed(1),f:p[5],l:me.lane,ft:p[7],c:[me.ch.throw,me.ch.bump,me.ch.shield],h:me.hits,d:me.dunks,in:me.inputs,ts:Date.now()});}
+ else{/* my report to the host (from the start state on: the host's answers to it set my clock) */if(G.me&&now-G.lastRep>REP_MS&&race.t>-6){G.lastRep=now;const me=G.me,p=pack(me);
+   NET.send({t:'s',m:G.mid,rt:+race.t.toFixed(3),z:+me.z.toFixed(2),x:+me.x.toFixed(2),y:+me.y.toFixed(2),vy:+(me.vy||0).toFixed(1),sp:+(me.speed||0).toFixed(1),f:p[5],l:me.lane,ft:p[7],c:[me.ch.throw,me.ch.bump,me.ch.shield],h:me.hits,d:me.dunks,in:me.inputs,ts:Date.now()});}
   for(const e of ev){if(e.r!==G.me)continue;if(e.t==='throw')NET.send({t:'throw',m:G.mid,z:+e.r.z.toFixed(2),x:+e.r.x.toFixed(2)});else if(e.t==='bumpReq')NET.send({t:'bump',m:G.mid});else if(e.t==='shield')NET.send({t:'shield',m:G.mid});}
   /* the host's "you are away" note can get lost: idle 15 s and no word from the host for 7 s = away */
   if(G.me){if(G.me.inputs!==G.myIn){G.myIn=G.me.inputs;G.myInAt=Date.now();}
@@ -873,13 +909,13 @@ function hostDuties(now){const race=G.race,t=Date.now();
 /* the host left: I carry on from my copy of the race */
 function netMigrate(o){const v=o.view||o.backup;if(!G||!v||v.mid!==G.mid){if(v&&v.k==='rr'){G=null;netState(v,o.meta,{});}if(!G){NET.again();return;}}
  TP={code:(o.meta&&o.meta.code)||'',seed:v.ts||G.seed,pts:Object.assign({},v.pts||G.pts||{}),prev:(G.P||[]).map(p=>({pid:p.pid,bot:!!p.bot}))};
- const race=G.race,sk=o.skew||0;G.host=true;race.authority=true;G.t0=(G.t0||v.t0)-sk;G.evq=[];G.seq=(G.lastSeq||0)+1000;G.lastTick=0;G.lastSync=0;G.endT=0;
+ const race=G.race,sk=CLK.use!=null?CLK.use:(o.skew||0);clkReset();G.host=true;race.authority=true;G.t0=(G.t0||v.t0)-sk;G.evq=[];G.seq=(G.lastSeq||0)+1000;G.lastTick=0;G.lastSync=0;G.endT=0;
  race.proj.forEach(q=>q.real=true);
  race.runners.forEach(r=>{r.lastRep=Date.now();r.lastIn=Date.now();r.lastInp=0;if(r===G.me)return;
   if(r.bot||r.afk||r.pid===o.oldHost){r.z=r.rz!=null?r.rz:r.z;
    /* nobody moved them while the host was silent: carry them on at their last speed */
    const lb=r.buf&&r.buf[r.buf.length-1];if(lb&&!(lb.f&16)){const age=clamp((Date.now()+sk-lb.t)/1000,0,30);r.z=Math.max(r.z,lb.z+lb.sp*age*.95);}r.x=r.rx!=null?r.rx:r.x;r.rz=r.rx=r.ry=null;race.takeOver(r,.86);if(r.pid===o.oldHost)r.afk='left';}
-  else{const b=r.buf&&r.buf[r.buf.length-1];if(b){r.rep={t:Date.now(),z:b.z,x:b.x,y:b.y,sp:b.sp,f:b.f};}r.buf=[];}});
+  else{const b=r.buf&&r.buf[r.buf.length-1];if(b){r.rep={t:Date.now(),rt:b.rt,z:b.z,x:b.x,y:b.y,vy:b.vy||0,sp:b.sp,f:b.f,l:b.l};r.buf=[r.rep];if(!(b.f&16))r.lastRun=r.rep;}else r.buf=[];}});
  if(G.over){NET.matchOver();}
  toast('The host left, so your phone runs the race now.',2200);NET.sync();}
 function netLobby(){G=null;AU.ambient(false);document.documentElement.classList.remove('watching');renderHome();}
@@ -903,7 +939,7 @@ function initNet(){if(!window.DGNet)return;
   avatarEl:pid=>{if(!G)return null;return document.querySelector(`#pstrip .pa[data-pid="${CSS.escape(pid)}"] .av`);}});}
 
 /* ---------- test hooks (localhost automated checks only) ---------- */
-if(LOCAL)window.__rr={get G(){return G;},get NET(){return NET;},get view(){return view;},get DEMO(){return DEMO;},startSolo,showResults,openHowto,renderSetup,renderHome,act,E,V,
+if(LOCAL)window.__rr={get G(){return G;},get CLK(){return CLK;},get NET(){return NET;},get view(){return view;},get DEMO(){return DEMO;},startSolo,showResults,openHowto,renderSetup,renderHome,act,E,V,
  lite:()=>({lite,dpr:view&&view.dpr})};
 
 /* =====================================================================

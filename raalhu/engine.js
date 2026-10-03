@@ -290,7 +290,9 @@ Race.prototype.aiHaz=function(r){var T=this.track,t=this.t,sp=Math.max(6,r.speed
    if(r.lane===e.lane||Math.abs(r.x-laneX(e.lane))<.8){
     if(q===1&&H.sl){if(dt2<.3&&r.slide<dt2+.12)this.duck(r);}
     else{var l=this.safeLane(r,e.lane);if(l!=null&&l!==r.lane)this.move(r,Math.sign(l-r.lane));else if(l==null&&q===1&&dt2<.3&&r.slide<dt2+.12)this.duck(r);}}}}};
-Race.prototype.places=function(){var rs=this.runners,ord=rs.slice().sort(function(a,b){if(a.fin&&b.fin)return a.finT-b.finT;if(a.fin)return -1;if(b.fin)return 1;return b.z-a.z||a.id-b.id;});
+/* online, another phone's runner can be seen past the line before its finish message arrives: the page then sets
+   eft (its estimated finish time), so the places on this phone already count it as finished */
+Race.prototype.places=function(){var rs=this.runners,ord=rs.slice().sort(function(a,b){var fa=a.fin?a.finT:a.eft,fb=b.fin?b.finT:b.eft;if(fa!=null&&fb!=null)return fa-fb;if(fa!=null)return -1;if(fb!=null)return 1;return b.z-a.z||a.id-b.id;});
  for(var i=0;i<ord.length;i++)ord[i].place=i+1;return ord;};
 /* estimated time for a runner who hasn't crossed the line yet */
 Race.prototype.est=function(r){return r.fin?r.finT:Math.max(this.t,0)+(this.len-r.z)/Math.max(9,r.speed||this.base());};

@@ -424,6 +424,8 @@ const buzz=ms=>{try{if(navigator.userActivation&&!navigator.userActivation.hasBe
 const Q_MS=15000;                         /* 15 s a question */
 const NQ=10;                              /* a match is 10 questions (Friends tables may pick 5 or 15) */
 const GRACE=900;                          /* online: a moment for the network after the buzzer */
+const QLEAD=FAST?300:1500;                /* online: the host sends each question this long before it starts (taken from the
+                                             countdown before it), so every phone shows it at the same moment */
 const INTRO_MS=FAST?500:3600,REV_MS=FAST?900:6500,STAND_MS=FAST?800:4500,CPU_SPEED=FAST?.18:1;
 const DAILY_CAP=500;                      /* the shared daily Boli cap (dd-inv), same as every game */
 const BOLI_QUICK=[30,20,10];              /* Quick Match: 1st, 2nd, 3rd */
@@ -630,9 +632,23 @@ let topicsSel=(()=>{try{const a=JSON.parse(ls.get('quiz-topics')||'null');if(Arr
    phases: intro -> q -> rev -> stand -> q ... -> over   (the Daily quiz skips "stand")
    ===================================================================== */
 let S=null,mode=null,screen='home';           /* mode: practice | daily | online */
-let hostT=0,cpuT=[],cpuPlan={},pausedAt=0,myPicks={},qShown={},lastRender='',tickT=0,lastTick=-1,autoT=0;
+let hostT=0,cpuT=[],cpuPlan={},pausedAt=0,myPicks={},myMs={},qShown={},qShownAt={},lastRender='',tickT=0,lastTick=-1,autoT=0,pendT=0;
 let NET=null;
 const online=()=>mode==='online';
+/* Online timing. The host's question start (S.at) is in the host's clock; each phone converts it with its own estimate of
+   the host's clock (NTP style: a small ping {t:'clk'} and the host's reply; offset = host time - the middle of the round
+   trip, from the quickest of the recent round trips). net.js's own estimate ignores the trip time, so it was late by
+   the one-way delay, and each phone counted a question from when the message happened to arrive: the clocks and the
+   answer times did not match between phones. Now every phone shows the question at the same moment (QLEAD) and
+   counts from it; a phone whose message still came late counts from when it showed the question (at most GRACE later). */
+const QCLK={s:[],off:null,host:''};
+function qclkSample(h,c,recv){const rtt=recv-c;if(!(h>0&&c>0&&rtt>=0&&rtt<6000))return;const hid=(NET&&NET.meta()||{}).hostId||'';if(hid!==QCLK.host){QCLK.s=[];QCLK.off=null;QCLK.host=hid;}
+ QCLK.s.push([rtt,h-(c+recv)/2]);if(QCLK.s.length>24)QCLK.s.shift();let b=QCLK.s[0];for(const x of QCLK.s)if(x[0]<b[0])b=x;QCLK.off=b[1];}
+const hostOff=()=>!NET||NET.isHost()?0:QCLK.off!=null?QCLK.off:(NET.skew()||0);
+let pingAt=0;setInterval(()=>{if(!online()||!NET||!NET.isClient()||!S||S.phase==='over'||meIdx()<0)return;const n=Date.now();if(n-pingAt<(QCLK.s.length<8?300:3000))return;pingAt=n;NET.send({t:'clk',c:n});},150);
+/* the moment this phone counts the current question from (its own clock) */
+const qT0=()=>{if(!S)return 0;if(!online()||hostOn())return S.at;const sh=qShownAt[S.qi];return sh?Math.min(Math.max(S.at,sh),S.at+GRACE):S.at;};
+const qPending=()=>online()&&!!S&&S.phase==='q'&&Date.now()<S.at;
 const hostOn=()=>!!S&&(mode==='practice'||mode==='daily'||(online()&&!!NET&&NET.isHost()));
 const meIdx=()=>S?S.players.findIndex(p=>p.id===myId):-1;
 const me=()=>{const k=meIdx();return k>=0?S.players[k]:null;};
@@ -640,13 +656,13 @@ const active=()=>S.players.filter(p=>!p.gone);
 function newMatch(kind,players,qs,o){o=o||{};return{gid:rid(),kind,quick:!!o.quick,level:o.level||0,n:o.n||qs.length,qi:-1,phase:'intro',at:Date.now(),qs,players,picks:{},prev:null,day:o.day||''};}
 function commit(){render();if(online()&&NET&&NET.isHost())NET.sync();}
 function clearHost(){clearTimeout(hostT);hostT=0;cpuT.forEach(clearTimeout);cpuT=[];}
-function hostSched(){clearTimeout(hostT);hostT=0;if(!hostOn()||pausedAt)return;const el=Date.now()-S.at;
- if(S.phase==='intro')hostT=setTimeout(()=>hostStartQ(0),Math.max(0,INTRO_MS-el));
+function hostSched(){clearTimeout(hostT);hostT=0;if(!hostOn()||pausedAt)return;const el=Date.now()-S.at,lead=online()?QLEAD:0;
+ if(S.phase==='intro')hostT=setTimeout(()=>hostStartQ(0),Math.max(0,INTRO_MS-lead-el));
  else if(S.phase==='q'){const all=active().length&&active().every(p=>S.picks[p.id]);hostT=setTimeout(hostEndQ,all?(FAST?120:650):Math.max(0,Q_MS+(online()?GRACE:0)-el));}
  else if(S.phase==='rev')hostT=setTimeout(hostAfterRev,Math.max(0,REV_MS-el));
- else if(S.phase==='stand')hostT=setTimeout(()=>hostStartQ(S.qi+1),Math.max(0,STAND_MS-el));}
+ else if(S.phase==='stand')hostT=setTimeout(()=>hostStartQ(S.qi+1),Math.max(0,STAND_MS-lead-el));}
 function hostStartQ(i){if(!hostOn())return;if(!S.qs||S.qs.length<=i){if(i>=S.n){hostFinish();return;}hostT=setTimeout(()=>hostStartQ(i),300);return;}
- brk(false);S.qi=i;S.phase='q';S.at=Date.now();S.picks={};S.prev=null;S.players.forEach(p=>{p.gain=null;});planCpus();commit();hostSched();}
+ brk(false);S.qi=i;S.phase='q';S.at=Date.now()+(online()?QLEAD:0);S.picks={};S.prev=null;S.players.forEach(p=>{p.gain=null;});if(LOCAL)(window.__qz=window.__qz||[]).push({k:'start',qi:i,at:S.at});planCpus();commit();hostSched();}
 /* computer players: a random delay, and a chance of the right answer that falls with the question's difficulty */
 function planCpus(){cpuT.forEach(clearTimeout);cpuT=[];cpuPlan={};const q=S.qs[S.qi];
  S.players.forEach(p=>{if(!p.cpu||p.gone)return;const acc=Math.max(.15,Math.min(.95,(CPU_ACC[q.d]||CPU_ACC[2])+(p.sk||0))),ok=rnd()<acc;
@@ -661,12 +677,13 @@ function hostPick(id,p,ms){if(!S||S.phase!=='q'||S.picks[id])return false;const 
  if(online()&&!pl.cpu&&NET)NET.clear(id);
  commit();hostSched();return true;}
 function rankIds(N){return N.players.filter(p=>!p.gone).slice().sort((a,b)=>b.score-a.score||(a.fast||0)-(b.fast||0)).map(p=>p.id);}
-function hostEndQ(){if(!hostOn()||S.phase!=='q')return;cpuT.forEach(clearTimeout);cpuT=[];const q=S.qs[S.qi];S.prev=rankIds(S);
+function hostEndQ(){if(!hostOn()||S.phase!=='q')return;if(LOCAL)(window.__qz=window.__qz||[]).push({k:'picks',qi:S.qi,picks:JSON.parse(JSON.stringify(S.picks))});cpuT.forEach(clearTimeout);cpuT=[];const q=S.qs[S.qi];S.prev=rankIds(S);
  S.players.forEach(p=>{if(p.gone){p.gain=null;return;}const pk=S.picks[p.id];
   if(pk&&pk.p===q.c){const g=points(pk.ms,q.d);p.score+=g;p.lvr=(p.lvr|0)+(q.d|0);p.gain=g;p.right++;p.streak=(p.streak|0)+1;p.fast=(p.fast||0)+pk.ms;}
   else{p.gain=0;p.streak=0;}
   /* AFK: a person who misses 2 questions in a row is marked away (net.js counts the strikes) */
-  if(online()&&NET&&!p.cpu&&!pk){if(NET.strike(p.id)){p.gone=1;p.afk=1;}}});
+  /* the clock pings are actions too (net.js clears its strikes on any action), so the misses in a row are counted here */
+  if(online()&&NET&&!p.cpu){p.miss=pk?0:(p.miss|0)+1;if(p.miss>=2){let afk=false;for(let k=0;k<4&&!afk;k++)afk=NET.strike(p.id);if(afk){p.gone=1;p.afk=1;}}}});
  S.phase='rev';S.at=Date.now();brk(true);commit();hostSched();}
 function hostAfterRev(){if(!hostOn()||S.phase!=='rev')return;
  if(S.qi+1>=S.n){hostFinish();return;}
@@ -680,8 +697,9 @@ function brk(on){if(!online()||!NET||!NET.isHost()||!NET.handBreak)return 0;try{
 function answer(i){if(!S||S.phase!=='q'||meIdx()<0||me().gone)return;const qi=S.qi;if(myPicks[qi]!=null||S.picks[myId])return;
  const ms=Math.max(0,Math.min(Q_MS,Math.round(performance.now()-(qShown[qi]||performance.now()))));
  myPicks[qi]=i;SFX.pick();buzz(8);
+ if(LOCAL)(window.__qz=window.__qz||[]).push({k:'ans',qi,wall:Date.now(),ms:hostOn()?(online()?Date.now()-S.at:ms):Math.max(0,Math.min(Q_MS,Math.round(Date.now()-qT0()))),ring:Q_MS-qLeft()});
  if(hostOn())hostPick(myId,i,online()?Date.now()-S.at:Math.min(ms,Date.now()-S.at));
- else{NET.send({t:'ans',q:qi,pick:i,ms});render();}}
+ else{const oms=Math.max(0,Math.min(Q_MS,Math.round(Date.now()-qT0())));myMs[qi]=oms;NET.send({t:'ans',q:qi,pick:i,ms:oms});render();}}
 
 /* ---------- solo modes ---------- */
 function openLevels(){const all=topicsSel.length===TKEYS.length;
@@ -718,12 +736,12 @@ if(ROT_MQ){if(ROT_MQ.addEventListener)ROT_MQ.addEventListener('change',rotCheck)
    ===================================================================== */
 function viewFor(pid){if(!S)return null;const d=clone(S),hide=d.phase==='q'||d.phase==='intro';
  d.qs=d.qs.slice(0,Math.max(0,d.qi+1)).map((q,i)=>{if(i===d.qi&&hide){delete q.c;q.f='';if(q.dv)q.dv.f='';}return q;});
- if(d.phase==='q'){const pk={};Object.keys(d.picks).forEach(id=>{pk[id]=id===pid?d.picks[id]:{p:-1};});d.picks=pk;}
+ if(d.phase==='q'){const pk={};Object.keys(d.picks).forEach(id=>{pk[id]=id===pid?d.picks[id]:{p:-1,ms:d.picks[id].ms};});d.picks=pk;}
  return d;}
 function seatFrom(s,i){const ch=s.id===myId?myChar():lookCh(s.look);
  if(s.cpu)return{id:s.id,name:s.name,cpu:1,sk:(rnd()-.5)*.16,ch:ch||cpuChar(s.name),score:0,right:0,streak:0,fast:0};
  return{id:s.id,name:s.name,ch,score:0,right:0,streak:0,fast:0};}
-function netStart(seats,opts,info){mode='online';clearHost();myPicks={};qShown={};
+function netStart(seats,opts,info){mode='online';clearHost();myPicks={};myMs={};qShown={};qShownAt={};
  const quick=!!(info&&info.quick),n=quick?NQ:([5,10,15].includes(+opts.count)?+opts.count:NQ),topic=quick||!TKEYS.includes(opts.topic)?'all':opts.topic;
  const level=quick?0:([1,2,3,4].includes(+opts.level)?+opts.level:2);
  S=newMatch('online',seats.map(seatFrom),[],{quick,n,level});closeSheet();buildMatch();commit();brk(true);
@@ -731,10 +749,12 @@ function netStart(seats,opts,info){mode='online';clearHost();myPicks={};qShown={
   .catch(()=>{toast(T('Couldn’t load the questions. Check your connection.','ސުވާލުތައް ލޯޑެއް ނުވި. ކަނެކްޝަން ޗެކްކޮށްލާ.'),4500);});
  hostSched();}
 function netAction(pid,a){if(!S||!a||typeof a!=='object'||!hostOn())return;
+ if(a.t==='clk'){NET.tell(pid,{k:'clk',c:+a.c||0,h:Date.now()});return;}   /* clock ping: answer at once with my time */
  if(a.t==='ans'){if((a.q|0)!==S.qi||S.phase!=='q')return;const pl=S.players.find(p=>p.id===pid);if(!pl||pl.cpu||pl.gone)return;
   const el=Date.now()-S.at;if(el>Q_MS+GRACE)return;                        /* too late */
-  /* the time is measured on the player's own device; the host caps it at 15 s (and at the time since the question began) */
-  hostPick(pid,a.pick|0,Math.max(0,Math.min(Q_MS,el,+a.ms||0)));}}
+  /* the time is measured on the player's own device from the shared question start; the host caps it at 15 s (and at the time since the question began) */
+  /* an answer here before the start (an older app shows the question as soon as it arrives): its own time, not 0 */
+  hostPick(pid,a.pick|0,Math.max(0,Math.min(Q_MS,el>=0?el:Q_MS,+a.ms||0)));}}
 /* host: a newcomer takes computer seat cid between questions, and keeps its points */
 function netSeatSwap(cid,pl){if(!hostOn()||!S||!pl||!pl.id)return false;if(S.phase==='q'||S.phase==='over')return false;
  const k=S.players.findIndex(p=>p.id===cid);if(k<0||S.players.some(p=>p.id===pl.id))return false;
@@ -743,12 +763,12 @@ function netSeatSwap(cid,pl){if(!hostOn()||!S||!pl||!pl.id)return false;if(S.pha
  commit();return true;}
 function netDrop(pid){if(!hostOn()||!S)return;const p=S.players.find(x=>x.id===pid);if(!p||p.cpu)return;p.gone=1;commit();if(S.phase==='q')hostSched();}
 let wasSpec=null;
-function netState(v,meta,info){if(!v||!Array.isArray(v.players))return;mode='online';const N=v;N.at=(N.at||Date.now())-(NET.skew()||0);
+function netState(v,meta,info){if(!v||!Array.isArray(v.players))return;mode='online';const N=v;N.at=N.at?N.at-hostOff():Date.now();
  const spec=info?!!info.spec:null,flip=wasSpec===true&&spec===false;wasSpec=spec;
- const fresh=screen!=='match'||!S||S.gid!==N.gid||flip;S=N;if(fresh){closeSheet();myPicks={};qShown={};buildMatch();}render();}
+ const fresh=screen!=='match'||!S||S.gid!==N.gid||flip;S=N;if(fresh){closeSheet();myPicks={};myMs={};qShown={};qShownAt={};buildMatch();}render();}
 function netMigrate(o){mode='online';clearHost();const b=o.backup;
  if(!b||!b.gid||!Array.isArray(b.players)){if(o.view&&o.view.phase==='over'){S=o.view;buildMatch();render();return;}NET.again();return;}
- S=clone(b);S.at=(S.at||Date.now())-(o.skew||0);S.players.forEach(p=>{if(p.id===o.oldHost&&!p.cpu)p.gone=1;});
+ S=clone(b);S.at=(S.at||Date.now())-(QCLK.off!=null?QCLK.off:(o.skew||0));QCLK.s=[];QCLK.off=null;S.players.forEach(p=>{if(p.id===o.oldHost&&!p.cpu)p.gone=1;});
  if(screen!=='match')buildMatch();
  if(S.phase==='q'){S.at=Date.now();S.picks={};planCpus();}else if(S.phase!=='over')S.at=Date.now();
  if(S.phase==='over'){render();NET.matchOver();return;}
@@ -770,6 +790,7 @@ function initNet(){if(!window.DGNet)return;NET=DGNet.create({game:'quiz',title:'
   nm+(why==='afk'?' ދުރުގައި':why==='left'?' ދޫކޮށްފި':' ގެ ކަނެކްޝަން ކެނޑިއްޖެ')+'. ލިބުނު ޕޮއިންޓްތައް ބޯޑުގައި ހުންނާނެ.'),
  afkText:'You missed 2 questions in a row, so you were marked away. You can’t rejoin this match.',
  hostAfkText:'You missed 2 questions in a row, so you are marked away. You’ll leave the table when this match ends.',
+ onTell:o=>{if(o&&o.k==='clk')qclkSample(+o.h,+o.c,Date.now());},
  onStart:netStart,view:pid=>viewFor(pid),backup:()=>S,onAction:netAction,onDrop:netDrop,onState:netState,onLobby:netLobby,onMigrate:netMigrate,onEnd:netEnd,
  toast:(t,ms)=>toast(t,ms),
  dockHost:()=>screen==='match'?document.getElementById('dockHost'):null,
@@ -836,14 +857,18 @@ const levelLine=()=>S.level?lvName(S.level):T('Easy to Raajje Master','ފަސޭ�
 /* the small "Dhivehi being checked" note, while this question's Dhivehi text is not yet checked */
 const dvChk=q=>lang==='dv'&&q&&q.dv&&!q.dv.ok?`<p class="dvchk">${DVCHK}</p>`:'';
 function ringHTML(left){const sec=Math.max(0,Math.ceil(left/1000));return `<div class="ring${sec<=5?' low':''}" id="ring"><svg viewBox="0 0 64 64"><circle class="tk" cx="32" cy="32" r="29"/><circle class="pr" cx="32" cy="32" r="29" stroke-dasharray="${RC.toFixed(1)}" stroke-dashoffset="${(RC*(1-left/Q_MS)).toFixed(1)}"/></svg><b>${sec}</b></div>`;}
-const qLeft=()=>S?Math.max(0,Math.min(Q_MS,Q_MS-(Date.now()-S.at))):0;
+const qLeft=()=>S?Math.max(0,Math.min(Q_MS,Q_MS-(Date.now()-qT0()))):0;
 let lastStrip='';
 const youName=p=>T('You','ތިބާ');
 function stripHTML(){const rev=S.phase==='rev',k0=meIdx();
- return S.players.map((p,k)=>{const pk=S.picks[p.id]||(p.id===myId&&myPicks[S.qi]!=null&&S.phase==='q'?{p:myPicks[S.qi]}:null);
+ return S.players.map((p,k)=>{const pk=S.picks[p.id]||(p.id===myId&&myPicks[S.qi]!=null&&S.phase==='q'?{p:myPicks[S.qi],ms:myMs[S.qi]}:null);
+  /* during the question: an answered player's line shows the time they answered at (the same clock on every phone) */
+  const tms=S.phase==='q'&&pk&&pk.ms!=null&&!p.gone?pk.ms:null;
   const ex=rev&&!p.gone?(p.gain>=900?'laugh':p.gain>0?'happy':'sad'):'';
-  return `<div class="pl${k===k0?' me':''}${p.gone?' gone':''}" data-pid="${esc(p.id)}">${rev&&p.gain!=null?`<span class="gain${p.gain?'':' z'}" dir="ltr">+${p.gain}</span>`:''}${avHTML(p,44,ex,k)}${p.cpu?'<span class="cpu" lang="en">CPU</span>':''}${S.phase==='q'&&pk?`<span class="ok" aria-label="${T('Answered','ޖަވާބު ދީފި')}">${I.check}</span>`:''}<span class="n" dir="auto">${esc(k===k0?youName(p):p.name)}</span><span class="s">${p.gone?(p.afk?T('Away','ދުރުގައި'):T('Left','ދޫކޮށްފި')):p.score.toLocaleString('en')}</span></div>`;}).join('');}
+  return `<div class="pl${k===k0?' me':''}${p.gone?' gone':''}" data-pid="${esc(p.id)}">${rev&&p.gain!=null?`<span class="gain${p.gain?'':' z'}" dir="ltr">+${p.gain}</span>`:''}${avHTML(p,44,ex,k)}${p.cpu?'<span class="cpu" lang="en">CPU</span>':''}${S.phase==='q'&&pk?`<span class="ok" aria-label="${T('Answered','ޖަވާބު ދީފި')}">${I.check}</span>`:''}<span class="n" dir="auto">${esc(k===k0?youName(p):p.name)}</span><span class="s"${tms!=null?' dir="ltr"':''}>${p.gone?(p.afk?T('Away','ދުރުގައި'):T('Left','ދޫކޮށްފި')):tms!=null?(tms/1000).toFixed(1)+' s':p.score.toLocaleString('en')}</span></div>`;}).join('');}
 function render(){if(screen!=='match'||!S)return;const st=$('#stage');if(!st)return;
+ /* online: the question is here but starts in a moment: keep the screen before it (its countdown runs on) */
+ if(qPending()){clearTimeout(pendT);pendT=setTimeout(render,S.at-Date.now()+5);if(!st.firstChild)st.innerHTML=`<p class="waitline">${T('Get ready…','ތައްޔާރުވޭ…')}</p>`;lastRender='';return;}
  const k0=meIdx(),spec=k0<0,daily=S.kind==='daily';
  document.getElementById('match').classList.toggle('watching',online()&&!!NET&&NET.isSpectator());
  /* top bar: question counter */
@@ -864,7 +889,7 @@ function render(){if(screen!=='match'||!S)return;const st=$('#stage');if(!st)ret
  else if(S.phase==='rev')st.innerHTML=revHTML();
  else if(S.phase==='stand')st.innerHTML=standHTML();
  else st.innerHTML=overHTML();
- if(S.phase==='q'){if(qShown[S.qi]==null){qShown[S.qi]=performance.now();if(S.qs[S.qi])markSeen(S.qs[S.qi].id);SFX.q();lastTick=-1;}planAuto();}
+ if(S.phase==='q'){if(qShown[S.qi]==null){qShown[S.qi]=performance.now();qShownAt[S.qi]=Date.now();if(LOCAL)(window.__qz=window.__qz||[]).push({k:'show',qi:S.qi,wall:Date.now()});if(S.qs[S.qi])markSeen(S.qs[S.qi].id);SFX.q();lastTick=-1;}planAuto();}
  if(S.phase==='rev'&&!st._rv){st._rv=S.gid+':'+S.qi;}
  if(S.phase==='rev'){const k=S.gid+':'+S.qi;if(revSnd!==k){revSnd=k;const m=me();if(m&&!m.gone){if(m.gain>0)SFX.right();else SFX.wrong();}}}
  if(S.phase==='over')overFx();
@@ -950,6 +975,7 @@ function overHTML(){const aw=overAward(),k0=meIdx(),m=me();
  <div class="pod">${podium(P[1],1)}${podium(P[0],0)}${podium(P[2],2)}</div>${rest?`<ol class="stand" start="4">${rest}</ol>`:''}${earnHTML(aw)}${btns}`;}
 /* 10 times a second: the timer ring, countdowns, the last-5-seconds tick */
 function tick(){if(screen!=='match'||!S||pausedAt)return;   /* paused (hidden, sideways): the ring holds still */
+ if(qPending()){const e=$('#ncd')||$('#icd');if(e){const v=String(Math.max(1,Math.ceil((S.at-Date.now())/1000)));if(e.textContent!==v)e.textContent=v;}return;}
  if(S.phase==='q'){const left=qLeft(),r=$('#ring');if(r){const sec=Math.ceil(left/1000);const pr=r.querySelector('.pr');pr.setAttribute('stroke-dashoffset',(RC*(1-left/Q_MS)).toFixed(1));const b=r.querySelector('b');if(b.textContent!==String(sec))b.textContent=sec;r.classList.toggle('low',sec<=5);
    if(sec<=5&&sec>0&&sec!==lastTick&&myPicks[S.qi]==null&&!S.picks[myId]&&meIdx()>=0){lastTick=sec;SFX.tick();}}
   if(!hostOn()&&left<=0&&!S._late){S._late=1;}}
