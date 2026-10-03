@@ -1158,6 +1158,7 @@ a.hsp,.hsp{color:var(--ink)}
 <script src="../shared/avatar.js?v=12"></script>
 <script src="../shared/cosmetics.js?v=2"></script>
 <script src="../shared/sponsors.js?v=8"></script>
+<script src="../shared/dgcf.js?v=1"></script>
 <script src="../shared/table.js?v=1"></script>
 <script src="../shared/bgm.js?v=1"></script>
 <script>
@@ -3060,7 +3061,13 @@ function end(){ended=true;clearTimeout(retryT);clearTimeout(ctT);clearInterval(p
 function reconnect(){if(ended||self.connected)return;clearTimeout(retryT);delay=1500;const w=ws;ws=null;if(w){try{w.close();}catch(e){}}connect();}
 Object.assign(self,{subscribe:sub,unsubscribe:unsub,publish:publish,end:end,reconnect:reconnect});connect();return self;}
 
-function makeClients(){return BROKERS.map((br,bi)=>{const o={bi:bi,ok:false,up:null,h:null,subs:()=>[],onUp2:null,c:null};const url=typeof br==='string'?br:br.url;
+/* our Cloudflare play server (shared/dgcf.js): one more connection next to the public brokers when the server's switch says so
+   for 'digu' ('both'; 'cf' is treated as 'both' here). Same messages, same encryption; the server only relays them. */
+function cfOn(){try{const D=window.DGCF;const m=D&&D.mode('digu');return m==='both'||m==='cf';}catch(e){return false;}}
+try{if(window.DGCF)setTimeout(()=>{try{window.DGCF.watch('digu');}catch(e){}},1000);}catch(e){}
+function makeClients(){const ents=BROKERS.slice();if(cfOn())ents.push({cf:true});return ents.map((br,bi)=>{const o={bi:bi,ok:false,up:null,h:null,subs:()=>[],onUp2:null,c:null,cf:!!br.cf};const url=typeof br==='string'?br:br.url;
+ if(br.cf){o.c=window.DGCF.client(window.DGCF.url('digu'),NS,{onUp:()=>{o.ok=true;const t=o.subs();if(t.length)o.c.subscribe(t);if(o.up){const f=o.up;o.up=null;f();}o.onUp2&&o.onUp2();},
+  onDown:()=>{o.ok=false;},onObj:(topic,m,ret)=>{if(o.h)o.h(o,topic,m,ret);}});return o;}
 o.c=MQ(url,{user:br.user,pass:br.pass,onUp:()=>{o.ok=true;const t=o.subs();if(t.length)o.c.subscribe(t);if(o.up){const f=o.up;o.up=null;f();}o.onUp2&&o.onUp2();},
 onDown:()=>{o.ok=false;},onMsg:(topic,p,rt)=>{if(!o.h)return;let m=null;if(p.length){try{m=JSON.parse(TD.decode(p));}catch(e){return;}}o.h(o,topic,m,rt);}});return o;});}
 function takeClients(subs,h){clearTimeout(poolT);const cl=pool||makeClients();pool=null;cl.forEach(o=>{o.c.unsubscribe([NS+'lobby/+']);o.subs=subs;o.h=h;o.onUp2=null;if(o.ok){const t=subs();if(t.length)o.c.subscribe(t);}});return cl;}
