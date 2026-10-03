@@ -1179,7 +1179,8 @@ setInterval(()=>{if(!G||screen!=='table')return;const el=$('#timer');if(!el)retu
    Dhogu writes nothing to Firestore (no leaderboard, presence or reports); a test table must never add any. */
 const TEST_NS=LOCAL&&/^[a-z0-9]{3,16}$/i.test(Q.get('ns')||'')?Q.get('ns'):'';
 const NS=TEST_NS?'dhivehidhogu/test-'+TEST_NS+'/':'dhivehidhogu/v1/';
-const BROKERS=['wss://broker.emqx.io:8084/mqtt','wss://broker.hivemq.com:8884/mqtt'];
+/* 3rd broker on the normal HTTPS port 443 (login public/public) for networks that block 8084/8884; same list as shared/net.js */
+const BROKERS=['wss://broker.emqx.io:8084/mqtt','wss://broker.hivemq.com:8884/mqtt',{url:'wss://public.cloud.shiftr.io:443',user:'public',pass:'public'}];
 let net=null,pool=null,poolT=null,srvState='checking',quickRun=0;const lobbyList={},poolSeen={};
 const TE=new TextEncoder(),TD=new TextDecoder();
 /* ---- "N playing now" on Quick Match, counted the same way as Digu and the shared online games: a tiny anonymous
@@ -1226,7 +1227,7 @@ function drop(w){if(ws!==w)return;clearTimeout(ctT);clearInterval(pingT);ws=null
 function connect(){if(ended)return;let w;try{w=new WebSocket(url,['mqtt']);}catch(e){schedule();return;}
 ws=w;w.binaryType='arraybuffer';
 ctT=setTimeout(()=>{if(ws===w&&!self.connected){try{w.close();}catch(e){}drop(w);}},9000);
-w.onopen=()=>{if(ws!==w)return;const wl=opts.will;const parts=[new Uint8Array([0,4,77,81,84,84,4,wl?0x26:0x02,0,30]),str(clientId)];if(wl){parts.push(str(wl.topic));parts.push(str(wl.payload||''));}send(packet(0x10,parts));};
+w.onopen=()=>{if(ws!==w)return;const wl=opts.will,au=opts.user!=null;const parts=[new Uint8Array([0,4,77,81,84,84,4,(wl?0x26:0x02)|(au?0xC0:0),0,30]),str(clientId)];if(wl){parts.push(str(wl.topic));parts.push(str(wl.payload||''));}if(au){parts.push(str(opts.user));parts.push(str(opts.pass||''));}send(packet(0x10,parts));};
 w.onmessage=e=>{if(ws!==w)return;lastIn=Date.now();const d=new Uint8Array(e.data);const nb=new Uint8Array(buf.length+d.length);nb.set(buf);nb.set(d,buf.length);buf=nb;parse();};
 w.onclose=()=>drop(w);w.onerror=()=>{try{w.close();}catch(e){}drop(w);};}
 function parse(){while(buf.length>=2){let mul=1,len=0,i=1,b;do{if(i>=buf.length)return;b=buf[i++];len+=(b&127)*mul;mul*=128;}while(b&128);
@@ -1246,8 +1247,8 @@ function publish(topic,payload,retain){if(!self.connected)return false;const p=t
 function end(){ended=true;clearTimeout(retryT);clearTimeout(ctT);clearInterval(pingT);const w=ws;ws=null;if(w){try{if(self.connected)w.send(new Uint8Array([0xE0,0]));w.close();}catch(e){}}self.connected=false;}
 function reconnect(){if(ended||self.connected)return;clearTimeout(retryT);delay=1500;const w=ws;ws=null;if(w){try{w.close();}catch(e){}}connect();}
 Object.assign(self,{subscribe:sub,unsubscribe:unsub,publish,end,reconnect});connect();return self;}
-function makeClients(will){return BROKERS.map((url,bi)=>{const o={bi,ok:false,up:null,h:null,subs:()=>[],onUp2:null,c:null};
- o.c=MQ(url,{will,onUp:()=>{o.ok=true;const t=o.subs();if(t.length)o.c.subscribe(t);if(o.up){const f=o.up;o.up=null;f();}o.onUp2&&o.onUp2();},
+function makeClients(will){return BROKERS.map((br,bi)=>{const o={bi,ok:false,up:null,h:null,subs:()=>[],onUp2:null,c:null};const url=typeof br==='string'?br:br.url;
+ o.c=MQ(url,{will,user:br.user,pass:br.pass,onUp:()=>{o.ok=true;const t=o.subs();if(t.length)o.c.subscribe(t);if(o.up){const f=o.up;o.up=null;f();}o.onUp2&&o.onUp2();},
   onDown:()=>{o.ok=false;},onMsg:(topic,p,ret)=>{if(!o.h)return;let m=null;if(p.length){try{m=JSON.parse(TD.decode(p));}catch(e){return;}}o.h(o,topic,m,ret);}});return o;});}
 function takeClients(subs,h){clearTimeout(poolT);const cl=pool||makeClients(null);pool=null;cl.forEach(o=>{o.c.unsubscribe([NS+'lobby/+']);o.subs=subs;o.h=h;o.onUp2=null;if(o.ok){const t=subs();if(t.length)o.c.subscribe(t);}});return cl;}
 function anyUp(cl,ms){return new Promise(res=>{let done=false;const fin=v=>{if(done)return;done=true;clearTimeout(t);res(v);};const t=setTimeout(()=>fin(cl.some(o=>o.ok)),ms);cl.forEach(o=>{if(o.ok)fin(true);else{const f=o.up;o.up=()=>{f&&f();fin(true);};}});});}
@@ -1288,7 +1289,7 @@ async function hostNet(code,o){const keys=await newKeys();
  n.clients=makeClients({topic:NS+code+'/i',payload:''});
  n.clients.forEach(c=>{c.subs=()=>[NS+code+'/h',NS+code+'/i'].concat(n.quick?[NS+'lobby/+']:[]);c.h=onHostMsg;});net=n;
  const up=await anyUp(n.clients,10000);if(net!==n)return null;if(!up){netClose();return null;}
- n.info=()=>{if(net!==n)return;n.clients.forEach(c=>pub(c,NS+code+'/i',{v:1,host:myId,pub:n.pub,t:Date.now(),ep:n.ep},true));};
+ n.info=()=>{if(net!==n)return;ls.set('dgn-hosting',NS+code+'|'+Date.now());n.clients.forEach(c=>pub(c,NS+code+'/i',{v:1,host:myId,pub:n.pub,t:Date.now(),ep:n.ep},true));};
  n.clients.forEach(c=>c.onUp2=()=>{n.info();updListing(true);});n.info();
  n.timers.push(setInterval(n.info,5000),setInterval(()=>updListing(true),15000),setInterval(hostWatch,2000));
  return n;}
@@ -1336,7 +1337,9 @@ async function onHostMsg(o,topic,m,ret){const n=net;if(!n||n.role!=='host')retur
 function mapPlayer(topic,pl,id){const n=net;n.players.forEach((q,tp)=>{if(tp!==topic&&q.pid===id)n.players.delete(tp);});pl.pid=id;n.last[id]=Date.now();}
 function onHostData(pl,topic,d){const n=net;if(!G||!d||typeof d!=='object')return;
  const gone='You left this match (or lost connection), so you can’t rejoin it. Start or join another table.';
- if(d.k==='hello'){const id=String(d.id||'').slice(0,24);if(!id||id===myId)return;
+ if(d.k==='hello'){const id=String(d.id||'').slice(0,24);if(!id)return;
+  /* another device with MY player id (e.g. a phone restored from someone's backup): tell it, instead of ignoring it forever */
+  if(id===myId){sendPlayer(topic,pl,{k:'err',dup:1,m:'Same player ID as the host.'});return;}
   const p=G.players.find(q=>q.id===id);
   if(n.banned.has(id)||(p&&p.afk)){sendPlayer(topic,pl,p&&p.afk?{k:'afk',m:'You were away for 2 turns, so you can’t rejoin this match.'}:{k:'err',m:gone});return;}
   if(p){if(p.gone||p.rookie||p.bot){sendPlayer(topic,pl,{k:'err',m:gone});return;}mapPlayer(topic,pl,id);sendPlayer(topic,pl,{k:'state',s:pubState(id),fx:[]});return;}
@@ -1424,6 +1427,11 @@ async function joinSend(obj,alt){const n=net;if(!n||n.role!=='join'||!n.key)retu
  let o=n.clients[alt?((n.bi|0)+alt+n.clients.length)%n.clients.length:n.bi];if(!o||!o.ok)o=n.clients.find(x=>x.ok);if(!o)return false;
  try{const m=await seal(n.key,obj);m.f=n.topic;m.p=n.pub;return pub(o,NS+n.code+'/h',m);}catch(e){return false;}}
 const hello=()=>joinSend({k:'hello',id:myId,name:netName(),fc:myFace()});
+/* the host has my player id: this device (another tab hosting this table) or a second phone with copied storage. The second phone gets a fresh id, used from the next time the game opens. */
+function dupId(code){const h=String(ls.get('dgn-hosting')||'').split('|');
+ if(h[0]===NS+code&&Date.now()-(+h[1]||0)<20000)return 'You’re already hosting this table on this device (another tab or window).';
+ if(!AS&&!(LOCAL&&Q.get('pid')))ls.set(IDK,'u'+Math.random().toString(36).slice(2,11));
+ return 'This phone had the same player ID as the host’s phone, so it couldn’t join. It has a new ID now: close the game, open it again and join.';}
 async function netJoin(code,opts){opts=opts||{};if(!netOK()){opts.onFail&&opts.onFail('');return;}cleanupNet();
  const keys=await newKeys();const n={role:'join',code,kp:keys.kp,pub:keys.pub,topic:rid(8),key:null,hostPub:null,hostId:null,ep:-1,bi:-1,last:0,ready:false,timers:[],clients:[],upSince:0,lostAt:0};net=n;
  n.fail=m=>{if(net!==n||n.ready)return;cleanupNet();if(opts.onFail)opts.onFail(m);else{renderHome();toast(m,5000);}};
@@ -1447,7 +1455,7 @@ function myRank(){const V=G;if(!V||!V.players)return -1;const N=V.players.length
 async function onJoinMsg(o,topic,m,ret){const n=net;if(!n||n.role!=='join')return;
  if(topic===NS+n.code+'/i'){
   if(!m||!m.pub||!m.host){if(n.ready&&!n.lostAt)n.lostAt=Date.now();return;}  /* host info wiped: host gone */
-  if(m.host===myId)return;
+  if(m.host===myId&&n.ready)return;   /* not ready: a host with MY id is another device (or tab) with the same player id; say so (dupId) */
   if(m.pub===n.hostPub){if(!ret){n.last=Date.now();n.lostAt=0;}if(n.bi<0||!n.clients[n.bi]||!n.clients[n.bi].ok)n.bi=o.bi;return;}
   const ep=m.ep|0;if(n.hostPub&&ep<=n.ep)return;
   n.hostPub=m.pub;n.hostId=m.host;n.ep=ep;n.bi=o.bi;n.key=null;
@@ -1457,7 +1465,7 @@ async function onJoinMsg(o,topic,m,ret){const n=net;if(!n||n.role!=='join')retur
  let d;try{d=await unseal(n.key,m);}catch(e){return;}if(net!==n)return;
  n.bi=o.bi;n.last=Date.now();
  if(d.k==='afk'){if(!n.ready){n.fail(String(d.m||AFK_MSG));return;}endOnline();afkNotice();return;}
- if(d.k==='err'){if(!n.ready){n.fail(String(d.m||'Couldn’t join that table.'));return;}endOnline(String(d.m||''));return;}
+ if(d.k==='err'){if(d.dup&&!n.ready){n.fail(dupId(n.code));return;}if(!n.ready){n.fail(String(d.m||'Couldn’t join that table.'));return;}endOnline(String(d.m||''));return;}
  if(!n.ready){n.ready=true;clearTimeout(n.failT);role='join';}
  if(d.k==='rtc'){vcOnSignal(String(d.f||''),d.d);return;}
  if(d.k==='bye'){if(d.mig&&G&&G.status!=='over')n.lostAt=Date.now();

@@ -19,6 +19,7 @@
 <link rel="preconnect" href="https://cdn.jsdelivr.net">
 <link rel="dns-prefetch" href="https://broker.emqx.io">
 <link rel="dns-prefetch" href="https://broker.hivemq.com">
+<link rel="dns-prefetch" href="https://public.cloud.shiftr.io">
 <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Bricolage+Grotesque:opsz,wght@12..96,800&family=DM+Serif+Display&family=Fraunces:ital,opsz,wght@0,9..144,900;1,9..144,700&family=Caveat:wght@700&family=Kalam:wght@700&family=Roboto:wght@500&family=Noto+Sans+Thaana:wght@600;700&display=swap" onload="this.onload=null;this.rel='stylesheet'">
 <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Bricolage+Grotesque:opsz,wght@12..96,800&family=DM+Serif+Display&family=Fraunces:ital,opsz,wght@0,9..144,900;1,9..144,700&family=Caveat:wght@700&family=Kalam:wght@700&family=Roboto:wght@500&family=Noto+Sans+Thaana:wght@600;700&display=swap"></noscript>
 <style>
@@ -2997,7 +2998,8 @@ function quitGo(){closeSheet();if(mode==='solo'){clearTimeout(botT);botT=null;cl
    or different Wi-Fi networks can join. A tiny built-in MQTT client is used (no library
    download). Each player's cards are end-to-end encrypted (ECDH + AES-GCM). */
 const NS=(()=>{try{const q=new URLSearchParams(location.search).get('ns');if(q&&/^[a-z0-9]{3,16}$/i.test(q)&&(!DG_IN_APP&&/^(localhost|127\.\d+\.\d+\.\d+|\[::1\])$/.test(location.hostname)))return 'dhivehidigu/test-'+q+'/';}catch(e){}return 'dhivehidigu/v2/';})();
-const BROKERS=['wss://broker.emqx.io:8084/mqtt','wss://broker.hivemq.com:8884/mqtt'];
+/* 3rd broker on the normal HTTPS port 443 (login public/public) for networks that block 8084/8884; same list as shared/net.js */
+const BROKERS=['wss://broker.emqx.io:8084/mqtt','wss://broker.hivemq.com:8884/mqtt',{url:'wss://public.cloud.shiftr.io:443',user:'public',pass:'public'}];
 let isHost=false,net=null,joinInfo=null,pool=null,poolT=null,srvState='checking';const lobbyList={};
 const TE=new TextEncoder(),TD=new TextDecoder();
 function b64(u8){let s='';for(let i=0;i<u8.length;i+=0x8000)s+=String.fromCharCode.apply(null,u8.subarray(i,i+0x8000));return btoa(s);}
@@ -3023,7 +3025,7 @@ function drop(w){if(ws!==w)return;clearTimeout(ctT);clearInterval(pingT);ws=null
 function connect(){if(ended)return;let w;try{w=new WebSocket(url,['mqtt']);}catch(e){schedule();return;}
 ws=w;w.binaryType='arraybuffer';
 ctT=setTimeout(()=>{if(ws===w&&!self.connected){try{w.close();}catch(e){}drop(w);}},9000);
-w.onopen=()=>{if(ws!==w)return;send(packet(0x10,[new Uint8Array([0,4,77,81,84,84,4,2,0,30]),str(clientId)]));};
+w.onopen=()=>{if(ws!==w)return;const au=opts.user!=null;const parts=[new Uint8Array([0,4,77,81,84,84,4,au?0xC2:2,0,30]),str(clientId)];if(au){parts.push(str(opts.user));parts.push(str(opts.pass||''));}send(packet(0x10,parts));};
 w.onmessage=e=>{if(ws!==w)return;lastIn=Date.now();const d=new Uint8Array(e.data);const nb=new Uint8Array(buf.length+d.length);nb.set(buf);nb.set(d,buf.length);buf=nb;parse();};
 w.onclose=()=>drop(w);w.onerror=()=>{try{w.close();}catch(e){}drop(w);};}
 function parse(){while(buf.length>=2){let mul=1,len=0,i=1,b;do{if(i>=buf.length)return;b=buf[i++];len+=(b&127)*mul;mul*=128;}while(b&128);
@@ -3044,8 +3046,8 @@ function end(){ended=true;clearTimeout(retryT);clearTimeout(ctT);clearInterval(p
 function reconnect(){if(ended||self.connected)return;clearTimeout(retryT);delay=1500;const w=ws;ws=null;if(w){try{w.close();}catch(e){}}connect();}
 Object.assign(self,{subscribe:sub,unsubscribe:unsub,publish:publish,end:end,reconnect:reconnect});connect();return self;}
 
-function makeClients(){return BROKERS.map((url,bi)=>{const o={bi:bi,ok:false,up:null,h:null,subs:()=>[],onUp2:null,c:null};
-o.c=MQ(url,{onUp:()=>{o.ok=true;const t=o.subs();if(t.length)o.c.subscribe(t);if(o.up){const f=o.up;o.up=null;f();}o.onUp2&&o.onUp2();},
+function makeClients(){return BROKERS.map((br,bi)=>{const o={bi:bi,ok:false,up:null,h:null,subs:()=>[],onUp2:null,c:null};const url=typeof br==='string'?br:br.url;
+o.c=MQ(url,{user:br.user,pass:br.pass,onUp:()=>{o.ok=true;const t=o.subs();if(t.length)o.c.subscribe(t);if(o.up){const f=o.up;o.up=null;f();}o.onUp2&&o.onUp2();},
 onDown:()=>{o.ok=false;},onMsg:(topic,p,rt)=>{if(!o.h)return;let m=null;if(p.length){try{m=JSON.parse(TD.decode(p));}catch(e){return;}}o.h(o,topic,m,rt);}});return o;});}
 function takeClients(subs,h){clearTimeout(poolT);const cl=pool||makeClients();pool=null;cl.forEach(o=>{o.c.unsubscribe([NS+'lobby/+']);o.subs=subs;o.h=h;o.onUp2=null;if(o.ok){const t=subs();if(t.length)o.c.subscribe(t);}});return cl;}
 function anyUp(cl,ms){return new Promise(res=>{let done=false;const fin=v=>{if(done)return;done=true;clearTimeout(t);res(v);};const t=setTimeout(()=>fin(cl.some(o=>o.ok)),ms);cl.forEach(o=>{if(o.ok)fin(true);else o.up=()=>fin(true);});});}
@@ -3158,7 +3160,7 @@ const x=n.seen[c];if(!x||!x.t||Math.abs(Date.now()-x.t)>10*60*1000)code=c;}
 if(net!==n){done();return;}
 n.code=code||genCode();
 n.clients.forEach(o=>{if(o.ok){const t=n.quick?[NS+n.code+'/h',NS+n.code+'/i',NS+'lobby/+']:[NS+n.code+'/h',NS+n.code+'/i'];o.c.subscribe(t);}});
-const info=()=>{if(net!==n)return;n.clients.forEach(o=>pub(o,NS+n.code+'/i',{v:2,host:myId,pub:n.pub,t:Date.now(),since:n.created},true));};
+const info=()=>{if(net!==n)return;ls.set('dgn-hosting',NS+n.code+'|'+Date.now());n.clients.forEach(o=>pub(o,NS+n.code+'/i',{v:2,host:myId,pub:n.pub,t:Date.now(),since:n.created},true));};
 n.clients.forEach(o=>o.onUp2=()=>{info();updListing();});info();n.timers.push(setInterval(info,10000));n.timers.push(setInterval(updListing,10000));
 n.timers.push(setInterval(hostWatch,4000));
 isHost=true;mode='p2p';ls.set('lg-room',n.code);keepAwake(true);
@@ -3174,7 +3176,9 @@ let pl=n.players.get(m.f);
 try{if(!pl||!pl.key||(m.p&&m.p!==pl.pub)){if(!m.p)return;const key=await sharedKey(n.kp.privateKey,m.p);pl=n.players.get(m.f)||{pid:null};pl.key=key;pl.pub=m.p;n.players.set(m.f,pl);}
 const d=await unseal(pl.key,m);if(net!==n)return;pl.bi=o.bi;pl.seen=Date.now();onHostData(pl,m.f,d);}catch(e){}}
 function onHostData(pl,topic,d){if(!S||!d||typeof d!=='object')return;const n=net;
-if(d.k==='hello'){const id=String(d.id||'').slice(0,24),name=cleanName(d.name);if(!id||id===myId)return;
+if(d.k==='hello'){const id=String(d.id||'').slice(0,24),name=cleanName(d.name);if(!id)return;
+/* another device with MY player id (e.g. a phone restored from someone's backup): tell it, instead of ignoring it forever */
+if(id===myId){sendPlayer(topic,pl,{k:'err',dup:1,m:'Same player ID as the host.'});return;}
 if(n.banned.has(id)){sendPlayer(topic,pl,{k:'err',m:'The host removed you from this table.'});return;}
 if(S.players.some(q=>q.id===id&&q.gone)||(S.left||[]).some(q=>q.id===id)||(S.ban||[]).includes(id)){const afk=S.players.some(q=>q.id===id&&q.afk)||(S.left||[]).some(q=>q.id===id&&q.afk);sendPlayer(topic,pl,{k:'err',m:afk?'You were away for 2 turns, so you can’t rejoin this match.':'You left this match, so you can’t rejoin it.'});return;}
 if(S.players.some(q=>q.id===id)){n.players.forEach((q,tp)=>{if(tp!==topic&&q.pid===id)n.players.delete(tp);});pl.pid=id;pl.spec=false;sendState(topic,pl);return;}
@@ -3243,6 +3247,11 @@ else endIfAlone(N);
 N.note={k:N.rev,t:(old?old.name:'The host')+' left. '+myName()+' is the new host.'+(redo?' The hand was dealt again, scores stay the same.':'')};
 const dummy=document.createElement('button');
 netCreate(dummy,myName()||'Player',{pub:!!S.pub,quick:!!S.quick,code:n.code,state:N,onFail:()=>{toast('Couldn’t take over the table.',4000);endP2P();}});}
+/* the host has my player id: this device (another tab hosting this table) or a second phone with copied storage. The second phone gets a fresh id, used from the next time the game opens. */
+function dupId(code){const h=String(ls.get('dgn-hosting')||'').split('|');
+if(h[0]===NS+code&&Date.now()-(+h[1]||0)<20000)return 'You’re already hosting this table on this device (another tab or window).';
+ls.set('lg-id','u'+Math.random().toString(36).slice(2,11));
+return 'This phone had the same player ID as the host’s phone, so it couldn’t join. It has a new ID now: close the game, open it again and join.';}
 async function onJoinMsg(o,topic,m,rt){const n=net;if(!n||n.role!=='join'||!m)return;
 if(topic===NS+n.code+'/i'){if(!m.pub||!m.host)return;
 if(n.dead&&n.dead.has(m.host))return;if((m.since||0)<(n.since||0))return;n.since=Math.max(n.since||0,m.since||0);
@@ -3253,7 +3262,7 @@ else if(n.bi<0||!n.clients[n.bi].ok)n.bi=o.bi;return;}
 if(topic!==NS+n.code+'/p/'+n.topic||!n.key)return;
 let d;try{d=await unseal(n.key,m);}catch(e){return;}if(net!==n)return;
 n.bi=o.bi;n.last=Date.now();if(n.warned){n.warned=false;toast('Back at the table.');}
-if(d.k==='err'){if(!n.ready){n.fail(String(d.m||'Couldn’t join that table.'));return;}toast(String(d.m||''),4000);endP2P();return;}
+if(d.k==='err'){if(d.dup&&!n.ready){n.fail(dupId(n.code));return;}if(!n.ready){n.fail(String(d.m||'Couldn’t join that table.'));return;}toast(String(d.m||''),4000);endP2P();return;}
 if(d.k==='afk'){endP2P();afkNotice();return;}
 if(!n.ready){n.ready=true;clearTimeout(n.failT);n.onReady();}
 if(d.k==='emote'){showEmote(String(d.p||''),String(d.e||''));return;}
