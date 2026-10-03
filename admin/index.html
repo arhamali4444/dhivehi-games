@@ -684,6 +684,17 @@ dialog::backdrop{background:rgba(31,28,25,.45);backdrop-filter:none}
 .bopt:has(input:checked){border-color:var(--coral);background:var(--coralsoft)}
 .bopt small{display:block;color:var(--muted);font-size:12px}
 .blist{margin:8px 0 0;padding-left:18px;font-size:13px}.blist li{margin:2px 0}
+/* Songs (Guess the Song): a small record as the row icon, the clip trimmer */
+.sdisc{width:46px;height:46px;border-radius:50%;flex:none;background:radial-gradient(circle,#e8c983 0 17%,#1a181c 18% 100%);box-shadow:inset 0 0 0 2px #0e0d10,inset 0 0 0 9px #211e23}
+.sdisc.none{background:repeating-linear-gradient(45deg,var(--bg2) 0 6px,var(--bg) 6px 12px);box-shadow:inset 0 0 0 1px var(--line)}
+.dvin{font-family:'Dhivehi Muraka','Noto Sans Thaana','MV Boli',serif;font-size:18px}
+.sclip{display:flex;align-items:center;gap:8px 10px;flex-wrap:wrap;padding:10px 12px;border:1px solid var(--line);border-radius:8px;background:var(--card)}
+.sclip .sp,.strim .sp{flex:1}
+.strim{display:grid;gap:8px;padding:12px;border:1px solid var(--line2);border-radius:8px;background:var(--card)}
+.swave{display:block;width:100%;height:84px;border-radius:6px;background:var(--bg);cursor:pointer;touch-action:none}
+.strow2{display:flex;align-items:center;gap:12px}.strow2 input{flex:1;accent-color:var(--coral)}
+.strow2 .sst{font:600 13px/1 var(--mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+[data-a="sg-prev"].on,[data-a="sg-play"].on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
 .cth{width:var(--sz);height:var(--sz);border-radius:6px;flex:none;background:var(--bg2) no-repeat;background-size:cover;border:1px solid var(--line)}
 .cth.empty{background:repeating-linear-gradient(45deg,var(--bg2) 0 6px,var(--bg) 6px 12px)}
 .clive{display:inline-flex;align-items:center;gap:8px;border:0;background:transparent;padding:6px 0;font-size:12.5px;font-weight:500;color:var(--muted);justify-self:end;text-align:left}
@@ -743,6 +754,7 @@ dialog::backdrop{background:rgba(31,28,25,.45);backdrop-filter:none}
 
 <script src="/shared/sponsors.js?v=8"></script>
 <script src="/celebrity/content.js?v=1"></script>
+<script src="/song/content.js?v=1"></script>
 <script type="module">
 /* =====================================================================================
    Dhivehi Games · private admin panel (not linked from anywhere, noindex).
@@ -876,9 +888,14 @@ service cloud.firestore {
     match /trivia_celebs/{id} {
       allow read, write: if isAdmin();
     }
+    // Guess the Song (admin Content tab → Songs). trivia_songs/{songId} = songs, clip keys and permission records:
+    // admin only, never public. trivia/song = the ONE public doc the game reads (only songs switched Live).
+    match /trivia_songs/{id} {
+      allow read, write: if isAdmin();
+    }
     match /trivia/{doc} {
-      allow read: if doc == 'celebrity';
-      allow write: if isAdmin() && doc == 'celebrity'
+      allow read: if doc == 'celebrity' || doc == 'song';
+      allow write: if isAdmin() && (doc == 'celebrity' || doc == 'song')
         && request.resource.data.keys().hasOnly(['data','n','at'])
         && request.resource.data.data is string && request.resource.data.data.size() < 900000;
     }
@@ -2049,7 +2066,7 @@ document.addEventListener('click',async e=>{const b=e.target.closest('[data-a]')
   case 'tab':setTab(b.dataset.t);break;
   case 'signout':try{await DL.signOut();}catch(x){}break;
   case 'google':authErr='';try{await DL.signInGoogle();}catch(x){const el=$('#lerr');if(el)el.textContent=authMsg(x);}break;
-  case 'refresh':toast('Refreshing…',1200);if(tab==='content')loadContent();loadPlayers();loadPresence();if(rulesOK!==false)loadInbox();if(tab==='stats'){TR.at=0;loadTraffic(true);}if(tab==='ads'){AD.at=0;loadAds();loadToday(true);}break;
+  case 'refresh':toast('Refreshing…',1200);if(tab==='content'){if(CT.sub==='songs')loadSongs();else loadContent();}loadPlayers();loadPresence();if(rulesOK!==false)loadInbox();if(tab==='stats'){TR.at=0;loadTraffic(true);}if(tab==='ads'){AD.at=0;loadAds();loadToday(true);}break;
   case 'copy-uid':copy(user.uid);break;
   case 'copy-rules':copy(RULES.split("['OWNER_UID']").join("['"+(user&&!MOCK?user.uid:'OWNER_UID')+"']"));break;
   case 'probe':rulesOK=null;renderSetup();await probe();if(rulesOK){loadInbox();TR.at=0;TR.err='';AD.at=0;AD.err='';}else renderInbox();toast(rulesOK?'Admin rules are active.':'Not active yet. Publish the rules, wait a minute, try again.',3500);break;
@@ -2117,9 +2134,9 @@ const Media={
  name:MEDIA_DEV?'Local dev folder ('+MEDIA_DEV+')':MOCK?'Memory (mock mode)':'Cloudflare R2 (bucket dg-media, via dg-admin)',
  url(key){if(!key)return '';if(MOCK&&!MEDIA_DEV)return memMedia.get(key)||'';return MEDIA_BASE+'/media/'+String(key).split('/').map(encodeURIComponent).join('/');},
  async hdr(){const h={};try{h.Authorization='Bearer '+await DL.idToken();}catch(e){}return h;},
- async put(key,blob){if(MOCK&&!MEDIA_DEV){memMedia.set(key,URL.createObjectURL(blob));return;}
-  if(!MEDIA_BASE)throw new Error('The photo store is not set up yet.');
-  const r=await fetch(MEDIA_BASE+'/media/'+key,{method:'PUT',headers:Object.assign({'Content-Type':'image/webp'},await Media.hdr()),body:blob});
+ async put(key,blob,type){if(MOCK&&!MEDIA_DEV){memMedia.set(key,URL.createObjectURL(blob));return;}
+  if(!MEDIA_BASE)throw new Error('The media store is not set up yet.');
+  const r=await fetch(MEDIA_BASE+'/media/'+key,{method:'PUT',headers:Object.assign({'Content-Type':type||'image/webp'},await Media.hdr()),body:blob});
   if(!r.ok){const j=await r.json().catch(()=>null);throw new Error((j&&j.error&&j.error.message)||('Upload failed ('+r.status+')'));}},
  async del(key){if(!key)return;if(MOCK&&!MEDIA_DEV){memMedia.delete(key);return;}
   const r=await fetch(MEDIA_BASE+'/media/'+key,{method:'DELETE',headers:await Media.hdr()});
@@ -2128,7 +2145,8 @@ const Media={
  async open(key){if(MOCK&&!MEDIA_DEV)return memMedia.get(key)||'';
   const r=await fetch(MEDIA_BASE+'/admin-media/'+key,{headers:await Media.hdr()});if(!r.ok)throw new Error('Couldn’t open the file ('+r.status+')');return URL.createObjectURL(await r.blob());},
  /* dev folder only: the game on localhost reads its live list from here */
- async putManifest(m){if(!MEDIA_DEV)return;await fetch(MEDIA_DEV+'/manifest.json',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(m)});}
+ async putManifest(m){if(!MEDIA_DEV)return;await fetch(MEDIA_DEV+'/manifest.json',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(m)});},
+ async putSongManifest(m){if(!MEDIA_DEV)return;await fetch(MEDIA_DEV+'/manifest-song.json',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(m)});}
 };
 /* ---------- Firestore (Real) / memory (mock) ---------- */
 const CDL={
@@ -2417,7 +2435,7 @@ function cRow(p){const open=CT.open===p.id,busy=CT.busy===p.id,live=isLiveP(p),s
 function renderImp(){const el=$('#cimp');if(!el||!CT.imp)return;el.innerHTML=`<div class="note info"><span class="spin"></span><div>Importing… <b>${CT.imp.n}</b> of ${CT.imp.of} people${CT.imp.err?` · ${CT.imp.err} problem(s)`:''}</div></div>`;}
 function renderContent(){const el=$('#content');if(!el)return;
  const subs=`<div class="seg" role="tablist" aria-label="Content"><button data-a="c-sub" data-v="celebs" aria-pressed="${CT.sub==='celebs'}">Celebrities</button><button data-a="c-sub" data-v="songs" aria-pressed="${CT.sub==='songs'}">Songs</button></div>`;
- if(CT.sub==='songs'){el.innerHTML=`<div class="card"><div class="chead"><h2>Content</h2>${subs}</div><div class="aempty"><div class="dot"></div><h3>Songs – coming soon</h3><p>Guess the Song (<span lang="dv" dir="rtl">މި ލަވައަކީ ކޮބާ؟</span>) will use the same system: short clips stored outside the site, a permission record per artist, and a Live switch.</p></div></div>`;return;}
+ if(CT.sub==='songs'){renderSongs(el,subs);return;}
  const all=[...CT.people.values()],nl=all.filter(isLiveP).length,cats=[...new Set(all.map(p=>p.category).filter(Boolean))].sort();
  const rulesNote=CT.rules===false?`<div class="note bad">${IC.warn}<div><b>Publish the updated Firestore rules.</b> The Content tab needs two new rules (the people list stays admin-only; the game reads only the live list). Overview → <b>Your account &amp; one-time setup</b> → <b>Copy rules</b>, paste them in Firebase Console → Firestore Database → Rules → <b>Publish</b>, then reload.</div></div>`:'';
  cPruneSel();const list=cFiltered(),man=CT.man?CT.man.n:null;
@@ -2475,6 +2493,361 @@ document.addEventListener('click',e=>{const b=e.target.closest('[data-a]');if(!b
   case 'c-proofdel':cProofDel(id);break;
   case 'c-face':{const img=b.querySelector('img');if(!img)break;const r=img.getBoundingClientRect();cFace(id,b.dataset.ph,Math.max(0,Math.min(1,(e.clientX-r.left)/r.width)),Math.max(0,Math.min(1,(e.clientY-r.top)/r.height)));break;}}});
 if(LOCAL)Object.assign(window.__dgaContent,{CT,rebuildManifest,estBoxes,Media});
+
+/* =====================================================================================
+   CONTENT → SONGS: Guess the Song (song/). The same system as the celebrities: song docs + permission records in the
+   admin-only collection trivia_songs/{songId}; after EVERY change the public live list trivia/song is rebuilt from the
+   songs switched Live (song/content.js buildManifest). Clips are never on this site: the admin picks an audio file,
+   this page decodes it, the admin chooses the START on a waveform, and it is cut here to exactly 5.0 s (mono,
+   22.05 kHz, 30 ms fades) and saved as a small WAV (every browser can play it) plus, when this browser can make one, a
+   compressed copy (WebM/Opus, Ogg or MP4) through MediaRecorder. Both go to the media store under song/<random>.
+   ===================================================================================== */
+const SC=window.DGSongContent;
+const SONG_GENRES=SC?SC.GENRES:['Boduberu','Pop','Classic','Ballad','Other'];
+const SM=new Map(),SM_MAN={v:null};
+if(LOCAL)Object.assign(window.__dgaContent,{SM,SM_MAN});
+const SDL={
+ async list(){if(MOCK&&!LIVE)return [...SM.values()].map(x=>JSON.parse(JSON.stringify(x)));await fbInit();const F=FB.F;const s=await F.getDocs(F.collection(FB.db,'trivia_songs'));return s.docs.map(d=>Object.assign({},d.data(),{id:d.id}));},
+ async put(s){const d=songDoc(s);if(MOCK&&!LIVE){await new Promise(r=>setTimeout(r,60));SM.set(s.id,Object.assign({id:s.id},d));return;}
+  if(LIVE)throw new Error('Test mode: writes are disabled.');const F=FB.F;await F.setDoc(F.doc(FB.db,'trivia_songs',s.id),d);},
+ /* bulk: batched writes, at most 400 docs per batch (the same contract as CDL.putMany) */
+ async putMany(list,onChunk){const done=[];const size=Math.max(1,Math.min(400,CT.chunk|0||400));
+  try{for(let i=0;i<list.length;i+=size){const part=list.slice(i,i+size);
+    if(MOCK&&!LIVE){await new Promise(r=>setTimeout(r,80));part.forEach(s=>SM.set(s.id,Object.assign({id:s.id},songDoc(s))));}
+    else{if(LIVE)throw new Error('Test mode: writes are disabled.');const F=FB.F,b=F.writeBatch(FB.db);part.forEach(s=>b.set(F.doc(FB.db,'trivia_songs',s.id),songDoc(s)));await b.commit();}
+    part.forEach(s=>done.push(s.id));if(onChunk)onChunk(part);}}
+  catch(e){e.done=done;throw e;}
+  return done;},
+ async del(id){if(MOCK&&!LIVE){SM.delete(id);return;}if(LIVE)throw new Error('Test mode: writes are disabled.');const F=FB.F;await F.deleteDoc(F.doc(FB.db,'trivia_songs',id));},
+ async manifest(m){const data={data:JSON.stringify(m),n:m.songs.length,at:Date.now()};if(MOCK&&!LIVE){SM_MAN.v=data;return;}
+  if(LIVE)throw new Error('Test mode: writes are disabled.');const F=FB.F;await F.setDoc(F.doc(FB.db,'trivia','song'),data);},
+ async readManifest(){let v=null;if(MOCK&&!LIVE)v=SM_MAN.v;else{await fbInit();const F=FB.F;const d=await F.getDoc(F.doc(FB.db,'trivia','song'));v=d.exists()?d.data():null;}
+  if(!v)return {n:0,at:0,none:true};let L=[];try{L=(JSON.parse(v.data||'{}').songs)||[];}catch(e){}return {n:L.length,at:+v.at||0,ids:L.map(x=>x.id)};}
+};
+function songDoc(s){const pm=s.perm||{},c=s.clip||{};return{title:String(s.title||'').trim().slice(0,60),titleLt:String(s.titleLt||'').trim().slice(0,60),artist:String(s.artist||'').trim().slice(0,50),
+ artistDv:String(s.artistDv||'').trim().slice(0,50),year:(+s.year>=1900&&+s.year<=2100)?(+s.year|0):0,genre:String(s.genre||'').trim().slice(0,30),
+ difficulty:['Easy','Medium','Hard'].includes(s.difficulty)?s.difficulty:'Medium',url:SC?SC.cleanUrl(s.url||''):'',live:s.live===true,
+ perm:{status:CELEB_STATUS.includes(pm.status)?pm.status:'To check',how:String(pm.how||'').slice(0,40),date:String(pm.date||'').slice(0,10),notes:String(pm.notes||'').slice(0,600),proof:String(pm.proof||'')},
+ clip:c.key?{key:String(c.key),keyC:String(c.keyC||''),typeC:String(c.typeC||''),start:Math.round((+c.start||0)*100)/100,size:c.size|0,sizeC:c.sizeC|0,at:+c.at||0}:null,updatedAt:Date.now()};}
+const SG={songs:new Map(),at:0,loading:false,err:'',rules:null,q:'',st:'all',gen:'all',live:'all',open:'',busy:'',sel:new Set(),bulk:null,man:null,manErr:'',ferr:null,game:null,dropped:[],trim:null};
+const hasClip=s=>!!(s.clip&&s.clip.key);
+const songsN=n=>plural(n,'song');
+const sName=s=>s.titleLt||s.title||'this song';
+async function loadSongs(){if(SG.loading)return;SG.loading=true;SG.err='';renderContent();
+ try{const L=await SDL.list();SG.songs=new Map(L.map(s=>[s.id,s]));SG.at=Date.now();SG.rules=true;await readSongGame();}
+ catch(e){SG.err=errMsg(e);if(e&&e.code==='permission-denied')SG.rules=false;}
+ SG.loading=false;renderContent();}
+/* rebuild the game's live list from the songs switched Live; always from fresh server data (as the celebrities) */
+async function rebuildSongManifest(){const L=await SDL.list();SG.songs=new Map(L.map(s=>[s.id,s]));SG.at=Date.now();
+ const m=SC.buildManifest(L);await SDL.manifest(m);await Media.putSongManifest(m).catch(()=>{});SG.man={n:m.songs.length,at:m.at};
+ const inM=new Set(m.songs.map(x=>x.id));
+ SG.dropped=L.filter(s=>s.live===true&&!inM.has(s.id)).map(s=>({name:sName(s),why:!hasClip(s)?'no clip':!String(s.title||'').trim()?'no Thaana title':'clip file name not valid'}));
+ await readSongGame();return m;}
+async function readSongGame(){try{SG.game=await SDL.readManifest();}catch(e){SG.game={err:errMsg(e)};}}
+async function saveSong(s,msg){SG.busy=s.id;renderContent();
+ try{await SDL.put(s);SG.songs.set(s.id,JSON.parse(JSON.stringify(Object.assign({id:s.id},songDoc(s)))));if(SG.ferr&&SG.ferr.id===s.id)SG.ferr=null;
+  try{await rebuildSongManifest();SG.manErr='';}catch(e){SG.manErr=errMsg(e);toast('Saved, but the game’s live list couldn’t be rebuilt: '+SG.manErr,6000);return true;}
+  if(msg)toast(msg);return true;}
+ catch(e){const m=errMsg(e);SG.ferr={id:s.id,msg:m};toast('Couldn’t save: '+m,5000);if(e&&e.code==='permission-denied')SG.rules=false;return false;}
+ finally{SG.busy='';renderContent();}}
+function needSRules(){if(SG.rules===false){toast('Publish the updated Firestore rules first (Content → the note at the top).',5000);return true;}if(MOCK&&LIVE){toast('Test mode: writes are disabled.');return true;}return false;}
+const rand12=()=>(rand6()+rand6()).slice(0,12);
+/* ---------- add / edit / live / delete ---------- */
+async function sAdd(){if(needSRules())return;const nm=await ask({title:'Add a song',html:'<p class="small muted" style="margin:0">It starts as <b>To check</b> and <b>Hidden from the game</b>. Fill in the Thaana title and artist, then upload a clip.</p>',ok:'Add',input:{label:'Song title in Latin letters (e.g. Hiyy Dheebalaa)',max:60}});
+ const lt=cleanName(nm||'').slice(0,60);if(!lt)return;
+ if([...SG.songs.values()].some(s=>normKey(s.titleLt)===normKey(lt))){toast('There is already a song called '+lt+'.',4000);return;}
+ let id=slugC(lt).replace(/^person$/,'song'),k=2;const b0=id;while(SG.songs.has(id))id=b0+'-'+(k++);
+ const s={id,title:'',titleLt:lt,artist:'',artistDv:'',year:0,genre:'',difficulty:'Medium',url:'',live:false,perm:{status:'To check',how:'',date:'',notes:'',proof:''},clip:null};
+ if(await saveSong(s,'Added '+lt+'. Hidden from the game until you switch it Live.')){SG.open=id;renderContent();}}
+function sForm(id){const f=document.querySelector(`.sedit[data-id="${CSS.escape(id)}"]`);if(!f)return null;const v=n=>{const e=f.querySelector(`[name="${n}"]`);return e?e.value:'';};
+ return{title:v('title'),titleLt:v('titleLt'),artist:v('artist'),artistDv:v('artistDv'),year:v('year'),genre:v('genre'),difficulty:v('difficulty'),url:v('url'),status:v('status'),how:v('how'),date:v('date'),notes:v('notes')};}
+async function sSave(id){if(needSRules())return;const s=SG.songs.get(id),F=sForm(id);if(!s||!F)return;const lt=cleanName(F.titleLt).slice(0,60);
+ if(!lt){toast('The Latin title can’t be empty.');return;}
+ if(F.url.trim()&&!SC.cleanUrl(F.url)){toast('The Listen link must start with https://',4500);return;}
+ if(F.year.trim()&&!(+F.year>=1900&&+F.year<=2100)){toast('The year should be like 1998.',4000);return;}
+ const q=JSON.parse(JSON.stringify(s));Object.assign(q,{title:F.title,titleLt:lt,artist:F.artist,artistDv:F.artistDv,year:+F.year||0,genre:F.genre,difficulty:F.difficulty,url:F.url.trim()});
+ q.perm=Object.assign({},q.perm,{status:F.status,how:F.how,date:F.date,notes:F.notes});
+ const refusedOff=q.perm.status==='Refused'&&q.live;if(refusedOff)q.live=false;
+ const top=sRowTop(id);
+ if(await saveSong(q,refusedOff?'Saved. Refused: '+lt+' is now hidden from the game.':'Saved')){if(SG.open===id)SG.open='';SG.ferr=null;renderContent();sKeepRowAt(id,top);}
+ else{const f=document.querySelector(`.sedit[data-id="${CSS.escape(id)}"]`);if(f)Object.entries(F).forEach(([k,v])=>{const e=f.querySelector(`[name="${k}"]`);if(e)e.value=v;});}}
+const sRowTop=id=>{const r=document.querySelector(`.crow.srow[data-id="${CSS.escape(id)}"]`);return r?r.getBoundingClientRect().top:null;};
+function sKeepRowAt(id,top){if(top==null)return;const t=sRowTop(id);if(t!=null)window.scrollBy(0,t-top);}
+async function sToggleLive(id){if(needSRules())return;const s=SG.songs.get(id);if(!s)return;const on=s.live!==true;
+ if(on){if(!hasClip(s)){toast('Upload a clip first.',3500);return;}if(!String(s.title||'').trim()){toast('Add the Thaana title first (open the song).',4000);return;}
+  const st=stOf(s);if(st==='Refused'){toast(sName(s)+': permission refused, it can’t go live.',4500);return;}
+  if(!okSt(st)){const go=await ask({title:'Put '+sName(s)+' live?',html:`<p style="margin:0">Its permission status is <b>${esc(st)}</b>. Live means every player can hear the clip in the game within about a minute.</p>`,ok:'Live in the game'});if(!go)return;}}
+ const q=JSON.parse(JSON.stringify(s));q.live=on;await saveSong(q,on?sName(s)+' is live in the game.':sName(s)+' is hidden from the game.');}
+async function sDel(id){if(needSRules())return;const s=SG.songs.get(id);if(!s)return;
+ const ok=await ask({title:'Delete '+sName(s)+'?',html:`<p style="margin:0">Its clip${s.perm&&s.perm.proof?' and permission proof are':' is'} deleted from the media store, and it leaves the game at once. This can’t be undone.</p>`,ok:'Delete song',danger:true});if(!ok)return;
+ SG.busy=id;renderContent();
+ try{if(s.clip){await Media.del(s.clip.key);if(s.clip.keyC)await Media.del(s.clip.keyC);}if(s.perm&&s.perm.proof)await Media.del(s.perm.proof);
+  await SDL.del(id);SG.songs.delete(id);SG.sel.delete(id);if(SG.open===id)SG.open='';await rebuildSongManifest();toast(sName(s)+' deleted.');}
+ catch(e){toast('Couldn’t delete: '+errMsg(e),5000);}finally{SG.busy='';renderContent();}}
+async function sProof(id){if(needSRules())return;const s=SG.songs.get(id);if(!s)return;const [file]=await pickFiles({accept:'image/*'});if(!file)return;
+ SG.busy=id;renderContent();
+ try{const {blob}=await toWebp(file,1400);const key='private/proof/song-'+s.id.slice(0,80)+'-'+rand6()+'.webp';await Media.put(key,blob);
+  const old=s.perm&&s.perm.proof;const q=JSON.parse(JSON.stringify(s));q.perm=Object.assign({},q.perm,{proof:key});SG.busy='';
+  if(await saveSong(q,'Proof saved (private: only this admin page can open it).')&&old)Media.del(old).catch(()=>{});}
+ catch(e){SG.busy='';renderContent();toast('Couldn’t save the proof: '+(e.message||e),5000);}}
+async function sProofView(id){const s=SG.songs.get(id);const k=s&&s.perm&&s.perm.proof;if(!k)return;
+ try{const u=await Media.open(k);await ask({title:'Permission proof · '+sName(s),html:`<img src="${esc(u)}" alt="Permission proof" style="display:block;max-width:100%;border-radius:6px;border:1px solid var(--line)">`,ok:'Close',single:true,wipe:true});}
+ catch(e){toast(e.message||String(e),5000);}}
+async function sProofDel(id){const s=SG.songs.get(id);const k=s&&s.perm&&s.perm.proof;if(!k)return;
+ if(!await ask({title:'Remove the proof?',html:'<p style="margin:0">The screenshot is deleted from the private store.</p>',ok:'Remove',danger:true}))return;
+ try{await Media.del(k);}catch(e){toast(e.message||String(e),5000);return;}const q=JSON.parse(JSON.stringify(s));q.perm.proof='';await saveSong(q,'Proof removed.');}
+/* ---------- clips: pick a file, choose the start on the waveform, preview, cut 5.0 s, encode, upload ---------- */
+let sAC=null,sPrev=null;
+const sCtx=()=>{if(!sAC){const AC=window.AudioContext||window.webkitAudioContext;sAC=new AC();}if(sAC.state!=='running')sAC.resume().catch(()=>{});return sAC;};
+function sStopPrev(){if(sPrev){try{sPrev.src.stop();}catch(e){}sPrev=null;}document.querySelectorAll('[data-a="sg-prev"],[data-a="sg-play"]').forEach(b=>b.classList.remove('on'));}
+const mmss=t=>{t=Math.max(0,t);const m=Math.floor(t/60),s=t-m*60;return m+':'+(s<10?'0':'')+s.toFixed(1);};
+async function sPickClip(id){if(needSRules())return;const s=SG.songs.get(id);if(!s)return;
+ const [file]=await pickFiles({accept:'audio/*,.mp3,.m4a,.aac,.wav,.ogg,.webm,.flac'});if(!file)return;
+ if(file.size>60*1024*1024){toast('That file is very large (over 60 MB). Use the song’s normal audio file.',5000);return;}
+ SG.busy=id;renderContent();
+ try{const ab=await file.arrayBuffer();const buf=await new Promise((res,rej)=>{try{const p=sCtx().decodeAudioData(ab,res,rej);if(p&&p.then)p.then(res,rej);}catch(e){rej(e);}});
+  if(buf.duration<SC.CLIP_S+.05)throw new Error('The audio is shorter than '+SC.CLIP_S+' seconds.');
+  /* the waveform: the loudest sample in each of 600 slices of the song */
+  const N=600,ch=buf.getChannelData(0),ch2=buf.numberOfChannels>1?buf.getChannelData(1):null,step=Math.max(1,Math.floor(ch.length/N)),peaks=new Float32Array(N);
+  for(let i=0;i<N;i++){let m=0;const a=i*step,b=Math.min(ch.length,a+step);for(let j=a;j<b;j+=4){const v=Math.abs(ch[j])+(ch2?Math.abs(ch2[j]):0);if(v>m)m=v;}peaks[i]=ch2?m/2:m;}
+  const mx=Math.max(1e-6,...peaks);for(let i=0;i<N;i++)peaks[i]/=mx;
+  SG.trim={id,buf,name:file.name,start:Math.min(Math.max(0,buf.duration*.3),buf.duration-SC.CLIP_S),peaks,saving:''};SG.open=id;}
+ catch(e){toast('Couldn’t read that audio file: '+(e&&e.message||e),5000);}
+ finally{SG.busy='';renderContent();}}
+function sDrawWave(){const T=SG.trim,cv=document.getElementById('swave');if(!T||!cv)return;const r=cv.getBoundingClientRect(),dpr=window.devicePixelRatio||1;
+ cv.width=Math.max(10,Math.round(r.width*dpr));cv.height=Math.round(r.height*dpr);const g=cv.getContext('2d'),W=cv.width,H=cv.height,D=T.buf.duration;
+ g.clearRect(0,0,W,H);const x0=T.start/D*W,x1=(T.start+SC.CLIP_S)/D*W;
+ const css=getComputedStyle(document.documentElement),ink=(css.getPropertyValue('--ink')||'#222').trim(),cor=(css.getPropertyValue('--coral')||'#e85').trim();
+ g.fillStyle=cor;g.globalAlpha=.14;g.fillRect(x0,0,x1-x0,H);g.globalAlpha=1;
+ const n=T.peaks.length,bw=W/n;for(let i=0;i<n;i++){const x=i*bw,h=Math.max(1*dpr,T.peaks[i]*(H-6*dpr)),inn=x+bw>x0&&x<x1;g.fillStyle=inn?cor:ink;g.globalAlpha=inn?1:.32;g.fillRect(x,(H-h)/2,Math.max(1,bw-.6*dpr),h);}
+ g.globalAlpha=1;g.fillStyle=cor;g.fillRect(x0,0,2*dpr,H);g.fillRect(x1-2*dpr,0,2*dpr,H);
+ const lab=document.getElementById('sstart');if(lab)lab.textContent=mmss(T.start)+' – '+mmss(T.start+SC.CLIP_S);
+ const rg=document.getElementById('srange');if(rg&&+rg.value!==T.start)rg.value=T.start.toFixed(1);}
+function sSetStart(v){const T=SG.trim;if(!T)return;T.start=Math.max(0,Math.min(T.buf.duration-SC.CLIP_S,Math.round(v*10)/10));sStopPrev();sDrawWave();}
+/* preview: exactly the 5 s window, with the same 30 ms fades the saved clip gets */
+function sPreview(){const T=SG.trim;if(!T)return;if(sPrev){sStopPrev();return;}const c=sCtx(),when=c.currentTime+.05,len=SC.CLIP_S,f=SC.FADE_S,src=c.createBufferSource(),g=c.createGain();
+ src.buffer=T.buf;g.gain.setValueAtTime(0,when);g.gain.linearRampToValueAtTime(1,when+f);g.gain.setValueAtTime(1,when+len-f);g.gain.linearRampToValueAtTime(0,when+len);
+ src.connect(g);g.connect(c.destination);src.start(when,T.start,len);src.stop(when+len);sPrev={src};src.onended=()=>{if(sPrev&&sPrev.src===src)sStopPrev();};
+ document.querySelectorAll('[data-a="sg-prev"]').forEach(b=>b.classList.add('on'));}
+/* the saved clip: plays the compressed copy if there is one this browser plays, else the WAV */
+async function sPlay(id){const s=SG.songs.get(id);if(!s||!s.clip)return;if(sPrev){sStopPrev();return;}
+ try{const c=sCtx(),k=s.clip.keyC&&new Audio().canPlayType(s.clip.typeC)?s.clip.keyC:s.clip.key;const r=await fetch(Media.url(k));if(!r.ok)throw new Error('HTTP '+r.status);
+  const b=await new Promise((res,rej)=>{r.arrayBuffer().then(ab=>{const p=c.decodeAudioData(ab,res,rej);if(p&&p.then)p.then(res,rej);},rej);});
+  const src=c.createBufferSource();src.buffer=b;src.connect(c.destination);src.start();sPrev={src};src.onended=()=>{if(sPrev&&sPrev.src===src)sStopPrev();};
+  document.querySelectorAll(`[data-a="sg-play"][data-id="${CSS.escape(id)}"]`).forEach(x=>x.classList.add('on'));}
+ catch(e){toast('Couldn’t play the clip: '+(e.message||e),5000);}}
+/* a small compressed copy through MediaRecorder (plays the 5 s once, silently, into a recorder); null if the browser can't */
+async function sCompress(data){if(!window.MediaRecorder||!window.MediaStreamAudioDestinationNode&&!(window.AudioContext&&AudioContext.prototype.createMediaStreamDestination))return null;
+ const pick=[['audio/webm;codecs=opus','webm'],['audio/ogg;codecs=opus','ogg'],['audio/mp4;codecs=mp4a.40.2','m4a'],['audio/mp4','m4a'],['audio/webm','webm']].find(x=>{try{return MediaRecorder.isTypeSupported(x[0]);}catch(e){return false;}});
+ if(!pick)return null;
+ const AC=window.AudioContext||window.webkitAudioContext,c=new AC({sampleRate:48000});
+ try{const b=c.createBuffer(1,data.length,SC.CLIP_SR);b.copyToChannel(data,0);const dst=c.createMediaStreamDestination(),src=c.createBufferSource();src.buffer=b;src.connect(dst);
+  const rec=new MediaRecorder(dst.stream,{mimeType:pick[0],audioBitsPerSecond:64000}),parts=[];rec.ondataavailable=e=>{if(e.data&&e.data.size)parts.push(e.data);};
+  const stopped=new Promise(r=>{rec.onstop=r;});await c.resume();rec.start();src.start(c.currentTime+.02);
+  await new Promise(r=>{src.onended=r;setTimeout(r,(data.length/SC.CLIP_SR)*1000+1500);});await new Promise(r=>setTimeout(r,120));rec.stop();await stopped;
+  const blob=new Blob(parts,{type:SC.TYPES[pick[1]]});if(!blob.size||blob.size>600*1024)return null;
+  /* keep it only if it decodes back to (about) 5 s */
+  const chk=await new Promise((res,rej)=>{blob.arrayBuffer().then(ab=>{const p=c.decodeAudioData(ab,res,rej);if(p&&p.then)p.then(res,rej);},rej);}).catch(()=>null);
+  if(!chk||chk.duration<SC.CLIP_S-.2)return null;
+  return {blob,ext:pick[1]};}
+ catch(e){console.warn('compress',e);return null;}
+ finally{try{c.close();}catch(e){}}}
+async function sSaveClip(){const T=SG.trim;if(!T||T.saving)return;const s=SG.songs.get(T.id);if(!s)return;if(needSRules())return;sStopPrev();
+ const step=t=>{T.saving=t;const e=document.getElementById('ssave');if(e)e.textContent=t;};
+ try{step('Cutting 5 s…');const data=await SC.cutClip(T.buf,T.start,SC.CLIP_S);const wav=SC.encodeWav(data,SC.CLIP_SR);
+  step('Making a small copy…');const cmp=Q.get('nocompress')==='1'?null:await sCompress(data);
+  step('Uploading…');const base='song/'+rand12(),key=base+'.wav';await Media.put(key,wav,'audio/wav');
+  let keyC='',typeC='',sizeC=0;if(cmp){try{await Media.put(base+'.'+cmp.ext,cmp.blob,SC.TYPES[cmp.ext]);keyC=base+'.'+cmp.ext;typeC=SC.TYPES[cmp.ext];sizeC=cmp.blob.size;}catch(e){console.warn('compressed copy not stored',e);}}
+  const old=s.clip;const q=JSON.parse(JSON.stringify(s));q.clip={key,keyC,typeC,start:T.start,size:wav.size,sizeC,at:Date.now()};
+  SG.trim=null;
+  if(await saveSong(q,'Clip saved: '+mmss(q.clip.start)+' – '+mmss(q.clip.start+SC.CLIP_S)+'.')){if(old){Media.del(old.key).catch(()=>{});if(old.keyC)Media.del(old.keyC).catch(()=>{});}}}
+ catch(e){T.saving='';toast('Couldn’t save the clip: '+(e.message||e),6000);renderContent();}}
+async function sDelClip(id){const s=SG.songs.get(id);if(!s||!s.clip)return;
+ if(!await ask({title:'Delete the clip?',html:`<p style="margin:0">The clip is deleted from the media store${s.live?' and the song leaves the game (no clip, no round)':''}.</p>`,ok:'Delete clip',danger:true}))return;
+ try{await Media.del(s.clip.key);if(s.clip.keyC)await Media.del(s.clip.keyC);}catch(e){toast(e.message||String(e),5000);return;}
+ const q=JSON.parse(JSON.stringify(s));q.clip=null;q.live=false;await saveSong(q,'Clip deleted.'+(s.live?' The song is hidden from the game.':''));}
+/* ---------- bulk: Set status / Go Live / Hide (the celebrity bulk flow, for songs) ---------- */
+function sSelected(){return [...SG.sel].map(id=>SG.songs.get(id)).filter(Boolean);}
+function sPruneSel(){for(const id of [...SG.sel])if(!SG.songs.has(id))SG.sel.delete(id);}
+async function sBulkRun(changes,skips,verb){if(!changes.length)return;
+ SG.bulk={n:0,of:changes.length,verb};renderContent();
+ let done=[],err=null;
+ try{done=await SDL.putMany(changes,part=>{part.forEach(s=>SG.songs.set(s.id,JSON.parse(JSON.stringify(Object.assign({id:s.id},songDoc(s))))));SG.bulk.n+=part.length;sRenderBulk();});}
+ catch(e){err=e;done=e.done||[];if(e&&e.code==='permission-denied')SG.rules=false;}
+ let manOk=true;if(done.length){try{await rebuildSongManifest();SG.manErr='';}catch(e){manOk=false;SG.manErr=errMsg(e);}}
+ const failed=changes.filter(s=>!done.includes(s.id));SG.bulk=null;SG.sel=failed.length?new Set(failed.map(s=>s.id)):new Set();
+ const sk=skips.filter(([n])=>n>0).map(([n,why])=>`${n} skipped (${why})`);
+ let msg=`${done.length} updated`+(sk.length?', '+sk.join(', '):'');
+ if(failed.length)msg=`${done.length} updated, ${failed.length} NOT saved: ${errMsg(err)}. They are still selected: try again.`+(sk.length?' '+sk.join(', ')+'.':'');
+ if(!manOk)msg+=` The game’s live list couldn’t be rebuilt (${SG.manErr}): use Rebuild live list.`;
+ renderContent();toast(msg,failed.length||!manOk?9000:5000);}
+async function sBulkStatus(){if(needSRules()||SG.bulk)return;const L=sSelected();if(!L.length)return;
+ const n=L.length,nLiveNow=L.filter(s=>s.live===true).length;
+ const pr=ask({title:`Set ${songsN(n)} to Approved?`,ok:'Set status',html:`<p style="margin:0">The status, and “how approved” and the date if you fill them in, are applied to all ${songsN(n)} selected.</p>
+  <div class="bform"><label class="field"><span>Status</span><select class="sel" id="bSt">${CELEB_STATUS.map(s=>`<option${s==='Approved'?' selected':''}>${esc(s)}</option>`).join('')}</select></label>
+  <div class="cgrid" style="grid-template-columns:repeat(auto-fit,minmax(150px,1fr))"><label class="field"><span>How approved (optional)</span><select class="sel" id="bHow">${CELEB_HOW.map(h=>`<option value="${esc(h)}">${h?esc(h):'Leave as it is'}</option>`).join('')}</select></label>
+  <label class="field"><span>Date (optional)</span><input class="inp" type="date" id="bDate"></label></div></div>
+  <p class="small muted" id="bNote" style="margin:10px 0 0">No song goes Live or Hidden by this: use Go Live or Hide for that.</p>`});
+ const T=$('#dlgT'),S=$('#bSt'),N=$('#bNote');
+ const upd=()=>{T.textContent=`Set ${songsN(n)} to ${S.value}?`;N.innerHTML=S.value==='Refused'&&nLiveNow?`<b>${nLiveNow} of them ${nLiveNow===1?'is':'are'} Live now</b> and will be hidden from the game (Refused songs can’t be Live).`:'No song goes Live or Hidden by this: use Go Live or Hide for that.';};
+ S.addEventListener('change',upd);upd();
+ const st0=S.value;if(!await pr)return;
+ const st=S.value||st0,how=$('#bHow').value,date=$('#bDate').value;
+ await sBulkRun(L.map(s=>{const q=JSON.parse(JSON.stringify(s));q.perm=Object.assign({},q.perm,{status:st},how?{how}:{},date?{date}:{});if(st==='Refused')q.live=false;return q;}),[],'status');}
+async function sBulkLive(){if(needSRules()||SG.bulk)return;const L=sSelected();if(!L.length)return;
+ const already=L.filter(s=>s.live===true),todo=L.filter(s=>s.live!==true);
+ const refused=todo.filter(s=>stOf(s)==='Refused'),rest=todo.filter(s=>stOf(s)!=='Refused');
+ const noclip=rest.filter(s=>!hasClip(s)||!String(s.title||'').trim()),can=rest.filter(s=>hasClip(s)&&String(s.title||'').trim());
+ const ok=can.filter(s=>okSt(stOf(s))),pend=can.filter(s=>!okSt(stOf(s)));
+ const cnt=st=>pend.filter(s=>stOf(s)===st).length;
+ const skipLines=[refused.length?`<li><b>${refused.length} Refused</b>: skipped. Refused songs can never be made Live.</li>`:'',
+  noclip.length?`<li><b>${noclip.length}</b> ${noclip.length===1?'has':'have'} no clip or no Thaana title: skipped.</li>`:'',
+  already.length?`<li><b>${already.length}</b> already Live.</li>`:''].join('');
+ if(!can.length){toast(`No song to make Live${refused.length?': '+refused.length+' Refused':''}${noclip.length?(refused.length?', ':': ')+noclip.length+' without a clip or Thaana title':''}${already.length?', '+already.length+' already Live':''}.`,6000);return;}
+ const pr=ask({title:'',ok:'Make Live',html:`<p style="margin:0">Live means every player can hear the clip in the game within about a minute.</p>
+  ${pend.length?`<div class="note" style="margin-top:10px">${IC.warn}<div><b>${pend.length} of the selected ${pend.length===1?'isn’t':'aren’t'} approved yet:</b> ${[['To check',cnt('To check')],['Asked',cnt('Asked')]].filter(x=>x[1]).map(x=>x[1]+' '+x[0]).join(', ')}.</div></div>
+  <div class="bopts" role="radiogroup" aria-label="Which songs go Live">
+   <label class="bopt"><input type="radio" name="bmode" value="ok" checked><span><b>Only make the approved ones Live</b><small>${songsN(ok.length)}: Approved or Official / public source</small></span></label>
+   <label class="bopt"><input type="radio" name="bmode" value="all"><span><b>Make all selected Live anyway</b><small>${songsN(ok.length+pend.length)}, including To check and Asked</small></span></label></div>`:''}
+  ${skipLines?`<ul class="blist">${skipLines}</ul>`:''}`});
+ const T=$('#dlgT'),B=$('#dlgOk'),mode=()=>{const r=document.querySelector('#dlgB input[name=bmode]:checked');return r?r.value:'ok';};
+ const upd=()=>{const k=mode()==='all'?ok.length+pend.length:ok.length;T.textContent=`Make ${songsN(k)} Live in the game?`;B.disabled=!k;};
+ const DB=$('#dlgB');DB.addEventListener('change',upd);upd();
+ const go=await pr;const m=mode();DB.removeEventListener('change',upd);B.disabled=false;if(!go)return;
+ const list=m==='all'?ok.concat(pend):ok;
+ await sBulkRun(list.map(s=>{const q=JSON.parse(JSON.stringify(s));q.live=true;return q;}),[[refused.length,'Refused'],[noclip.length,'no clip'],[m==='all'?0:pend.length,'not approved yet'],[already.length,'already Live']],'live');}
+async function sBulkHide(){if(needSRules()||SG.bulk)return;const L=sSelected();if(!L.length)return;
+ const live=L.filter(s=>s.live===true);
+ if(!live.length){toast(`None of the ${songsN(L.length)} selected ${L.length===1?'is':'are'} Live: nothing to hide.`,4000);return;}
+ const go=await ask({title:`Hide ${songsN(live.length)} from the game?`,ok:'Hide from the game',html:`<p style="margin:0">They leave the game within about a minute. Their clips and permission records stay here.</p>${L.length>live.length?`<ul class="blist"><li><b>${L.length-live.length}</b> of the selected ${L.length-live.length===1?'is':'are'} already hidden.</li></ul>`:''}`});
+ if(!go)return;
+ await sBulkRun(live.map(s=>{const q=JSON.parse(JSON.stringify(s));q.live=false;return q;}),[[L.length-live.length,'already hidden']],'hide');}
+async function sRebuild(){if(needSRules())return;try{await rebuildSongManifest();SG.manErr='';toast('Live list rebuilt.');}catch(e){SG.manErr=errMsg(e);toast('Couldn’t rebuild the live list: '+SG.manErr,6000);}renderContent();}
+function sFiltered(){const q=normKey(SG.q);return [...SG.songs.values()].filter(s=>(!q||normKey(s.titleLt).includes(q)||normKey(s.title).includes(q)||normKey(s.artist).includes(q)||normKey(s.artistDv).includes(q)||normKey(s.genre).includes(q))
+ &&(SG.st==='all'||stOf(s)===SG.st)&&(SG.gen==='all'||s.genre===SG.gen)&&(SG.live==='all'||(SG.live==='live')===(s.live===true)))
+ .sort((a,b)=>((b.live===true)-(a.live===true))||sName(a).localeCompare(sName(b)));}
+function sSelHead(){const el=$('#ssel');if(!el)return;const shown=sFiltered(),ns=shown.filter(s=>SG.sel.has(s.id)).length,n=SG.sel.size,hid=n-ns;
+ el.innerHTML=`<label class="call"><span class="ccheck"><input type="checkbox" id="sselall"${shown.length&&ns===shown.length?' checked':''}${shown.length?'':' disabled'} aria-label="Select all shown"><span class="cbx"></span></span>Select all shown (${shown.length})</label>
+  ${n?`<button class="btn sm" data-a="sg-selclear">Clear</button>`:''}<span class="cnum" aria-live="polite"><b>${n}</b> selected${hid>0?` · ${hid} not in this view`:''}</span>`;
+ const a=$('#sselall');if(a)a.indeterminate=ns>0&&ns<shown.length;}
+function sRenderBulk(){const el=$('#sbulk');if(!el)return;const n=SG.sel.size;
+ if(SG.bulk){const b=SG.bulk;el.innerHTML=`<span class="spin"></span><span class="bn">Saving… <b>${b.n}</b> of ${b.of}</span><div class="bprog" role="progressbar" aria-valuemin="0" aria-valuemax="${b.of}" aria-valuenow="${b.n}"><i style="width:${(b.of?b.n/b.of*100:0).toFixed(1)}%"></i></div>`;return;}
+ if(!n){el.innerHTML='';return;}
+ el.innerHTML=`<span class="bn"><b>${n}</b> selected</span><button class="bx" data-a="sg-selclear" aria-label="Clear the selection">×</button>
+  <div class="acts"><button class="btn" data-a="sg-bstatus">Set status…</button><button class="btn pri" data-a="sg-blive">Go Live</button><button class="btn" data-a="sg-bhide">Hide</button></div>`;}
+function sSelRefresh(){sSelHead();sRenderBulk();document.querySelectorAll('.crow.srow').forEach(r=>{const on=SG.sel.has(r.dataset.id);r.classList.toggle('sel',on);const c=r.querySelector('input[data-ssel]');if(c)c.checked=on;});}
+/* ---------- view ---------- */
+const PLAY_IC='<svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M7 4.5v15l13-7.5z" fill="currentColor"/></svg>';
+function sRow(s){const open=SG.open===s.id,busy=SG.busy===s.id,live=s.live===true,st=stOf(s),sl=SG.sel.has(s.id),c=s.clip;
+ const meta=[s.artist||'No artist yet',s.year||'',s.genre||'',s.difficulty||'Medium',c?'clip '+mmss(c.start):'no clip'].filter(Boolean).join(' · ');
+ const head=`<div class="crow srow${open?' open':''}${busy?' busy':''}${sl?' sel':''}" data-id="${esc(s.id)}">
+  <label class="ccheck" title="Select"><input type="checkbox" data-ssel="${esc(s.id)}"${sl?' checked':''} aria-label="Select ${esc(sName(s))}"><span class="cbx"></span></label>
+  <button class="cmain" data-a="sg-open" data-id="${esc(s.id)}" aria-expanded="${open}"><span class="sdisc${c?'':' none'}" aria-hidden="true"></span><span class="cn"><b>${esc(sName(s))}${s.title?` <span lang="dv" dir="rtl" class="cdv">${esc(s.title)}</span>`:''}</b><small>${esc(meta)}</small></span></button>
+  <span class="cst">${stPill(st)}</span>
+  <button class="clive${live?' on':''}" data-a="sg-live" data-id="${esc(s.id)}" role="switch" aria-checked="${live}" aria-label="${live?'Live in the game':'Hidden from the game'}: ${esc(sName(s))}"><span class="sw"><i></i></span><span class="lt">${live?'<span class="live"></span><span>Live<span class="ll"> in the game</span></span>':'<span>Hidden<span class="ll"> from the game</span></span>'}</span></button>
+ </div>`;
+ if(!open)return head;
+ const sel=(n,opts,v)=>`<select class="sel" name="${n}">${opts.map(o=>{const [val,lab]=Array.isArray(o)?o:[o,o||'—'];return `<option value="${esc(val)}"${val===v?' selected':''}>${esc(lab)}</option>`;}).join('')}</select>`;
+ const pm=s.perm||{},T=SG.trim&&SG.trim.id===s.id?SG.trim:null;
+ const clipBox=T?`<div class="strim" id="strim"><div class="small"><b>${esc(T.name)}</b> · ${mmss(T.buf.duration)} long. Tap or drag on the waveform to choose where the 5 s clip <b>starts</b>; it is cut to exactly 5.0 s with soft 30 ms fades. Shorter lengths in the game (3, 2, 1 s) are taken from the start of these 5 s.</div>
+   <canvas id="swave" class="swave" data-a="sg-wave" aria-label="Waveform: tap to choose the start"></canvas>
+   <div class="strow2"><input type="range" id="srange" min="0" max="${(T.buf.duration-SC.CLIP_S).toFixed(1)}" step="0.1" value="${T.start.toFixed(1)}" aria-label="Clip start (seconds)"><span class="sst" id="sstart"></span></div>
+   <div class="dfoot" style="margin-top:8px"><button class="btn sm" data-a="sg-nudge" data-d="-1">−1 s</button><button class="btn sm" data-a="sg-nudge" data-d="-0.1">−0.1</button><button class="btn sm" data-a="sg-nudge" data-d="0.1">+0.1</button><button class="btn sm" data-a="sg-nudge" data-d="1">+1 s</button><span class="sp"></span>
+   <button class="btn sm" data-a="sg-prev">${PLAY_IC} Preview 5 s</button><button class="btn sm" data-a="sg-trimx">Cancel</button><button class="btn sm pri" data-a="sg-clipsave" id="ssave">${T.saving?esc(T.saving):'Save clip'}</button></div></div>`
+  :c?`<div class="sclip"><button class="btn sm" data-a="sg-play" data-id="${esc(s.id)}">${PLAY_IC} Play clip (5 s)</button><span class="small muted">From ${mmss(c.start)} · WAV ${Math.round((c.size||0)/1024)} KB${c.keyC?` · ${esc((c.typeC||'').replace('audio/','').toUpperCase())} ${Math.round((c.sizeC||0)/1024)} KB`:''}</span><span class="sp"></span><button class="btn sm" data-a="sg-pick" data-id="${esc(s.id)}">Replace clip</button><button class="btn sm" data-a="sg-delclip" data-id="${esc(s.id)}">Delete clip</button></div>`
+  :`<div class="anone">No clip yet. <button class="btn sm pri" data-a="sg-pick" data-id="${esc(s.id)}">Upload a clip</button> <span class="small muted">mp3, m4a, wav… the song file; you choose the 5 s here.</span></div>`;
+ return head+`<div class="cedit sedit" data-id="${esc(s.id)}">
+  <div class="cgrid">
+   <label class="field"><span>Title in Thaana (the answer players see)</span><input class="inp dvin" name="title" maxlength="60" dir="rtl" lang="dv" value="${esc(s.title||'')}"></label>
+   <label class="field"><span>Title in Latin letters</span><input class="inp" name="titleLt" maxlength="60" value="${esc(s.titleLt||'')}"></label>
+   <label class="field"><span>Artist (Latin letters)</span><input class="inp" name="artist" maxlength="50" value="${esc(s.artist||'')}"></label>
+   <label class="field"><span>Artist in Thaana (optional)</span><input class="inp dvin" name="artistDv" maxlength="50" dir="rtl" lang="dv" value="${esc(s.artistDv||'')}"></label>
+   <label class="field"><span>Year (if known)</span><input class="inp" name="year" inputmode="numeric" maxlength="4" value="${s.year?esc(s.year):''}"></label>
+   <label class="field"><span>Genre / category (for fair answer choices)</span><input class="inp" name="genre" maxlength="30" list="sgens" value="${esc(s.genre||'')}"></label>
+   <label class="field"><span>Difficulty</span>${sel('difficulty',DIFFS,s.difficulty||'Medium')}</label>
+   <label class="field"><span>“Listen to the full song” link (optional, https://)</span><input class="inp" name="url" type="url" maxlength="300" value="${esc(s.url||'')}" placeholder="https://"></label>
+  </div>
+  <h3 class="csub">Permission</h3>
+  <div class="cgrid">
+   <label class="field"><span>Status</span>${sel('status',CELEB_STATUS,stOf(s))}</label>
+   <label class="field"><span>How approved</span>${sel('how',CELEB_HOW,pm.how||'')}</label>
+   <label class="field"><span>Date</span><input class="inp" type="date" name="date" value="${esc(pm.date||'')}"></label>
+   <div class="field"><span>Proof screenshot (private)</span><div class="dfoot" style="margin:0">${pm.proof?`<button class="btn sm" data-a="sg-proofview" data-id="${esc(s.id)}">View proof</button><button class="btn sm" data-a="sg-proofdel" data-id="${esc(s.id)}">Remove</button>`:`<button class="btn sm" data-a="sg-proof" data-id="${esc(s.id)}">Upload proof</button>`}</div></div>
+  </div>
+  <label class="field"><span>Notes</span><textarea class="inp" name="notes" rows="2" maxlength="600">${esc(pm.notes||'')}</textarea></label>
+  <h3 class="csub">Clip <span class="muted small">· 5 s, stored outside the website; the game plays 5, 3, 2 or 1 s of it</span></h3>
+  ${clipBox}
+  ${SG.ferr&&SG.ferr.id===s.id?`<div class="note bad" role="alert">${IC.warn}<div><b>Not saved.</b> ${esc(SG.ferr.msg)} Your changes are still here: try Save again.</div></div>`:''}
+  <div class="dfoot"><span class="sp"></span><button class="btn" data-a="sg-del" data-id="${esc(s.id)}">Delete song</button><button class="btn pri" data-a="sg-save" data-id="${esc(s.id)}">Save</button></div>
+ </div>`;}
+function renderSongs(el,subs){
+ if(!SG.at&&!SG.loading&&!SG.err)setTimeout(loadSongs,0);
+ const all=[...SG.songs.values()],nl=all.filter(s=>s.live===true).length,gens=[...new Set(all.map(s=>s.genre).filter(Boolean))].sort();
+ const rulesNote=SG.rules===false?`<div class="note bad">${IC.warn}<div><b>Publish the updated Firestore rules.</b> The Songs list needs the new rules (trivia_songs stays admin-only; the game reads only the live list trivia/song). Overview → <b>Your account &amp; one-time setup</b> → <b>Copy rules</b>, paste them in Firebase Console → Firestore Database → Rules → <b>Publish</b>, then reload.</div></div>`:'';
+ sPruneSel();const list=sFiltered(),G=SG.game,gameN=G&&!G.err?G.n:null;
+ const gameBox=`<div class="cgame"><span class="k">${gameN?'<span class="live"></span>':''}In the game now</span><b>${G&&G.err?'?':gameN===null?'…':songsN(gameN)}</b><small>${G&&G.err?esc(G.err):G&&G.none?'No live list published yet':G&&G.at?'Live list published '+ago(G.at)+' ago':''}</small></div>`;
+ const dropNote=SG.dropped&&SG.dropped.length?`<div class="note bad" style="margin-top:10px">${IC.warn}<div><b>${songsN(SG.dropped.length)} switched Live ${SG.dropped.length===1?'is':'are'} not in the game:</b> ${SG.dropped.slice(0,8).map(d=>esc(d.name)+' ('+esc(d.why)+')').join(', ')}${SG.dropped.length>8?'…':''}.</div></div>`:'';
+ const liveN=gameN!==null?gameN:(SG.man?SG.man.n:null);
+ const lowNote=all.length&&liveN!==null&&liveN<GAME_MIN_LIVE?`<div class="note info" style="margin-top:10px">${IC.warn}<div>The game shows “Coming soon” until at least ${GAME_MIN_LIVE} songs are Live. In the game now: <b>${liveN}</b>.</div></div>`:'';
+ const manNote=SG.manErr?`<div class="note bad" style="margin-top:10px">${IC.warn}<div><b>The game’s live list wasn’t rebuilt.</b> ${esc(SG.manErr)} <button class="btn sm" data-a="sg-rebuild">Rebuild live list</button></div></div>`:'';
+ el.innerHTML=`<div class="card"><div class="chead"><h2>Content</h2>${subs}</div>
+ ${rulesNote}
+ <div class="cstats"><div><span class="k"><span class="live"></span>Live in the game</span><b>${nl}</b></div><div><span class="k">Hidden from the game</span><b>${all.length-nl}</b></div><div><span class="k">With a clip</span><b>${all.filter(hasClip).length}</b></div></div>
+ <p class="small muted" style="margin:10px 0 0">Only songs switched <b>Live</b> are in Guess the Song (<span lang="dv" dir="rtl">މި ލަވައަކީ ކޮބާ؟</span>); changes reach every player within about a minute. Clips are stored in ${esc(Media.name)}, never in the website. Collect a written OK from the artist or studio before a song goes Live.${SG.man?` Live list rebuilt ${ago(SG.man.at)} ago (${songsN(SG.man.n)}).`:''}</p>
+ ${gameBox}${manNote}${dropNote}${lowNote}
+ </div>
+ <div class="card"><div class="chead"><h2>Songs</h2><button class="btn sm pri" data-a="sg-add">Add song</button></div>
+ <div class="toolbar"><input class="search" id="sq" type="search" placeholder="Search title, artist or genre" value="${esc(SG.q)}" aria-label="Search songs">
+  <select class="sel" id="sfst" aria-label="Permission status"><option value="all">Every status</option>${CELEB_STATUS.map(s=>`<option${SG.st===s?' selected':''}>${esc(s)}</option>`).join('')}</select>
+  <select class="sel" id="sfgen" aria-label="Genre"><option value="all">Every genre</option>${gens.map(s=>`<option${SG.gen===s?' selected':''}>${esc(s)}</option>`).join('')}</select>
+  <select class="sel" id="sflive" aria-label="Live or hidden"><option value="all">Live and hidden</option><option value="live"${SG.live==='live'?' selected':''}>Live in the game</option><option value="hidden"${SG.live==='hidden'?' selected':''}>Hidden from the game</option></select></div>
+ <datalist id="sgens">${SONG_GENRES.map(c=>`<option value="${esc(c)}">`).join('')}</datalist>
+ ${all.length?'<div class="cselh" id="ssel"></div>':''}
+ <div class="clist slist${SG.bulk?' bbusy':''}">${SG.loading&&!SG.at?'<div class="empty"><span class="spin"></span></div>':SG.err&&!SG.at?`<div class="empty">${esc(SG.err)} <button class="btn sm" data-a="sg-reload">Try again</button></div>`
+  :!all.length?`<div class="anone">No songs yet. Use <b>Add song</b>, fill in the title and artist, then upload the song file and choose the 5 s clip.</div>`
+  :list.length?list.map(sRow).join(''):'<div class="empty">No song matches.</div>'}</div>
+ <div class="cbulk" id="sbulk" role="region" aria-label="Bulk actions"></div>
+ <p class="small muted" style="margin:12px 0 0">${list.length} of ${all.length} shown.</p></div>`;
+ sSelHead();sRenderBulk();if(SG.trim)requestAnimationFrame(sDrawWave);}
+document.addEventListener('input',e=>{const t=e.target;if(!t)return;
+ if(t.id==='sq'){SG.q=t.value;const l=$('.slist');if(l){const L=sFiltered();l.innerHTML=L.length?L.map(sRow).join(''):'<div class="empty">No song matches.</div>';sSelHead();if(SG.trim)sDrawWave();}}
+ else if(t.id==='srange')sSetStart(+t.value);});
+document.addEventListener('change',e=>{const t=e.target;if(!t)return;
+ if(t.dataset&&t.dataset.ssel){if(SG.bulk){t.checked=SG.sel.has(t.dataset.ssel);return;}if(t.checked)SG.sel.add(t.dataset.ssel);else SG.sel.delete(t.dataset.ssel);sSelRefresh();return;}
+ if(t.id==='sselall'){if(SG.bulk){sSelRefresh();return;}const L=sFiltered();if(t.checked)L.forEach(s=>SG.sel.add(s.id));else L.forEach(s=>SG.sel.delete(s.id));sSelRefresh();return;}
+ if(t.id==='sfst'){SG.st=t.value;renderContent();}else if(t.id==='sfgen'){SG.gen=t.value;renderContent();}else if(t.id==='sflive'){SG.live=t.value;renderContent();}});
+/* the waveform: tap or drag to put the clip's start there (the 5 s window is centred on the finger) */
+let sDrag=false;
+const sWaveAt=e=>{const cv=$('#swave'),T=SG.trim;if(!cv||!T)return;const r=cv.getBoundingClientRect();const x=Math.max(0,Math.min(1,((e.touches?e.touches[0].clientX:e.clientX)-r.left)/r.width));sSetStart(x*T.buf.duration-SC.CLIP_S/2);};
+document.addEventListener('pointerdown',e=>{if(e.target&&e.target.id==='swave'){sDrag=true;sWaveAt(e);try{e.target.setPointerCapture(e.pointerId);}catch(x){}}});
+document.addEventListener('pointermove',e=>{if(sDrag&&e.target&&e.target.id==='swave')sWaveAt(e);});
+document.addEventListener('pointerup',()=>{sDrag=false;});
+addEventListener('resize',()=>{if(SG.trim)sDrawWave();});
+document.addEventListener('click',e=>{const b=e.target.closest('[data-a]');if(!b||!b.dataset.a.startsWith('sg-'))return;const id=b.dataset.id;
+ switch(b.dataset.a){
+  case 'sg-open':SG.open=SG.open===id?'':id;SG.ferr=null;if(SG.trim&&SG.trim.id!==SG.open){sStopPrev();SG.trim=null;}renderContent();break;
+  case 'sg-selclear':if(!SG.bulk){SG.sel.clear();sSelRefresh();}break;
+  case 'sg-bstatus':sBulkStatus();break;
+  case 'sg-blive':sBulkLive();break;
+  case 'sg-bhide':sBulkHide();break;
+  case 'sg-rebuild':sRebuild();break;
+  case 'sg-live':sToggleLive(id);break;
+  case 'sg-add':sAdd();break;
+  case 'sg-reload':loadSongs();break;
+  case 'sg-save':sSave(id);break;
+  case 'sg-del':sDel(id);break;
+  case 'sg-proof':sProof(id);break;
+  case 'sg-proofview':sProofView(id);break;
+  case 'sg-proofdel':sProofDel(id);break;
+  case 'sg-pick':sStopPrev();sPickClip(id);break;
+  case 'sg-play':sPlay(id);break;
+  case 'sg-delclip':sDelClip(id);break;
+  case 'sg-prev':sPreview();break;
+  case 'sg-nudge':if(SG.trim)sSetStart(SG.trim.start+(+b.dataset.d));break;
+  case 'sg-trimx':sStopPrev();SG.trim=null;renderContent();break;
+  case 'sg-clipsave':sSaveClip();break;}});
+if(LOCAL)Object.assign(window.__dgaContent,{SG,rebuildSongManifest,songDoc,sSetStart,loadSongs});
+
 
 /* =====================================================================================
    BOOT

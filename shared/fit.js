@@ -47,6 +47,10 @@
        the top bar so the title and rules text sit on the plain wall, not on the jars */
     juice: { mark: T.mark, decor: T.decor, pull: T.pull, css: ['html.dgf-on body:has(main.dgf-nohero):before{top:-96px}'] },
     dhihaeh: { mark: '.dtitle', decor: [['.hhero', 0.3, 1], ['.dtitle', 0.6]], pull: '.dtitle', gone: ['.hsc'], clip: '.hsc' },
+    /* Guess the Celebrity: the film strip of faces is the decor (shrinks, then goes on the shortest phones) */
+    celebrity: { mark: 'main.home .cl-title', decor: [['.film .frames', 0.55], ['.film', 0.6, 1]] },
+    /* Guess the Song: the hero (title + the turntable seen from above) shrinks as one piece; it never goes */
+    song: { mark: 'main.home .lob', decor: [['.lob', 0.82]] },
     quiz: { mark: 'main.home .hero', decor: [['.hero', 0.3, 1]], more: { items: ['.topics', '.rew', '.chk', '.howlink', '.snote'], titleFrom: '.topics h4', title: 'Practice topics', sub: 'Topics, how to win Boli, how to play' } }
   };
   /* the game = the folder the page is in: /digu/, /digu/index.html, /some/prefix/digu/ */
