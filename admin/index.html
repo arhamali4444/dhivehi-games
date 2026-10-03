@@ -1507,10 +1507,12 @@ async function doReset(id){const p=ST.players.get(id);if(!p)return;if(!WORKER_UR
  let j;try{j=await workerCall('/reset-password',{uid:id});}catch(e){toast('Reset failed: '+((e&&e.message)||e),6000);return;}
  const pw=String(j.tempPassword||'');if(!pw){toast('Reset failed: no password came back.',5000);return;}
  toast('Done',900);
- const login=au&&au.username?au.username:au&&au.email?au.email:normKey(p.name);
+ /* what the player types in "Username" on the login screen: an account with a recovery email (or a Gmail account) signs in with that EMAIL,
+    not the username; never guess from the display name (it can differ from the username) */
+ const login=au&&au.username?au.username:au&&au.email?au.email:'';
  await ask({title:'Temporary password',single:true,wipe:true,ok:'Done',html:`<p style="margin:0">For <b>${esc(p.name||'this player')}</b>. Shown <b>once</b>: copy it now and send it to the player privately.</p>
   <div class="tpw"><code id="tpwv">${esc(pw)}</code><button type="button" class="btn sm" data-a="copy-tpw">${IC.copy}Copy</button></div>
-  <p style="margin:0">They sign in with <b>${esc(login)}</b> and this password. <b>Tell the player to change it</b> as soon as they can.</p>
+  <p style="margin:0">${login?`In the login box they type <b>${esc(login)}</b>${au&&au.email&&login===au.email?' (their email, <b>not</b> their username)':''} and this password.`:'Their sign-in name couldn’t be read: open the Sign in method column (Overview → reset service) and check it before sending.'} <b>Tell the player to change it</b> as soon as they can.</p>
   ${au&&au.method==='google'?'':`<p class="small muted" style="margin:10px 0 0">The games don’t have a change-password screen yet, so the safest next step is linking Gmail: in the game, Account → Linked accounts → Google. Then their progress isn’t lost if they forget the password.</p>`}`});}
 
 function sortedPlayers(){const q=normKey(ST.q);let a=[...ST.players.values()];

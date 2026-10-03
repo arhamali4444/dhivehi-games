@@ -2003,6 +2003,9 @@ async function authDo(kind){
        const legacy=rememberedLoginEmail();
        if(!isEmail && legacy && user===(authUsername()||myName()||'').toLowerCase()){
          cred=await FB.signInWithEmailAndPassword(FB.auth,legacy,pass);
+       }else if(pass.trim()!==pass&&pass.trim().length>=6&&/invalid-credential|wrong-password/.test((firstErr&&firstErr.code)||'')){
+         /* a password pasted from a chat often brings a space or line break along (temporary passwords never contain one) */
+         cred=await FB.signInWithEmailAndPassword(FB.auth,email,pass.trim());
        }else throw firstErr;
      }
    }

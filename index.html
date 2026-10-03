@@ -920,7 +920,8 @@ let tt;function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('sh
 function paintMe(){
  const nm=ls.get('dd-auth-username')||ls.get('lg-name');
  $('#nm').textContent=nm||'Player';
- if(ls.get('dd-auth-username')){const s=$('#signin');if(s)s.remove();const p=$('#ring .plus');if(p)p.remove();}
+ /* signed in: the link becomes "Account" (the account screen has Log out, linked logins and the recovery email) */
+ if(ls.get('dd-auth-username')){const s=$('#signin');if(s){s.innerHTML='<i aria-hidden="true">&middot;</i>Account';s.setAttribute('aria-label','Your account and log out');}const p=$('#ring .plus');if(p)p.remove();}
  /* your character; with none saved yet, the shared starter character and a small "+" that says "make yours"
     (the old icon avatar, 'dg-av', is retired and never shown) */
  const av=$('#av');const cfg=window.DGAvatar&&DGAvatar.load();
