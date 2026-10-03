@@ -719,7 +719,21 @@ function create(cfg){
   if(n.lostAt){if(!T||T.status==='over'&&!seated(myId)){endSession('closed','The host left the table.');return;}
    const r=myRank();if(r<0){if(now-n.lostAt>MIG_GIVEUP)endSession('lost','Lost the connection to the table.');return;}
    if(now-n.lostAt>MIG_GIVEUP){endSession('lost','Lost the connection to the table.');return;}
-   if(now-n.lostAt>=r*MIG_STEP+1500)becomeHost();}}
+   if(now-n.lostAt>=r*MIG_STEP+1500&&!n.probing){n.probing=true;
+    hostAlive(n.code).then(s=>{n.probing=false;if(net!==n||!n.lostAt)return;if(s==='gone')becomeHost();else if(s==='alive')rejoinFresh(n);});}}}
+ /* Before taking a table over, look at its retained host info on FRESH connections. The host re-publishes it every
+    INFO_MS; its Last Will wipes it when it dies. If it is still fresh, the host is fine and it was OUR connection that
+    dropped (phone asleep, network switch): reconnect instead. Taking over then (Oct 2026 bug) threw the real host out,
+    gave its seat to the computer and rolled the whole game back to this phone's stale copy. With no connection at all
+    ('down'), never take over: wait (MIG_GIVEUP still ends the session). */
+ function hostAlive(code){return new Promise(res=>{let done=false;const cl=makeClients(null);
+  const fin=v=>{if(done)return;done=true;clearTimeout(t);setTimeout(()=>cl.forEach(o=>{o.h=null;try{o.c.end();}catch(e){}}),300);res(v);};
+  const t=setTimeout(()=>fin(cl.some(o=>o.ok)?'gone':'down'),5000);
+  cl.forEach(o=>{o.subs=()=>[NS+code+'/i'];o.h=(o2,topic,m)=>{if(topic!==NS+code+'/i'||!m||!m.pub||!m.host||m.host===myId)return;
+   if(Date.now()+skew-(+m.t||0)<INFO_MS*2+1000)fin('alive');};});});}
+ /* the host is alive: drop our dead sockets and reconnect on fresh ones (same keys, so the host maps us straight back) */
+ function rejoinFresh(n){const old=n.clients;n.clients=takeClients(()=>[NS+n.code+'/i',NS+n.code+'/p/'+n.topic],onJoinMsg);
+  old.forEach(c=>{c.h=null;c.onUp2=null;try{c.c.end();}catch(e){}});n.lostAt=0;n.last=Date.now();n.upSince=0;}
  /* who takes over when the host is gone: the next connected player after the host, in seat order */
  function myRank(){if(!T||!seated(myId))return -1;const P=T.players,N=P.length,hi=P.findIndex(p=>p.id===T.hostId),c=[];
   for(let k=1;k<=N;k++){const p=P[((hi<0?0:hi)+k)%N];if(p.id===T.hostId||p.gone||p.cpu)continue;if(T.conn&&!T.conn.includes(p.id)&&p.id!==myId)continue;if(!c.includes(p.id))c.push(p.id);}return c.indexOf(myId);}

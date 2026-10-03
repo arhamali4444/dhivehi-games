@@ -693,7 +693,7 @@ button:disabled{cursor:default}
 <div id="toasts" aria-live="polite"></div>
 <script src="../shared/avatar.js?v=12"></script>
 <script src="../shared/sponsors.js?v=8"></script>
-<script src="../shared/net.js?v=7"></script>
+<script src="../shared/net.js?v=8"></script>
 
 <script>
 'use strict';
@@ -992,9 +992,10 @@ const E=(()=>{
   if((g.cards||0)>A.cards.length||(w.cards||0)>B.cards.length)return 'Card not held';return null;}
  /* ---------- money ---------- */
  function xfer(from,to,amt){if(!amt)return;if(from>=0){P(from).cash-=amt;emit({t:'cash',p:from,d:-amt});}if(to>=0){P(to).cash+=amt;emit({t:'cash',p:to,d:amt});}}
- function charge(pid,items,then){items=items.filter(x=>x.amt>0);const tot=items.reduce((a,x)=>a+x.amt,0);
+ /* why: what the money is for, shown if the player cannot pay and goes bankrupt */
+ function charge(pid,items,then,why){items=items.filter(x=>x.amt>0);const tot=items.reduce((a,x)=>a+x.amt,0);
   if(P(pid).cash>=tot){items.forEach(x=>xfer(pid,x.to,x.amt));return cont(pid,then);}
-  G.pend={t:'debt',p:pid,items,total:tot,then};emit({t:'debt',p:pid,amt:tot});}
+  G.pend={t:'debt',p:pid,items,total:tot,then,why:why||''};emit({t:'debt',p:pid,amt:tot});}
  function cont(pid,then){G.pend=null;if(!then||then.k==='post')return done();
   if(then.k==='move'){moveBy(pid,then.n);return land(pid);}
   if(then.k==='jail'){goJail(pid);return done();}
@@ -1010,7 +1011,7 @@ const E=(()=>{
  /* start the penalty for pid: pay back 2x dodged, then (cont 'bust') prison + seizure + auction */
  function bust(pid){const p=P(pid),pay=2*p.dodged;p.sus=0;p.dodged=0;p.bribed=false;
   log(`${p.name} must pay back ${fmt(pay)}, goes to Maafushi and loses an island`);emit({t:'busted',p:pid,amt:pay,props:propsOf(pid).length});
-  charge(pid,[{to:-1,amt:pay}],{k:'bust',p:pid});}
+  charge(pid,[{to:-1,amt:pay}],{k:'bust',p:pid},'the pay-back for bribes');}
  /* next queued bust, else resume the interrupted pend (after a report), else finish the turn */
  function bustNext(){if(G.over)return;while(G.bq&&G.bq.length){const n=G.bq.shift();if(!P(n).out)return bust(n);}
   /* islands of a player who left the table go to auction one by one */
@@ -1063,7 +1064,7 @@ const E=(()=>{
    const amt=rentOf(s.i,G.dice[0]+G.dice[1],o);
    /* rent is always paid in full to the owner */
    log(`${p.name} paid ${fmt(amt)} rent to ${P(w.o).name} for ${s.name}`);emit({t:'rent',p:pid,to:w.o,sp:s.i,amt});
-   return charge(pid,[{to:w.o,amt}],{k:'post'});}
+   return charge(pid,[{to:w.o,amt}],{k:'post'},`rent to ${P(w.o).name} for ${s.name}`);}
   if(s.k==='c'||s.k==='n')return askDraw(pid,s.k);
   /* the Sandbank: choose Monsoon, City Council or relax (a card that moves you here just rests) */
   if(s.k==='free'&&!o.card){G.pend={t:'sandbank',p:pid};emit({t:'sandbank',p:pid});return;}
@@ -1075,20 +1076,21 @@ const E=(()=>{
     -> 'cardok' applies it. "Get out of Maafushi" can be kept (hand) or discarded (back under the deck). */
  function drawCard(pid){const pe=G.pend,d=G.decks[pe.deck],deck=pe.deck;const idx=d.shift(),c=CARDS[deck][idx],p=P(pid);if(c.e!=='goo')d.push(idx);
   G.pend={t:'card',p:pid,deck,i:idx};emit({t:'card',p:pid,deck,i:idx});log(`${p.name} drew ${deck==='c'?'City Council':'Monsoon'}: ${c.t}`);}
+ const cardWhy=deck=>`a ${deck==='c'?'City Council':'Monsoon'} card`;
  function applyCard(pid,keep){const pe=G.pend,deck=pe.deck,idx=pe.i,c=CARDS[deck][idx],p=P(pid);G.pend=null;
   const kept=c.e==='goo'&&keep!==false;if(c.e==='goo'&&!kept){G.decks[deck].push(idx);log(`${p.name} put the Get out of Maafushi card back`);}
   if(!kept){if(!G.disc)G.disc={};G.disc[deck]=idx;}
   emit({t:'carddone',p:pid,deck,i:idx,keep:kept});
   switch(c.e){
-   case 'money':if(c.v>0){xfer(-1,pid,c.v);return done();}return charge(pid,[{to:-1,amt:-c.v}],{k:'post'});
+   case 'money':if(c.v>0){xfer(-1,pid,c.v);return done();}return charge(pid,[{to:-1,amt:-c.v}],{k:'post'},cardWhy(deck));
    case 'move':{/* targets by space name, so a new board layout needs no index changes */
     const t=c.to!=null?SP.findIndex(s=>s.name===c.to):c.v;moveTo(pid,t>=0?t:0,true);return land(pid,{card:1});}
    case 'back':moveBack(pid,c.v);return land(pid,{card:1});
    case 'jail':goJail(pid);return done();
    case 'goo':if(kept)p.cards.push(deck);return done();
-   case 'each':return charge(pid,alive().filter(j=>j!==pid).map(j=>({to:j,amt:c.v})),{k:'post'});
+   case 'each':return charge(pid,alive().filter(j=>j!==pid).map(j=>({to:j,amt:c.v})),{k:'post'},cardWhy(deck));
    case 'collect':alive().filter(j=>j!==pid).forEach(j=>xfer(j,pid,Math.min(Math.max(0,P(j).cash),c.v)));return done();
-   case 'repair':{const b=bldCount(pid),amt=b.h*c.v[0]+b.r*c.v[1];if(!amt){log(`${p.name} has nothing to pay for`);return done();}return charge(pid,[{to:-1,amt}],{k:'post'});}
+   case 'repair':{const b=bldCount(pid),amt=b.h*c.v[0]+b.r*c.v[1];if(!amt){log(`${p.name} has nothing to pay for`);return done();}return charge(pid,[{to:-1,amt}],{k:'post'},cardWhy(deck));}
    case 'nearR':{let t=p.pos;do t=(t+1)%NSP;while(SP[t].k!=='r');moveTo(pid,t,true);return land(pid,{mult:2,card:1});}
    case 'risk':p.sus=Math.min(SUS_MAX,p.sus+c.v);emit({t:'sus',p:pid});return done();
    case 'amnesty':p.sus=0;p.dodged=0;emit({t:'sus',p:pid});return done();
@@ -1104,7 +1106,7 @@ const E=(()=>{
   if(a.by>=0&&P(a.by).cash>=a.high){xfer(a.by,-1,a.high);G.own[a.sp]={o:a.by,h:0,m:false};log(`${P(a.by).name} won ${SP[a.sp].name} at auction for ${fmt(a.high)}`);emit({t:'won',p:a.by,sp:a.sp,amt:a.high});}
   else{log(`No bids. ${SP[a.sp].name} stays with the bank`);emit({t:'won',p:-1,sp:a.sp});}
   G.pend=null;bustNext();}
- function bankrupt(pid,cred){const p=P(pid);let cash=Math.max(0,p.cash);
+ function bankrupt(pid,cred,owe){const p=P(pid);let cash=Math.max(0,p.cash);
   propsOf(pid).forEach(i=>{const w=G.own[i];if(w.h){cash+=w.h*hc(i)/2;w.h=0;}});
   if(cred>=0&&!P(cred).out){P(cred).cash+=cash;emit({t:'cash',p:cred,d:cash});propsOf(pid).forEach(i=>{G.own[i].o=cred;});P(cred).cards.push(...p.cards);}
   else{propsOf(pid).forEach(i=>{delete G.own[i];});p.cards.forEach(d=>G.decks[d].push(CARDS[d].findIndex(c=>c.e==='goo')));}
@@ -1112,7 +1114,9 @@ const E=(()=>{
   G.offers.forEach(o=>{if(o.st==='open'&&(o.from===pid||o.to===pid))o.st='void';});
   if(G.sale){if(G.sale.seller===pid)G.sale=null;else delete G.sale.bids[pid];}
   if(G.pend&&G.pend.t==='auction'&&!G.pend.out.includes(pid))G.pend.out.push(pid);
-  log(`${p.name} is bankrupt${cred>=0?` and everything goes to ${P(cred).name}`:''}!`);emit({t:'bankrupt',p:pid,to:cred});
+  /* always say why (Oct 2026: a bankruptcy online showed no reason) */
+  if(owe){p.why=`couldn't pay ${fmt(owe.amt)}${owe.why?` (${owe.why})`:''}`;}
+  log(`${p.name} ${p.why?p.why+' and ':''}is bankrupt${cred>=0?`. Everything goes to ${P(cred).name}`:''}!`);emit({t:'bankrupt',p:pid,to:cred,why:p.why||''});
   if(alive().length<=1)return gameOver('last');
   if(G.bq)G.bq=G.bq.filter(j=>j!==pid);
   if(G.turn===pid){G.pend=null;G.resume=null;return bustNext();}
@@ -1125,7 +1129,7 @@ const E=(()=>{
   roll(pid){const pe=G.pend;if(!pe||pe.p!==pid)return 'Not your turn';if(!(pe.t==='turn'||(pe.t==='post'&&pe.again)))return 'You cannot roll now';
    const p=P(pid),d=[r6(),r6()],n=d[0]+d[1],dbl=d[0]===d[1];G.dice=d;G.pend=null;emit({t:'dice',p:pid,d});
    if(p.jail){if(dbl){p.jail=false;p.jt=0;G.dbl=0;log(`${p.name} rolled doubles and walks out of Maafushi`);moveBy(pid,n);return land(pid);}
-    p.jt++;if(p.jt>=3){p.jail=false;p.jt=0;log(`${p.name} served three turns and pays ${fmt(JAIL_FEE)} to leave`);return charge(pid,[{to:-1,amt:JAIL_FEE}],{k:'move',n});}
+    p.jt++;if(p.jt>=3){p.jail=false;p.jt=0;log(`${p.name} served three turns and pays ${fmt(JAIL_FEE)} to leave`);return charge(pid,[{to:-1,amt:JAIL_FEE}],{k:'move',n},'the Maafushi release fee');}
     log(`${p.name} stays in Maafushi (try ${p.jt} of 3)`);return done();}
    if(dbl){G.dbl++;if(G.dbl>=3){log(`Three doubles in a row! ${p.name} is sent to Maafushi for speeding`);goJail(pid);return done();}}else G.dbl=0;
    moveBy(pid,n);land(pid);},
@@ -1140,7 +1144,7 @@ const E=(()=>{
   decline(pid){const pe=G.pend;if(!pe||pe.t!=='buy'||pe.p!==pid)return 'Nothing to decline';startAuction(pe.sp);},
   /* legacy: saves made before rent became automatic can still hold a 'rent' pend */
   pay(pid){const pe=G.pend;if(!pe||pe.t!=='rent'||pe.p!==pid)return 'No rent due';G.pend=null;log(`${P(pid).name} paid ${fmt(pe.amt)} rent to ${P(pe.to).name} for ${SP[pe.sp].name}`);
-   charge(pid,[{to:pe.to,amt:pe.amt}],{k:'post'});},
+   charge(pid,[{to:pe.to,amt:pe.amt}],{k:'post'},`rent to ${P(pe.to).name} for ${SP[pe.sp].name}`);},
   /* Sandbank choice: a.c = 'n' (Monsoon card), 'c' (City Council card) or 'relax' */
   sandbank(pid,a){const pe=G.pend;if(!pe||pe.t!=='sandbank'||pe.p!==pid)return 'Not on the Sandbank';const c=a&&a.c;
    if(c==='n'||c==='c'){log(`${P(pid).name} picks a ${c==='c'?'City Council':'Monsoon'} card at the Sandbank`);return askDraw(pid,c);}
@@ -1159,7 +1163,7 @@ const E=(()=>{
   paydebt(pid){const pe=G.pend;if(!pe||pe.t!=='debt'||pe.p!==pid)return 'No debt';if(P(pid).cash<pe.total)return 'Not enough cash yet';
    pe.items.forEach(x=>xfer(pid,x.to,x.amt));cont(pid,pe.then);},
   bankrupt(pid){const pe=G.pend;if(!pe||pe.t!=='debt'||pe.p!==pid)return 'No debt';const pl=pe.items.filter(x=>x.to>=0).sort((a,b)=>b.amt-a.amt);
-   const cred=pl.length&&pl[0].amt*2>=pe.total?pl[0].to:-1;P(pid).outAt=G.seq;bankrupt(pid,cred);},
+   const cred=pl.length&&pl[0].amt*2>=pe.total?pl[0].to:-1;P(pid).outAt=G.seq;bankrupt(pid,cred,{amt:pe.total,why:pe.why||''});},
   end(pid){const pe=G.pend;if(!pe||pe.t!=='post'||pe.p!==pid)return 'Not now';if(pe.again)return 'You rolled doubles: roll again';G.pend=null;nextTurn();},
   bid(pid,a){const pe=G.pend;if(!pe||pe.t!=='auction')return 'No auction';if(P(pid).out||pe.out.includes(pid))return 'You passed';
    const amt=Math.floor(a.amt||0);if(amt<=pe.high||amt<10)return 'Bid higher';if(amt>P(pid).cash)return 'Not enough cash';
@@ -1852,7 +1856,7 @@ function renderPlayers(){$$('#pls .pl').forEach((el,i)=>{const p=G.players[i];el
  const sb=el.querySelector('.sus');sb.style.setProperty('--s',(p.out?0:p.sus)+'%');sb.classList.toggle('hot',p.sus>=60&&!p.out);sb.title=`Suspicion ${p.sus}%: the chance of being caught after a bribe or in a raid`;
  const gp=goalPct(i),gb=el.querySelector('.goal');if(gb){gb.style.setProperty('--g',gp+'%');gb.classList.toggle('near',gp>=80);}
  el.title=G.target&&!p.out?`Net worth ${fmt(E.netWorth(i))} · ${gp}% of the ${fmt(G.target)} goal`:'';
- el.setAttribute('aria-label',`${nameOf(i)}: ${p.out?'bankrupt':fmt(p.cash)}${p.jail?', in prison':''}${!p.out?`, suspicion ${p.sus}%`:''}${G.target&&!p.out?`, ${gp}% of the goal`:''}${i===G.turn?', playing now':''}`);});}
+ el.setAttribute('aria-label',`${nameOf(i)}: ${p.out?(p.left?'left the table':'bankrupt'):fmt(p.cash)}${p.jail?', in prison':''}${!p.out?`, suspicion ${p.sus}%`:''}${G.target&&!p.out?`, ${gp}% of the goal`:''}${i===G.turn?', playing now':''}`);});}
 /* progress toward the Classic win target, 0 to 100 */
 function goalPct(i){if(!G||!G.target||G.players[i].out)return 0;return Math.max(0,Math.min(100,Math.floor(E.netWorth(i)/G.target*100)));}
 const REACT_OK=['shocked','smug','happy','sad','angry','blink','wink','thinking'];
@@ -1865,7 +1869,7 @@ function meBusy(){const pe=G&&G.pend;return !!pe&&pe.p===ME&&!AUTO&&document.bod
 function meWaiting(){return meBusy()&&PLAYP!=null&&PLAYP!==ME&&!!G.players[PLAYP];}
 function statusText(){const pe=G.pend,p=meP();if(G.over)return 'Game over';
  if(ONLINE&&ME<0){if(!pe)return 'Watching';const w=pe.p!=null&&G.players[pe.p]?G.players[pe.p].name:'';return pe.t==='auction'?`Auction · ${SP[pe.sp].name}`:w?`${w}'s turn`:'Watching';}
- if(p.out)return p.left?'You left this game':WATCH||ONLINE?'You are bankrupt · watching':'You are bankrupt';
+ if(p.out)return p.left?'You left this game':(WATCH||ONLINE?'You are bankrupt · watching':'You are bankrupt')+(p.why?`: you ${p.why}`:'');
  if(!pe)return '…';const who=pe.p!=null?G.players[pe.p]:null,mine=pe.p===ME&&!AUTO;
  if(mine&&!G.over&&meWaiting())return `${G.players[PLAYP].name} is finishing…`;
  switch(pe.t){case 'turn':return mine?(p.jail?`In Maafushi Prison · try ${p.jt+1} of 3`:'Your turn · roll the dice'):`${who.name}'s turn`+(who.jail?' · in prison':'');
@@ -2407,7 +2411,7 @@ async function play(ev){const slow=ev.p!=null&&isBot(ev.p)&&!WATCH?1:1;
   case 'rent':flashCell(ev.sp);react(ev.to,'smug');if(ev.amt>=150)react(ev.p,'shocked');if((ev.p===ME||ev.to===ME)&&ME>=0){await rentPop(ev);if(ev.p===ME)GUIDE.hook('rent');}break;
   case 'sus':renderPlayers();renderActions();break;
   case 'log':ticker(ev.s);break;
-  case 'bankrupt':react(ev.p,'sad',3000);decorate();SND.broke();toast(`${nameOf(ev.p)} ${ev.p===ME?'are':'is'} bankrupt!`,3500);placeTokens();await sleep(700);if(ev.p===ME){ACTKEY='';}break;
+  case 'bankrupt':react(ev.p,'sad',3000);decorate();SND.broke();toast(`${nameOf(ev.p)} ${ev.p===ME?'are':'is'} bankrupt!${ev.why?` ${ev.p===ME?'You':G.players[ev.p].name} ${ev.why}.`:''}`,ev.why?6000:3500);placeTokens();await sleep(700);if(ev.p===ME){ACTKEY='';}break;
   case 'offer':if(ev.from===ME||isBot(ev.to))react(ev.to,'thinking',2600);if(ev.to===ME&&!AUTO){const o=G.offers.find(x=>x.id===ev.id);if(o)banner('offer:'+ev.id,ev.from,`<b>${esc(G.players[ev.from].name)}</b> ${o.re?'counters your offer':'wants to trade'}`,'View',()=>openOffer(ev.id));SND.turn();}break;
   case 'reject':if(ev.from===ME&&!ev.cancel)toast(ev.expired?'Your offer expired':`${G.players[ev.to].name} declined your offer`);if(ev.to===ME)clearBanner('offer:'+ev.id);break;
   case 'trade':react(ev.from,'happy');react(ev.to,'happy');decorate();if(ev.from===ME||ev.to===ME){SND.buy();toast(`Deal done with ${G.players[ev.from===ME?ev.to:ev.from].name}!`);clearBanner('offer:'+ev.id);}else toast(`${G.players[ev.from].name} and ${G.players[ev.to].name} made a deal`);break;
@@ -2474,7 +2478,7 @@ function openOver(){if(!G||!G.over)return;const o=G.over,w=o.winner,win=w===ME&&
  ${o.reason==='goal'?`<span class="goalwin">Reached ${fmt(G.target)}</span><p>${win?'You were':esc(G.players[w].name)+' was'} the first to reach the ${fmt(G.target)} net worth goal.</p>`:
   `<p>${o.reason==='time'?'Time is up. The richest landowner takes the islands.':o.reason==='rounds'?`Round ${E.C.ROUND_CAP} is over. The richest landowner takes the islands.`:'Last landowner standing.'}</p>`}
  ${REWARD&&REWARD.sh?`<span class="reward"><img src="${BOLI_IMG}" alt="">+${REWARD.sh} Boli${REWARD.capped?' (daily limit)':''}</span>`:REWARD&&REWARD.capped?'<span class="reward">Daily Boli limit reached</span>':''}</div>
- <div class="rank">${o.rank.map((r,k)=>{const p=G.players[r.i];return `<div class="row2"><b style="width:22px;text-align:center">${k+1}</b><span class="pf" style="width:36px;height:36px;border-radius:50%;overflow:hidden;flex:none">${avHTML(r.i,36)}</span><span class="tx"><b>${r.i===ME?'You':esc(p.name)}</b><small>${p.out?'Bankrupt':`Net worth ${fmt(r.nw)} · ${E.propsOf(r.i).length} propert${E.propsOf(r.i).length===1?'y':'ies'}`}</small></span></div>`;}).join('')}</div>
+ <div class="rank">${o.rank.map((r,k)=>{const p=G.players[r.i];return `<div class="row2"><b style="width:22px;text-align:center">${k+1}</b><span class="pf" style="width:36px;height:36px;border-radius:50%;overflow:hidden;flex:none">${avHTML(r.i,36)}</span><span class="tx"><b>${r.i===ME?'You':esc(p.name)}</b><small>${p.out?(p.left?'Left the table':'Bankrupt'+(p.why?`: ${esc(p.why)}`:'')):`Net worth ${fmt(r.nw)} · ${E.propsOf(r.i).length} propert${E.propsOf(r.i).length===1?'y':'ies'}`}</small></span></div>`;}).join('')}</div>
  ${!ONLINE?'<div class="acts"><button class="btn em" data-a="again">Play again</button><button class="btn lite" data-a="home">Home</button></div>'
   :netHost()?'<div class="acts"><button class="btn em" data-a="again">Play again</button><button class="btn lite" data-a="home">Leave table</button></div>'
   :'<p style="text-align:center;color:var(--muted);font-weight:700">Waiting for the host to start the next game…</p><div class="acts one"><button class="btn lite" data-a="home">Leave table</button></div>'}<div class="sp-box" id="spBox"></div>`);
@@ -2709,9 +2713,13 @@ function netStart(seats,opts){ONLINE=true;const used=new Set();
 function netState(v){if(!v||!v.g||!Array.isArray(v.g.players))return;ONLINE=true;const g=v.g,me=g.players.findIndex(p=>p.id===MYID);GDL=v.dl?{at:v.dl.at,p:v.dl.p}:null;
  if(!G||SCREEN!=='game'||G.id!==g.id){closeSheet(false);E.load(g);AI.reset();OVERSHOWN=null;REWARD=null;LASTLID=v.lid|0;startWith(g,me);return;}
  E.swap(g);G=g;if(ME!==me){ME=me;buildPlayers();}
+ /* a new host numbers its events from its own count: if that is behind ours, follow it (else every later event was dropped as already seen) */
+ if((v.lid|0)<LASTLID)LASTLID=v.lid|0;
  const evs=(v.ev||[]).filter(x=>x[0]>LASTLID);if(evs.length&&evs[0][0]===LASTLID+1)E.feed(evs.map(x=>x[1]));   /* a gap: skip the animations */
  LASTLID=Math.max(LASTLID,v.lid|0);ACTKEY='';pump(true);}
-function netMigrate(o){ONLINE=true;const b=o.backup&&o.backup.g?o.backup:null,v=o.view,src=b?b.g:v&&v.g;if(!src){NET.again();return;}
+function netMigrate(o){ONLINE=true;const v=o.view;
+ /* the backup comes at most every 1.2 s, the view with every change: rebuild from whichever is newer (a stale backup rolled moves back) */
+ const b=o.backup&&o.backup.g&&!(v&&v.g&&v.g.id===o.backup.g.id&&(v.lid|0)>(o.backup.lid|0))?o.backup:null,src=b?b.g:v&&v.g;if(!src){NET.again();return;}
  const g=E.load(JSON.parse(JSON.stringify(src)));if(!b)E.fixDecks();E.seedLid(Math.max(b?b.lid|0:0,v?v.lid|0:0,LASTLID)+1);
  G=g;ME=g.players.findIndex(p=>p.id===MYID);DL=null;AI.reset();if(SCREEN!=='game')startWith(g,ME);else{ACTKEY='';buildPlayers();render();}
  pump(true);NET.sync();}
