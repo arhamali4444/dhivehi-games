@@ -1,7 +1,7 @@
 /* =====================================================================================
    DGNet · shared online play for Dhivehi Games                        shared/net.js  v2
    Load it BEFORE the game's own script, with a cache-busting version:
-       <script src="../shared/net.js?v=2"></script>        (bump ?v= in EVERY game whenever this file changes)
+       <script src="../shared/net.js?v=7"></script>        (bump ?v= in EVERY game whenever this file changes)
    v2 (Sept 2026, backward-compatible): optional waiting-room hooks roomList / roomClick / onLobbyMsg / lobbyFix,
    NET.lobby(obj), game-owned lobby data T.x (also passed to onStart as info.x). Used by Dhihaeh for 2 v 2 seats.
    v5 (Sept 2026, backward-compatible; games opt in with cfg.cpu:true):
@@ -22,8 +22,8 @@
 
    WHAT IT DOES (extracted from Digu's proven online code, plus Dhogu's Last-Will and epoch-based
    host hand-over, which are more robust):
-   - Transport: a tiny built-in MQTT 3.1.1 client over secure WebSockets, talking to two public
-     brokers at once (broker.emqx.io:8084, broker.hivemq.com:8884) with auto-reconnect. Every
+   - Transport: a tiny built-in MQTT 3.1.1 client over secure WebSockets, talking to three public
+     brokers at once (broker.emqx.io:8084, broker.hivemq.com:8884, public.cloud.shiftr.io:443) with auto-reconnect. Every
      message between a player and the host is end-to-end encrypted (ECDH P-256 + AES-GCM).
    - Tables: 4-letter codes, public (listed) or private (code only), Quick Match, a live list of
      open and in-play public tables (listing refreshed every 10 s, ignored after 45 s), cleanup on
@@ -100,7 +100,12 @@
 'use strict';
 if(window.DGNet)return;
 const VERSION=1;
-const BROKERS=['wss://broker.emqx.io:8084/mqtt','wss://broker.hivemq.com:8884/mqtt'];
+/* Every client connects to EVERY broker below at once (subscribe on all; hosts list and announce tables on all), so two
+   players meet as long as they share ANY one of them. emqx and hivemq use ports 8084 / 8884, which some networks and DNS
+   filters block; shiftr.io's public broker runs on the normal HTTPS port 443 (login public/public), so a phone that can't
+   reach the other two still meets everyone on a newer build (v7, Oct 2026). Keep the existing order: a client's broker
+   index is only used locally. */
+const BROKERS=['wss://broker.emqx.io:8084/mqtt','wss://broker.hivemq.com:8884/mqtt',{url:'wss://public.cloud.shiftr.io:443',user:'public',pass:'public'}];
 const APP=!!(window.DG_APP||location.protocol==='capacitor:'||!!(window.Capacitor&&window.Capacitor.isNativePlatform&&window.Capacitor.isNativePlatform()));   /* a local host name means a developer test machine, but NEVER inside the phone app (https://localhost, capacitor://localhost): the app is production */
 const LOCAL=!APP&&(/^(localhost|127\.\d+\.\d+\.\d+|\[::1\])$/.test(location.hostname)||/\.(localhost|test)$/.test(location.hostname));
 const Q=new URLSearchParams(location.search);
@@ -150,7 +155,7 @@ function MQ(url,opts){
   ws=w;w.binaryType='arraybuffer';
   ctT=setTimeout(()=>{if(ws===w&&!self.connected){try{w.close();}catch(e){}drop(w);}},9000);
   /* CONNECT: clean session, keep-alive 30 s; with a Will: retained, QoS 0 (flags 0x26) */
-  w.onopen=()=>{if(ws!==w)return;const wl=opts.will;const parts=[new Uint8Array([0,4,77,81,84,84,4,wl?0x26:0x02,0,30]),str(clientId)];if(wl){parts.push(str(wl.topic));parts.push(str(wl.payload||''));}send(packet(0x10,parts));};
+  w.onopen=()=>{if(ws!==w)return;const wl=opts.will,au=opts.user!=null;const parts=[new Uint8Array([0,4,77,81,84,84,4,(wl?0x26:0x02)|(au?0xC0:0),0,30]),str(clientId)];if(wl){parts.push(str(wl.topic));parts.push(str(wl.payload||''));}if(au){parts.push(str(opts.user));parts.push(str(opts.pass||''));}send(packet(0x10,parts));};
   w.onmessage=e=>{if(ws!==w)return;lastIn=Date.now();const d=new Uint8Array(e.data);const nb=new Uint8Array(buf.length+d.length);nb.set(buf);nb.set(d,buf.length);buf=nb;parse();};
   w.onclose=()=>drop(w);w.onerror=()=>{try{w.close();}catch(e){}drop(w);};}
  function parse(){while(buf.length>=2){let mul=1,len=0,i=1,b;do{if(i>=buf.length)return;b=buf[i++];len+=(b&127)*mul;mul*=128;}while(b&128);
@@ -171,8 +176,8 @@ function MQ(url,opts){
  function reconnect(){if(ended||self.connected)return;clearTimeout(retryT);delay=1500;const w=ws;ws=null;if(w){try{w.close();}catch(e){}}connect();}
  Object.assign(self,{subscribe:sub,unsubscribe:unsub,publish,end,reconnect});connect();return self;}
 /* one client per broker; messages are JSON (empty payload = null, used to wipe retained topics) */
-function makeClients(will){return BROKERS.map((url,bi)=>{const o={bi,ok:false,up:null,h:null,subs:()=>[],onUp2:null,c:null};
- o.c=MQ(url,{will,onUp:()=>{o.ok=true;const t=o.subs();if(t.length)o.c.subscribe(t);if(o.up){const f=o.up;o.up=null;f();}o.onUp2&&o.onUp2();},
+function makeClients(will){return BROKERS.map((br,bi)=>{const o={bi,ok:false,up:null,h:null,subs:()=>[],onUp2:null,c:null};const url=typeof br==='string'?br:br.url;
+ o.c=MQ(url,{will,user:br.user,pass:br.pass,onUp:()=>{o.ok=true;const t=o.subs();if(t.length)o.c.subscribe(t);if(o.up){const f=o.up;o.up=null;f();}o.onUp2&&o.onUp2();},
   onDown:()=>{o.ok=false;},onMsg:(topic,p,ret)=>{if(!o.h)return;let m=null;if(p.length){try{m=JSON.parse(TD.decode(p));}catch(e){return;}}o.h(o,topic,m,ret);}});return o;});}
 function anyUp(cl,ms){return new Promise(res=>{let done=false;const fin=v=>{if(done)return;done=true;clearTimeout(t);res(v);};const t=setTimeout(()=>fin(cl.some(o=>o.ok)),ms);cl.forEach(o=>{if(o.ok)fin(true);else{const f=o.up;o.up=()=>{f&&f();fin(true);};}});});}
 const pub=(o,topic,obj,retain)=>!!(o&&o.c&&o.ok&&o.c.publish(topic,typeof obj==='string'?obj:JSON.stringify(obj),retain));
@@ -504,7 +509,7 @@ function create(cfg){
   n.clients=makeClients({topic:NS+code+'/i',payload:''});
   n.clients.forEach(c=>{c.subs=()=>[NS+code+'/h',NS+code+'/i'].concat(n.quick?[NS+'lobby/+']:[]);c.h=onHostMsg;});net=n;
   const up=await anyUp(n.clients,10000);if(net!==n)return null;if(!up){closeNet();return null;}
-  n.info=()=>{if(net!==n)return;n.clients.forEach(c=>pub(c,NS+code+'/i',{v:1,host:myId,pub:n.pub,t:Date.now(),ep:n.ep,since:n.created},true));};
+  n.info=()=>{if(net!==n)return;ls.set('dgn-hosting',NS+code+'|'+Date.now());n.clients.forEach(c=>pub(c,NS+code+'/i',{v:1,host:myId,pub:n.pub,t:Date.now(),ep:n.ep,since:n.created},true));};
   n.clients.forEach(c=>c.onUp2=()=>{n.info();updListing(true);});n.info();
   n.timers.push(setInterval(n.info,INFO_MS),setInterval(()=>updListing(true),LIST_MS),setInterval(hostWatch,2000));
   if(CPU&&n.quick)n.timers.push(setInterval(quickTick,250));
@@ -656,7 +661,9 @@ function create(cfg){
   try{if(!pl||!pl.key||(m.p&&m.p!==pl.pub)){if(!m.p)return;const key=await sharedKey(n.kp.privateKey,m.p);pl=n.players.get(m.f)||{pid:null};pl.key=key;pl.pub=m.p;n.players.set(m.f,pl);}
    const d=await unseal(pl.key,m);if(net!==n)return;pl.bi=o.bi;pl.seen=Date.now();onHostData(pl,m.f,d);}catch(e){}}
  function onHostData(pl,tp,d){const n=net;if(!T||!d||typeof d!=='object')return;
-  if(d.k==='hello'){const id=String(d.id||'').slice(0,24),name=cleanName(d.name)||'Player',look=validLook(d.look);if(!id||id===myId)return;
+  if(d.k==='hello'){const id=String(d.id||'').slice(0,24),name=cleanName(d.name)||'Player',look=validLook(d.look);if(!id)return;
+   /* another device with MY player id (e.g. a phone restored from someone's backup): tell it, instead of ignoring it forever */
+   if(id===myId){sendTo(tp,pl,{k:'err',dup:1,m:'Same player ID as the host.'});return;}
    if(n.banned.has(id)){sendTo(tp,pl,{k:'err',m:'The host removed you from this table.'});return;}
    const seat=seatOf(id);
    if(seat){if(seat.gone){sendTo(tp,pl,{k:'err',m:seat.afk?AFK_REJOIN:LEFT_REJOIN});return;}mapConn(tp,pl,id,false);
@@ -692,6 +699,12 @@ function create(cfg){
   let o=n.clients[alt?((n.bi|0)+alt+n.clients.length)%n.clients.length:n.bi];if(!o||!o.ok)o=n.clients.find(x=>x.ok);if(!o)return false;
   try{const m=await seal(n.key,obj);m.f=n.topic;m.p=n.pub;return pub(o,NS+n.code+'/h',m);}catch(e){return false;}}
  const hello=()=>{const n=net,me=meInfo();return joinSend({k:'hello',id:myId,name:me.name||'Player',look:me.look,spec:n&&n.spec?1:0});};
+ /* the host has my player id: the same device (another tab hosting this table), or a second phone that copied this one's
+    storage (restored backup). The second phone gets a fresh id, used from the next time the game opens. */
+ function dupId(code){const h=String(ls.get('dgn-hosting')||'').split('|');
+  if(h[0]===NS+code&&Date.now()-(+h[1]||0)<20000)return 'You’re already hosting this table on this device (another tab or window).';
+  if(!LOCAL||!Q.get('pid'))ls.set('dd-pid','p'+Math.random().toString(36).slice(2,10));
+  return 'This phone had the same player ID as the host’s phone, so it couldn’t join. It has a new ID now: close the game, open it again and join.';}
  async function netJoin(code,o){o=o||{};if(!netOK()){o.onFail&&o.onFail('');return;}vcStop();closeNet();
   const keys=await newKeys();const n={role:'join',code,kp:keys.kp,pub:keys.pub,topic:rid(8),key:null,hostPub:null,hostId:null,ep:-1,bi:-1,last:0,ready:false,timers:[],clients:[],upSince:0,lostAt:0,spec:!!o.spec};net=n;
   n.fail=m=>{if(net!==n||n.ready)return;closeNet();if(o.onFail)o.onFail(m);else toast(m,5000);};
@@ -713,7 +726,7 @@ function create(cfg){
  async function onJoinMsg(o,topic,m,ret){const n=net;if(!n||n.role!=='join')return;
   if(topic===NS+n.code+'/i'){
    if(!m||!m.pub||!m.host){if(n.ready&&!n.lostAt)n.lostAt=Date.now();return;}   /* host info wiped: the host is gone */
-   if(m.host===myId)return;
+   if(m.host===myId&&n.ready)return;   /* not ready: a host with MY id is another device (or tab) with the same player id; say so (dupId) instead of "No table found" */
    if(m.pub===n.hostPub){if(!ret){n.last=Date.now();n.lostAt=0;}if(n.bi<0||!n.clients[n.bi]||!n.clients[n.bi].ok)n.bi=o.bi;return;}
    const ep=m.ep|0;if(n.hostPub&&ep<=n.ep)return;
    n.hostPub=m.pub;n.hostId=m.host;n.ep=ep;n.bi=o.bi;n.key=null;
@@ -722,7 +735,7 @@ function create(cfg){
   if(topic!==NS+n.code+'/p/'+n.topic||!n.key||!m)return;
   let d;try{d=await unseal(n.key,m);}catch(e){return;}if(net!==n||!d||typeof d!=='object')return;
   n.bi=o.bi;n.last=Date.now();
-  if(d.k==='err'){if(!n.ready){n.fail(String(d.m||'Couldn’t join that table.'));return;}endSession('kicked',String(d.m||''));return;}
+  if(d.k==='err'){if(d.dup&&!n.ready){n.fail(dupId(n.code));return;}if(!n.ready){n.fail(String(d.m||'Couldn’t join that table.'));return;}endSession('kicked',String(d.m||''));return;}
   if(d.k==='afk'){endSession('afk');return;}
   if(d.k==='bye'){if(d.next===myId&&T&&seated(myId)){becomeHost();return;}if(d.mig||d.next){n.lostAt=Date.now();return;}endSession('closed','The host closed the table.');return;}
   if(d.k==='state'){applyState(d);return;}
