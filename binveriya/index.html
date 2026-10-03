@@ -694,7 +694,7 @@ button:disabled{cursor:default}
 <script src="../shared/avatar.js?v=12"></script>
 <script src="../shared/sponsors.js?v=8"></script>
 <script src="../shared/dgcf.js?v=1"></script>
-<script src="../shared/net.js?v=9"></script>
+<script src="../shared/net.js?v=10"></script>
 
 <script>
 'use strict';
@@ -2731,6 +2731,11 @@ function netSeatSwap(cpuId,pl){if(!netHost()||!G||G.over||!pl||!pl.id)return fal
  const p=G.players[i];if(p.out||!p.cpu)return false;const l=lookOf(pl.look);
  p.id=pl.id;p.name=String(pl.name||'Player').slice(0,14);p.av=l.av;p.human=true;p.cpu=0;p.leaving=0;p.aiTurns=0;p.mute=false;
  if(DL&&DL.p===i)DL=null;ACTKEY='';buildPlayers();render();NET.sync();return true;}
+/* host: a player whose connection dropped is back while the computer still plays their seat (not yet sold off):
+   they take it back with everything on it */
+function netSeatBack(pid){if(!netHost()||!G||G.over)return false;const i=G.players.findIndex(p=>p.id===pid);if(i<0)return false;
+ const p=G.players[i];if(p.out||p.cpu)return false;p.human=true;p.leaving=0;p.aiTurns=0;
+ if(DL&&DL.p===i)DL=null;ACTKEY='';buildPlayers();render();pump(true);NET.sync();return true;}
 /* a Quick Match computer seat gets one of the game's own computer players (name + face) */
 function netCpuSeat(k,taken){const t=new Set((taken||[]).map(s=>String(s).toLowerCase()));const b=BOTS.find(x=>!t.has(x[0].toLowerCase()))||BOTS[k%BOTS.length];
  let av=null;try{if(window.DGAvatar)av=b[1]?DGAvatar.presets[b[1]]:DGAvatar.random(b[0]+'bv');}catch(e){}return{name:b[0],look:{av,tok:''}};}
@@ -2745,7 +2750,7 @@ function decisionClock(){const c=$('#statusChip');if(!c||!G)return;const d=netHo
 function netLobby(){ONLINE=true;DL=null;closeSheet(false);closeDraw(true);clearBanner();G=null;showHome();}
 function netEnd(){ONLINE=false;DL=null;GDL=null;closeSheet(false);closeDraw(true);clearBanner();G=null;ME=0;showHome();}
 function initNet(){if(!window.DGNet)return;NET=DGNet.create({game:'binveriya',title:'Binveriya',min:2,max:5,id:MYID,
- cpu:true,quickSize:4,cpuSeat:netCpuSeat,onSeatSwap:netSeatSwap,
+ cpu:true,quickSize:4,cpuSeat:netCpuSeat,onSeatSwap:netSeatSwap,onSeatBack:netSeatBack,
  me:()=>({name:netName(),look:{av:myAvatar(),tok:SETUP.tok}}),setName:v=>{ls.set('bv-name',v);},
  avatar:seat=>{const l=lookOf(seat.look);try{if(window.DGAvatar&&l.av)return DGAvatar.render(l.av,{size:38});}catch(e){}return '';},
  options:[{k:'mode',label:'Game length',def:'quick',choices:[['quick','Quick · 30 min'],['classic','Classic']]},
@@ -2753,7 +2758,7 @@ function initNet(){if(!window.DGNet)return;NET=DGNet.create({game:'binveriya',ti
    hint:o=>+o.target?`The first to reach MVR ${(+o.target).toLocaleString('en-US')} net worth at the end of a turn wins.`:'Play until one landowner is left (the richest wins after round 120).'}],
  rulesNote:'2 to 5 players. 20 seconds per decision, then the computer moves for you. Miss 2 in a row, or leave, and the computer plays one more round for you; then your buildings are removed, loans cleared and your islands are auctioned.',
  listInfo:m=>{if(m.status!=='lobby'&&G)return 'Round '+G.round+(G.limit?' · quick game':G.target?' · goal '+G.target.toLocaleString('en-US'):' · last one standing');return (m.opts&&m.opts.mode)==='classic'?'Classic':'Quick game · 30 min';},
- dropText:(nm,why)=>nm+(why==='afk'?' is away':why==='left'?' left':' lost connection')+'. The computer plays one more round for them.',
+ dropText:(nm,why)=>nm+(why==='afk'?' is away':why==='left'?' left':' lost connection')+(why==='lost'?'. The computer plays for them until they’re back (one round at most).':'. The computer plays one more round for them.'),
  afkText:'You missed 2 decisions in a row, so the computer took your seat for one more round. You can’t rejoin this game.',
  hostAfkText:'You missed 2 decisions in a row, so the computer is playing your seat for one more round.',
  onStart:netStart,view:()=>netView(),backup:netBackup,onAction:netAction,onDrop:netDrop,onState:netState,onLobby:netLobby,onMigrate:netMigrate,onEnd:netEnd,

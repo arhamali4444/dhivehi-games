@@ -631,6 +631,11 @@ function create(cfg){
   return seatSwap(typeof a==='string'?a:null);}
  function mapConn(tp,pl,id,spec){const n=net;n.players.forEach((q,t2)=>{if(t2!==tp&&q.pid===id)n.players.delete(t2);});pl.pid=id;pl.spec=!!spec;pl.seen=Date.now();n.last[id]=Date.now();}
  function note(t){if(T)T.note={k:Math.max((T.rev|0)+1,((T.note&&T.note.k)|0)+1),t};}
+ /* a seat that went because the connection dropped (or the page closed) is given back when that player returns,
+    while the game still has it for them (cfg.onSeatBack(id) says yes: e.g. not yet sold off). Leave and AFK stay final. */
+ function seatBack(p){if(role!=='host'||!T||!p||!p.gone||p.afk||p.why!=='lost'||T.status!=='playing'||!cfg.onSeatBack)return false;
+  let ok=false;try{ok=cfg.onSeatBack(p.id)===true;}catch(e){console.error(e);}if(!ok)return false;
+  p.gone=0;delete p.why;clearStrikes(p.id);if(net)net.last[p.id]=Date.now();note(p.name+' is back.');toast(p.name+' is back.');return true;}
  function drop(id,why){const n=net;if(!n||role!=='host'||!T||id===myId)return;
   n.players.forEach((pl,tp)=>{if(pl.pid===id)n.players.delete(tp);});delete n.last[id];
   const i=T.players.findIndex(p=>p.id===id);
@@ -638,7 +643,7 @@ function create(cfg){
   const p=T.players[i];if(p.gone||p.cpu)return;
   if(T.mic)delete T.mic[id];
   if(T.status==='lobby'){T.players.splice(i,1);note(p.name+' left the table.');sync();return;}
-  p.gone=1;let t='';try{t=cfg.dropText?cfg.dropText(p.name,why):'';}catch(e){}
+  p.gone=1;p.why=why==='left'?'left':'lost';let t='';try{t=cfg.dropText?cfg.dropText(p.name,why):'';}catch(e){}
   note(t||(p.name+(why==='left'?' left.':' lost connection.')+' The computer takes their seat.'));
   try{cfg.onDrop&&cfg.onDrop(id,why);}catch(e){console.error(e);}
   sync();}
@@ -683,7 +688,11 @@ function create(cfg){
    /* wiped (an old host's Last Will fired late): put our info straight back */
    if(!m||!m.host){if(n.info)n.info();return;}
    /* someone else took over this table while we were cut off: bow out without touching their topics */
-   if(m.host!==myId&&!ret){const ep=m.ep|0;if(ep>n.ep||(ep===n.ep&&m.host<myId)){n.superseded=true;endSession('moved','Your connection dropped and the table moved on without you.');}}return;}
+   if(m.host!==myId&&!ret){const ep=m.ep|0;if(ep>n.ep||(ep===n.ep&&m.host<myId)){n.superseded=true;
+    /* a game that gives seats back: join the new host as a player and ask for my seat, instead of leaving */
+    if(cfg.onSeatBack&&T&&T.status==='playing'&&seated(myId)){const code=n.code,r=run;role='join';toast('Your connection dropped. Going back to your seat…',3500);
+     netJoin(code,{timeout:8000,onFail:()=>{if(r===run)endSession('moved','Your connection dropped and the table moved on without you.');}});return;}
+    endSession('moved','Your connection dropped and the table moved on without you.');}}return;}
   if(!m||topic!==NS+n.code+'/h'||typeof m.f!=='string'||!/^[0-9a-f]{8,40}$/.test(m.f)||!m.i||!m.c)return;
   let pl=n.players.get(m.f);
   try{if(!pl||!pl.key||(m.p&&m.p!==pl.pub)){if(!m.p)return;const key=await sharedKey(n.kp.privateKey,m.p);pl=n.players.get(m.f)||{pid:null};pl.key=key;pl.pub=m.p;n.players.set(m.f,pl);}
@@ -694,7 +703,7 @@ function create(cfg){
    if(id===myId){sendTo(tp,pl,{k:'err',dup:1,m:'Same player ID as the host.'});return;}
    if(n.banned.has(id)){sendTo(tp,pl,{k:'err',m:'The host removed you from this table.'});return;}
    const seat=seatOf(id);
-   if(seat){if(seat.gone){sendTo(tp,pl,{k:'err',m:seat.afk?AFK_REJOIN:LEFT_REJOIN});return;}mapConn(tp,pl,id,false);
+   if(seat){if(seat.gone&&!seatBack(seat)){sendTo(tp,pl,{k:'err',m:seat.afk?AFK_REJOIN:LEFT_REJOIN});return;}mapConn(tp,pl,id,false);
     if(T.status==='lobby'){seat.name=name;seat.look=look;sync();}else sendState(tp,pl);return;}
    if(T.status==='lobby'&&!d.spec){const ci=T.players.findIndex(p=>p.cpu);
     if(ci>=0){mapConn(tp,pl,id,false);T.players[ci]={id,name,look};T.wait=T.wait.filter(q=>q.id!==id);note(name+' took a seat');toast(name+' took a seat');sync();return;}
@@ -720,7 +729,7 @@ function create(cfg){
    case 'look':if(seat&&T.status==='lobby'){seat.name=cleanName(d.name)||seat.name;seat.look=validLook(d.look);sync();}return;
    case 'lob':if(seat&&T.status==='lobby')lobbyMsg(id,d.d);return;
    case 'mic':if(seat&&!seat.gone){const on=!!d.on;T.mic=T.mic||{};if(!!T.mic[id]!==on){if(on)T.mic[id]=1;else delete T.mic[id];sync();}}return;
-   case 'leave':n.players.delete(tp);drop(id,'left');if(!seat)sync();return;}}
+   case 'leave':n.players.delete(tp);drop(id,d.soft?'lost':'left');if(!seat)sync();return;}}
 
  /* ================= JOINER ================= */
  async function joinSend(obj,alt){const n=net;if(!n||n.role!=='join'||!n.key)return false;
@@ -779,7 +788,7 @@ function create(cfg){
   n.bi=o.bi;n.last=Date.now();
   if(d.k==='err'){if(d.dup&&!n.ready){n.fail(dupId(n.code));return;}if(!n.ready){n.fail(String(d.m||'Couldn’t join that table.'));return;}endSession('kicked',String(d.m||''));return;}
   if(d.k==='afk'){endSession('afk');return;}
-  if(d.k==='bye'){if(d.next===myId&&T&&seated(myId)){becomeHost();return;}if(d.mig||d.next){n.lostAt=Date.now();return;}endSession('closed','The host closed the table.');return;}
+  if(d.k==='bye'){n.hostLeft=!!d.left;if(d.next===myId&&T&&seated(myId)){becomeHost();return;}if(d.mig||d.next){n.lostAt=Date.now();return;}endSession('closed','The host closed the table.');return;}
   if(d.k==='state'){applyState(d);return;}
   if(!n.ready)return;
   if(d.k==='chat'){showChat(String(d.p||''),d.m|0);return;}
@@ -793,20 +802,22 @@ function create(cfg){
   if(!n.ready){n.ready=true;clearTimeout(n.failT);role='join';keepAwake(true);hideQuick();closeHub();
    try{const u=new URL(location.href);if(u.searchParams.has('t')){u.searchParams.delete('t');history.replaceState(history.state,'',u.pathname+u.search+u.hash);}}catch(e){}}
   const me=seatOf(myId);
-  if(me&&me.gone){endSession(me.afk?'afk':'left',me.afk?'':LEFT_REJOIN);return;}
+  if(me&&!me.gone&&T.status==='playing')ls.set('dgn-last',NS+T.code+'|'+Date.now());
+  if(me&&me.gone){if(!me.afk&&me.why==='lost'&&cfg.onSeatBack&&Date.now()-(n.backAt||0)>10000){n.backAt=Date.now();hello();return;}
+   endSession(me.afk?'afk':'left',me.afk?'':LEFT_REJOIN);return;}
   if(T.note&&T.note.t&&(!prev||!prev.note||prev.note.k!==T.note.k))toast(T.note.t);
   if(T.status==='lobby'){if(prev&&prev.status!=='lobby'){try{cfg.onLobby&&cfg.onLobby();}catch(e){console.error(e);}}enterLobby();}
   else{hideRoom();try{cfg.onState&&cfg.onState(V,T,{spec:!seated(myId),waiting:T.wait.some(w=>w.id===myId)});}catch(e){console.error(e);}}
   updDock();}
  /* host migration: rebuild the table from the last state (and backup), with a higher epoch */
  async function becomeHost(){const n=net;if(!n||n.role!=='join'||n.promoting||!T)return;n.promoting=true;
-  const M=clone(T),old=M.hostId,lastV=V,bk=BK,oldSkew=skew;
+  const M=clone(T),old=M.hostId,lastV=V,bk=BK,oldSkew=skew,oldLeft=!!n.hostLeft;
   const oldCl=n.clients;n.timers.forEach(clearInterval);clearTimeout(n.failT);oldCl.forEach(c=>{c.h=null;c.onUp2=null;});net=null;
   const h=await hostNet(M.code,{ep:Math.max(n.ep|0,M.ep|0)+1,pub:!!M.pub,quick:!!M.quick,created:M.created});
   setTimeout(()=>oldCl.forEach(c=>{try{c.c.end();}catch(e){}}),600);
   if(!h){endSession('lost','Lost the connection to the table.');return;}
   role='host';const oi=M.players.findIndex(p=>p.id===old);let wasSeated=false;
-  if(oi>=0){if(M.status==='lobby')M.players.splice(oi,1);else if(!M.players[oi].gone){M.players[oi].gone=1;wasSeated=true;}}
+  if(oi>=0){if(M.status==='lobby')M.players.splice(oi,1);else if(!M.players[oi].gone){M.players[oi].gone=1;M.players[oi].why=oldLeft?'left':'lost';wasSeated=true;}}
   const oldName=(T.players.find(p=>p.id===old)||{}).name||'The host';
   M.hostId=myId;M.ep=h.ep;M.rev=(M.rev|0)+100;M.wait=M.wait||[];T=M;
   const now=Date.now();T.players.forEach(p=>{if(p.id!==myId&&!p.gone&&!p.cpu)h.last[p.id]=now;});if(T.mic)delete T.mic[old];
@@ -815,13 +826,13 @@ function create(cfg){
   if(T.status==='lobby'||!cfg.onMigrate){if(T.status!=='lobby'){T.status='lobby';try{cfg.onLobby&&cfg.onLobby();}catch(e){}}enterLobby();sync();return;}
   /* skew: the old host's clock minus ours; subtract it from the old host's timestamps */
   try{cfg.onMigrate({view:lastV,backup:bk,oldHost:old,meta:T,skew:oldSkew});}catch(e){console.error(e);}
-  if(wasSeated){try{cfg.onDrop&&cfg.onDrop(old,'left');}catch(e){console.error(e);}}
+  if(wasSeated){try{cfg.onDrop&&cfg.onDrop(old,oldLeft?'left':'lost');}catch(e){console.error(e);}}
   if(T.status==='over')h.overAt=now;
   sync();updDock();}
 
  /* ================= COMMON ================= */
  async function leave(o){o=o||{};const n=net;if(!n&&!role){endSession(o.afk?'afk':'left');return;}run++;
-  if(role==='host'&&n){const nx=nextHost();const jobs=[];n.players.forEach((pl,tp)=>{if(pl.pid)jobs.push(sendTo(tp,pl,nx?{k:'bye',mig:1,next:nx}:{k:'bye'}));});
+  if(role==='host'&&n){const nx=nextHost();const jobs=[];n.players.forEach((pl,tp)=>{if(pl.pid)jobs.push(sendTo(tp,pl,nx?{k:'bye',mig:1,next:nx,left:1}:{k:'bye'}));});
    await Promise.race([Promise.all(jobs),sleep(800)]);closeNet({keepInfo:!!nx});}
   else if(n&&n.role==='join'){await Promise.race([joinSend({k:'leave'}),sleep(600)]);closeNet();}
   else closeNet();
@@ -831,7 +842,7 @@ function create(cfg){
  addEventListener('pagehide',()=>{const n=net;if(!n)return;
   if(n.role==='host'){const nx=nextHost();n.players.forEach((pl,tp)=>{if(pl.pid)sendTo(tp,pl,nx?{k:'bye',mig:1,next:nx}:{k:'bye'});});
    n.clients.forEach(c=>{try{if(n.listed)c.c.publish(NS+'lobby/'+n.code,'',true);if(!nx)c.c.publish(NS+n.code+'/i','',true);}catch(e){}});}
-  else joinSend({k:'leave'});});
+  else joinSend({k:'leave',soft:1});});
  addEventListener('pageshow',e=>{if(e.persisted&&net)endSession('left','You left the table.');});
  document.addEventListener('visibilitychange',()=>{if(!document.hidden){wakeUp();if(UI.hubOn&&!net)warm();presence();}else presenceOff();});
  addEventListener('online',()=>{if(net)wakeUp();});
@@ -850,7 +861,13 @@ function create(cfg){
   if(!up){srvSet('fail');hideQuick();toast(NET_ERR,5000);return;}
   srvSet('ok');setQuick('Looking for an open table…');
   await sleep(Object.keys(lobby).length?400:1800);if(r!==run)return;tryQuick(r,new Set());}
+ /* the match I was in during the last 20 minutes (as a player or its host): try it first, my seat may be waiting */
+ function lastMatch(){let best=null;['dgn-last','dgn-hosting'].forEach(k=>{const h=String(ls.get(k)||'').split('|'),t=+h[1]||0;
+   if(h[0].indexOf(NS)===0&&Date.now()-t<20*60000&&(!best||t>best.t))best={code:h[0].slice(NS.length),t};});return best&&/^[A-Z]{4}$/.test(best.code)?best.code:null;}
  function tryQuick(r,tried){if(r!==run)return;if(!UI.quickOn)showQuick('Looking for an open table…');
+  const back=cfg.onSeatBack&&lastMatch();
+  if(back&&!tried.has(back)&&liveTables().some(x=>x.code===back)){tried.add(back);setQuick('Going back to your match…');
+   netJoin(back,{timeout:6500,onFail:()=>{if(r!==run)return;warm();setTimeout(()=>tryQuick(r,tried),300);}});return;}
   const l=openTables().filter(x=>!tried.has(x.code)).sort((a,b)=>(b.q-a.q)||(b.n-a.n)||(a.c-b.c));
   const lv=liveTables().filter(x=>x.f>0&&!tried.has(x.code)&&(!CPU||x.cp>0)).sort((a,b)=>(b.cp-a.cp)||(b.q-a.q));const x=l[0]||lv[0];
   if(x){tried.add(x.code);setQuick(l[0]?'Joining '+x.name+'’s table…':x.cp>0?'Joining '+x.name+'’s table. You take a computer’s seat at the next break…':'Joining '+x.name+'’s table. You play from the next match…');
