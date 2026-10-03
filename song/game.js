@@ -12,7 +12,8 @@
    {t:'ans',q,pick,ms,rp}. Points: speed (1000 at once, 30 less a second) x the clip-length multiplier
    (5 s x1.0, 3 s x1.3, 2 s x1.6, 1 s x2.0) x 0.8 after the one replay.
    Audio: Web Audio. Every clip is exactly 5.0 s on the server; the chosen length is cut from its start at play time,
-   with 30 ms fades in and out (song/content.js scheduleClip). The next clip loads during the reveal; the site's
+   with 30 ms fades in and out (song/content.js scheduleClip). The next clip loads during the reveal; a song's optional
+   REVEAL clip (rk, 10 s at most: the chorus) loads while its question is on screen and plays in the reveal; the site's
    sound switch (dd-sfx) is respected; the first tap unlocks audio on iOS.
    Content (which songs are live, clip addresses): song/content.js. Only live songs are ever loaded.
    ===================================================================== */
@@ -37,6 +38,10 @@ const NR = 10;                                         /* rounds a match (Friend
 const GRACE = 900;                                     /* online: a moment for the network after the buzzer */
 const NEEDLE = .45;                                    /* s after the round starts: the needle lands, the clip plays */
 const ADV_MS = FAST ? 900 : 2200, REV_MS = FAST ? 1500 : 6500, STAND_MS = FAST ? 700 : 6000, CPU_SPEED = FAST ? .2 : LOCAL && Q.get('cpus') === 'quick' ? .3 : 1;
+const REV_DELAY = FAST ? .15 : .8;                     /* s into the reveal before the reveal clip starts (the right/wrong chime goes first) */
+const REV_FADE = .15, REV_TAIL = 1200;                 /* reveal clip fades (s); a breath (ms) after it before the next round */
+/* the reveal lasts as long as its clip needs (only when this device has the clip loaded; songs without one keep REV_MS) */
+const revMs = R => { const b = !FAST && R && R.rk ? CL.bufs.get(R.rk) : null; return b ? Math.max(REV_MS, Math.round(REV_DELAY * 1000) + REV_TAIL + Math.round(Math.min(C.REVEAL_MAX, b.el ? C.REVEAL_DEFAULT : b.duration || C.REVEAL_DEFAULT) * 1000)) : REV_MS; };
 const DAILY_CAP = 500;
 const BOLI_QUICK = [30, 20, 10];                       /* Quick Match: 1st, 2nd, 3rd */
 const BOLI_DAILY_PERFECT = 10;                         /* Daily: 1 per song named, +10 for all ten */
@@ -110,13 +115,15 @@ function decode(ab) { const c = AU.get(); if (!c) return Promise.reject(new Erro
 const fetchDecode = key => fetch(C.mediaUrl(key)).then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.arrayBuffer(); }).then(decode);
 /* the compressed copy when this browser plays its type, else (or when it fails) the WAV every browser decodes */
 const fetchEl = key => fetch(C.mediaUrl(key)).then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.blob(); }).then(b => ({ el: 1, url: URL.createObjectURL(b), duration: C.CLIP_S }));
-function loadClip(R) { if (!R || !R.k) return Promise.resolve(null);
-  if (CL.ps.has(R.k)) return CL.ps.get(R.k);
+function loadKey(k, kc, kt) { if (!k) return Promise.resolve(null);
+  if (CL.ps.has(k)) return CL.ps.get(k);
   const get = HAS_WA ? fetchDecode : fetchEl;
-  const p = (R.kc && canPlay(R.kt) ? get(R.kc).catch(() => get(R.k)) : get(R.k))
-    .then(b => { CL.bufs.set(R.k, b); return b; })
-    .catch(e => { CL.ps.delete(R.k); throw e; });
-  CL.ps.set(R.k, p); return p; }
+  const p = (kc && canPlay(kt) ? get(kc).catch(() => get(k)) : get(k))
+    .then(b => { CL.bufs.set(k, b); return b; })
+    .catch(e => { CL.ps.delete(k); throw e; });
+  CL.ps.set(k, p); return p; }
+const loadClip = R => R ? loadKey(R.k, R.kc, R.kt) : Promise.resolve(null);
+const loadReveal = R => R && R.rk ? loadKey(R.rk, R.rkc, R.rkt) : Promise.resolve(null);    /* optional: a failure only means no reveal clip */
 const preload = rounds => Promise.all(rounds.map(R => loadClip(R).then(() => true, () => false)));
 
 /* ---------- players, names, avatars (the same as the other games) ---------- */
@@ -181,8 +188,9 @@ function distractors(s, r) {
 /* one round: one song, four answers (title in Thaana, transliteration, artist), a label picture for the record */
 function mkRound(s, r, art) {
   const opts = shuffle([s].concat(distractors(s, r)), r);
-  return { id: s.id, k: s.k, kc: s.kc || '', kt: s.kt || '', d: s.d, t: s.t, tl: s.tl, a: s.a, aDv: s.aDv, y: s.y, g: s.g, u: s.u, art: art % ARTS,
-    opts: opts.map(x => ({ id: x.id, t: x.t, tl: x.tl, a: x.a })), c: opts.findIndex(x => x.id === s.id) };
+  const rv = s.rk ? { rk: s.rk, rkc: s.rkc || '', rkt: s.rkt || '' } : {};
+  return Object.assign({ id: s.id, k: s.k, kc: s.kc || '', kt: s.kt || '', d: s.d, t: s.t, tl: s.tl, a: s.a, aDv: s.aDv, y: s.y, g: s.g, u: s.u, art: art % ARTS,
+    opts: opts.map(x => ({ id: x.id, t: x.t, tl: x.tl, a: x.a })), c: opts.findIndex(x => x.id === s.id) }, rv);
 }
 const RECENT_KEY = 'song-recent';
 function recent() { try { const a = JSON.parse(ls.get(RECENT_KEY) || '[]'); return Array.isArray(a) ? a.filter(x => typeof x === 'string') : []; } catch (e) { return []; } }
@@ -275,7 +283,7 @@ function clearHost() { clearTimeout(hostT); hostT = 0; cpuT.forEach(clearTimeout
 function hostSched() { clearTimeout(hostT); hostT = 0; if (!hostOn() || pausedAt) return; const el = Date.now() - S.at;
   if (S.phase === 'adv') hostT = setTimeout(hostStartQ, Math.max(0, ADV_MS - el));
   else if (S.phase === 'q') { const all = active().length && active().every(p => S.picks[p.id]); hostT = setTimeout(hostEndQ, all ? (FAST ? 250 : 900) : Math.max(0, Q_MS + (online() ? GRACE : 0) - el)); }
-  else if (S.phase === 'rev') hostT = setTimeout(hostAfterRev, Math.max(0, REV_MS - el));
+  else if (S.phase === 'rev') hostT = setTimeout(hostAfterRev, Math.max(0, revMs(S.rounds[S.qi]) - el));
   else if (S.phase === 'stand') hostT = setTimeout(() => hostAdv(S.qi + 1), Math.max(0, STAND_MS - el)); }
 function hostAdv(i) { if (!hostOn()) return; if (i >= S.n) { hostFinish(); return; }
   if (!S.rounds[i]) { hostT = setTimeout(() => hostAdv(i), 300); return; }
@@ -342,6 +350,24 @@ function playClip(replay) { const cs = csNow(), R = S && S.rounds[S.qi]; if (!cs
   return true; }
 function stopClip() { if (!CS) return; const t = clk();
   CS.plays.forEach(p => { if (t < p.when + p.len) { if (p.h.el) { clearTimeout(p.h.t); try { p.h.el.pause(); } catch (e) {} p.len = Math.max(0, t - p.when); return; } try { p.h.gain.gain.cancelScheduledValues(t); p.h.gain.gain.setValueAtTime(p.h.gain.gain.value, t); p.h.gain.gain.linearRampToValueAtTime(0, t + .05); p.h.src.stop(t + .06); } catch (e) {} p.len = Math.max(0, t + .05 - p.when); } }); }
+/* ---------- the reveal clip (this device only): the chorus, played once while the answer is shown ---------- */
+let RV = null;   /* {key, rk, h:{src,gain,el,t}, when, len, started, stopped} */
+function stopReveal() { const r = RV; if (!r || !r.h || r.stopped) return; r.stopped = true; const h = r.h;
+  if (h.el) { clearTimeout(h.t); try { h.el.pause(); } catch (e) {} return; }
+  const c = AU.get(); if (!c) return; const t = c.currentTime;
+  try { h.gain.gain.cancelScheduledValues(t); h.gain.gain.setValueAtTime(h.gain.gain.value, t); h.gain.gain.linearRampToValueAtTime(0, t + .08); h.src.stop(t + .1); } catch (e) {} }
+function playReveal() { const R = S && S.rounds[S.qi]; if (!R || !R.rk || S.phase !== 'rev') return;
+  const key = S.gid + ':' + S.qi; if (RV && RV.key === key) return;   /* once a round (a resize redraws the reveal) */
+  RV = { key, rk: R.rk, h: null, when: 0, len: 0, started: false, stopped: false };
+  if (!sfxOn()) return;
+  const b = CL.bufs.get(R.rk), r = RV;
+  if (!b) { const gid = S.gid, qi = S.qi; loadReveal(R).then(() => { if (S && S.gid === gid && S.qi === qi && S.phase === 'rev' && RV === r && !r.started && CL.bufs.has(R.rk)) startReveal(R, r, 0); }, () => {}); return; }
+  startReveal(R, r, REV_DELAY); }
+function startReveal(R, r, delay) { const b = CL.bufs.get(R.rk), c = AU.get(); if (!b || !c || !sfxOn() || pausedAt || document.hidden) return;
+  const len = b.el ? C.REVEAL_MAX : Math.min(C.REVEAL_MAX, b.duration); r.len = len; r.started = true;
+  if (b.el) { const a = new Audio(); a.src = b.url; r.when = performance.now() / 1000 + delay; r.h = { el: a, t: setTimeout(() => { try { const pr = a.play(); pr && pr.catch && pr.catch(() => {}); } catch (e) {} r.h.t = setTimeout(() => { try { a.pause(); } catch (e) {} }, len * 1000); }, delay * 1000) }; }
+  else { if (c.state !== 'running') return; r.when = c.currentTime + delay + .03; r.h = C.scheduleClip(c, b, AU.clip, r.when, len, REV_FADE); }
+  window.__songRevLast = { when: r.when, len, end: r.when + len, qi: S.qi }; }
 function clipNow() { const cs = CS; if (!cs) return { playing: false, prog: 0, played: 0, left: 0 };
   const t = clk(); let playing = false, prog = cs.started ? 1 : 0, played = 0, left = 0;
   cs.plays.forEach(p => { const e = Math.max(0, Math.min(p.len, t - p.when)); played += e; if (t >= p.when && t < p.when + p.len) { playing = true; prog = e / p.len; left = p.len - e; } else if (t < p.when) { playing = true; prog = 0; left = p.len; } });
@@ -374,15 +400,16 @@ function soloStart(kind, nPlayers) {
         players = players.concat(bots.map((n, i) => ({ id: 'cpu' + i, name: n, cpu: 1, sk: (rnd() - .5) * .16, ch: cpuChar(n), score: 0, right: 0, fast: 0 })));
         S = newMatch('cpu', players, good, { len: lenPick });
       }
+      good.forEach(R => loadReveal(R).catch(() => {}));   /* background: the reveal clips (optional, never waited for) */
       closeToast(); S.at = Date.now(); mode = kind; myPicks = {}; buildMatch(); commit(); hostSched();
     });
   });
 }
-function soloQuit() { clearHost(); stopClip(); pausedAt = 0; if (mode === 'daily' && S && S.phase !== 'over') { const m = me(); dailySave({ started: 1, done: 1, right: m ? m.right | 0 : 0, score: m ? m.score : 0, n: S.n, quit: 1 }); }
+function soloQuit() { clearHost(); stopClip(); stopReveal(); pausedAt = 0; if (mode === 'daily' && S && S.phase !== 'over') { const m = me(); dailySave({ started: 1, done: 1, right: m ? m.right | 0 : 0, score: m ? m.score : 0, n: S.n, quit: 1 }); }
   S = null; mode = null; closeSheet(); renderHome(); }
 /* solo: pause while the page is hidden, sideways or the menu is open (the clock, the computers and the clip stop);
    online never pauses (the clip is only silenced while hidden) */
-function pauseSolo() { if (S && (mode === 'cpu' || mode === 'daily') && S.phase !== 'over' && !pausedAt) { pausedAt = Date.now(); clearHost(); AU.sleep(); if (!HAS_WA) stopClip(); } }
+function pauseSolo() { if (S && (mode === 'cpu' || mode === 'daily') && S.phase !== 'over' && !pausedAt) { pausedAt = Date.now(); clearHost(); AU.sleep(); if (!HAS_WA) { stopClip(); stopReveal(); } } }
 function resumeSolo() { if (!pausedAt || !S) return; const d = Date.now() - pausedAt; pausedAt = 0; S.at += d; AU.unlock(); if (S.phase === 'q') cpuGo(); hostSched(); render(); }
 let rotPaused = false;
 document.addEventListener('visibilitychange', () => { if (document.hidden) { AU.sleep(); pauseSolo(); } else { if (!rotPaused && !menuPaused) resumeSolo(); if (!pausedAt) AU.unlock(); } });
@@ -424,6 +451,7 @@ function netState(v, meta, info) { if (!v || !Array.isArray(v.players)) return; 
   const spec = info ? !!info.spec : null, flip = wasSpec === true && spec === false; wasSpec = spec;
   const fresh = screen !== 'match' || !S || S.gid !== N.gid || flip; S = N;
   (S.rounds || []).slice(S.qi, S.qi + 2).forEach(R => { if (R && R.k) loadClip(R).catch(() => {}); });
+  loadReveal(S.rounds && S.rounds[S.qi]).catch(() => {});
   if (fresh) { closeSheet(); myPicks = {}; buildMatch(); } render(); }
 function netMigrate(o) { mode = 'online'; clearHost(); const b = o.backup;
   if (!b || !b.gid || !Array.isArray(b.players)) { if (o.view && o.view.phase === 'over') { S = o.view; buildMatch(); render(); return; } NET.again(); return; }
@@ -433,8 +461,8 @@ function netMigrate(o) { mode = 'online'; clearHost(); const b = o.backup;
   if (S.phase === 'over') { render(); NET.matchOver(); return; }
   if (S.phase === 'rev' || S.phase === 'stand' || S.phase === 'adv') brk(true);
   commit(); hostSched(); toast('The host left, so you run the match now.', 3500); }
-function netLobby() { wasSpec = null; clearHost(); stopClip(); S = null; closeSheet(); if (screen === 'match') renderHome(); }
-function netEnd() { wasSpec = null; clearHost(); stopClip(); mode = null; S = null; closeSheet(); renderHome(); }
+function netLobby() { wasSpec = null; clearHost(); stopClip(); stopReveal(); S = null; closeSheet(); if (screen === 'match') renderHome(); }
+function netEnd() { wasSpec = null; clearHost(); stopClip(); stopReveal(); mode = null; S = null; closeSheet(); renderHome(); }
 function cpuSeat(i, taken) { const t = new Set((taken || []).map(x => String(x).toLowerCase())); const n = shuffle(CPUS).find(x => !t.has(x.toLowerCase())); if (!n) return null; const ch = cpuChar(n); return { name: n, look: ch ? { ch } : null }; }
 function initNet() { if (!window.DGNet) return; NET = DGNet.create({ game: 'song', title: 'Guess the Song', min: 2, max: 6, id: myId,
   cpu: true, quickSize: 4, cpuSeat, onSeatSwap: netSeatSwap,
@@ -569,12 +597,14 @@ function layoutFor(key) {
   const panel = S.phase === 'stand' || S.phase === 'over', rev = S.phase === 'rev';
   $('#stage').hidden = panel || rev; $('#revp').hidden = !rev; $('#strip').hidden = panel;
   $('#panelHost').style.display = panel ? 'flex' : 'none';
+  if (!rev) stopReveal();   /* the next round, the standings or the results: the reveal clip ends (with a quick fade) */
   if (panel) { $('#panelHost').innerHTML = S.phase === 'stand' ? standHTML() : overHTML(); if (S.phase === 'over') overFx(); return; }
   buildStrip();
-  if (rev) { stopClip(); buildRev(); return; }
+  if (rev) { stopClip(); buildRev(); playReveal(); return; }
   /* a new round: a fresh record with its own label (the turntable itself is only drawn once per round) */
   const R = S.rounds[S.qi], tb = $('#tbox'), roundKey = S.gid + ':' + S.qi;
   if (tb._rk !== roundKey) { tb.innerHTML = deckHTML('q', R ? R.art | 0 : 0); tb._rk = roundKey; ['disc', 'stk', 'arm', 'ring', 'rdy'].forEach(id => { tb['_' + id] = tb.querySelector('#' + id); }); }
+  if (R) loadReveal(R).catch(() => {});   /* the reveal clip loads while the question is on screen */
   fitDeck(); lastSec = -1;
   void prevKey;
 }
@@ -776,7 +806,7 @@ function openQuit() { if (!S) return; const d = S.kind === 'daily' && S.phase !=
   sheet(`<div class="grab"></div><h2>Quit to lobby?</h2><p class="muted" style="margin:6px 0 0">${d ? 'Your daily challenge ends here and counts as today’s try.' : 'This match ends and won’t be saved.'}</p>
 <div class="row"><button class="btn gh" data-a="close">Stay</button><button class="btn dg" data-a="quitYes">Quit to lobby</button></div>`); }
 function toggleSfx(force) { ls.set('dd-sfx', (force != null ? force : !sfxOn()) ? '1' : '0'); document.querySelectorAll('[data-a="sfx"]').forEach(b => { b.setAttribute('aria-pressed', String(sfxOn())); b.textContent = sfxLabel(); });
-  if (sfxOn()) { AU.unlock(); SFX.pick(); } else stopClip(); }
+  if (sfxOn()) { AU.unlock(); SFX.pick(); } else { stopClip(); stopReveal(); } }
 let menuPaused = false;
 const sheetObs = new MutationObserver(() => { const open = $('#sheet').classList.contains('open');
   if (open && screen === 'match' && !pausedAt && (mode === 'cpu' || mode === 'daily')) { pauseSolo(); menuPaused = !!pausedAt; }
@@ -804,7 +834,7 @@ document.addEventListener('click', e => { const b = e.target.closest('[data-a]')
     case 'soundOn': toggleSfx(true); listenNow(); break;
     case 'ready': if (hostOn() && mode === 'cpu' && S.phase === 'stand') hostAdv(S.qi + 1); break;
     case 'again': if (mode === 'cpu') { const n = S.players.length; S = null; soloStart('cpu', n); } break;
-    case 'home': if (online() && NET) NET.leave(); stopClip(); S = null; mode = null; clearHost(); renderHome(); break;
+    case 'home': if (online() && NET) NET.leave(); stopClip(); stopReveal(); S = null; mode = null; clearHost(); renderHome(); break;
     case 'netAgain': if (NET) NET.again(); break;
     case 'netLeave': closeSheet(); if (NET && online()) { if (NET.leaveAsk) NET.leaveAsk(); else NET.leave(); } else soloQuit(); break;
     case 'menu': openMenu(); break;
@@ -824,7 +854,7 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape' && $('#sheet'
 
 /* test hooks (used by the automated checks; harmless in normal play) */
 window.__song = { Q_MS, NEEDLE, LENS, ptsFor, get S() { return S; }, get mode() { return mode; }, get NET() { return NET; }, get songs() { return SONGS; }, get content() { return contentState; },
-  answer, replay, view: viewFor, get clip() { return CS; }, clipNow, get ctx() { return AU.get(); }, get clipOut() { return AU.clip; }, bufs: CL.bufs, get lenPick() { return lenPick; },
+  answer, replay, view: viewFor, get clip() { return CS; }, get reveal() { return RV; }, revMs, clipNow, get ctx() { return AU.get(); }, get clipOut() { return AU.clip; }, bufs: CL.bufs, get lenPick() { return lenPick; },
   /* localhost tests only: hold the current phase at t seconds (the clock, the host and the audio stop) / let it run again */
   hold: t => { if (!LOCAL || !S) return false; clearHost(); const n = Date.now(); S.at = n - t * 1000; pausedAt = n; AU.sleep(); return true; },
   release: () => { if (!LOCAL || !S) return false; resumeSolo(); return true; }, mvDay, dailyRounds, pickRounds, distractors: s => distractors(s, rnd), get pausedAt() { return pausedAt; }, recent };

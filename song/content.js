@@ -5,13 +5,16 @@
 
    The live list = ONE small Firestore document, trivia/song, field "data" (a JSON string, the "manifest"):
      {v:1, at, songs:[{id, t:titleThaana, tl:transliteration, a:artist, aDv:artistThaana, y:year|0, g:genre,
-                       d:'E'|'M'|'H', u:listenUrl|'', k:wavKey, kc:compressedKey|'', kt:compressedType|'', live:true}]}
+                       d:'E'|'M'|'H', u:listenUrl|'', k:wavKey, kc:compressedKey|'', kt:compressedType|'', live:true,
+                       rk?:revealWavKey, rkc?:revealCompressedKey, rkt?:revealCompressedType}]}   (rk* only when the song has a valid reveal clip)
    The admin page rebuilds it from the admin-only song docs (trivia_songs/{songId}) after EVERY change, with only
    songs switched Live that have a clip. One read per game start; hidden songs are never sent.
    Clips: the dg-admin Worker, GET <WORKER>/media/<key> (Cloudflare R2). Every clip is exactly 5.0 s, cut by the admin
    page with 30 ms fades: a 16-bit mono 22.05 kHz WAV (always, every browser can decode it) and, when the admin's
    browser could make one, a small compressed copy (WebM/Opus, Ogg or MP4/AAC) that the game prefers when it can play it.
    Shorter clip lengths (3, 2, 1 s) are cut from the START of the 5 s clip at play time.
+   Optional REVEAL clip: a second clip (the chorus, the best-known part) of 1 to 10 s, same WAV format, played when the answer
+   is shown. 10 s at most (REVEAL_MAX), whatever the file holds: the game never plays more.
 
    Storage behind one small interface, two backends (as Guess the Celebrity):
      production : manifest from Firestore (REST, no SDK), clips from the Worker
@@ -30,6 +33,8 @@
   var CLIP_S = 5;                 /* the stored clip */
   var CLIP_SR = 22050;            /* WAV sample rate */
   var FADE_S = 0.03;              /* 30 ms fades in and out */
+  var REVEAL_MAX = 10;            /* the reveal clip: never more than 10 s (keeps copyright exposure small; 10 s WAV = 441 KB < the Worker's 600 KB) */
+  var REVEAL_DEFAULT = 8;
   var LENS = [[5, 1.0], [3, 1.3], [2, 1.6], [1, 2.0]];   /* clip length (s) and its points multiplier */
 
   var isApp = function () { return !!(root.DG_APP || (root.location && root.location.protocol === 'capacitor:') || (root.Capacitor && root.Capacitor.isNativePlatform && root.Capacitor.isNativePlatform())); };
@@ -61,8 +66,14 @@
       var c = s.clip || {};
       if (!WAV_RE.test(c.key || '')) return;
       var kc = KEY_RE.test(c.keyC || '') && !WAV_RE.test(c.keyC) ? c.keyC : '';
-      out.push({ id: String(s.id), t: str(s.title, 60), tl: str(s.titleLt, 60), a: str(s.artist, 50), aDv: str(s.artistDv, 50), y: cleanYear(s.year),
-        g: str(s.genre, 30), d: DIFF[s.difficulty] || 'M', u: cleanUrl(s.url), k: c.key, kc: kc, kt: kc ? TYPES[kc.split('.').pop()] : '', live: true });
+      var o = { id: String(s.id), t: str(s.title, 60), tl: str(s.titleLt, 60), a: str(s.artist, 50), aDv: str(s.artistDv, 50), y: cleanYear(s.year),
+        g: str(s.genre, 30), d: DIFF[s.difficulty] || 'M', u: cleanUrl(s.url), k: c.key, kc: kc, kt: kc ? TYPES[kc.split('.').pop()] : '', live: true };
+      var r = s.reveal || {};   /* the optional reveal clip: same validation as the hint clip; an invalid one is simply left out (the song stays) */
+      if (WAV_RE.test(r.key || '')) {
+        var rc = KEY_RE.test(r.keyC || '') && !WAV_RE.test(r.keyC) ? r.keyC : '';
+        o.rk = r.key; o.rkc = rc; o.rkt = rc ? TYPES[rc.split('.').pop()] : '';
+      }
+      out.push(o);
     });
     out.sort(function (a, b) { return a.id < b.id ? -1 : a.id > b.id ? 1 : 0; });
     return { v: 1, at: Date.now(), songs: out };
@@ -76,6 +87,10 @@
     return songs.filter(function (s) {
       if (!s || s.live !== true || typeof s.id !== 'string' || typeof s.t !== 'string' || !s.t.trim() || !WAV_RE.test(s.k || '') || seen[s.id]) return false;
       if (!(KEY_RE.test(s.kc || '') && TYPES[s.kc.split('.').pop()] === s.kt)) { s.kc = ''; s.kt = ''; }
+      if (s.rk != null || s.rkc != null || s.rkt != null) {      /* reveal clip: keep only a fully valid one */
+        if (WAV_RE.test(s.rk || '')) { if (!(KEY_RE.test(s.rkc || '') && !WAV_RE.test(s.rkc) && TYPES[s.rkc.split('.').pop()] === s.rkt)) { s.rkc = ''; s.rkt = ''; } }
+        else { delete s.rk; delete s.rkc; delete s.rkt; }
+      }
       s.tl = str(s.tl, 60); s.a = str(s.a, 50); s.aDv = str(s.aDv, 50); s.g = str(s.g, 30); s.y = cleanYear(s.y); s.u = cleanUrl(s.u); s.d = DIFF[s.d] || 'M';
       seen[s.id] = 1;
       return true;
@@ -146,7 +161,7 @@
   }
 
   root.DGSongContent = { WORKER: WORKER, DEV: DEV, STATUSES: STATUSES, GENRES: GENRES, KEY_RE: KEY_RE, WAV_RE: WAV_RE, TYPES: TYPES, DOC_URL: DOC_URL,
-    CLIP_S: CLIP_S, CLIP_SR: CLIP_SR, FADE_S: FADE_S, LENS: LENS,
+    CLIP_S: CLIP_S, REVEAL_MAX: REVEAL_MAX, REVEAL_DEFAULT: REVEAL_DEFAULT, CLIP_SR: CLIP_SR, FADE_S: FADE_S, LENS: LENS,
     mediaUrl: mediaUrl, base: base, buildManifest: buildManifest, parseManifest: parseManifest, loadLive: loadLive,
     scheduleClip: scheduleClip, cutClip: cutClip, encodeWav: encodeWav, cleanUrl: cleanUrl };
   if (typeof module !== 'undefined' && module.exports) module.exports = root.DGSongContent;
