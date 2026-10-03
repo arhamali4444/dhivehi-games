@@ -1,7 +1,12 @@
 /* =====================================================================================
    DGNet · shared online play for Dhivehi Games                        shared/net.js  v2
    Load it BEFORE the game's own script, with a cache-busting version:
-       <script src="../shared/net.js?v=7"></script>        (bump ?v= in EVERY game whenever this file changes)
+       <script src="../shared/dgcf.js?v=1"></script>       (optional: our own Cloudflare play server, see below)
+       <script src="../shared/net.js?v=9"></script>        (bump ?v= in EVERY game whenever this file changes)
+   v9 / VERSION 2 (Oct 2026, backward-compatible): with shared/dgcf.js loaded, the Dhivehi Games play server (Cloudflare,
+   dg-play repo) is one more entry in BROKERS. DGCF.mode(game) picks 'mqtt' (public brokers only, as before), 'both'
+   (public brokers + ours; old builds still meet new ones) or 'cf' (ours only; the public brokers open after 6 s without
+   it, or at once on a quota/version error). Same topics and Will; still end-to-end encrypted (the server is a blind relay).
    v2 (Sept 2026, backward-compatible): optional waiting-room hooks roomList / roomClick / onLobbyMsg / lobbyFix,
    NET.lobby(obj), game-owned lobby data T.x (also passed to onStart as info.x). Used by Dhihaeh for 2 v 2 seats.
    v5 (Sept 2026, backward-compatible; games opt in with cfg.cpu:true):
@@ -99,7 +104,7 @@
 (function(){
 'use strict';
 if(window.DGNet)return;
-const VERSION=1;
+const VERSION=2;
 /* Every client connects to EVERY broker below at once (subscribe on all; hosts list and announce tables on all), so two
    players meet as long as they share ANY one of them. emqx and hivemq use ports 8084 / 8884, which some networks and DNS
    filters block; shiftr.io's public broker runs on the normal HTTPS port 443 (login public/public), so a phone that can't
@@ -142,7 +147,7 @@ async function unseal(key,m){const pt=await crypto.subtle.decrypt({name:'AES-GCM
 /* ---------- tiny MQTT 3.1.1 client (QoS 0) with an optional retained Last Will ---------- */
 function MQ(url,opts){
  const self={connected:false,reconnecting:true};
- let ws=null,buf=new Uint8Array(0),pingT=null,retryT=null,ctT=null,ended=false,pid=0,delay=1500,lastIn=0;
+ let armed=!opts.lazy,ws=null,buf=new Uint8Array(0),pingT=null,retryT=null,ctT=null,ended=false,pid=0,delay=1500,lastIn=0;
  const subs=new Set(),clientId='dg_'+rid(7);
  const str=s=>{const b=TE.encode(s),o=new Uint8Array(2+b.length);o[0]=b.length>>8;o[1]=b.length&255;o.set(b,2);return o;};
  function packet(head,parts){const bodyLen=parts.reduce((t,p)=>t+p.length,0);let len=bodyLen;const lb=[];do{let d=len%128;len=Math.floor(len/128);if(len>0)d|=128;lb.push(d);}while(len>0);
@@ -173,14 +178,35 @@ function MQ(url,opts){
  function unsub(topics){topics.forEach(t=>subs.delete(t));if(!self.connected)return;send(packet(0xA2,[nextId()].concat(topics.map(str))));}
  function publish(topic,payload,retain){if(!self.connected)return false;const p=typeof payload==='string'?TE.encode(payload):payload;return send(packet(0x30|(retain?1:0),[str(topic),p]));}
  function end(){ended=true;clearTimeout(retryT);clearTimeout(ctT);clearInterval(pingT);const w=ws;ws=null;if(w){try{if(self.connected)w.send(new Uint8Array([0xE0,0]));w.close();}catch(e){}}self.connected=false;}
- function reconnect(){if(ended||self.connected)return;clearTimeout(retryT);delay=1500;const w=ws;ws=null;if(w){try{w.close();}catch(e){}}connect();}
- Object.assign(self,{subscribe:sub,unsubscribe:unsub,publish,end,reconnect});connect();return self;}
-/* one client per broker; messages are JSON (empty payload = null, used to wipe retained topics) */
-function makeClients(will){return BROKERS.map((br,bi)=>{const o={bi,ok:false,up:null,h:null,subs:()=>[],onUp2:null,c:null};const url=typeof br==='string'?br:br.url;
- o.c=MQ(url,{will,user:br.user,pass:br.pass,onUp:()=>{o.ok=true;const t=o.subs();if(t.length)o.c.subscribe(t);if(o.up){const f=o.up;o.up=null;f();}o.onUp2&&o.onUp2();},
-  onDown:()=>{o.ok=false;},onMsg:(topic,p,ret)=>{if(!o.h)return;let m=null;if(p.length){try{m=JSON.parse(TD.decode(p));}catch(e){return;}}o.h(o,topic,m,ret);}});return o;});}
+ function reconnect(){if(!armed||ended||self.connected)return;clearTimeout(retryT);delay=1500;const w=ws;ws=null;if(w){try{w.close();}catch(e){}}connect();}
+ /* lazy clients ('cf' mode): only connect when start() is called (our server didn't answer in time) */
+ function start(){if(armed||ended)return;armed=true;self.reconnecting=true;connect();}
+ Object.assign(self,{subscribe:sub,unsubscribe:unsub,publish,end,reconnect,start});if(armed)connect();else self.reconnecting=false;return self;}
+/* one client per broker; messages are JSON (empty payload = null, used to wipe retained topics).
+   v9: our play server (shared/dgcf.js) is one more entry {cf:true}: last in 'both' mode, the only live one in 'cf' mode
+   (the public brokers are created lazily and start after CF_WAIT without it, or at once on a quota/version error). */
+const CF_WAIT=6000,CF_FAIL_MS=10*60*1000;
+let cfFailAt=0;
+function netMode(game){const D=window.DGCF;if(!D||!game)return 'mqtt';try{const m=D.mode(game);return m==='cf'||m==='both'?m:'mqtt';}catch(e){return 'mqtt';}}
+function makeClients(will,ns,game){const mode=ns?netMode(game):'mqtt';
+ const lazy=mode==='cf'&&Date.now()-cfFailAt>CF_FAIL_MS;
+ const ents=BROKERS.map(br=>typeof br==='string'?{url:br}:br);
+ if(mode==='both')ents.push({cf:true});else if(mode==='cf')ents.unshift({cf:true});
+ let cfo=null,fbT=0;
+ const startMq=()=>{clearTimeout(fbT);cl.forEach(o=>{if(!o.cf&&o.c&&o.c.start)o.c.start();});};
+ const armFb=()=>{if(mode!=='cf')return;clearTimeout(fbT);fbT=setTimeout(()=>{if(cfo&&!cfo.ok)startMq();},CF_WAIT);};
+ const cl=ents.map((br,bi)=>{const o={bi,ok:false,up:null,h:null,subs:()=>[],onUp2:null,c:null,cf:!!br.cf};
+  const onUp=()=>{o.ok=true;const t=o.subs();if(t.length)o.c.subscribe(t);if(o.up){const f=o.up;o.up=null;f();}o.onUp2&&o.onUp2();};
+  if(br.cf){cfo=o;
+   o.c=window.DGCF.client(window.DGCF.url(game),ns,{will,onUp,onDown:()=>{o.ok=false;armFb();},
+    onObj:(topic,m,ret)=>{if(o.h)o.h(o,topic,m,ret);},
+    onErr:code=>{if(code==='quota'||code==='version'||code==='blocked'){cfFailAt=Date.now();startMq();}}});}
+  else o.c=MQ(br.url,{will,user:br.user,pass:br.pass,lazy:lazy&&!br.cf,onUp,
+   onDown:()=>{o.ok=false;},onMsg:(topic,p,ret)=>{if(!o.h)return;let m=null;if(p.length){try{m=JSON.parse(TD.decode(p));}catch(e){return;}}o.h(o,topic,m,ret);}});
+  return o;});
+ armFb();return cl;}
 function anyUp(cl,ms){return new Promise(res=>{let done=false;const fin=v=>{if(done)return;done=true;clearTimeout(t);res(v);};const t=setTimeout(()=>fin(cl.some(o=>o.ok)),ms);cl.forEach(o=>{if(o.ok)fin(true);else{const f=o.up;o.up=()=>{f&&f();fin(true);};}});});}
-const pub=(o,topic,obj,retain)=>!!(o&&o.c&&o.ok&&o.c.publish(topic,typeof obj==='string'?obj:JSON.stringify(obj),retain));
+const pub=(o,topic,obj,retain)=>!!(o&&o.c&&o.ok&&o.c.publish(topic,o.cf||typeof obj==='string'?obj:JSON.stringify(obj),retain));
 function genCode(){const a='ABCDEFGHJKLMNPQRSTUVWXYZ';let s='';for(let i=0;i<4;i++)s+=a[Math.floor(Math.random()*a.length)];return s;}
 
 /* ---------- presence: "N playing now" (Firebase, project dhivehi-digu) ----------
@@ -439,6 +465,8 @@ function create(cfg){
  let net=null,pool=null,poolT=null,srv='checking',run=0,role=null,T=null,V=null,BK=null,skew=0,hostAway=false;
  const skews=[];const lobby={},poolSeen={};
  const R={};
+ /* v9: ask our play server which servers to use (cached; refreshed every 10 minutes) */
+ try{if(window.DGCF)setTimeout(()=>{try{window.DGCF.watch(GAME);}catch(e){}},1000);}catch(e){}
 
  /* ---------------- helpers ---------------- */
  const meInfo=()=>{let m={};try{m=cfg.me?cfg.me()||{}:{};}catch(e){}return{name:cleanName(lockedName(cleanName(m.name))),look:validLook(m.look)};};
@@ -477,10 +505,10 @@ function create(cfg){
  /* ---------------- lobby watcher (hub + Quick Match) ---------------- */
  function srvSet(v){if(srv!==v){srv=v;updHubLive();}}
  function warm(){if(net||!window.WebSocket)return;
-  if(!pool){pool=makeClients(null);const p0=pool;p0.forEach(o=>o.onUp2=()=>srvSet('ok'));anyUp(p0,10000).then(v=>{if(!v&&pool===p0&&srv!=='ok')srvSet('fail');});}
+  if(!pool){pool=makeClients(null,NS,GAME);const p0=pool;p0.forEach(o=>o.onUp2=()=>srvSet('ok'));anyUp(p0,10000).then(v=>{if(!v&&pool===p0&&srv!=='ok')srvSet('fail');});}
   const p=pool;p.forEach(o=>{o.h=onPoolMsg;o.subs=()=>[NS+'lobby/+'];if(o.ok)o.c.subscribe([NS+'lobby/+']);});
   clearTimeout(poolT);poolT=setTimeout(()=>{if(pool!==p)return;if(UI.hubOn||UI.quickOn){warm();return;}p.forEach(o=>{try{o.c.end();}catch(e){}});pool=null;},5*60*1000);}
- function takeClients(subs,h){clearTimeout(poolT);const cl=pool||makeClients(null);pool=null;cl.forEach(o=>{try{o.c.unsubscribe([NS+'lobby/+']);}catch(e){}o.subs=subs;o.h=h;o.onUp2=null;if(o.ok){const t=subs();if(t.length)o.c.subscribe(t);}});return cl;}
+ function takeClients(subs,h){clearTimeout(poolT);const cl=pool||makeClients(null,NS,GAME);pool=null;cl.forEach(o=>{try{o.c.unsubscribe([NS+'lobby/+']);}catch(e){}o.subs=subs;o.h=h;o.onUp2=null;if(o.ok){const t=subs();if(t.length)o.c.subscribe(t);}});return cl;}
  function onPoolMsg(o,topic,m){if(topic.indexOf(NS+'lobby/')===0){onLobbyMsg(topic,m);return;}const mm=/\/([A-Z]{4})\/i$/.exec(topic);if(mm&&m&&m.host)poolSeen[mm[1]]=m;}
  function onLobbyMsg(topic,m){const code=topic.slice((NS+'lobby/').length);if(!/^[A-Z]{4}$/.test(code))return;
   if(!m||!m.t)delete lobby[code];
@@ -506,7 +534,7 @@ function create(cfg){
   const n={role:'host',code,kp:keys.kp,pub:keys.pub,players:new Map(),timers:[],clients:[],isPublic:!!o.pub,quick:!!o.quick,created:o.created||Date.now(),
    banned:new Set(),ep:o.ep|0,listed:false,lsent:0,last:{},strikes:{},chatAt:{},bkAt:0,autoAt:0,autoK:0,overAt:0,wokeAt:0};
   /* Last Will: if this connection dies without a goodbye, the broker wipes the table's retained info */
-  n.clients=makeClients({topic:NS+code+'/i',payload:''});
+  n.clients=makeClients({topic:NS+code+'/i',payload:''},NS,GAME);
   n.clients.forEach(c=>{c.subs=()=>[NS+code+'/h',NS+code+'/i'].concat(n.quick?[NS+'lobby/+']:[]);c.h=onHostMsg;});net=n;
   const up=await anyUp(n.clients,10000);if(net!==n)return null;if(!up){closeNet();return null;}
   n.info=()=>{if(net!==n)return;ls.set('dgn-hosting',NS+code+'|'+Date.now());n.clients.forEach(c=>pub(c,NS+code+'/i',{v:1,host:myId,pub:n.pub,t:Date.now(),ep:n.ep,since:n.created},true));};
@@ -726,7 +754,7 @@ function create(cfg){
     dropped (phone asleep, network switch): reconnect instead. Taking over then (Oct 2026 bug) threw the real host out,
     gave its seat to the computer and rolled the whole game back to this phone's stale copy. With no connection at all
     ('down'), never take over: wait (MIG_GIVEUP still ends the session). */
- function hostAlive(code){return new Promise(res=>{let done=false;const cl=makeClients(null);
+ function hostAlive(code){return new Promise(res=>{let done=false;const cl=makeClients(null,NS,GAME);
   const fin=v=>{if(done)return;done=true;clearTimeout(t);setTimeout(()=>cl.forEach(o=>{o.h=null;try{o.c.end();}catch(e){}}),300);res(v);};
   const t=setTimeout(()=>fin(cl.some(o=>o.ok)?'gone':'down'),5000);
   cl.forEach(o=>{o.subs=()=>[NS+code+'/i'];o.h=(o2,topic,m)=>{if(topic!==NS+code+'/i'||!m||!m.pub||!m.host||m.host===myId)return;
@@ -1385,6 +1413,7 @@ ${cfg.rulesNote?`<p class="dgn-fine">${esc(cfg.rulesNote)}</p>`:''}
   /* voice fixes: R._vcLose(n) loses the next n offers; R._vcX() per-call details; R._vcT internals for tests */
   R._vcLose=k=>{VC.lose=k|0;};R._vcX=()=>[...VC.peers].map(([id,p])=>({id,cs:p.pc.connectionState,ok:p.ok,off:p.off,c:p.c,n:p.n,rs:p.rs,relay:p.relay,turn:p.turn,src:!!p.au.srcObject,paused:p.au.paused,lv:vcPeerLevel(p),meter:!!p.meter,tuned:!!p.tuned}));
   R._vcT={ice:vcIce,opus:vcOpus,turnList:vcTurnList,TURN,fails:()=>VC.fails,q:()=>VC.q.size,chip:()=>!!VC.chip&&VC.chip.style.display!=='none',sess:()=>({rec:!!window.__vcRec,at:!!window.__vcAt}),help:vcMicHelp,peers:()=>VC.peers,restart:id=>{const p=VC.peers.get(id);if(p)vcRestart(id,p);},redial:vcRedial,sig:vcSignal,mic:vcMic,play:vcPlayAll};
+  R._net=()=>({mode:netMode(GAME),clients:((net&&net.clients)||pool||[]).map(o=>({cf:!!o.cf,ok:!!o.ok})),bi:net?net.bi:null});
   R._quick=()=>({qEnd:T&&T.qEnd,qAsk:T&&T.qAsk,autoAt:T&&T.autoAt,players:T?T.players.map(p=>({id:p.id,name:p.name,cpu:!!p.cpu,gone:!!p.gone})):[],wait:T?T.wait.map(w=>w.id):[]});}   /* localhost test hooks */
  return R;}
 
