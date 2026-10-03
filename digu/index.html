@@ -1974,6 +1974,11 @@ function openAccount(kind){
  <div class="row"><button class="btn ghost" data-a="close">Close</button></div>`);
  if(!guest)revealRecoveryRow();
 }
+/* sign in with a username email + password; a pasted password may carry a stray space: try it trimmed too. null if neither works */
+async function ownLogin(email,pass){
+ try{return await FB.signInWithEmailAndPassword(FB.auth,email,pass);}catch(e){}
+ if(pass.trim()!==pass&&pass.trim().length>=6){try{return await FB.signInWithEmailAndPassword(FB.auth,email,pass.trim());}catch(e){}}
+ return null;}
 async function authDo(kind){
  if(!FB.ready||!FB.auth){toast('Account service is still connecting.');return;}
  const raw=(($('#authUser')||{}).value||'').trim(), pass=($('#authPass')||{}).value||'';
@@ -1990,12 +1995,18 @@ async function authDo(kind){
    let cred;
    if(kind==='register'){
      /* a name kept by an account that switched to a recovery email is still taken */
-     if(await unameOwner(user)){toast('That username is already taken.',5000);return;}
+     /* "Register" with a taken name is usually its owner pressing the wrong button: try logging them in with what they typed */
+     if(await unameOwner(user)){cred=await ownLogin(email,pass);
+      if(!cred){toast('That username is already taken. If it’s yours, tap Login (not Register) and check your password. If you added a recovery email, log in with that email instead.',7000);return;}
+      kind='login';}
+     else{
      /* a guest LINKS the new username to the account it is already using: same uid, so its stats simply carry over and nothing is left behind */
      const cur=FB.auth.currentUser;
+     try{
      cred=cur&&cur.isAnonymous&&FB.U&&FB.U.linkWithCredential
        ?await FB.U.linkWithCredential(cur,FB.EmailAuthProvider.credential(email,pass))
        :await FB.createUserWithEmailAndPassword(FB.auth,email,pass);
+     }catch(regErr){const c2=await (/email-already-in-use|credential-already-in-use/.test((regErr&&regErr.code)||'')?ownLogin(email,pass):null);if(!c2)throw regErr;cred=c2;kind='login';}}
    }else{
      try{cred=await FB.signInWithEmailAndPassword(FB.auth,email,pass);}
      catch(firstErr){
